@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baodabao - Frost Mage - Mythic Rotmire Kill Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --mage: #3fc7eb;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+h2 { font-size:20px; font-weight:600; margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+h3 { font-size:16px; font-weight:600; margin:20px 0 10px; color:var(--accent); }
+
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.header-meta { color:var(--dim); font-size:14px; margin-bottom:24px; }
+.header-meta span { margin-right:16px; }
+
+.card-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.card-label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.card-value { font-size:24px; font-weight:700; }
+.card-sub { font-size:12px; color:var(--dim); margin-top:2px; }
+
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+th { text-align:left; padding:8px 12px; background:var(--surface); border:1px solid var(--border); color:var(--dim); font-weight:600; font-size:12px; text-transform:uppercase; }
+td { padding:8px 12px; border:1px solid var(--border); }
+tr:hover { background:rgba(88,166,255,0.04); }
+.num { text-align:right; font-variant-numeric:tabular-nums; }
+.highlight-row { background:rgba(63,199,235,0.08); }
+.ref-row { background:rgba(188,140,255,0.08); }
+
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.badge-green { background:rgba(63,185,80,0.15); color:var(--green); }
+.badge-yellow { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.badge-red { background:rgba(248,81,73,0.15); color:var(--red); }
+.badge-purple { background:rgba(188,140,255,0.15); color:var(--purple); }
+.badge-blue { background:rgba(88,166,255,0.15); color:var(--accent); }
+
+.bar-container { display:flex; align-items:center; gap:8px; }
+.bar { height:8px; border-radius:4px; min-width:2px; }
+.bar-player { background:var(--mage); }
+.bar-ref { background:var(--purple); }
+
+.timeline { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin:16px 0; overflow-x:auto; }
+.timeline-row { display:flex; align-items:center; margin:4px 0; height:28px; }
+.timeline-label { width:140px; flex-shrink:0; font-size:12px; color:var(--dim); font-weight:500; }
+.timeline-track { flex:1; position:relative; height:20px; background:rgba(48,54,61,0.5); border-radius:3px; }
+.timeline-marker { position:absolute; width:3px; height:20px; border-radius:1px; top:0; }
+.timeline-phase { position:absolute; top:-20px; height:calc(100% + 20px); border-left:1px dashed var(--dim); opacity:0.4; }
+.timeline-phase-label { position:absolute; top:-18px; font-size:10px; color:var(--dim); white-space:nowrap; }
+
+.callout { background:var(--surface); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; margin:12px 0; font-size:14px; }
+.callout-warn { border-left-color:var(--yellow); }
+.callout-good { border-left-color:var(--green); }
+.callout-bad { border-left-color:var(--red); }
+
+.wipe-chart { display:flex; align-items:flex-end; gap:8px; height:160px; margin:16px 0; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:8px; }
+.wipe-bar { display:flex; flex-direction:column; align-items:center; flex:1; }
+.wipe-bar-inner { width:100%; border-radius:4px 4px 0 0; min-height:4px; transition:height 0.3s; }
+.wipe-bar-label { font-size:11px; color:var(--dim); margin-top:4px; }
+.wipe-bar-value { font-size:12px; font-weight:600; margin-bottom:4px; }
+
+.action-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin:8px 0; }
+.action-item h4 { font-size:14px; font-weight:600; margin-bottom:4px; }
+.action-item p { font-size:13px; color:var(--dim); line-height:1.5; }
+.action-impact { display:inline-block; font-size:12px; font-weight:600; color:var(--yellow); margin-top:8px; }
+
+.legend { display:flex; gap:16px; margin:8px 0; font-size:12px; color:var(--dim); }
+.legend-dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:middle; }
+
+.footer { margin-top:48px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); }
+
+.dps-chart { display:flex; gap:2px; align-items:flex-end; height:120px; margin:16px 0; }
+.dps-chart-bar { flex:1; border-radius:3px 3px 0 0; position:relative; min-width:4px; }
+.dps-chart-bar:hover::after { content:attr(data-tooltip); position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:#1c2128; color:var(--text); padding:4px 8px; border-radius:4px; font-size:11px; white-space:nowrap; z-index:10; }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width: 768px) {
+  .card-grid { grid-template-columns:repeat(2,1fr); }
+  .two-col { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23, 2026 Rotmire Log Analysis</a>
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+  <h1 style="color:var(--mage);">Baodabao</h1>
+  <span class="badge badge-blue">Frost Mage</span>
+  <span class="badge badge-green">KILL</span>
+</div>
+<div class="header-meta">
+  <span>Mythic Rotmire</span>
+  <span>Kill time: 8:09</span>
+  <span>June 23, 2026</span>
+  <span>Report: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC</a></span>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+  <div class="card">
+    <div class="card-label">DPS on Kill</div>
+    <div class="card-value" style="color:var(--mage);">142.5K</div>
+    <div class="card-sub">69.7M total damage</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">290</div>
+    <div class="card-sub">Ref: 291 (-1)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Kill Status</div>
+    <div class="card-value" style="color:var(--green);">Survived</div>
+    <div class="card-sub">0 deaths on kill</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Rotational CPM</div>
+    <div class="card-value">42.8</div>
+    <div class="card-sub">Ref: 42.9 (identical)</div>
+  </div>
+</div>
+
+<!-- Reference Comparison -->
+<h2>Reference Comparison</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Top 5 Frost Mages on Mythic Rotmire. Primary reference: <span style="color:var(--purple);">Qlaithee</span> (fewest talent diffs among non-anonymous players).</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th class="num">DPS</th>
+      <th class="num">Kill Time</th>
+      <th class="num">Talent Delta</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="highlight-row">
+      <td><strong style="color:var(--mage);">Baodabao</strong></td>
+      <td class="num">142,477</td>
+      <td class="num">8:09</td>
+      <td class="num">--</td>
+      <td>Analyzed player. Has Aug Evoker (Ebon Might)</td>
+    </tr>
+    <tr>
+      <td>Anonymous (#1)</td>
+      <td class="num" style="color:var(--green);">206,183</td>
+      <td class="num">7:49</td>
+      <td class="num"><span class="badge badge-purple">anon</span></td>
+      <td>Anonymous report</td>
+    </tr>
+    <tr class="ref-row">
+      <td><strong style="color:var(--purple);">Qlaithee</strong> <span class="badge badge-purple">PRIMARY REF</span></td>
+      <td class="num" style="color:var(--green);">201,743</td>
+      <td class="num">7:36</td>
+      <td class="num"><span class="badge badge-yellow">6 diffs</span></td>
+      <td>Spellslinger. No Aug Evoker.</td>
+    </tr>
+    <tr>
+      <td>Anonymous (#3)</td>
+      <td class="num" style="color:var(--green);">200,310</td>
+      <td class="num">7:29</td>
+      <td class="num"><span class="badge badge-purple">anon</span></td>
+      <td>Anonymous report</td>
+    </tr>
+    <tr>
+      <td>Anonymous (#4)</td>
+      <td class="num" style="color:var(--green);">198,049</td>
+      <td class="num">6:55</td>
+      <td class="num"><span class="badge badge-purple">anon</span></td>
+      <td>Anonymous report</td>
+    </tr>
+    <tr>
+      <td>&#27773;&#36710;&#27861; (#5)</td>
+      <td class="num" style="color:var(--green);">195,543</td>
+      <td class="num">6:50</td>
+      <td class="num">--</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>Context:</strong> Baodabao has an Aug Evoker (Zinnks) providing 12 Ebon Might applications throughout the fight, while the reference Qlaithee had no Aug Evoker. Despite this buff advantage, the DPS gap is 29.4% (59K DPS). This means the actual execution gap is even larger than the raw numbers suggest, since Ebon Might typically inflates DPS by 5-8%.
+</div>
+
+<div class="callout">
+  <strong>Talent Differences (6 nodes):</strong> Both players are Spellslinger Frost Mages. The 6 talent differences include the reference taking <strong>Splintering Ray</strong> (a passive that deals damage alongside Ray of Frost, adding 6.2M total damage) and different Frozen Orb-related talents that doubled the reference's Frozen Orb output (14.0M vs 7.2M). These talent choices account for a significant portion of the DPS gap.
+</div>
+
+<!-- Boss Mechanic Timeline -->
+<h2>Boss Mechanic Timeline</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:8px;">Rotmire is a single-phase boss with periodic mechanics on fixed timers. Fight duration: 8:09 (489s).</p>
+
+<div class="timeline">
+  <div class="timeline-row">
+    <div class="timeline-label" style="color:var(--red);">Fungal Bloom</div>
+    <div class="timeline-track">
+      <div class="timeline-marker" style="left:24.5%;background:var(--red);" title="Bloom #1 at 2:00"></div>
+      <div class="timeline-marker" style="left:52.4%;background:var(--red);" title="Bloom #2 at 4:16"></div>
+      <div class="timeline-marker" style="left:80.2%;background:var(--red);" title="Bloom #3 at 6:32"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color:var(--yellow);">Festering Vines</div>
+    <div class="timeline-track">
+      <div class="timeline-marker" style="left:8.8%;background:var(--yellow);" title="Vines #1 at 0:43"></div>
+      <div class="timeline-marker" style="left:18.8%;background:var(--yellow);" title="Vines #2 at 1:32"></div>
+      <div class="timeline-marker" style="left:36.6%;background:var(--yellow);" title="Vines #3 at 2:59"></div>
+      <div class="timeline-marker" style="left:46.6%;background:var(--yellow);" title="Vines #4 at 3:48"></div>
+      <div class="timeline-marker" style="left:64.4%;background:var(--yellow);" title="Vines #5 at 5:15"></div>
+      <div class="timeline-marker" style="left:74.4%;background:var(--yellow);" title="Vines #6 at 6:04"></div>
+      <div class="timeline-marker" style="left:92.2%;background:var(--yellow);" title="Vines #7 at 7:31"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color:var(--cyan);">Awaken Fungi</div>
+    <div class="timeline-track">
+      <div class="timeline-marker" style="left:3.1%;background:var(--cyan);" title="Adds #1 at 0:15"></div>
+      <div class="timeline-marker" style="left:13.1%;background:var(--cyan);" title="Adds #2 at 1:04"></div>
+      <div class="timeline-marker" style="left:30.9%;background:var(--cyan);" title="Adds #3 at 2:31"></div>
+      <div class="timeline-marker" style="left:40.9%;background:var(--cyan);" title="Adds #4 at 3:20"></div>
+      <div class="timeline-marker" style="left:58.7%;background:var(--cyan);" title="Adds #5 at 4:47"></div>
+      <div class="timeline-marker" style="left:68.7%;background:var(--cyan);" title="Adds #6 at 5:36"></div>
+      <div class="timeline-marker" style="left:86.5%;background:var(--cyan);" title="Adds #7 at 7:03"></div>
+      <div class="timeline-marker" style="left:96.5%;background:var(--cyan);" title="Adds #8 at 7:52"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color:var(--orange);">Bursting Pustules</div>
+    <div class="timeline-track" style="background:linear-gradient(90deg, rgba(219,109,40,0.05) 0%, rgba(219,109,40,0.3) 100%);">
+      <div class="timeline-marker" style="left:2.0%;background:var(--orange);width:2px;" title="Pustules at 0:10"></div>
+      <div class="timeline-marker" style="left:6.3%;background:var(--orange);width:2px;" title="Pustules at 0:31"></div>
+      <div class="timeline-marker" style="left:16.4%;background:var(--orange);width:2px;" title="Pustules at 1:20"></div>
+      <div class="timeline-marker" style="left:29.9%;background:var(--orange);width:2px;" title="Pustules at 2:26"></div>
+      <div class="timeline-marker" style="left:34.2%;background:var(--orange);width:2px;" title="Pustules at 2:47"></div>
+      <div class="timeline-marker" style="left:44.2%;background:var(--orange);width:2px;" title="Pustules at 3:36"></div>
+      <div class="timeline-marker" style="left:57.7%;background:var(--orange);width:2px;" title="Pustules at 4:42"></div>
+      <div class="timeline-marker" style="left:62.0%;background:var(--orange);width:2px;" title="Pustules at 5:03"></div>
+      <div class="timeline-marker" style="left:72.0%;background:var(--orange);width:2px;" title="Pustules at 5:52"></div>
+      <div class="timeline-marker" style="left:85.5%;background:var(--orange);width:2px;" title="Pustules at 6:58"></div>
+      <div class="timeline-marker" style="left:89.8%;background:var(--orange);width:2px;" title="Pustules at 7:19"></div>
+      <div class="timeline-marker" style="left:99.8%;background:var(--orange);width:2px;" title="Pustules at 8:08"></div>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <span><span class="legend-dot" style="background:var(--red);"></span>Fungal Bloom (raid-wide, ~136s cycle)</span>
+  <span><span class="legend-dot" style="background:var(--yellow);"></span>Festering Vines (movement, ~68s cycle)</span>
+  <span><span class="legend-dot" style="background:var(--cyan);"></span>Awaken Fungi (adds, ~65s cycle)</span>
+  <span><span class="legend-dot" style="background:var(--orange);"></span>Bursting Pustules (soft enrage, stacking)</span>
+</div>
+
+<div class="callout">
+  <strong>Raid State:</strong> 0 deaths on the kill fight. All 20 players alive for the full 8:09. Clean kill with no attrition.
+</div>
+
+<!-- DPS Over Time -->
+<h2>DPS Over Time (30s Buckets)</h2>
+<div class="legend" style="margin-bottom:8px;">
+  <span><span class="legend-dot" style="background:var(--mage);"></span>Baodabao</span>
+  <span><span class="legend-dot" style="background:var(--purple);"></span>Qlaithee (ref)</span>
+</div>
+
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;">
+  <div style="display:flex;gap:4px;align-items:flex-end;height:140px;">
+    <!-- Player bars -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">220K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:56%;" title="Baodabao: 220K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:50%;" title="Qlaithee: 198K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">0:00</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">131K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:33%;" title="Baodabao: 131K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:56%;" title="Qlaithee: 220K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">0:30</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">167K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:43%;" title="Baodabao: 167K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:44%;" title="Qlaithee: 171K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">1:00</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">73K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:19%;" title="Baodabao: 73K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:19%;" title="Qlaithee: 76K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">1:30</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">188K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:48%;" title="Baodabao: 188K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:61%;" title="Qlaithee: 240K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">2:00</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">179K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:46%;" title="Baodabao: 179K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:52%;" title="Qlaithee: 205K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">2:30</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">186K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:47%;" title="Baodabao: 186K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:27%;" title="Qlaithee: 106K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">3:00</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">77K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:20%;" title="Baodabao: 77K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:59%;" title="Qlaithee: 233K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">3:30</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">168K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:43%;" title="Baodabao: 168K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:72%;" title="Qlaithee: 280K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">4:00</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">111K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:28%;" title="Baodabao: 111K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:18%;" title="Qlaithee: 70K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">4:30</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">143K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:36%;" title="Baodabao: 143K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:74%;" title="Qlaithee: 290K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">5:00</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">130K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:33%;" title="Baodabao: 130K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:42%;" title="Qlaithee: 164K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">5:30</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">102K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:26%;" title="Baodabao: 102K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:41%;" title="Qlaithee: 161K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">6:00</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">158K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:40%;" title="Baodabao: 158K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:92%;" title="Qlaithee: 361K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">6:30</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">113K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:29%;" title="Baodabao: 113K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:55%;" title="Qlaithee: 216K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">7:00</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">137K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:35%;" title="Baodabao: 137K"></div>
+        <div style="flex:1;background:var(--purple);border-radius:2px 2px 0 0;height:100%;" title="Qlaithee: 392K"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">7:30</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="font-size:10px;color:var(--dim);margin-bottom:2px;">141K</div>
+      <div style="display:flex;gap:2px;width:100%;height:120px;align-items:flex-end;">
+        <div style="flex:1;background:var(--mage);border-radius:2px 2px 0 0;height:36%;" title="Baodabao: 141K"></div>
+        <div style="flex:1;background:var(--purple);opacity:0.2;border-radius:2px 2px 0 0;height:0%;" title="Boss dead for ref"></div>
+      </div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px;">8:00</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--dim);margin-top:8px;text-align:center;">Reference fight ended at 7:36. Player's fight continued to 8:09.</div>
+</div>
+
+<!-- Per-Mechanic Window Analysis -->
+<h2>Per-Mechanic Window Analysis</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">CPS (Casts Per Second) comparison during each mechanic window. Only windows where both fights overlap are directly comparable.</p>
+
+<h3>Fungal Bloom Windows (Raid-Wide, 15s windows)</h3>
+<table>
+  <thead>
+    <tr><th>Window</th><th class="num">Time</th><th class="num">Player CPS</th><th class="num">Ref CPS</th><th class="num">P. Casts</th><th class="num">R. Casts</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Bloom #1</td><td class="num">2:00</td><td class="num">0.80</td><td class="num">0.60</td><td class="num">12</td><td class="num">9</td><td><span class="badge badge-green">OK (+33%)</span></td></tr>
+    <tr><td>Bloom #2</td><td class="num">4:16</td><td class="num">0.73</td><td class="num">0.67</td><td class="num">11</td><td class="num">10</td><td><span class="badge badge-green">OK (+10%)</span></td></tr>
+    <tr><td>Bloom #3</td><td class="num">6:32</td><td class="num">0.73</td><td class="num">0.67</td><td class="num">11</td><td class="num">10</td><td><span class="badge badge-green">OK (+10%)</span></td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-good">
+  <strong>Fungal Bloom handling is excellent.</strong> Baodabao maintains equal or higher CPS than the reference during all three raid-wide damage windows. No uptime loss during Bloom mechanics.
+</div>
+
+<h3>Festering Vines Windows (Movement, 12s windows)</h3>
+<table>
+  <thead>
+    <tr><th>Window</th><th class="num">Time</th><th class="num">Player CPS</th><th class="num">Ref CPS</th><th class="num">P. Casts</th><th class="num">R. Casts</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Vines #1</td><td class="num">0:43</td><td class="num">0.75</td><td class="num">0.67</td><td class="num">9</td><td class="num">8</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Vines #2</td><td class="num">1:32</td><td class="num">0.67</td><td class="num">0.83</td><td class="num">8</td><td class="num">10</td><td><span class="badge badge-yellow">-20%</span></td></tr>
+    <tr><td>Vines #3</td><td class="num">2:59</td><td class="num">0.67</td><td class="num">0.75</td><td class="num">8</td><td class="num">9</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Vines #4</td><td class="num">3:48</td><td class="num">0.67</td><td class="num">0.75</td><td class="num">8</td><td class="num">9</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Vines #5</td><td class="num">5:15</td><td class="num">0.58</td><td class="num">0.67</td><td class="num">7</td><td class="num">8</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Vines #6</td><td class="num">6:04</td><td class="num">0.75</td><td class="num">0.67</td><td class="num">9</td><td class="num">8</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Vines #7</td><td class="num">7:31</td><td class="num">0.83</td><td class="num" style="color:var(--dim);">--</td><td class="num">10</td><td class="num" style="color:var(--dim);">--</td><td><span class="badge badge-blue">Past ref</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Awaken Fungi Windows (Add Spawns, 20s windows)</h3>
+<table>
+  <thead>
+    <tr><th>Window</th><th class="num">Time</th><th class="num">Player CPS</th><th class="num">Ref CPS</th><th class="num">P. Casts</th><th class="num">R. Casts</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Adds #1</td><td class="num">0:15</td><td class="num">0.95</td><td class="num">0.95</td><td class="num">19</td><td class="num">19</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #2</td><td class="num">1:04</td><td class="num">0.75</td><td class="num">0.75</td><td class="num">15</td><td class="num">15</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #3</td><td class="num">2:31</td><td class="num">0.75</td><td class="num">0.75</td><td class="num">15</td><td class="num">15</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #4</td><td class="num">3:20</td><td class="num">0.70</td><td class="num">0.70</td><td class="num">14</td><td class="num">14</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #5</td><td class="num">4:47</td><td class="num">0.75</td><td class="num">0.75</td><td class="num">15</td><td class="num">15</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #6</td><td class="num">5:36</td><td class="num">0.70</td><td class="num">0.75</td><td class="num">14</td><td class="num">15</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #7</td><td class="num">7:03</td><td class="num">0.60</td><td class="num">0.65</td><td class="num">12</td><td class="num">13</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #8</td><td class="num">7:52</td><td class="num">0.70</td><td class="num" style="color:var(--dim);">--</td><td class="num">14</td><td class="num" style="color:var(--dim);">--</td><td><span class="badge badge-blue">Past ref</span></td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-good">
+  <strong>Mechanic handling is strong across the board.</strong> Only 1 of 18 comparable windows flagged (Vines #2 at -20%), and the overall pattern shows consistent uptime through mechanics. Add phase CPS matches the reference almost perfectly.
+</div>
+
+<!-- Damage Breakdown Comparison -->
+<h2>Ability Damage Comparison</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Damage per ability compared against primary reference. Sorted by combined impact.</p>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th class="num">Player Dmg</th><th class="num">%</th><th class="num">Ref Dmg</th><th class="num">%</th><th class="num">Delta</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Shatter</td>
+      <td class="num">27.9M</td><td class="num">40.1%</td>
+      <td class="num">33.7M</td><td class="num">36.6%</td>
+      <td class="num" style="color:var(--red);">-5.7M</td>
+      <td>Fewer Flurry casts (44 vs 54) = fewer Shatter procs</td>
+    </tr>
+    <tr>
+      <td style="color:var(--red);">Frozen Orb</td>
+      <td class="num">7.2M</td><td class="num">10.4%</td>
+      <td class="num">14.0M</td><td class="num">15.3%</td>
+      <td class="num" style="color:var(--red);">-6.8M</td>
+      <td><strong>Biggest gap.</strong> Talent diffs affecting Orb damage output</td>
+    </tr>
+    <tr>
+      <td>Frost Splinter</td>
+      <td class="num">6.3M</td><td class="num">9.0%</td>
+      <td class="num">6.9M</td><td class="num">7.5%</td>
+      <td class="num" style="color:var(--dim);">-0.6M</td>
+      <td>Close match</td>
+    </tr>
+    <tr>
+      <td>Ray of Frost</td>
+      <td class="num">6.0M</td><td class="num">8.7%</td>
+      <td class="num">5.9M</td><td class="num">6.4%</td>
+      <td class="num" style="color:var(--green);">+0.2M</td>
+      <td>Equal usage (12 casts each)</td>
+    </tr>
+    <tr>
+      <td style="color:var(--red);">Splintering Ray</td>
+      <td class="num">0</td><td class="num">0.0%</td>
+      <td class="num">6.2M</td><td class="num">6.7%</td>
+      <td class="num" style="color:var(--red);">-6.2M</td>
+      <td><strong>Talent diff.</strong> Player does not have this talent</td>
+    </tr>
+    <tr>
+      <td style="color:var(--red);">Controlled Instincts</td>
+      <td class="num">2.9M</td><td class="num">4.2%</td>
+      <td class="num">6.4M</td><td class="num">7.0%</td>
+      <td class="num" style="color:var(--red);">-3.5M</td>
+      <td>Talent interaction. Ref gets 2x damage from this passive</td>
+    </tr>
+    <tr>
+      <td>Ice Lance</td>
+      <td class="num">5.0M</td><td class="num">7.2%</td>
+      <td class="num">4.2M</td><td class="num">4.5%</td>
+      <td class="num" style="color:var(--green);">+0.8M</td>
+      <td>More casts (208 vs 166). Higher priority in player's build</td>
+    </tr>
+    <tr>
+      <td>Flurry</td>
+      <td class="num">4.5M</td><td class="num">6.5%</td>
+      <td class="num">5.7M</td><td class="num">6.2%</td>
+      <td class="num" style="color:var(--yellow);">-1.2M</td>
+      <td>Fewer casts (44 vs 54). Fewer Brain Freeze procs consumed?</td>
+    </tr>
+    <tr>
+      <td>Glacial Spike</td>
+      <td class="num">3.2M</td><td class="num">4.6%</td>
+      <td class="num">3.1M</td><td class="num">3.3%</td>
+      <td class="num" style="color:var(--green);">+0.2M</td>
+      <td>18 vs 16 casts. Well used</td>
+    </tr>
+    <tr>
+      <td>Hand of Frost</td>
+      <td class="num">2.5M</td><td class="num">3.6%</td>
+      <td class="num">3.0M</td><td class="num">3.2%</td>
+      <td class="num" style="color:var(--dim);">-0.5M</td>
+      <td>Passive. Scales with other damage</td>
+    </tr>
+    <tr>
+      <td>Frostbolt</td>
+      <td class="num">1.4M</td><td class="num">2.0%</td>
+      <td class="num">1.8M</td><td class="num">1.9%</td>
+      <td class="num" style="color:var(--dim);">-0.4M</td>
+      <td>48 vs 60 casts. Ref cast more fillers</td>
+    </tr>
+    <tr>
+      <td>Glacial Assault</td>
+      <td class="num">1.3M</td><td class="num">1.8%</td>
+      <td class="num">1.0M</td><td class="num">1.1%</td>
+      <td class="num" style="color:var(--green);">+0.3M</td>
+      <td>Player's build generates more</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>The DPS gap is primarily talent-driven, not execution-driven.</strong> Of the 22.3M total damage deficit, approximately 16.5M (74%) comes from three talent-related differences: Splintering Ray (-6.2M, talent the player doesn't have), Frozen Orb (-6.8M, talent interaction doubling Orb damage), and Controlled Instincts (-3.5M, talent-enhanced passive). The remaining ~5.8M gap comes from fewer Flurry casts and their resulting Shatter procs.
+</div>
+
+<!-- Target Damage Split -->
+<h2>Damage by Target</h2>
+<div class="two-col">
+  <div>
+    <h3>Baodabao</h3>
+    <table>
+      <thead><tr><th>Target</th><th class="num">Damage</th><th class="num">%</th></tr></thead>
+      <tbody>
+        <tr><td>Rotmire (Boss)</td><td class="num">43.8M</td><td class="num">62.8%</td></tr>
+        <tr><td>Shroomling</td><td class="num">9.7M</td><td class="num">14.0%</td></tr>
+        <tr><td>Bursting Shroom</td><td class="num">7.6M</td><td class="num">10.9%</td></tr>
+        <tr><td>Sporecap</td><td class="num">5.0M</td><td class="num">7.2%</td></tr>
+        <tr><td>Fungling</td><td class="num">3.6M</td><td class="num">5.1%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h3 style="color:var(--purple);">Qlaithee (Reference)</h3>
+    <table>
+      <thead><tr><th>Target</th><th class="num">Damage</th><th class="num">%</th></tr></thead>
+      <tbody>
+        <tr><td>Boss (primary)</td><td class="num">45.9M</td><td class="num">49.8%</td></tr>
+        <tr><td>Adds (group 1)</td><td class="num">16.1M</td><td class="num">17.5%</td></tr>
+        <tr><td>Adds (group 2)</td><td class="num">14.0M</td><td class="num">15.2%</td></tr>
+        <tr><td>Adds (group 3)</td><td class="num">12.0M</td><td class="num">13.1%</td></tr>
+        <tr><td>Adds (group 4)</td><td class="num">4.0M</td><td class="num">4.4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>Boss vs Add Split:</strong> Baodabao deals 62.8% damage to boss / 37.2% to adds. Reference deals 49.8% boss / 50.2% adds. The reference's talent build (stronger Frozen Orb) generates significantly more passive cleave damage to adds. Baodabao's build is more boss-focused but produces less total throughput across all targets.
+</div>
+
+<!-- Cooldown Usage -->
+<h2>Cooldown Usage</h2>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th class="num">Player Casts</th><th>Player Timings</th><th class="num">Ref Casts</th><th>Ref Timings</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Frozen Orb</td>
+      <td class="num">12</td>
+      <td style="font-size:12px;">0:11, 0:44, 1:14, 2:04, 2:41, 3:17, 4:18, 4:49, 5:44, 6:33, 7:18, 7:56</td>
+      <td class="num">11</td>
+      <td style="font-size:12px;">0:05, 0:29, 1:10, 1:58, 2:48, 3:22, 4:15, 5:06, 5:49, 6:32, 7:21</td>
+    </tr>
+    <tr>
+      <td>Ray of Frost</td>
+      <td class="num">12</td>
+      <td style="font-size:12px;">0:08, 0:20, 0:57, 1:53, 2:23, 3:05, 4:28, 4:39, 5:19, 6:02, 6:45, 7:31</td>
+      <td class="num">12</td>
+      <td style="font-size:12px;">0:00, 0:11, 1:16, 2:02, 2:53, 3:37, 4:18, 5:11, 5:58, 6:34, 6:58, 7:28</td>
+    </tr>
+    <tr>
+      <td>Nullsight (trinket)</td>
+      <td class="num">5</td>
+      <td style="font-size:12px;">0:06, 1:54, 4:18, 6:01, 7:36</td>
+      <td class="num">4</td>
+      <td style="font-size:12px;">(different trinket loadout)</td>
+    </tr>
+    <tr>
+      <td>Ice Barrier</td>
+      <td class="num">8</td>
+      <td style="font-size:12px;">Defensive, used throughout</td>
+      <td class="num">6</td>
+      <td style="font-size:12px;">Defensive, used throughout</td>
+    </tr>
+    <tr>
+      <td>Ice Cold</td>
+      <td class="num">2</td>
+      <td style="font-size:12px;">Major defensive</td>
+      <td class="num">2</td>
+      <td style="font-size:12px;">Major defensive</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-good">
+  <strong>Cooldown usage is on par with reference.</strong> Equal Frozen Orb casts (12 vs 11, player had 33s more fight time). Equal Ray of Frost casts (12 each). Both players used Frozen Orb aggressively on cooldown. Trinket usage is comparable.
+</div>
+
+<!-- Cast Profile Comparison -->
+<h2>Cast Profile Comparison</h2>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th class="num">P. Count</th><th class="num">P. CPM</th><th class="num">R. Count</th><th class="num">R. CPM</th><th class="num">Delta</th><th>Visual</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ice Lance</td>
+      <td class="num">208</td><td class="num">25.5</td>
+      <td class="num">166</td><td class="num">21.8</td>
+      <td class="num" style="color:var(--green);">+3.7</td>
+      <td><div class="bar-container"><div class="bar bar-player" style="width:100%;"></div></div></td>
+    </tr>
+    <tr>
+      <td>Frostbolt</td>
+      <td class="num">48</td><td class="num">5.9</td>
+      <td class="num">60</td><td class="num">7.9</td>
+      <td class="num" style="color:var(--red);">-2.0</td>
+      <td><div class="bar-container"><div class="bar bar-player" style="width:75%;"></div><div class="bar bar-ref" style="width:100%;"></div></div></td>
+    </tr>
+    <tr>
+      <td>Flurry</td>
+      <td class="num">44</td><td class="num">5.4</td>
+      <td class="num">54</td><td class="num">7.1</td>
+      <td class="num" style="color:var(--red);">-1.7</td>
+      <td><div class="bar-container"><div class="bar bar-player" style="width:76%;"></div><div class="bar bar-ref" style="width:100%;"></div></div></td>
+    </tr>
+    <tr>
+      <td>Glacial Spike</td>
+      <td class="num">18</td><td class="num">2.2</td>
+      <td class="num">16</td><td class="num">2.1</td>
+      <td class="num" style="color:var(--green);">+0.1</td>
+      <td><div class="bar-container"><div class="bar bar-player" style="width:100%;"></div></div></td>
+    </tr>
+    <tr>
+      <td>Frozen Orb</td>
+      <td class="num">12</td><td class="num">1.5</td>
+      <td class="num">11</td><td class="num">1.4</td>
+      <td class="num" style="color:var(--green);">+0.1</td>
+      <td><div class="bar-container"><div class="bar bar-player" style="width:100%;"></div></div></td>
+    </tr>
+    <tr>
+      <td>Ray of Frost</td>
+      <td class="num">12</td><td class="num">1.5</td>
+      <td class="num">12</td><td class="num">1.6</td>
+      <td class="num" style="color:var(--dim);">-0.1</td>
+      <td><div class="bar-container"><div class="bar bar-player" style="width:94%;"></div><div class="bar bar-ref" style="width:100%;"></div></div></td>
+    </tr>
+    <tr>
+      <td>Shimmer</td>
+      <td class="num">4</td><td class="num">0.5</td>
+      <td class="num">9</td><td class="num">1.2</td>
+      <td class="num" style="color:var(--dim);">-0.7</td>
+      <td style="font-size:12px;color:var(--dim);">Ref uses more movement abilities</td>
+    </tr>
+    <tr>
+      <td>Alter Time</td>
+      <td class="num">0</td><td class="num">0.0</td>
+      <td class="num">6</td><td class="num">0.8</td>
+      <td class="num" style="color:var(--yellow);">-0.8</td>
+      <td style="font-size:12px;color:var(--dim);">Ref uses Alter Time for movement</td>
+    </tr>
+    <tr>
+      <td>Counterspell</td>
+      <td class="num">1</td><td class="num">0.1</td>
+      <td class="num">3</td><td class="num">0.4</td>
+      <td class="num" style="color:var(--dim);">-0.3</td>
+      <td style="font-size:12px;color:var(--dim);">More Poison Burst interrupts from ref</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>Key Cast Differences:</strong> Baodabao casts significantly more Ice Lance (+3.7 CPM) but fewer Frostbolt (-2.0 CPM) and fewer Flurry (-1.7 CPM). The lower Flurry count (44 vs 54) means fewer Shatter combos and less burst damage. The reference also uses Alter Time (6 casts, 0 from player) for repositioning during mechanics, and Shimmer more frequently (9 vs 4), suggesting better movement optimization.
+</div>
+
+<!-- Damage Taken -->
+<h2>Damage Taken</h2>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th class="num">Total</th><th class="num">Hits</th><th class="num">Avg Hit</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td class="num">14.6M</td><td class="num">478</td><td class="num">30.6K</td>
+      <td><span class="badge badge-green">Unavoidable</span> Passive stacking DoT (soft enrage)</td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td class="num">3.1M</td><td class="num">46</td><td class="num">68.4K</td>
+      <td><span class="badge badge-green">Unavoidable</span> Raid-wide burst from soft enrage</td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td class="num">2.9M</td><td class="num">87</td><td class="num">33.8K</td>
+      <td><span class="badge badge-yellow">Partially</span> Boss/add melee hits. Some positioning-related</td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td class="num">2.8M</td><td class="num">51</td><td class="num">55.5K</td>
+      <td><span class="badge badge-green">Unavoidable</span> Raid-wide AoE at 100 energy</td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td class="num">750K</td><td class="num">3</td><td class="num">250K</td>
+      <td><span class="badge badge-yellow">Partially</span> Add death explosion. Proximity-based</td>
+    </tr>
+    <tr>
+      <td>Festering Vines</td>
+      <td class="num">732K</td><td class="num">9</td><td class="num">81.3K</td>
+      <td><span class="badge badge-red">Avoidable</span> Root mechanic. 9 hits taken</td>
+    </tr>
+    <tr>
+      <td>Poison Burst</td>
+      <td class="num">359K</td><td class="num">3</td><td class="num">119.6K</td>
+      <td><span class="badge badge-yellow">Partially</span> Sporecap cast. Should be interrupted</td>
+    </tr>
+    <tr>
+      <td>Writhing Vines</td>
+      <td class="num">138K</td><td class="num">1</td><td class="num">138.2K</td>
+      <td><span class="badge badge-red">Avoidable</span> DoT from Festering Vines. 1 hit</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <strong>Damage taken is reasonable.</strong> The bulk (20.5M / 83%) is unavoidable raid-wide damage (Rotting Pustules, Bursting Pustules, Fungal Bloom). Festering Vines hits (9 total, 732K) and 1 Writhing Vines hit indicate occasional root ticks, but this didn't cause death on the kill. Baodabao died to Fungal Bloom in fight 1 and Festering Vines in fight 2 (see wipe progression below).
+</div>
+
+<!-- Cast Gap Analysis -->
+<h2>Cast Gap Analysis</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Gaps > 2.5s between rotational casts. Both players show similar gap patterns due to Frost Mage cast times.</p>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-label">Baodabao</div>
+    <div style="margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><span>Total gaps > 2.5s</span><span><strong>52</strong></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><span>Total dead time</span><span><strong>154.2s</strong></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><span>Estimated lost casts</span><span><strong>110</strong></span></div>
+      <div style="margin-top:8px;font-size:12px;color:var(--dim);">
+        <div>After Ice Lance: 36 gaps (69%)</div>
+        <div>After Ray of Frost: 11 gaps (21%)</div>
+        <div>After Frostbolt: 3 gaps (6%)</div>
+        <div>After Flurry: 2 gaps (4%)</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-label" style="color:var(--purple);">Qlaithee (Reference)</div>
+    <div style="margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><span>Total gaps > 2.5s</span><span><strong>49</strong></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><span>Total dead time</span><span><strong>147.2s</strong></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;"><span>Estimated lost casts</span><span>--</span></div>
+      <div style="margin-top:8px;font-size:12px;color:var(--dim);">
+        <div>After Ice Lance: 36 gaps (73%)</div>
+        <div>After Ray of Frost: 12 gaps (24%)</div>
+        <div>After Flurry: 1 gap (2%)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="callout callout-good">
+  <strong>Gap patterns are nearly identical.</strong> Both players show the same cast gap structure: ~50 gaps, ~150s total, with 70%+ occurring after Ice Lance (transitioning into a longer-cast-time ability like Frostbolt or Glacial Spike). These are inherent to Frost Mage's rotation (instant Ice Lance followed by a 2.5s cast) and are NOT wasted GCDs. The similar numbers confirm that Baodabao's rotational execution is on par with the reference player.
+</div>
+
+<!-- External Buffs -->
+<h2>External Buffs</h2>
+
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Baodabao</th><th style="color:var(--purple);">Qlaithee (Ref)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bloodlust / Time Warp</td>
+      <td>Time Warp at 0:02 (on pull)</td>
+      <td>Time Warp at 0:00 (on pull)</td>
+    </tr>
+    <tr>
+      <td>Power Infusion</td>
+      <td style="color:var(--dim);">None received</td>
+      <td style="color:var(--dim);">None received</td>
+    </tr>
+    <tr>
+      <td>Ebon Might (Aug Evoker)</td>
+      <td style="color:var(--green);">12 applications</td>
+      <td style="color:var(--dim);">No Aug Evoker in raid</td>
+    </tr>
+    <tr>
+      <td>Potion</td>
+      <td>Potion of Recklessness at 0:06</td>
+      <td>Potion of Recklessness at 0:00, 6:33</td>
+    </tr>
+    <tr>
+      <td>Thermal Void Procs</td>
+      <td>31 applications</td>
+      <td>36 applications</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>Missing second potion.</strong> Baodabao only used 1 Potion of Recklessness (on pull). The reference used 2 (on pull + at 6:33 near the end). A second pot during a burst window in the last 2 minutes would have added meaningful damage.
+</div>
+
+<div class="callout">
+  <strong>Buff context:</strong> Baodabao had an Aug Evoker (Ebon Might, 12 applications) while the reference did not. Lust timing was identical (on pull). Neither received Power Infusion. The Aug Evoker advantage makes the 29.4% DPS gap more notable, since Ebon Might typically adds 5-8% DPS.
+</div>
+
+<!-- Wipe Progression -->
+<h2>Wipe Progression</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">DPS across all 3 Mythic Rotmire pulls. Night started with healer comp changes (Voidheart swapped to Disc Priest for fight 3).</p>
+
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;">
+  <div style="display:flex;align-items:flex-end;gap:24px;height:180px;justify-content:center;">
+    <div style="display:flex;flex-direction:column;align-items:center;width:140px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">127.4K</div>
+      <div style="width:100%;background:var(--yellow);border-radius:4px 4px 0 0;height:92px;"></div>
+      <div style="font-size:12px;color:var(--dim);margin-top:8px;">Fight 1 (Wipe)</div>
+      <div style="font-size:11px;color:var(--dim);">6:54 / 22.45%</div>
+      <div style="font-size:11px;color:var(--red);">Died 6:32 (Bloom)</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:140px;">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">87.2K</div>
+      <div style="width:100%;background:var(--red);border-radius:4px 4px 0 0;height:63px;"></div>
+      <div style="font-size:12px;color:var(--dim);margin-top:8px;">Fight 2 (Wipe)</div>
+      <div style="font-size:11px;color:var(--dim);">8:25 / 11.61%</div>
+      <div style="font-size:11px;color:var(--red);">Died 5:23 (Vines)</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;width:140px;">
+      <div style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:4px;">138.3K</div>
+      <div style="width:100%;background:var(--green);border-radius:4px 4px 0 0;height:100px;"></div>
+      <div style="font-size:12px;color:var(--green);margin-top:8px;">Fight 3 (KILL)</div>
+      <div style="font-size:11px;color:var(--dim);">8:09 / 0.01%</div>
+      <div style="font-size:11px;color:var(--green);">Survived</div>
+    </div>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>Progression notes:</strong>
+  <ul style="margin-top:8px;font-size:13px;color:var(--dim);list-style:disc;margin-left:20px;">
+    <li><strong>Fight 1:</strong> Died at 6:32 to Fungal Bloom #3 (the same Bloom that killed 3 other players). Raid wiped shortly after at 22.45%. Early death tanked DPS but this was a raid-wide failure, not a personal mistake.</li>
+    <li><strong>Fight 2:</strong> Died at 5:23 to Festering Vines (root mechanic). Lowest DPS pull (87K) due to early death in an 8:25 pull. This is the one personal mechanical failure across all 3 pulls.</li>
+    <li><strong>Fight 3 (Kill):</strong> Survived the full fight, cleanest pull. DPS improved from 87K to 138K. The healer comp change (Disc Priest replacing Voidheart's DPS spec) likely contributed to raid survivability.</li>
+  </ul>
+</div>
+
+<!-- Defensive Usage -->
+<h2>Defensive Usage</h2>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th class="num">Uses</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Ice Barrier</td><td class="num">8</td><td>Used throughout fight. Good proactive shielding</td></tr>
+    <tr><td>Ice Cold</td><td class="num">2</td><td>Major defensive. Used appropriately for dangerous mechanics</td></tr>
+    <tr><td>Shimmer</td><td class="num">4</td><td>Movement ability. Ref used 9 -- see note below</td></tr>
+    <tr><td>Healthstone</td><td class="num">1</td><td>Emergency heal used once</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <strong>Shimmer vs Alter Time:</strong> The reference used Shimmer 9 times and Alter Time 6 times (15 total movement abilities) vs Baodabao's 4 Shimmers and 0 Alter Times. More aggressive use of movement tools allows the reference to reposition faster during Festering Vines and return to casting sooner, contributing to slightly better uptime during movement windows.
+</div>
+
+<!-- Actionable Improvements -->
+<h2>Actionable Improvements</h2>
+
+<div class="action-item">
+  <h4>1. Talent Build Optimization (Biggest Impact)</h4>
+  <p>The reference's talent build generates 16.5M more damage through three key talent choices: Splintering Ray (+6.2M passive damage alongside Ray of Frost), enhanced Frozen Orb talents (+6.8M from doubled Orb throughput), and Controlled Instincts interaction (+3.5M). Review talent choices against top-performing Frost Mages on Rotmire. The reference's build produces significantly more passive/proc damage while maintaining the same core rotation.</p>
+  <div class="action-impact">Impact: ~16.5M damage / ~34K DPS (accounts for ~57% of the total DPS gap)</div>
+</div>
+
+<div class="action-item">
+  <h4>2. Use Second Potion</h4>
+  <p>Only one Potion of Recklessness was used (on pull). The reference used a second potion at 6:33, timed with a burst window in the final phase. Pre-plan the second pot for a Frozen Orb + Thermal Void window in the last 2 minutes. On an 8-minute fight, this is free damage with no downside.</p>
+  <div class="action-impact">Impact: ~3-5K DPS during the 30s potion window</div>
+</div>
+
+<div class="action-item">
+  <h4>3. Increase Flurry Casts / Brain Freeze Consumption</h4>
+  <p>44 Flurry casts vs reference's 54 (adjusted for fight length: 5.4 CPM vs 7.1 CPM). Each Flurry triggers a Shatter combo that is the highest-damage window in Frost Mage's rotation. Ensure every Brain Freeze proc is consumed promptly. The gap in Flurry usage accounts for the -5.7M Shatter damage deficit. Review whether Brain Freeze procs are being held too long or dropped.</p>
+  <div class="action-impact">Impact: ~10 additional Flurry casts = ~1.2M more Flurry damage + ~2-3M more Shatter damage</div>
+</div>
+
+<div class="action-item">
+  <h4>4. Use Alter Time for Movement Optimization</h4>
+  <p>The reference used Alter Time 6 times and Shimmer 9 times vs Baodabao's 0 Alter Time and 4 Shimmer. Alter Time is a powerful repositioning tool that lets you pre-position for Festering Vines, trigger it, then snap back to your original position to resume casting immediately. This is particularly valuable during the 7 Festering Vines windows across the fight.</p>
+  <div class="action-impact">Impact: Better uptime during movement windows, fewer Vines hits taken</div>
+</div>
+
+<div class="action-item">
+  <h4>5. More Counterspell Usage on Poison Burst</h4>
+  <p>Only 1 Counterspell was used vs reference's 3. Poison Burst from Sporecaps is an interruptible cast (358K damage taken from 3 uninterrupted casts). Contribute more interrupts to reduce raid-wide damage and demonstrate mechanic awareness.</p>
+  <div class="action-impact">Impact: ~360K less raid damage taken, mechanic execution improvement</div>
+</div>
+
+<!-- Context Footer -->
+<h2>Summary Verdict</h2>
+
+<div class="callout callout-warn" style="font-size:14px;">
+  <strong>The 29.4% DPS gap (142K vs 202K) is primarily talent-driven, not execution-driven.</strong>
+  <ul style="margin-top:8px;list-style:disc;margin-left:20px;line-height:1.8;">
+    <li>Rotational CPM is nearly identical (42.8 vs 42.9) -- Baodabao is pressing buttons at the same rate</li>
+    <li>Mechanic handling is excellent -- only 1 of 18 windows flagged, Bloom windows are actually better than reference</li>
+    <li>Cast gap patterns are structurally identical -- both players have the same Frost Mage cadence</li>
+    <li>The talent build accounts for ~57% of the damage gap (Splintering Ray, Frozen Orb enhancement, Controlled Instincts)</li>
+    <li>Lower Flurry usage (44 vs 54) accounts for much of the remaining gap via fewer Shatter combos</li>
+    <li>Despite having an Aug Evoker that the reference did not have, the damage is still 29% lower</li>
+    <li>Survived the kill cleanly. Improved from 87K (fight 2, died to Vines) to 138K on the kill</li>
+  </ul>
+</div>
+
+<div class="callout callout-good">
+  <strong>What's already good:</strong>
+  <ul style="margin-top:8px;list-style:disc;margin-left:20px;line-height:1.8;">
+    <li>Rotational activity rate matches a top-5 ranked player</li>
+    <li>Frozen Orb usage on cooldown (12 casts, equal to reference)</li>
+    <li>Ray of Frost usage on cooldown (12 casts each)</li>
+    <li>Glacial Spike and Ice Lance usage are strong</li>
+    <li>Mechanic handling is clean -- no uptime loss during Blooms, consistent through adds</li>
+    <li>Survived the kill with 0 deaths</li>
+    <li>Clear improvement trend across the night (87K -> 138K)</li>
+  </ul>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL Analyzer | Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs report Hz1Lm672dZnBw9YC</a></p>
+  <p>Primary reference: Qlaithee (Twisting Nether) | 201,743 DPS | Kill time 7:36 | Report <a href="https://www.warcraftlogs.com/reports/3RVaQJBtn7fp2YCw#fight=3" target="_blank">3RVaQJBtn7fp2YCw</a></p>
+  <p>Analysis performed June 25, 2026 | Patch 12.0.7 | Frost Mage (Spellslinger)</p>
+</div>
+
+</body>
+</html>

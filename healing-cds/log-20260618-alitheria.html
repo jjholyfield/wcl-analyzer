@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alitheria (Ret Paladin) — Crown of the Cosmos Prog Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --paladin: #f48cba;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--paladin); }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-prog { background: rgba(210, 153, 34, 0.2); color: var(--yellow); border: 1px solid rgba(210, 153, 34, 0.3); }
+.tag-red { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .note { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88, 166, 255, 0.05); }
+
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 200px; padding-top: 20px; position: relative; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; min-width: 20px; border-radius: 4px 4px 0 0; position: relative; transition: opacity 0.2s; cursor: default; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; text-align: center; writing-mode: vertical-rl; transform: rotate(180deg); height: 45px; }
+.bar-value { font-size: 9px; color: var(--text); text-align: center; margin-bottom: 2px; font-weight: 600; }
+.bar-survived { background: linear-gradient(180deg, var(--green), #1a6b2a); }
+.bar-died { background: linear-gradient(180deg, var(--red), #8b2020); }
+.bar-short { background: linear-gradient(180deg, var(--dim), #555); }
+.avg-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--yellow); z-index: 1; }
+.avg-label { position: absolute; right: 0; color: var(--yellow); font-size: 10px; font-weight: 600; transform: translateY(-14px); }
+
+.callout { background: var(--surface); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 16px; }
+.callout.warning { border-left-color: var(--orange); }
+.callout.info { border-left-color: var(--accent); }
+.callout.green { border-left-color: var(--green); }
+.callout .callout-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.callout .callout-body { font-size: 13px; color: var(--dim); }
+
+.phase-bar { display: flex; border-radius: 6px; overflow: hidden; height: 28px; margin: 8px 0; }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--text); }
+
+.death-row { color: var(--red); }
+.highlight { color: var(--yellow); font-weight: 600; }
+
+.ref-table td:first-child { color: var(--purple); }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.badge-orange { background: rgba(219, 109, 40, 0.2); color: var(--orange); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat-box { background: rgba(22, 27, 34, 0.8); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
+.stat-box .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-box .stat-value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.inline-bar { display: inline-block; height: 8px; border-radius: 4px; vertical-align: middle; }
+
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: 1fr; }
+  body { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18 Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Alitheria</span> &mdash; Retribution Paladin</h1>
+  <div class="subtitle">
+    <span class="tag tag-prog">PROGRESSION</span>
+    Crown of the Cosmos (Mythic) &middot; June 18, 2026 &middot; 9 pulls (joined late) &middot; Best: 37.12%
+    &middot; <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">WCL Report</a>
+  </div>
+</div>
+
+<!-- ===== SUMMARY CARDS ===== -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS</div>
+    <div class="value">25,888</div>
+    <div class="note">Across 9 pulls (&gt;60s)</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">290</div>
+    <div class="note">Ret Paladin &middot; Area 52</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color: var(--red)">0 / 9</div>
+    <div class="note">Died in every pull</div>
+  </div>
+  <div class="card">
+    <div class="label">Best Pull</div>
+    <div class="value" style="color: var(--green)">45,692</div>
+    <div class="note">Fight 20 &middot; 5:23 &middot; 37.12%</div>
+  </div>
+</div>
+
+<!-- ===== PERFORMANCE ACROSS ALL PULLS ===== -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Alitheria joined for pulls 15&ndash;28 (9 of 27 total raid pulls). All bars red because she died in every single pull.
+    Avg: 25,888 DPS &middot; Median: 25,924 &middot; Std Dev: 10,354 &middot; Range: 36,257
+  </p>
+
+  <div class="chart-container">
+    <div class="bar-chart" style="position: relative;">
+      <!-- avg line at 25888 / max 45692 = 56.6% -->
+      <div class="avg-line" style="bottom: 56.6%;">
+        <span class="avg-label">Avg 25.9K</span>
+      </div>
+      <!-- Fight 15: 25924 DPS, died -->
+      <div class="bar-wrapper">
+        <div class="bar-value">25.9K</div>
+        <div class="bar bar-died" style="height: 56.7%;" title="Fight 15: 25,924 DPS (4:52, boss 45.69%) - Died 4:00 to Grasp of Emptiness"></div>
+        <div class="bar-label">F15</div>
+      </div>
+      <!-- Fight 16: 31535 DPS, died -->
+      <div class="bar-wrapper">
+        <div class="bar-value">31.5K</div>
+        <div class="bar bar-died" style="height: 69.0%;" title="Fight 16: 31,535 DPS (5:03, boss 43.43%) - Died 4:27 to Grasp of Emptiness"></div>
+        <div class="bar-label">F16</div>
+      </div>
+      <!-- Fight 18: 31395 DPS, died -->
+      <div class="bar-wrapper">
+        <div class="bar-value">31.4K</div>
+        <div class="bar bar-died" style="height: 68.7%;" title="Fight 18: 31,395 DPS (5:56, boss 38.52%) - Died 0:14 to Bursting Emptiness (battle-rezzed, died again 4:32)"></div>
+        <div class="bar-label">F18</div>
+      </div>
+      <!-- Fight 20: 45692 DPS, died - BEST -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--green)">45.7K</div>
+        <div class="bar bar-died" style="height: 100%; border: 1px solid var(--green);" title="Fight 20: 45,692 DPS (5:23, boss 37.12%) - BEST PULL - Died 5:07 to Simulacrum Backlash"></div>
+        <div class="bar-label">F20</div>
+      </div>
+      <!-- Fight 21: 9435 DPS, died -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red)">9.4K</div>
+        <div class="bar bar-died" style="height: 20.6%;" title="Fight 21: 9,435 DPS (4:49, boss 43.12%) - Died 0:40 to Void Remnants (battle-rezzed, died again 4:07)"></div>
+        <div class="bar-label">F21</div>
+      </div>
+      <!-- Fight 22: 14646 DPS, died -->
+      <div class="bar-wrapper">
+        <div class="bar-value">14.6K</div>
+        <div class="bar bar-died" style="height: 32.1%;" title="Fight 22: 14,646 DPS (4:13, boss 50.46%) - Died 3:35 to Bursting Emptiness"></div>
+        <div class="bar-label">F22</div>
+      </div>
+      <!-- Fight 24: 20137 DPS, died -->
+      <div class="bar-wrapper">
+        <div class="bar-value">20.1K</div>
+        <div class="bar bar-died" style="height: 44.1%;" title="Fight 24: 20,137 DPS (4:44, boss 41.61%) - Died 4:36 to Simulacrum Backlash"></div>
+        <div class="bar-label">F24</div>
+      </div>
+      <!-- Fight 27: 33333 DPS, died -->
+      <div class="bar-wrapper">
+        <div class="bar-value">33.3K</div>
+        <div class="bar bar-died" style="height: 73.0%;" title="Fight 27: 33,333 DPS (6:01, boss 31.27%) - Died 5:13 to Dimensional Slash"></div>
+        <div class="bar-label">F27</div>
+      </div>
+      <!-- Fight 28: 20898 DPS, died -->
+      <div class="bar-wrapper">
+        <div class="bar-value">20.9K</div>
+        <div class="bar bar-died" style="height: 45.7%;" title="Fight 28: 20,898 DPS (5:43, boss 36.59%) - Died 4:07 to Grasp of Emptiness"></div>
+        <div class="bar-label">F28</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 11px; color: var(--dim);">
+      <span><span class="inline-bar bar-died" style="width: 12px;"></span> Died before wipe</span>
+      <span style="color: var(--yellow);">--- Avg DPS (25.9K)</span>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-label">Best Pull</div>
+      <div class="stat-value" style="color: var(--green);">45,692</div>
+      <div style="font-size: 11px; color: var(--dim);">Fight 20 (5:23, 37.12%)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Worst Pull</div>
+      <div class="stat-value" style="color: var(--red);">9,435</div>
+      <div style="font-size: 11px; color: var(--dim);">Fight 21 (died at 0:40)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Consistency</div>
+      <div class="stat-value" style="color: var(--orange);">High Variance</div>
+      <div style="font-size: 11px; color: var(--dim);">Std Dev: 10,354 (40% of avg)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DEATH PATTERN ANALYSIS ===== -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout">
+    <div class="callout-title" style="color: var(--red);">Died in 9/9 pulls &mdash; 0% survival rate</div>
+    <div class="callout-body">
+      11 total deaths across 9 pulls (2 pulls had battle-rezzes leading to second deaths). Average first death time: 3:31 into the fight.
+      The three repeat killers are <strong>Grasp of Emptiness</strong>, <strong>Simulacrum Backlash</strong>, and <strong>Bursting Emptiness</strong> (3 deaths each).
+    </div>
+  </div>
+
+  <h3>Death Causes Ranked</h3>
+  <table>
+    <thead>
+      <tr><th>Killing Ability</th><th>Deaths</th><th>Phase</th><th>Avg Time</th><th>Fight IDs</th><th>Avoidable?</th></tr>
+    </thead>
+    <tbody>
+      <tr class="death-row">
+        <td><strong>Grasp of Emptiness</strong></td>
+        <td>3</td>
+        <td><span class="badge badge-orange">P2</span></td>
+        <td>4:11</td>
+        <td>15, 16, 28</td>
+        <td><span class="badge badge-yellow">Partially</span></td>
+      </tr>
+      <tr class="death-row">
+        <td><strong>Simulacrum Backlash</strong></td>
+        <td>3</td>
+        <td><span class="badge badge-orange">P2</span></td>
+        <td>4:37</td>
+        <td>20, 21, 24</td>
+        <td><span class="badge badge-red">Yes</span></td>
+      </tr>
+      <tr class="death-row">
+        <td><strong>Bursting Emptiness</strong></td>
+        <td>3</td>
+        <td><span class="badge badge-orange">P1/P2</span></td>
+        <td>2:47</td>
+        <td>18 (x2), 22</td>
+        <td><span class="badge badge-yellow">Partially</span></td>
+      </tr>
+      <tr class="death-row">
+        <td>Void Remnants</td>
+        <td>1</td>
+        <td><span class="badge badge-green">P1</span></td>
+        <td>0:40</td>
+        <td>21</td>
+        <td><span class="badge badge-red">Yes</span></td>
+      </tr>
+      <tr class="death-row">
+        <td>Dimensional Slash</td>
+        <td>1</td>
+        <td><span class="badge badge-red">P3</span></td>
+        <td>5:13</td>
+        <td>27</td>
+        <td><span class="badge badge-red">Yes</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 16px;"></div>
+
+  <div class="callout warning">
+    <div class="callout-title" style="color: var(--orange);">Repeat Mechanic: Grasp of Emptiness (3 deaths)</div>
+    <div class="callout-body">
+      Grasp of Emptiness applies a grip/pull mechanic in P2. All 3 deaths occurred between 4:00&ndash;4:27, which is ~60&ndash;90s into Phase 2.
+      This is a consistent positional failure. Alitheria needs to pre-position or save Divine Shield/Divine Protection for this window.
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-title" style="color: var(--orange);">Repeat Mechanic: Simulacrum Backlash (3 deaths)</div>
+    <div class="callout-body">
+      Simulacrum Backlash comes from the Rift Simulacrum add in P2. Deaths at 4:07, 4:36, and 5:07. This is avoidable damage from standing too close to the Simulacrum or failing to move out of its backlash zone. Use Divine Shield or kite if targeted.
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-title" style="color: var(--orange);">Repeat Mechanic: Bursting Emptiness (3 deaths)</div>
+    <div class="callout-body">
+      Bursting Emptiness is a void detonation. One death at 0:14 in P1 (Fight 18) suggests being caught in the wrong position at pull.
+      The other two deaths at 3:35 and 4:32 are in P2. Use a personal defensive (Divine Protection) before the burst goes off.
+    </div>
+  </div>
+
+  <h3>Death Timing Pattern</h3>
+  <div class="chart-container" style="padding: 16px;">
+    <div style="position: relative; height: 30px; background: var(--bg); border-radius: 4px; margin-bottom: 8px;">
+      <!-- Phase markers -->
+      <div style="position: absolute; left: 0; width: 36.8%; height: 100%; background: rgba(63, 185, 80, 0.1); border-right: 1px dashed var(--dim);"></div>
+      <div style="position: absolute; left: 36.8%; width: 10.7%; height: 100%; background: rgba(210, 153, 34, 0.1); border-right: 1px dashed var(--dim);"></div>
+      <div style="position: absolute; left: 47.5%; width: 37.4%; height: 100%; background: rgba(248, 81, 73, 0.1); border-right: 1px dashed var(--dim);"></div>
+      <div style="position: absolute; left: 84.9%; width: 15.1%; height: 100%; background: rgba(188, 140, 255, 0.1);"></div>
+      <!-- Phase labels -->
+      <div style="position: absolute; left: 10%; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--green);">P1</div>
+      <div style="position: absolute; left: 40%; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--yellow);">Int</div>
+      <div style="position: absolute; left: 62%; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--red);">P2</div>
+      <div style="position: absolute; left: 90%; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--purple);">P3</div>
+      <!-- Death markers (scaled to 364s max) -->
+      <!-- F18: 0:14 = 14s = 3.8% -->
+      <div style="position: absolute; left: 3.8%; top: -2px; font-size: 14px; cursor: default;" title="F18: 0:14 Bursting Emptiness">&#128128;</div>
+      <!-- F21: 0:40 = 40s = 11% -->
+      <div style="position: absolute; left: 11%; top: -2px; font-size: 14px; cursor: default;" title="F21: 0:40 Void Remnants">&#128128;</div>
+      <!-- F22: 3:35 = 215s = 59% -->
+      <div style="position: absolute; left: 59%; top: -2px; font-size: 14px; cursor: default;" title="F22: 3:35 Bursting Emptiness">&#128128;</div>
+      <!-- F15: 4:00 = 240s = 65.9% -->
+      <div style="position: absolute; left: 65.9%; top: -2px; font-size: 14px; cursor: default;" title="F15: 4:00 Grasp of Emptiness">&#128128;</div>
+      <!-- F28: 4:07 = 247s = 67.9% -->
+      <div style="position: absolute; left: 67.9%; top: -2px; font-size: 14px; cursor: default;" title="F28: 4:07 Grasp of Emptiness">&#128128;</div>
+      <!-- F21: 4:07 = 247s = 67.9% (second death after brez) -->
+      <!-- F16: 4:27 = 267s = 73.4% -->
+      <div style="position: absolute; left: 73.4%; top: -2px; font-size: 14px; cursor: default;" title="F16: 4:27 Grasp of Emptiness">&#128128;</div>
+      <!-- F18: 4:32 = 272s = 74.7% (second death after brez) -->
+      <div style="position: absolute; left: 74.7%; top: -2px; font-size: 14px; cursor: default;" title="F18: 4:32 Bursting Emptiness (after brez)">&#128128;</div>
+      <!-- F24: 4:36 = 276s = 75.8% -->
+      <div style="position: absolute; left: 75.8%; top: -2px; font-size: 14px; cursor: default;" title="F24: 4:36 Simulacrum Backlash">&#128128;</div>
+      <!-- F20: 5:07 = 308s = 84.6% -->
+      <div style="position: absolute; left: 84.6%; top: -2px; font-size: 14px; cursor: default;" title="F20: 5:07 Simulacrum Backlash">&#128128;</div>
+      <!-- F27: 5:13 = 314s = 86.3% -->
+      <div style="position: absolute; left: 86.3%; top: -2px; font-size: 14px; cursor: default;" title="F27: 5:13 Dimensional Slash">&#128128;</div>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--dim);">
+      <span>0:00</span><span>1:00</span><span>2:14 (P1 end)</span><span>2:53 (P2 start)</span><span>4:00</span><span>5:09 (P3)</span><span>6:00</span>
+    </div>
+    <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+      9 of 11 deaths cluster in P2 (3:35&ndash;5:07). Only 2 deaths in P1 (both very early &mdash; 0:14 and 0:40).
+      The P2 death wall is the primary progression blocker for this player.
+    </p>
+  </div>
+</div>
+
+<!-- ===== PER-PHASE PERFORMANCE BREAKDOWN ===== -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    This is the most important section. DPS calculated from damage events proportioned against WCL table totals. Phase timings are fixed: P1 ends at 2:14, Intermission 2:14&ndash;2:53, P2 starts at 2:53, P3 at ~5:09.
+  </p>
+
+  <h3>Phase Reach Rate</h3>
+  <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px;">
+      <span style="color: var(--green); font-weight: 600;">P1: Sentinels</span>
+      <span style="margin-left: 8px;">9/9 <span class="badge badge-green">100%</span></span>
+    </div>
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px;">
+      <span style="color: var(--yellow); font-weight: 600;">Intermission</span>
+      <span style="margin-left: 8px;">7/9 alive <span class="badge badge-yellow">78%</span></span>
+    </div>
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px;">
+      <span style="color: var(--orange); font-weight: 600;">P2: Rift</span>
+      <span style="margin-left: 8px;">7/9 alive <span class="badge badge-yellow">78%</span></span>
+    </div>
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px;">
+      <span style="color: var(--purple); font-weight: 600;">P3: Cosmos</span>
+      <span style="margin-left: 8px;">1/9 alive <span class="badge badge-red">11%</span></span>
+    </div>
+  </div>
+
+  <h3>Per-Phase DPS (All Pulls)</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Pulls Alive</th><th>Avg DPS</th><th>Best DPS</th><th>Deaths</th><th>Primary Death Cause</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color: var(--green); font-weight: 600;">P1: Sentinels (0:00&ndash;2:14)</td>
+        <td>9/9</td>
+        <td>45,328</td>
+        <td>80,421 <span style="font-size: 11px; color: var(--dim);">(F20)</span></td>
+        <td>2</td>
+        <td>Bursting Emptiness, Void Remnants</td>
+      </tr>
+      <tr>
+        <td style="color: var(--yellow); font-weight: 600;">Intermission (2:14&ndash;2:53)</td>
+        <td>7/9</td>
+        <td colspan="2" style="color: var(--dim);">No targets (survival phase)</td>
+        <td>0</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td style="color: var(--orange); font-weight: 600;">P2: Rift (2:53&ndash;5:09)</td>
+        <td>7/9</td>
+        <td>16,495</td>
+        <td>29,195 <span style="font-size: 11px; color: var(--dim);">(F20)</span></td>
+        <td>8</td>
+        <td>Grasp (3), Backlash (3), Burst (2)</td>
+      </tr>
+      <tr>
+        <td style="color: var(--purple); font-weight: 600;">P3: Cosmos (5:09+)</td>
+        <td>1/9</td>
+        <td style="color: var(--dim);">~0</td>
+        <td style="color: var(--dim);">~0</td>
+        <td>1</td>
+        <td>Dimensional Slash</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 16px;"></div>
+
+  <div class="callout">
+    <div class="callout-title" style="color: var(--red);">Critical Finding: P2 is the death wall</div>
+    <div class="callout-body">
+      <strong>8 of 11 deaths occur in Phase 2.</strong> Average P2 DPS drops to 16.5K (36% of P1 avg), partially because Alitheria keeps dying mid-phase. Even on the best pull (F20), P2 DPS (29.2K) is only 36% of P1 DPS (80.4K). This is a combination of: (1) dying to P2 mechanics, (2) reduced uptime from mechanic handling, and (3) possible unfamiliarity with the phase.
+      <br><br>
+      Only 1 of 9 pulls had Alitheria alive entering P3, and even then they died immediately (5:13 to Dimensional Slash).
+    </div>
+  </div>
+
+  <h3>Per-Fight Phase Breakdown</h3>
+  <table style="font-size: 12px;">
+    <thead>
+      <tr><th>Fight</th><th>Duration</th><th>Boss %</th><th>Overall DPS</th><th>P1 DPS</th><th>P2 DPS</th><th>Death</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>F15</td><td>4:52</td><td>45.69%</td><td>25,924</td>
+        <td style="color: var(--green);">44,877</td>
+        <td style="color: var(--orange);">13,125</td>
+        <td style="color: var(--red);">4:00 Grasp of Emptiness</td>
+      </tr>
+      <tr>
+        <td>F16</td><td>5:03</td><td>43.43%</td><td>31,535</td>
+        <td style="color: var(--green);">51,797</td>
+        <td style="color: var(--orange);">20,141</td>
+        <td style="color: var(--red);">4:27 Grasp of Emptiness</td>
+      </tr>
+      <tr>
+        <td>F18</td><td>5:56</td><td>38.52%</td><td>31,395</td>
+        <td style="color: var(--yellow);">48,029</td>
+        <td style="color: var(--orange);">34,772</td>
+        <td style="color: var(--red);">0:14 Bursting Emptiness (brez'd, died again 4:32)</td>
+      </tr>
+      <tr style="background: rgba(63, 185, 80, 0.05);">
+        <td><strong>F20</strong></td><td>5:23</td><td>37.12%</td><td style="color: var(--green);"><strong>45,692</strong></td>
+        <td style="color: var(--green);">80,421</td>
+        <td style="color: var(--green);">29,195</td>
+        <td style="color: var(--red);">5:07 Simulacrum Backlash</td>
+      </tr>
+      <tr>
+        <td>F21</td><td>4:49</td><td>43.12%</td><td style="color: var(--red);">9,435</td>
+        <td style="color: var(--red);">18,689</td>
+        <td style="color: var(--red);">1,924</td>
+        <td style="color: var(--red);">0:40 Void Remnants (brez'd, died again 4:07)</td>
+      </tr>
+      <tr>
+        <td>F22</td><td>4:13</td><td>50.46%</td><td>14,646</td>
+        <td style="color: var(--green);">25,158</td>
+        <td style="color: var(--red);">4,193</td>
+        <td style="color: var(--red);">3:35 Bursting Emptiness</td>
+      </tr>
+      <tr>
+        <td>F24</td><td>4:44</td><td>41.61%</td><td>20,137</td>
+        <td style="color: var(--yellow);">31,520</td>
+        <td style="color: var(--orange);">13,481</td>
+        <td style="color: var(--red);">4:36 Simulacrum Backlash</td>
+      </tr>
+      <tr>
+        <td><strong>F27</strong></td><td>6:01</td><td>31.27%</td><td style="color: var(--green);">33,333</td>
+        <td style="color: var(--green);">64,899</td>
+        <td style="color: var(--green);">24,491</td>
+        <td style="color: var(--red);">5:13 Dimensional Slash (P3)</td>
+      </tr>
+      <tr>
+        <td>F28</td><td>5:43</td><td>36.59%</td><td>20,898</td>
+        <td style="color: var(--green);">42,558</td>
+        <td style="color: var(--red);">10,837</td>
+        <td style="color: var(--red);">4:07 Grasp of Emptiness</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info" style="margin-top: 16px;">
+    <div class="callout-title" style="color: var(--accent);">Phase Insight: P1 is strong, P2 collapses</div>
+    <div class="callout-body">
+      P1 average DPS of 45.3K is solid and consistent &mdash; Alitheria understands the Sentinels phase and handles the adds/mechanics well (best pull P1: 80.4K on F20).
+      But P2 DPS averages only 16.5K &mdash; a <strong>64% drop</strong> from P1. Even the best P2 (29.2K on F20) is 64% below the best P1.
+      This is not a rotation issue &mdash; it is a <strong>survival issue</strong>. Alitheria dies in P2 on 8 of 9 pulls, which zeroes out their damage contribution.
+    </div>
+  </div>
+</div>
+
+<!-- ===== ROTATION PROFILE ===== -->
+<div class="section">
+  <h2>Rotation Profile (Best Pull &mdash; Fight 20)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Fight 20 was Alitheria's best pull (45,692 DPS, survived to 5:07). This shows their rotation when they stay alive long enough to execute.
+    Ret Paladin rotation: Generate Holy Power with Blade of Justice, Crusading Strikes, Judgment, Hammer of Wrath &rarr; Spend with Final Verdict (ST) / Divine Storm (AoE) &rarr; Cooldowns: Avenging Wrath, Execution Sentence, Wake of Ashes, Divine Toll.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Casts</th><th>CPM</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Crusading Strikes</td><td>112</td><td>20.8</td><td>HP Generator (auto-attack replacement)</td></tr>
+      <tr><td>Divine Hammer</td><td>76</td><td>14.1</td><td>Passive AoE proc</td></tr>
+      <tr><td>Final Verdict</td><td>68</td><td>12.6</td><td><strong>Primary HP Spender (ST)</strong></td></tr>
+      <tr><td>Empyrean Hammer</td><td>63</td><td>11.7</td><td>Templar hero talent proc</td></tr>
+      <tr><td>Blade of Justice</td><td>31</td><td>5.8</td><td>HP Generator (key cooldown)</td></tr>
+      <tr><td>Hammer of Wrath</td><td>29</td><td>5.4</td><td>HP Generator (execute / AW)</td></tr>
+      <tr><td>Judgment</td><td>23</td><td>4.3</td><td>HP Generator + debuff</td></tr>
+      <tr><td>Hammer of Light</td><td>13</td><td>2.4</td><td>Templar hero finisher</td></tr>
+      <tr><td>Wake of Ashes</td><td>8</td><td>1.5</td><td>AoE HP generator cooldown</td></tr>
+      <tr><td>Divine Toll</td><td>8</td><td>1.5</td><td>Multi-target Judgment</td></tr>
+      <tr><td>Sacrosanct Crusade</td><td>6</td><td>1.1</td><td>Talent proc</td></tr>
+      <tr><td>Avenging Wrath</td><td>5</td><td>0.9</td><td><strong>Major CD (2 min)</strong></td></tr>
+      <tr><td>Execution Sentence</td><td>5</td><td>0.9</td><td><strong>Burst window CD</strong></td></tr>
+      <tr><td>Divine Storm</td><td>3</td><td>0.6</td><td>AoE HP Spender</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 12px; font-size: 13px; color: var(--dim);">
+    <strong>Total rotational CPM: 86.0</strong> (463 casts in 5:23). This is healthy activity for a Ret Paladin.
+    5 Avenging Wrath uses in 5:07 is strong (roughly on cooldown).
+    Fight 27 (second best, 33.3K DPS) had <strong>68.8 CPM</strong> &mdash; the 20% CPM drop correlates directly with more time spent dead or recovering from mechanics.
+  </div>
+</div>
+
+<!-- ===== DAMAGE TAKEN ANALYSIS ===== -->
+<div class="section">
+  <h2>Damage Taken Analysis (All 9 Pulls)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Aggregated across all 9 pulls Alitheria was present in. This shows what is hitting her hardest and correlates with the death causes above.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Total Damage</th><th>Fights Hit</th><th>Category</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Echoing Darkness</strong></td>
+        <td>25.4M</td><td>9/9</td>
+        <td><span class="badge badge-green">Unavoidable</span> Periodic AoE (Vorelus)</td>
+      </tr>
+      <tr>
+        <td><strong>Voidstalker Sting</strong></td>
+        <td>13.9M</td><td>9/9</td>
+        <td><span class="badge badge-yellow">Partially</span> P2 paired DoT</td>
+      </tr>
+      <tr>
+        <td><strong>Simulacrum Backlash</strong></td>
+        <td>13.3M</td><td>9/9</td>
+        <td><span class="badge badge-red">Avoidable</span> Move from Simulacrum</td>
+      </tr>
+      <tr>
+        <td><strong>Void Expulsion</strong></td>
+        <td>9.4M</td><td>9/9</td>
+        <td><span class="badge badge-yellow">Partially</span> Soak correctly</td>
+      </tr>
+      <tr>
+        <td><strong>Grasp of Emptiness</strong></td>
+        <td>8.5M</td><td>8/9</td>
+        <td><span class="badge badge-yellow">Partially</span> Position + personal CD</td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td>4.8M</td><td>9/9</td>
+        <td><span class="badge badge-green">Unavoidable</span> Raid AoE</td>
+      </tr>
+      <tr>
+        <td>Falling</td>
+        <td>3.4M</td><td>9/9</td>
+        <td><span class="badge badge-green">Unavoidable</span> Intermission transition</td>
+      </tr>
+      <tr>
+        <td>Stellar Emission</td>
+        <td>3.3M</td><td>9/9</td>
+        <td><span class="badge badge-green">Unavoidable</span> Intermission channel</td>
+      </tr>
+      <tr>
+        <td>Corrupting Essence</td>
+        <td>3.2M</td><td>7/9</td>
+        <td><span class="badge badge-yellow">Partially</span> Dispel/move</td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td>2.8M</td><td>9/9</td>
+        <td><span class="badge badge-green">Unavoidable</span> Raid AoE</td>
+      </tr>
+      <tr>
+        <td><strong>Bursting Emptiness</strong></td>
+        <td>2.7M</td><td>4/9</td>
+        <td><span class="badge badge-red">Avoidable</span> Void detonation zone</td>
+      </tr>
+      <tr>
+        <td>Void Remnants</td>
+        <td>1.6M</td><td>3/9</td>
+        <td><span class="badge badge-red">Avoidable</span> Ground swirlies</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info" style="margin-top: 16px;">
+    <div class="callout-title" style="color: var(--accent);">Key Takeaway: Avoidable damage is the problem</div>
+    <div class="callout-body">
+      The top 3 damage sources are a mix of unavoidable (Echoing Darkness) and avoidable (Simulacrum Backlash at 13.3M, Bursting Emptiness at 2.7M, Void Remnants at 1.6M).
+      <strong>Simulacrum Backlash alone</strong> accounts for 13.3M damage across 9 pulls and 3 direct kills. Reducing this one mechanic would be the single highest-impact improvement.
+    </div>
+  </div>
+</div>
+
+<!-- ===== DEFENSIVE USAGE ===== -->
+<div class="section">
+  <h2>Defensive &amp; Utility Usage</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Fight 20 (Best)</th><th>Fight 27 (2nd Best)</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Divine Shield</td>
+        <td>1 use (4:55)</td>
+        <td>1 use (2:47)</td>
+        <td>F20: used very late, died 12s later to Simulacrum Backlash. F27: used during intermission.</td>
+      </tr>
+      <tr>
+        <td>Divine Protection</td>
+        <td>3 uses (0:27, 2:01, 4:43)</td>
+        <td>2 uses (0:16, 4:37)</td>
+        <td>Good usage count on F20. F27 missed a use &mdash; could have had 3.</td>
+      </tr>
+      <tr>
+        <td>Shield of Vengeance</td>
+        <td>Used (P1)</td>
+        <td>&mdash;</td>
+        <td>Absorb + damage reflect. Should be used on CD for survivability.</td>
+      </tr>
+      <tr>
+        <td>Lay on Hands</td>
+        <td>1 use (4:55)</td>
+        <td>1 use (0:44)</td>
+        <td>Emergency self-heal. F20: used at the very end alongside Divine Shield &mdash; too late.</td>
+      </tr>
+      <tr>
+        <td>Healthstone</td>
+        <td>1 use (0:28)</td>
+        <td>1 use (4:38)</td>
+        <td>Good &mdash; using health pot/stone in both best pulls.</td>
+      </tr>
+      <tr>
+        <td>Word of Glory</td>
+        <td>1 use (3:18)</td>
+        <td>&mdash;</td>
+        <td>Self-heal spender. Using HP on WoG hurts DPS but can save your life in critical moments.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning" style="margin-top: 16px;">
+    <div class="callout-title" style="color: var(--orange);">Defensive Timing Issue</div>
+    <div class="callout-body">
+      In Fight 20 (best pull), both Divine Shield and Lay on Hands were used at 4:55 &mdash; a panic reaction 12 seconds before dying to Simulacrum Backlash at 5:07.
+      <strong>Recommendation:</strong> Pre-plan Divine Shield for Grasp of Emptiness windows (the most common killer at ~4:00&ndash;4:30 into the fight) rather than panic-casting it when already low.
+      Divine Protection should be used proactively before known damage events, not reactively after damage has landed.
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXTERNAL BUFFS ===== -->
+<div class="section">
+  <h2>External Buffs (Fight 20)</h2>
+  <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+    <div class="card" style="flex: 1; min-width: 200px;">
+      <div class="label">Heroism</div>
+      <div class="value" style="font-size: 18px;">2:56</div>
+      <div class="note">Start of P2 &mdash; good alignment with burst window</div>
+    </div>
+    <div class="card" style="flex: 1; min-width: 200px;">
+      <div class="label">Augmentation Evoker</div>
+      <div class="value" style="font-size: 18px;">7x Ebon Might</div>
+      <div class="note">Good uptime &mdash; Prescience at 0:01 and 4:41</div>
+    </div>
+    <div class="card" style="flex: 1; min-width: 200px;">
+      <div class="label">Power Infusion</div>
+      <div class="value" style="font-size: 18px; color: var(--dim);">None</div>
+      <div class="note">No PI received (PI likely went to a Mage or Lock)</div>
+    </div>
+    <div class="card" style="flex: 1; min-width: 200px;">
+      <div class="label">Consumables</div>
+      <div class="value" style="font-size: 18px;">Trinket + Stone</div>
+      <div class="note">Algeth'ar Puzzle at 1.5s (pre-pot), Healthstone at 28s</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REFERENCE CONTEXT ===== -->
+<div class="section">
+  <h2>Reference Context (De-emphasized)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Top Ret Paladin kills on Crown of the Cosmos for context. This is a ceiling to aim for once survival is consistent, not a direct comparison during prog.
+  </p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Rank</th><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td style="color: var(--purple);">&#26411;&#19998;&#27931; (&#21476;&#36798;&#20811;-CN)</td>
+        <td>106,901</td>
+        <td>8:33</td>
+        <td>289</td>
+        <td><span class="badge badge-yellow">9 diffs</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td style="color: var(--purple);">&#20844;&#20180;&#21521;&#26085;&#33909; (&#32599;&#23425;-CN)</td>
+        <td>99,486</td>
+        <td>8:04</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr style="background: rgba(188, 140, 255, 0.05);">
+        <td>3</td>
+        <td style="color: var(--purple);"><strong>Bilaevropa</strong> (Drak'thul-EU)</td>
+        <td>99,193</td>
+        <td>8:16</td>
+        <td>290</td>
+        <td><span class="badge badge-yellow">8 diffs</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td style="color: var(--purple);">Artia (Tarren Mill-EU)</td>
+        <td>97,713</td>
+        <td>7:36</td>
+        <td>274</td>
+        <td><span class="badge badge-red">35 diffs</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td style="color: var(--purple);">Jery (Archimonde-EU)</td>
+        <td>94,135</td>
+        <td>8:58</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr style="border-top: 2px solid var(--border);">
+        <td>&mdash;</td>
+        <td style="color: var(--paladin);"><strong>Alitheria</strong></td>
+        <td><strong>45,692</strong> (best)</td>
+        <td>5:23 (wipe)</td>
+        <td>290</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 12px; font-size: 13px; color: var(--dim);">
+    Alitheria's best pull (45.7K) is <strong>46% of the top-ranked reference</strong> (99.2K, Bilaevropa at same ilvl). However, this comparison is misleading during prog: reference players completed the full 8+ minute fight without dying, while Alitheria's best pull ended at 5:07 due to death. The DPS gap is primarily a <strong>survival gap</strong>, not a rotation gap.
+    With 8 talent differences vs. Bilaevropa, the build is reasonably similar. On pulls where Alitheria stayed alive through P1 (the phase with longest uptime), P1 DPS was competitive.
+  </div>
+</div>
+
+<!-- ===== CONSISTENCY ANALYSIS ===== -->
+<div class="section">
+  <h2>Consistency Analysis</h2>
+
+  <div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-label">Survival DPS vs Death DPS</div>
+      <div class="stat-value" style="color: var(--dim);">N/A</div>
+      <div style="font-size: 11px; color: var(--dim);">Died in all 9 pulls &mdash; no survival baseline</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Early Session (F15-F21)</div>
+      <div class="stat-value">28,796</div>
+      <div style="font-size: 11px; color: var(--dim);">First 5 pulls avg</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Late Session (F22-F28)</div>
+      <div class="stat-value" style="color: var(--orange);">22,254</div>
+      <div style="font-size: 11px; color: var(--dim);">Last 4 pulls avg (&darr;23%)</div>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-title" style="color: var(--orange);">Session Trend: Declining</div>
+    <div class="callout-body">
+      Average DPS dropped 23% from the first half (28.8K) to the second half (22.3K) of the session. The best pull (F20, 45.7K) was pull 4 of 9. After that, DPS trended downward &mdash; possibly due to fatigue, tilt from repeated deaths, or the raid progressing into harder pull compositions.
+      <br><br>
+      The exception is Fight 27 (33.3K), which was a strong late pull where Alitheria survived to P3 for the only time all night. This suggests the potential is there when mechanics are handled.
+    </div>
+  </div>
+
+  <h3>Best 3 vs Worst 3 Pulls</h3>
+  <table>
+    <thead>
+      <tr><th>Category</th><th>Pulls</th><th>Avg DPS</th><th>Avg Death Time</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color: var(--green);">Best 3</td>
+        <td>F20 (45.7K), F27 (33.3K), F16 (31.5K)</td>
+        <td style="color: var(--green);">36,853</td>
+        <td>4:34 (survived longer)</td>
+      </tr>
+      <tr>
+        <td style="color: var(--red);">Worst 3</td>
+        <td>F21 (9.4K), F22 (14.6K), F24 (20.1K)</td>
+        <td style="color: var(--red);">14,739</td>
+        <td>2:57 (died earlier)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    The difference is entirely survival time. Best pulls averaged 4:34 before death; worst pulls averaged 2:57. Longer survival = more P2 uptime = higher DPS. This reinforces that the #1 improvement lever is staying alive through P2 mechanics.
+  </p>
+</div>
+
+<!-- ===== RAID CONTEXT ===== -->
+<div class="section">
+  <h2>Raid Context</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    How Alitheria compared to other DPS on their best pull (Fight 20):
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Rank</th><th>Player</th><th>Spec</th><th>DPS</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td style="color: #8788ee;">Sonic</td><td>Demo Lock</td><td>53,792</td></tr>
+      <tr><td>2</td><td style="color: #0070dd;">Invincibale</td><td>Ele Shaman</td><td>53,530</td></tr>
+      <tr><td>3</td><td style="color: #3fc7eb;">Baodabao</td><td>Frost Mage</td><td>51,870</td></tr>
+      <tr><td>4</td><td style="color: #33937f;">Zinnks</td><td>Aug Evoker</td><td>47,951</td></tr>
+      <tr><td>5</td><td style="color: #aad372;">Smokinthisza</td><td>MM Hunter</td><td>47,000</td></tr>
+      <tr style="background: rgba(244, 140, 186, 0.1);"><td><strong>6</strong></td><td style="color: var(--paladin);"><strong>Alitheria</strong></td><td><strong>Ret Paladin</strong></td><td><strong>45,692</strong></td></tr>
+      <tr><td>7</td><td style="color: #3fc7eb;">Snackznchill</td><td>Frost Mage</td><td>44,685</td></tr>
+      <tr><td>8</td><td style="color: #c41e3a;">Unholyftw</td><td>Unholy DK</td><td>42,621</td></tr>
+      <tr><td>9</td><td style="color: #c69b6d;">Starfighter</td><td>Arms Warrior</td><td>41,564</td></tr>
+      <tr><td>10</td><td style="color: #8788ee;">Orichamaru</td><td>Demo Lock</td><td>37,613</td></tr>
+      <tr><td>11</td><td style="color: #c41e3a;">Bebeshakur</td><td>Unholy DK</td><td>37,603</td></tr>
+      <tr><td>12</td><td style="color: #ff7c0a;">Moistbear</td><td>Feral Druid</td><td>34,187</td></tr>
+    </tbody>
+  </table>
+
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    On their best pull, Alitheria ranked <strong>6th of 13 DPS</strong> &mdash; middle of the pack and competitive with the raid's output. This demonstrates that when alive through the fight, their damage output is solid.
+  </p>
+</div>
+
+<!-- ===== ACTIONABLE IMPROVEMENTS ===== -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="callout" style="border-left-color: var(--red); margin-bottom: 12px;">
+    <div class="callout-title" style="color: var(--red);">1. Survive Phase 2 &mdash; This is THE priority</div>
+    <div class="callout-body">
+      <strong>Impact: Would transform DPS from 25.9K avg to potentially 35K+ avg.</strong><br><br>
+      8 of 11 deaths occur in P2 (2:53&ndash;5:09). The three killing mechanics are Grasp of Emptiness (3 deaths), Simulacrum Backlash (3 deaths), and Bursting Emptiness (2 deaths).
+      <ul style="margin-top: 8px; margin-left: 16px;">
+        <li><strong>Grasp of Emptiness:</strong> Pre-position away from the grip zone. Use Divine Protection or Divine Shield if you get caught. Deaths at 4:00, 4:07, 4:27 suggest this happens around the 2nd Grasp cast in P2.</li>
+        <li><strong>Simulacrum Backlash:</strong> Stay away from the Rift Simulacrum. This is 13.3M total damage taken across 9 pulls &mdash; the #3 highest damage source overall. Melee range on the Simulacrum is deadly.</li>
+        <li><strong>Bursting Emptiness:</strong> Move out of void detonation zones. Use a personal CD if you cannot move in time.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout" style="border-left-color: var(--orange); margin-bottom: 12px;">
+    <div class="callout-title" style="color: var(--orange);">2. Pre-plan defensive cooldowns for known damage windows</div>
+    <div class="callout-body">
+      <strong>Impact: Would prevent 3+ deaths per session.</strong><br><br>
+      Ret Paladin has excellent defensives: Divine Shield (immune), Divine Protection (20% DR), Shield of Vengeance (absorb), Lay on Hands (full heal).
+      Currently, these are being used reactively (panic-casting at low HP) rather than proactively before known damage.
+      <br><br>
+      <strong>Suggested defensive plan:</strong>
+      <ul style="margin-top: 8px; margin-left: 16px;">
+        <li><strong>Divine Protection</strong> for every Grasp of Emptiness (the ~25s-interval ability in P2)</li>
+        <li><strong>Divine Shield</strong> saved for the most dangerous Grasp overlap or if debuffed by Voidstalker Sting</li>
+        <li><strong>Shield of Vengeance</strong> on cooldown during P2 as a rolling absorb</li>
+        <li><strong>Healthstone/health pot</strong> reserved for P2, not used in P1 where damage is lighter</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout" style="border-left-color: var(--yellow); margin-bottom: 12px;">
+    <div class="callout-title" style="color: var(--yellow);">3. Maintain P1-level activity in P2</div>
+    <div class="callout-body">
+      <strong>Impact: ~20% DPS increase during P2.</strong><br><br>
+      P1 CPM is high (86 CPM on best pull). P2 CPM drops significantly due to movement and mechanic handling. On Fight 27 (the pull with full P2 survival), overall CPM was 68.8 &mdash; a 20% drop from the best pull.
+      <br><br>
+      Ret Paladin has good tools for maintaining uptime during movement: Divine Steed for repositioning, and instant-cast generators (Hammer of Wrath, Judgment) during transitions.
+      Focus on pressing <em>something</em> during every GCD in P2, even if it means using suboptimal fillers.
+    </div>
+  </div>
+
+  <div class="callout" style="border-left-color: var(--accent); margin-bottom: 12px;">
+    <div class="callout-title" style="color: var(--accent);">4. Avoid early P1 deaths</div>
+    <div class="callout-body">
+      <strong>Impact: Eliminates the two worst pulls (F18 and F21).</strong><br><br>
+      Two pulls had deaths at 0:14 (Bursting Emptiness) and 0:40 (Void Remnants) &mdash; both in the first minute. These early deaths require a battle rez and result in massively reduced DPS (F21 was 9.4K).
+      The first Void Remnants spawn and Bursting Emptiness are predictable at fixed timers. Pre-position before they happen.
+    </div>
+  </div>
+
+  <div class="callout green" style="margin-bottom: 12px;">
+    <div class="callout-title" style="color: var(--green);">5. Build P3 experience (aspirational)</div>
+    <div class="callout-body">
+      Alitheria only entered P3 alive once (Fight 27, died at 5:13 to Dimensional Slash). Until P2 survival is consistent, P3 mechanics are secondary. But awareness of Dimensional Slash (ground void zones), returning Vorelus, and Cosmic Radiation will be needed once the P2 wall is broken.
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONTEXT FOOTER ===== -->
+<div class="section">
+  <h2>Summary</h2>
+  <div class="callout green">
+    <div class="callout-title" style="color: var(--green);">What is already working</div>
+    <div class="callout-body">
+      <ul style="margin-left: 16px;">
+        <li><strong>P1 execution is strong.</strong> Average P1 DPS of 45.3K with a peak of 80.4K shows solid add cleave and cooldown usage during the Sentinels phase.</li>
+        <li><strong>Rotation is clean when alive.</strong> 86 CPM on the best pull, 5 Avenging Wrath uses in 5 minutes, proper Final Verdict as primary spender. The spec fundamentals are there.</li>
+        <li><strong>Competitive within the raid.</strong> 6th of 13 DPS on the best pull shows Alitheria can keep up when surviving.</li>
+        <li><strong>Consumables used.</strong> Pre-pot, healthstone, and trinket usage is present on best pulls.</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="font-size: 14px; margin-top: 16px; padding: 12px; background: var(--surface); border-radius: 6px; border: 1px solid var(--border);">
+    The performance gap is <strong>100% survival-based</strong>, not rotation or gear. Alitheria's ilvl (290) matches top-ranked Ret Paladins. Their P1 damage output is competitive.
+    The single highest-impact change is surviving Phase 2 mechanics &mdash; specifically Grasp of Emptiness, Simulacrum Backlash, and Bursting Emptiness.
+    Fixing this alone would likely bring average DPS from ~26K to 35K+ and open the door to P3 experience.
+  </p>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+  <p>
+    Generated by WCL DPS Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs</a>
+    &middot; Reference: Bilaevropa (Drak'thul-EU, 99,193 DPS, ilvl 290, 8 talent diffs)
+    &middot; Analysis date: June 20, 2026
+  </p>
+  <p style="margin-top: 4px;">
+    PROG MODE &mdash; 9 pulls analyzed (joined late, not present in pulls 1&ndash;14, 17, 19, 23, 25) &middot; Phase boundaries: P1 0:00&ndash;2:14, Inter 2:14&ndash;2:53, P2 2:53&ndash;5:09, P3 5:09+
+  </p>
+</div>
+
+</body>
+</html>

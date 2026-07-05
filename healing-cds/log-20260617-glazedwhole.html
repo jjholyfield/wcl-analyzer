@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glazedwhole — Blood Death Knight — Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0; --dk: #c41e3a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .grid-5 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  .dk-color { color: var(--dk); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .tag-new { background: rgba(188,140,255,0.15); color: var(--purple); }
+  .tag-missing { background: rgba(139,148,158,0.15); color: var(--dim); }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .oh-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .oh-eff { background: var(--green); }
+  .oh-over { background: var(--red); opacity: 0.6; }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .cd-pill.defensive { background: rgba(57,210,192,0.15); color: var(--cyan); }
+  .cd-pill.taunt { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .cd-pill.fist { background: rgba(248,81,73,0.15); color: var(--red); font-weight: 600; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .build-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .build-card h3 { margin-top: 0; }
+  .build-ability { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .build-count { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Glazedwhole <span class="dim">— Blood Death Knight</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- ═══ SUMMARY ═══ -->
+<div class="grid-5">
+  <div class="card stat">
+    <div class="stat-value">71.8K</div>
+    <div class="stat-label">DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">75.6K</div>
+    <div class="stat-label">DTPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">55.5K</div>
+    <div class="stat-label">Self-Heal HPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">286</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+</div>
+
+<!-- ═══ VERDICT ═══ -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Glazedwhole survived the kill and maintained <strong class="green">99.4% Bone Shield uptime</strong>, but the comparison against top Blood DKs is complicated by a <strong class="yellow">completely different hero talent build</strong> (Rider/Exterminate vs San'layn/Vampiric Strike). Within that context: <strong class="red">Death Strike CPM is 30% below reference</strong> (12.3 vs 17.5/min) &mdash; the single most important button for Blood DK. <strong class="orange">Total CPM is 59.2 vs 84.8</strong> &mdash; a 25.6 cast-per-minute gap suggesting significant downtime or slower GCD usage. Over-casting Blood Boil (+52%) and Marrowrend (+75%) while under-pressing Death Strike and Death and Decay (-40%). <strong class="red">Vampiric Blood used only 4 times</strong> vs reference's 14 &mdash; treating it as an emergency CD instead of a rotational DS amplifier. The DPS gap (71.8K vs 120.8K) is partly build-dependent, but the CPM gap and defensive CD underuse are pure execution.</p>
+</div>
+
+<!-- ═══ REFERENCE COMPARISON ═══ -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Blood Death Knights on Mythic Rotmire. Primary reference: <strong>Xoons</strong> (closest talent match at 33 diffs, 120.8K DPS, 8:20 kill). Every reference runs the <strong>San'layn</strong> hero talent tree &mdash; Glazedwhole runs <strong>Rider</strong>. This is not a minor difference: it changes 6+ abilities and the entire rotation priority.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Hero Tree</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(196,30,58,0.06);">
+      <td><strong>Glazedwhole</strong></td>
+      <td>71,800</td>
+      <td>7:58</td>
+      <td>286</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-new">Rider</span></td>
+    </tr>
+    <tr>
+      <td>Xoons <span class="ref-badge">Reference</span></td>
+      <td class="green">120,800</td>
+      <td>8:20</td>
+      <td>256.2</td>
+      <td><span class="tag tag-diff">33 diff</span></td>
+      <td><span class="tag tag-diff">San'layn</span></td>
+    </tr>
+    <tr>
+      <td>Lierua</td>
+      <td class="dim">&mdash;</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">34 diff</span></td>
+      <td><span class="tag tag-diff">San'layn</span></td>
+    </tr>
+    <tr>
+      <td>Свиножук</td>
+      <td class="dim">&mdash;</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">37 diff</span></td>
+      <td><span class="tag tag-diff">San'layn</span></td>
+    </tr>
+    <tr>
+      <td>Aasi</td>
+      <td class="dim">&mdash;</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">39 diff</span></td>
+      <td><span class="tag tag-diff">San'layn</span></td>
+    </tr>
+    <tr>
+      <td>Froezy</td>
+      <td class="dim">&mdash;</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">35 diff</span></td>
+      <td><span class="tag tag-diff">San'layn</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═══ BUILD DIVERGENCE ═══ -->
+<h2>Build Divergence &mdash; Rider vs San'layn</h2>
+<p class="section-intro">This is the biggest caveat in the entire analysis. Glazedwhole and Xoons play fundamentally different specs. The hero talent tree changes which abilities exist in the rotation, making direct CPM comparison imperfect for talent-specific abilities.</p>
+
+<div class="side-by-side">
+  <div class="build-card" style="border-left: 3px solid var(--purple);">
+    <h3 class="purple">Glazedwhole &mdash; Rider</h3>
+    <div class="build-ability">
+      <span class="build-count green">58 casts</span>
+      <span>Exterminate (7.3/min)</span>
+      <span class="tag tag-new">Rider only</span>
+    </div>
+    <div class="build-ability">
+      <span class="build-count green">12 casts</span>
+      <span>Reaper's Mark (1.5/min)</span>
+      <span class="tag tag-new">Rider only</span>
+    </div>
+    <div class="build-ability">
+      <span class="build-count dim">0 casts</span>
+      <span class="dim">Vampiric Strike &mdash; N/A</span>
+    </div>
+    <div class="build-ability">
+      <span class="build-count dim">0 casts</span>
+      <span class="dim">Infliction of Sorrow &mdash; N/A</span>
+    </div>
+    <p style="margin-top: 12px; font-size: 13px; color: var(--dim);">Rider playstyle: Exterminate replaces some Heart Strikes, Reaper's Mark is a burst window cooldown. Less self-healing baked into the rotation than San'layn.</p>
+  </div>
+  <div class="build-card" style="border-left: 3px solid var(--dk);">
+    <h3 class="dk-color">Xoons &mdash; San'layn</h3>
+    <div class="build-ability">
+      <span class="build-count dim">0 casts</span>
+      <span class="dim">Exterminate &mdash; N/A</span>
+    </div>
+    <div class="build-ability">
+      <span class="build-count dim">0 casts</span>
+      <span class="dim">Reaper's Mark &mdash; N/A</span>
+    </div>
+    <div class="build-ability">
+      <span class="build-count green">84 casts</span>
+      <span>Vampiric Strike (10.1/min)</span>
+      <span class="tag tag-diff">San'layn only</span>
+    </div>
+    <div class="build-ability">
+      <span class="build-count green">157 casts</span>
+      <span>Infliction of Sorrow (18.8/min)</span>
+      <span class="tag tag-diff">San'layn only</span>
+    </div>
+    <p style="margin-top: 12px; font-size: 13px; color: var(--dim);">San'layn playstyle: Vampiric Strike replaces Heart Strike procs, Infliction of Sorrow fires constantly (passive + proc). Heavy self-heal integration. Also has Charge! (6 casts) for mobility.</p>
+  </div>
+</div>
+
+<!-- ═══ CAST PROFILE ═══ -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Core rotational abilities compared. Abilities unique to one build are marked. The 25.6 CPM gap (59.2 vs 84.8 total) indicates significant GCD downtime.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Glazed Casts</th><th>Glazed CPM</th><th>Xoons Casts</th><th>Xoons CPM</th><th>Delta</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Death Strike</strong></td>
+      <td>98</td>
+      <td>12.3</td>
+      <td>146</td>
+      <td>17.5</td>
+      <td class="red">-30%</td>
+      <td><span class="tag tag-crit">Under-pressing #1 button</span></td>
+    </tr>
+    <tr>
+      <td>Heart Strike</td>
+      <td>101</td>
+      <td>12.7</td>
+      <td>126</td>
+      <td>15.1</td>
+      <td class="yellow">-16%</td>
+      <td><span class="tag tag-warn">Slightly low</span></td>
+    </tr>
+    <tr>
+      <td>Blood Boil</td>
+      <td>90</td>
+      <td>11.3</td>
+      <td>62</td>
+      <td>7.4</td>
+      <td class="orange">+52%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr>
+      <td>Marrowrend</td>
+      <td>30</td>
+      <td>3.8</td>
+      <td>18</td>
+      <td>2.2</td>
+      <td class="orange">+75%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr>
+      <td>Death and Decay</td>
+      <td>24</td>
+      <td>3.0</td>
+      <td>42</td>
+      <td>5.0</td>
+      <td class="red">-40%</td>
+      <td><span class="tag tag-diff">Significant gap</span></td>
+    </tr>
+    <tr>
+      <td>Dancing Rune Weapon</td>
+      <td>5</td>
+      <td>0.6</td>
+      <td>6</td>
+      <td>0.7</td>
+      <td class="green">-13%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Vampiric Blood</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td>14</td>
+      <td>1.7</td>
+      <td class="red">-70%</td>
+      <td><span class="tag tag-crit">Massive underuse</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Exterminate <span class="tag tag-new">Rider</span></td>
+      <td>58</td>
+      <td>7.3</td>
+      <td colspan="2" class="dim">N/A</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Build-specific</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Reaper's Mark <span class="tag tag-new">Rider</span></td>
+      <td>12</td>
+      <td>1.5</td>
+      <td colspan="2" class="dim">N/A</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Build-specific</span></td>
+    </tr>
+    <tr style="background: rgba(196,30,58,0.04);">
+      <td>Infliction of Sorrow <span class="tag tag-missing">San'layn</span></td>
+      <td colspan="2" class="dim">N/A</td>
+      <td>157</td>
+      <td>18.8</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Build-specific</span></td>
+    </tr>
+    <tr style="background: rgba(196,30,58,0.04);">
+      <td>Vampiric Strike <span class="tag tag-missing">San'layn</span></td>
+      <td colspan="2" class="dim">N/A</td>
+      <td>84</td>
+      <td>10.1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Build-specific</span></td>
+    </tr>
+    <tr>
+      <td>Dark Command (Taunt)</td>
+      <td>15</td>
+      <td>1.9</td>
+      <td>11</td>
+      <td>1.3</td>
+      <td class="dim">+43%</td>
+      <td><span class="tag tag-info">More taunts</span></td>
+    </tr>
+    <tr>
+      <td>Death's Advance</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td>11</td>
+      <td>1.3</td>
+      <td class="yellow">-62%</td>
+      <td><span class="tag tag-warn">Under-using mobility</span></td>
+    </tr>
+    <tr>
+      <td>Death Grip</td>
+      <td>7</td>
+      <td>0.9</td>
+      <td>2</td>
+      <td>0.2</td>
+      <td class="dim">+266%</td>
+      <td><span class="tag tag-info">Utility</span></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total</strong></td>
+      <td><strong>472</strong></td>
+      <td><strong class="red">59.2</strong></td>
+      <td><strong>707</strong></td>
+      <td><strong class="green">84.8</strong></td>
+      <td class="red">-30%</td>
+      <td><span class="tag tag-crit">25.6 CPM gap</span></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<!-- ═══ VAMPIRIC BLOOD DEEP DIVE ═══ -->
+<h2>Vampiric Blood &mdash; The Biggest Gap</h2>
+<p class="section-intro">Vampiric Blood isn't just a "oh shit" button. Top Blood DKs use it aggressively &mdash; it amplifies Death Strike healing by 30% for 10 seconds. Xoons pressed it 14 times in 8:20 (every ~36 seconds with Improved VB talent). Glazedwhole pressed it 4 times in 7:58.</p>
+
+<div class="grid-2">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header">Glazedwhole &mdash; 4 Uses</div>
+    <div style="font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 2;">
+      <span class="dim">1:50</span> &mdash; during melee + Rotting Pustules<br>
+      <span class="dim">6:09</span> &mdash; 4+ minutes gap<br>
+      <span class="dim">7:09</span> &mdash; final phase<br>
+      <span class="dim">7:46</span> &mdash; final phase
+    </div>
+    <p style="margin-top: 8px; font-size: 13px; color: var(--dim);">Used reactively when in danger. Zero uses in the first 1:50 of the fight. 4-minute gap between use #1 and #2.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header">Xoons &mdash; 14 Uses</div>
+    <p style="font-size: 13px;">14 uses in 8:20 = one every ~36 seconds. Treated as a <strong>rotational DS amplifier</strong>, not a panic button. With Improved Vampiric Blood reducing the cooldown, this is how top Blood DKs maximize Death Strike healing output.</p>
+    <p style="margin-top: 8px; font-size: 13px; color: var(--dim);">This single difference accounts for a significant portion of the self-healing gap. More VB uptime = bigger Death Strikes = more Blood Shield absorbs = more effective HP.</p>
+  </div>
+</div>
+
+<!-- ═══ DAMAGE DONE ═══ -->
+<h2>Damage Done Breakdown</h2>
+<p class="section-intro">71,926 total DPS vs Xoons' 120,936. Death Strike is 21.6% of Glazedwhole's damage vs 47.9% for Xoons &mdash; driven by the CPM gap (12.3 vs 17.5). The build-specific abilities (Exterminate/Reaper's Mark for Rider, Vampiric Strike/Infliction of Sorrow for San'layn) account for much of the remainder.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Glazed Damage</th><th>Glazed DPS</th><th>%</th><th>Xoons Damage</th><th>Xoons DPS</th><th>%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Death Strike</strong></td>
+      <td>7,429K</td>
+      <td>15,557</td>
+      <td>21.6%</td>
+      <td class="green">28,949K</td>
+      <td class="green">57,897</td>
+      <td>47.9%</td>
+    </tr>
+    <tr>
+      <td>Blood Boil</td>
+      <td>5,841K</td>
+      <td>12,232</td>
+      <td>17.0%</td>
+      <td>7,668K</td>
+      <td>15,336</td>
+      <td>12.7%</td>
+    </tr>
+    <tr>
+      <td>Exterminate <span class="tag tag-new">Rider</span></td>
+      <td>5,025K</td>
+      <td>10,524</td>
+      <td>14.6%</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+    </tr>
+    <tr>
+      <td>Blood Plague</td>
+      <td>3,763K</td>
+      <td>7,881</td>
+      <td>11.0%</td>
+      <td>4,799K</td>
+      <td>9,599</td>
+      <td>7.9%</td>
+    </tr>
+    <tr>
+      <td>Reaper's Mark <span class="tag tag-new">Rider</span></td>
+      <td>3,103K</td>
+      <td>6,498</td>
+      <td>9.0%</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>2,708K</td>
+      <td>5,671</td>
+      <td>7.9%</td>
+      <td>3,469K</td>
+      <td>6,939</td>
+      <td>5.7%</td>
+    </tr>
+    <tr>
+      <td>Wave of Souls</td>
+      <td>2,194K</td>
+      <td>4,594</td>
+      <td>6.4%</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+    </tr>
+    <tr>
+      <td>Heart Strike</td>
+      <td>2,043K</td>
+      <td>4,278</td>
+      <td>5.9%</td>
+      <td>2,329K</td>
+      <td>4,658</td>
+      <td>3.9%</td>
+    </tr>
+    <tr>
+      <td>Vampiric Strike <span class="tag tag-missing">San'layn</span></td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+      <td>5,108K</td>
+      <td>10,217</td>
+      <td>8.4%</td>
+    </tr>
+    <tr>
+      <td>Infliction of Sorrow <span class="tag tag-missing">San'layn</span></td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+      <td>1,666K</td>
+      <td>3,331</td>
+      <td>2.8%</td>
+    </tr>
+    <tr>
+      <td>Death and Decay</td>
+      <td>825K</td>
+      <td>1,728</td>
+      <td>2.4%</td>
+      <td>1,463K</td>
+      <td>2,927</td>
+      <td>2.4%</td>
+    </tr>
+    <tr>
+      <td>Blood Mist</td>
+      <td>636K</td>
+      <td>1,332</td>
+      <td>1.9%</td>
+      <td>1,604K</td>
+      <td>3,207</td>
+      <td>2.7%</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total</strong></td>
+      <td><strong>34,347K</strong></td>
+      <td><strong class="orange">71,926</strong></td>
+      <td></td>
+      <td><strong>60,468K</strong></td>
+      <td><strong class="green">120,936</strong></td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<!-- ═══ DAMAGE TAKEN ═══ -->
+<h2>Damage Taken Breakdown</h2>
+<p class="section-intro">Glazedwhole takes 36,097K total (75.6K DTPS) vs Xoons' 52,849K (105.7K DTPS). Lower DTPS is not necessarily better &mdash; Xoons takes more hits because they're tanking more aggressively (67 melees vs 46, 17 Putrid Fists vs 14). Different tanking assignments and positioning explain most of the gap.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Glazed Total</th><th>Glazed DTPS</th><th>Hits</th><th>Absorbed</th><th>Xoons Total</th><th>Xoons DTPS</th><th>Hits</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td>12,385K</td>
+      <td>25,936</td>
+      <td>467</td>
+      <td>28%</td>
+      <td>15,047K</td>
+      <td>30,095</td>
+      <td>490</td>
+    </tr>
+    <tr>
+      <td><strong>Melee</strong></td>
+      <td>9,436K</td>
+      <td>19,760</td>
+      <td>46</td>
+      <td class="cyan">68%</td>
+      <td>13,672K</td>
+      <td>27,344</td>
+      <td>67</td>
+    </tr>
+    <tr>
+      <td><strong>Putrid Fist</strong></td>
+      <td>9,009K</td>
+      <td>18,864</td>
+      <td>14</td>
+      <td>41%</td>
+      <td>13,694K</td>
+      <td>27,388</td>
+      <td>17</td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>2,395K</td>
+      <td>5,015</td>
+      <td>35</td>
+      <td>21%</td>
+      <td>3,943K</td>
+      <td>7,885</td>
+      <td>51</td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2,451K</td>
+      <td>5,132</td>
+      <td>44</td>
+      <td>5%</td>
+      <td>3,305K</td>
+      <td>6,610</td>
+      <td>48</td>
+    </tr>
+    <tr>
+      <td>Blightshot</td>
+      <td>53K</td>
+      <td>112</td>
+      <td>1</td>
+      <td>12%</td>
+      <td>618K</td>
+      <td>1,237</td>
+      <td>10</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total</strong></td>
+      <td><strong>36,097K</strong></td>
+      <td><strong>75,589</strong></td>
+      <td></td>
+      <td></td>
+      <td><strong>52,849K</strong></td>
+      <td><strong>105,698</strong></td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card">
+    <div class="card-header">Melee Absorption Rate</div>
+    <p style="font-size: 15px;"><strong class="cyan">68% of melee damage absorbed</strong> via Blood Shield / AMS / Bone Shield. This is strong &mdash; Glazedwhole maintains defensive layers well against auto-attacks.</p>
+  </div>
+  <div class="card">
+    <div class="card-header">Putrid Fist Variance</div>
+    <p style="font-size: 15px;">14 hits ranging from <strong class="green">7K</strong> (near-full absorb) to <strong class="red">657K</strong> (zero absorb). The variance suggests inconsistent defensive CD alignment with the tank buster.</p>
+  </div>
+</div>
+
+<!-- ═══ SELF-HEALING ═══ -->
+<h2>Self-Healing Breakdown</h2>
+<p class="section-intro">26,517K effective self-healing (55.5K HPS) across 1,432 events. Total healing generated: 38,960K with 32% overheal. Primary source is Blood Shield (absorbs from Death Strike), not Death Strike healing directly &mdash; the healing component has 63% overheal.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Effective</th><th>Total</th><th>Overheal</th><th>Hits</th><th></th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Blood Shield</strong> (absorb)</td>
+      <td class="green">8,855K</td>
+      <td>8,855K</td>
+      <td>0%</td>
+      <td>62</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:100%"></div></div></td>
+    </tr>
+    <tr>
+      <td><strong>Death Strike</strong> (heal)</td>
+      <td>6,463K</td>
+      <td>17,625K</td>
+      <td class="red">63%</td>
+      <td>150</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:37%"></div><div class="oh-over" style="width:63%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Frost Shield</td>
+      <td>3,407K</td>
+      <td>3,407K</td>
+      <td>0%</td>
+      <td>449</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:100%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Blood Plague</td>
+      <td>3,138K</td>
+      <td>3,337K</td>
+      <td>6%</td>
+      <td>436</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:94%"></div><div class="oh-over" style="width:6%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Leech</td>
+      <td>2,445K</td>
+      <td>3,051K</td>
+      <td>20%</td>
+      <td>267</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:80%"></div><div class="oh-over" style="width:20%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Anti-Magic Shell</td>
+      <td>835K</td>
+      <td>835K</td>
+      <td>0%</td>
+      <td>19</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:100%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Rune of Sanguination</td>
+      <td>652K</td>
+      <td>971K</td>
+      <td>33%</td>
+      <td>16</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:67%"></div><div class="oh-over" style="width:33%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Will of the Necropolis</td>
+      <td>300K</td>
+      <td>300K</td>
+      <td>0%</td>
+      <td>10</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:100%"></div></div></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total</strong></td>
+      <td><strong>26,517K</strong></td>
+      <td><strong>38,960K</strong></td>
+      <td><strong>32%</strong></td>
+      <td><strong>1,432</strong></td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Death Strike Overheal: 63%</div>
+  <p style="font-size: 14px;">Xoons also runs 69% Death Strike overheal &mdash; high DS overheal is <strong>expected</strong> for Blood DK. The minimum heal is 7% of max HP regardless of damage taken, so Death Strikes when already near full HP generate overheal. The concern isn't the overheal rate &mdash; it's the <strong>CPM</strong>. More Death Strikes = more Blood Shields = more effective mitigation, even if the heal component is wasted.</p>
+</div>
+
+<!-- ═══ DEFENSIVE CD TIMELINE ═══ -->
+<h2>Defensive CD Usage vs Putrid Fist</h2>
+<p class="section-intro">Putrid Fist (tank buster) hits every ~12 seconds, alternating targets. 14 of 28 total fists hit Glazedwhole. Defensive CDs should be layered on Putrid Fist hits, especially during high-damage phases.</p>
+
+<div class="card">
+  <h3>Putrid Fist Hits on Glazedwhole (14 total)</h3>
+  <table>
+    <thead>
+      <tr><th>Time</th><th>Damage</th><th>Absorbed</th><th>Net Hit</th><th>Defensive Active</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="dim">0:26</td>
+        <td>555K</td>
+        <td class="cyan">494K</td>
+        <td class="green">61K</td>
+        <td><span class="tag tag-same">Well mitigated</span></td>
+      </tr>
+      <tr>
+        <td class="dim">0:50</td>
+        <td>607K</td>
+        <td class="cyan">14K</td>
+        <td class="red">593K</td>
+        <td><span class="tag tag-diff">Raw hit</span></td>
+      </tr>
+      <tr>
+        <td class="dim">1:15</td>
+        <td>672K</td>
+        <td class="cyan">467K</td>
+        <td class="green">205K</td>
+        <td><span class="tag tag-same">Good absorb</span></td>
+      </tr>
+      <tr>
+        <td class="dim">1:27</td>
+        <td>791K</td>
+        <td class="cyan">392K</td>
+        <td class="yellow">399K</td>
+        <td><span class="cd-pill defensive">IBF active (1:26)</span></td>
+      </tr>
+      <tr>
+        <td class="dim">1:51</td>
+        <td>657K</td>
+        <td class="dim">0K</td>
+        <td class="red">657K</td>
+        <td><span class="cd-pill defensive">VB active (1:50)</span> <span class="tag tag-warn">Zero absorb</span></td>
+      </tr>
+      <tr>
+        <td class="dim">2:42</td>
+        <td>644K</td>
+        <td class="cyan">637K</td>
+        <td class="green">7K</td>
+        <td><span class="tag tag-same">Excellent</span></td>
+      </tr>
+      <tr>
+        <td class="dim">3:06</td>
+        <td>663K</td>
+        <td class="cyan">144K</td>
+        <td class="orange">519K</td>
+        <td><span class="tag tag-warn">Partial absorb</span></td>
+      </tr>
+      <tr>
+        <td class="dim">3:43</td>
+        <td>655K</td>
+        <td class="cyan">131K</td>
+        <td class="orange">524K</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td class="dim">4:07</td>
+        <td>605K</td>
+        <td class="cyan">414K</td>
+        <td class="green">191K</td>
+        <td><span class="tag tag-same">Good absorb</span></td>
+      </tr>
+      <tr>
+        <td class="dim">5:10</td>
+        <td>698K</td>
+        <td class="cyan">304K</td>
+        <td class="yellow">394K</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td class="dim">5:34</td>
+        <td>561K</td>
+        <td class="cyan">223K</td>
+        <td class="yellow">338K</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td class="dim">6:11</td>
+        <td>625K</td>
+        <td class="cyan">197K</td>
+        <td class="yellow">428K</td>
+        <td><span class="cd-pill defensive">VB (6:09)</span></td>
+      </tr>
+      <tr>
+        <td class="dim">7:14</td>
+        <td>601K</td>
+        <td class="cyan">250K</td>
+        <td class="yellow">351K</td>
+        <td><span class="cd-pill defensive">VB (7:09)</span></td>
+      </tr>
+      <tr>
+        <td class="dim">7:50</td>
+        <td>673K</td>
+        <td class="cyan">43K</td>
+        <td class="red">630K</td>
+        <td><span class="cd-pill defensive">VB (7:46)</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Defensive CD Summary</div>
+  <div class="grid-3">
+    <div>
+      <strong>Icebound Fortitude</strong> (2 uses)<br>
+      <span class="dim">1:26, 6:57</span>
+    </div>
+    <div>
+      <strong>Anti-Magic Shell</strong> (2 uses)<br>
+      <span class="dim">2:14, 6:32</span>
+    </div>
+    <div>
+      <strong>Anti-Magic Zone</strong> (2 uses)<br>
+      <span class="dim">2:13, 6:45</span>
+    </div>
+    <div>
+      <strong>Lichborne</strong> (3 uses)<br>
+      <span class="dim">0:57, 3:11, 4:14</span>
+    </div>
+    <div>
+      <strong class="red">Vampiric Blood</strong> (4 uses)<br>
+      <span class="dim">1:50, 6:09, 7:09, 7:46</span>
+    </div>
+    <div>
+      <strong>Bone Shield</strong><br>
+      <span class="green">99.4% uptime</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TANK SWAP PATTERN ═══ -->
+<h2>Tank Swap Pattern</h2>
+<p class="section-intro">Glazedwhole (Blood DK) taunts 15 times, Nucke (Vengeance DH) taunts 13 times. Putrid Fist alternates targets every ~12 seconds. The taunt pattern shows active boss sharing with both tanks engaged.</p>
+
+<div class="card">
+  <h3>Taunt Timeline</h3>
+  <div style="font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 2.2;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span style="width:12px;height:12px;background:var(--dk);border-radius:2px;display:inline-block;"></span>
+      <span>Glazedwhole (Dark Command) &mdash; 15 taunts</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="width:12px;height:12px;background:var(--cyan);border-radius:2px;display:inline-block;"></span>
+      <span>Nucke (Torment) &mdash; 13 taunts</span>
+    </div>
+    <span class="dim">0:00</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dk)">Dark Command</span> pull<br>
+    <span class="dim">0:26</span> <span class="cd-pill fist">Putrid Fist &rarr; Glazed</span><br>
+    <span class="dim">0:34</span> <span class="cd-pill taunt" style="border-left:3px solid var(--cyan)">Torment</span><br>
+    <span class="dim">0:38</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dk)">Dark Command</span> <span class="cd-pill fist">Putrid Fist &rarr; Nucke</span><br>
+    <span class="dim">0:50</span> <span class="cd-pill fist">Putrid Fist &rarr; Glazed</span><br>
+    <span class="dim">0:51</span> <span class="cd-pill taunt" style="border-left:3px solid var(--cyan)">Torment</span><br>
+    <span class="dim">1:01</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dk)">Dark Command</span><br>
+    <span class="dim">1:02</span> <span class="cd-pill fist">Putrid Fist &rarr; Nucke</span><br>
+    <span class="dim">1:15</span> <span class="cd-pill fist">Putrid Fist &rarr; Glazed</span> <span class="cd-pill taunt" style="border-left:3px solid var(--cyan)">Torment</span><br>
+    <span class="dim">1:27</span> <span class="cd-pill fist">Putrid Fist &rarr; Glazed</span> <span class="cd-pill taunt" style="border-left:3px solid var(--cyan)">Torment</span><br>
+    <span class="dim">1:39</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dk)">Dark Command</span> <span class="cd-pill fist">Putrid Fist &rarr; Nucke</span><br>
+    <span class="dim">1:51</span> <span class="cd-pill fist">Putrid Fist &rarr; Glazed</span>
+  </div>
+  <p style="margin-top: 12px; font-size: 13px; color: var(--dim);">Pattern continues throughout the fight. Taunts align well with Putrid Fist timings &mdash; both tanks are actively managing boss aggro to share tank buster hits. Glazedwhole takes 14 of 28 Putrid Fists (50% share).</p>
+</div>
+
+<!-- ═══ WIPE PROGRESSION ═══ -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">20 total pulls. Glazedwhole <strong class="red">died in all 19 wipes</strong> &mdash; surviving only the kill. Death times range from 0:48 to 6:51. Tank deaths in wipes are expected (last person tanking = last person to die), but the consistency suggests the deaths aren't tank-specific errors but rather the natural result of raid-wide failures.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height:15%; background: var(--red);" data-tooltip="Pull 2: WIPE 1:13 | 55.8K DPS | Died 1:06"></div>
+    <div class="prog-bar" style="height:15%; background: var(--red);" data-tooltip="Pull 3: WIPE 1:11 | 59.8K DPS | Died 1:09"></div>
+    <div class="prog-bar" style="height:11%; background: var(--red);" data-tooltip="Pull 4: WIPE 0:51 | 73.2K DPS | Died 0:50"></div>
+    <div class="prog-bar" style="height:34%; background: var(--red);" data-tooltip="Pull 5: WIPE 2:42 | 65.9K DPS | Died 2:32"></div>
+    <div class="prog-bar" style="height:29%; background: var(--red);" data-tooltip="Pull 7: WIPE 2:18 | 67.7K DPS | Died 2:16"></div>
+    <div class="prog-bar" style="height:29%; background: var(--red);" data-tooltip="Pull 8: WIPE 2:17 | 58.9K DPS | Died 2:14"></div>
+    <div class="prog-bar" style="height:41%; background: var(--red);" data-tooltip="Pull 9: WIPE 3:14 | 65.5K DPS | Died 3:14"></div>
+    <div class="prog-bar" style="height:71%; background: var(--orange);" data-tooltip="Pull 10: WIPE 5:37 | 67.7K DPS | Died 5:37"></div>
+    <div class="prog-bar" style="height:60%; background: var(--orange);" data-tooltip="Pull 11: WIPE 4:48 | 74.7K DPS | Died 4:47"></div>
+    <div class="prog-bar" style="height:72%; background: var(--orange);" data-tooltip="Pull 12: WIPE 5:42 | 64.4K DPS | Died 5:37"></div>
+    <div class="prog-bar" style="height:36%; background: var(--red);" data-tooltip="Pull 13: WIPE 2:51 | 67.2K DPS | Died 2:47"></div>
+    <div class="prog-bar" style="height:16%; background: var(--red);" data-tooltip="Pull 14: WIPE 1:15 | 36.8K DPS | Died 0:54"></div>
+    <div class="prog-bar" style="height:64%; background: var(--orange);" data-tooltip="Pull 15: WIPE 5:05 | 62.9K DPS | Died 5:01"></div>
+    <div class="prog-bar" style="height:11%; background: var(--red);" data-tooltip="Pull 16: WIPE 0:53 | 59.1K DPS | Died 0:48"></div>
+    <div class="prog-bar" style="height:72%; background: var(--orange);" data-tooltip="Pull 17: WIPE 5:45 | 64.0K DPS | Died 5:37"></div>
+    <div class="prog-bar" style="height:86%; background: var(--yellow);" data-tooltip="Pull 18: WIPE 6:52 | 80.8K DPS | Died 6:51"></div>
+    <div class="prog-bar" style="height:63%; background: var(--orange);" data-tooltip="Pull 19: WIPE 5:01 | 68.9K DPS | Died 4:58"></div>
+    <div class="prog-bar" style="height:11%; background: var(--red);" data-tooltip="Pull 20: WIPE 0:54 | 68.7K DPS | Died 0:53"></div>
+    <div class="prog-bar" style="height:91%; background: var(--yellow);" data-tooltip="Pull 21: WIPE 7:15 | 66.5K DPS | Died 5:22"></div>
+    <div class="prog-bar" style="height:100%; background: var(--green);" data-tooltip="Pull 22: KILL 7:58 | 71.8K DPS | SURVIVED"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);padding:0 4px;">
+    <span>Pull 2</span>
+    <span>Pull 22 (Kill)</span>
+  </div>
+</div>
+
+<div class="grid-3" style="margin-top: 12px;">
+  <div class="card stat">
+    <div class="stat-value">55.8K &rarr; 71.8K</div>
+    <div class="stat-label">DPS Range Across Pulls</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">80.8K</div>
+    <div class="stat-label">Best DPS (Pull 18)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">19/19 Wipes</div>
+    <div class="stat-label">Deaths in Wipes</div>
+  </div>
+</div>
+
+<!-- ═══ ACTIONABLE ITEMS ═══ -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Press Death Strike more.</strong> 12.3/min vs reference 17.5/min is a 30% deficit on the single most important Blood DK button. Death Strike generates Blood Shield absorbs, heals, and deals damage. More Death Strikes means more mitigation, more self-healing, and more DPS. This is the #1 priority regardless of build.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Use Vampiric Blood aggressively, not defensively.</strong> 4 uses in 7:58 vs reference's 14 uses in 8:20. Top Blood DKs treat VB as a rotational Death Strike amplifier (+30% healing for 10s), pressing it on cooldown. Glazedwhole saves it for emergencies, leaving massive uptime on the table. With Improved Vampiric Blood reducing the cooldown, it should be pressed every 35-40 seconds.
+</div>
+
+<div class="action-item">
+  <strong>3. Reduce Blood Boil and Marrowrend casts.</strong> Blood Boil at 11.3/min (+52% over reference) and Marrowrend at 3.8/min (+75%) suggest GCDs are being spent on maintenance when they should be spent on Death Strike and Heart Strike. Bone Shield is already 99.4% uptime &mdash; Marrowrend can be pressed less. Blood Boil should only be used for Blood Plague application and when it's free from Crimson Scourge procs.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Death and Decay usage.</strong> 3.0/min vs reference 5.0/min (-40%). Death and Decay empowers Heart Strike to hit additional targets and is a core part of the AoE rotation, especially on Rotmire with frequent add spawns.
+</div>
+
+<div class="action-item">
+  <strong>5. Close the CPM gap.</strong> 59.2 total CPM vs 84.8 is a 25.6 cast-per-minute deficit. Some of this is build-dependent (San'layn has more proc-based casts), but even accounting for that, there's significant GCD downtime. Focus on always being casting &mdash; if nothing else is available, press Heart Strike or Death Strike.
+</div>
+
+<div class="action-item">
+  <strong>6. Consider whether Rider is the right build.</strong> All top 5 Blood DKs on this boss run San'layn. San'layn provides more self-healing (Vampiric Strike), more passive damage (Infliction of Sorrow), and more casts per minute (proc-based abilities). The Rider build may be better for other content, but the mythic ranking data heavily favors San'layn for progression.
+</div>
+
+<div style="margin-top: 32px; padding: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim);">
+  Generated by WCL Analyzer &middot; Data from Warcraft Logs API v2 &middot; Reference: Xoons (Mythic Rotmire, 120.8K DPS, San'layn Blood DK)
+</div>
+
+</body>
+</html>

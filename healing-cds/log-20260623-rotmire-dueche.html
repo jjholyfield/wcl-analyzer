@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dueche (Holy Paladin) - Mythic Rotmire Kill Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.5; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 28px; margin-bottom: 4px; }
+h2 { font-size: 20px; margin: 32px 0 16px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+h3 { font-size: 16px; margin: 20px 0 10px; color: var(--dim); }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+.class-color { color: #f48cba; }
+
+/* Summary Cards */
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.summary-card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.summary-card .value { font-size: 26px; font-weight: 700; }
+.summary-card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* Verdict */
+.verdict { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; font-size: 14px; line-height: 1.6; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+th { background: var(--surface); color: var(--dim); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88,166,255,0.04); }
+.highlight-row { background: rgba(244,140,186,0.08) !important; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* CD Grid */
+.cd-grid { overflow-x: auto; margin-bottom: 16px; }
+.cd-grid table { min-width: 800px; }
+.cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; white-space: nowrap; margin: 1px; }
+.cd-empty { color: var(--dim); font-size: 11px; }
+
+/* Timeline */
+.timeline-bar { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; height: 60px; margin: 16px 0; overflow: hidden; }
+.timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.7; }
+.timeline-marker .label { position: absolute; top: 2px; left: 4px; font-size: 9px; white-space: nowrap; transform: rotate(-45deg); transform-origin: top left; }
+.timeline-time { position: absolute; bottom: 2px; font-size: 10px; color: var(--dim); }
+
+/* Bars */
+.bar-container { display: flex; align-items: center; gap: 8px; }
+.bar { height: 16px; border-radius: 3px; min-width: 2px; }
+.bar-eff { background: var(--green); }
+.bar-oh { background: var(--red); opacity: 0.5; }
+
+/* Wipe progression */
+.wipe-bars { display: flex; gap: 8px; align-items: flex-end; height: 120px; margin: 16px 0; }
+.wipe-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.wipe-bar .bar-fill { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.3s; }
+.wipe-bar .bar-label { font-size: 11px; color: var(--dim); }
+.wipe-bar .bar-value { font-size: 12px; font-weight: 600; }
+
+/* Cards */
+.card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card.critical { border-left: 4px solid var(--red); }
+.card.important { border-left: 4px solid var(--accent); }
+.card.good { border-left: 4px solid var(--green); }
+.card h4 { font-size: 14px; margin-bottom: 8px; }
+.card p { font-size: 13px; color: var(--dim); line-height: 1.5; }
+
+/* DPS */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-card .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+
+.footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+@media (max-width: 768px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .card-grid { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr; }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23 Rotmire Log Analysis</a>
+
+<h1><span class="class-color">Dueche</span> &mdash; Holy Paladin</h1>
+<div class="subtitle">Mythic Rotmire (Sporefall) &bull; Kill &bull; 8:09 &bull; June 23, 2026 &bull; Report: Hz1Lm672dZnBw9YC</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">HPS</div>
+    <div class="value">169,974</div>
+    <div class="sub">Ref: 229,983</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">274</div>
+    <div class="sub">Ref: 275</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Kill Status</div>
+    <div class="value" style="color: var(--green);">Survived</div>
+    <div class="sub">0 deaths</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Overheal</div>
+    <div class="value" style="color: var(--yellow);">30.3%</div>
+    <div class="sub">Ref: 19.3%</div>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div class="verdict" style="border-left-color: #3fb950;">
+  Survived the kill. 169,974 HPS with 30.3% overheal -- competitive throughput for a 5-heal comp. Aura Mastery deployed at Bloom #1 (2:00) and Bloom #3 (6:45), covering 2 of 3 major raid events. Flash of Light significantly under-cast (3.68 CPM vs reference 9.50 CPM) -- more direct healing would reduce overheal on passive sources. Solid kill contribution.
+</div>
+
+<!-- Reference Comparison -->
+<h2>Reference Comparison</h2>
+<table>
+  <thead>
+    <tr><th></th><th>Name</th><th class="num">HPS</th><th class="num">Kill Time</th><th class="num">iLvl</th><th class="num">Talent Delta</th></tr>
+  </thead>
+  <tbody>
+    <tr class="highlight-row">
+      <td>&#9733;</td>
+      <td><span class="class-color">Dueche</span></td>
+      <td class="num">169,974</td>
+      <td class="num">8:09</td>
+      <td class="num">274</td>
+      <td class="num">--</td>
+    </tr>
+    <tr style="background:rgba(88,166,255,0.06)">
+      <td>&#128196;</td>
+      <td><span class="class-color">Chroneium</span> <span style="color:var(--accent);font-size:11px;">(primary ref)</span></td>
+      <td class="num">217,600</td>
+      <td class="num">8:13</td>
+      <td class="num">275</td>
+      <td class="num">3</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><span class="class-color">Fléxzpala</span></td>
+      <td class="num">216,767</td>
+      <td class="num">7:17</td>
+      <td class="num">291</td>
+      <td class="num">2</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><span class="class-color">Fintusius</span></td>
+      <td class="num">212,971</td>
+      <td class="num">7:42</td>
+      <td class="num">293</td>
+      <td class="num">8</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><span class="class-color">Wikedsikj</span></td>
+      <td class="num">211,953</td>
+      <td class="num">7:04</td>
+      <td class="num">292</td>
+      <td class="num">4</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><span class="class-color">Teiri</span></td>
+      <td class="num">208,482</td>
+      <td class="num">8:33</td>
+      <td class="num">292</td>
+      <td class="num">2</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Boss Mechanic Timeline -->
+<h2>Boss Mechanic Timeline</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Rotmire is a single-phase boss with repeating cycles of adds (Awaken Fungi), roots (Festering Vines), Fungal Bloom (100-energy burst), and Bursting Shroom. Pustule stacks increase over time as a soft enrage.</p>
+
+<div class="timeline-bar">
+  <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(63,185,80,0.04);"></div><div class="timeline-marker" style="left:24.55%;border-color:var(--red);"><span class="label" style="color:var(--red);">Bloom #1</span></div><div class="timeline-marker" style="left:52.38%;border-color:var(--red);"><span class="label" style="color:var(--red);">Bloom #2</span></div><div class="timeline-marker" style="left:80.21%;border-color:var(--red);"><span class="label" style="color:var(--red);">Bloom #3</span></div><div class="timeline-marker" style="left:27.88%;border-color:var(--orange);"><span class="label" style="color:var(--orange);">Shroom #1</span></div><div class="timeline-marker" style="left:55.71%;border-color:var(--orange);"><span class="label" style="color:var(--orange);">Shroom #2</span></div><div class="timeline-marker" style="left:83.54%;border-color:var(--orange);"><span class="label" style="color:var(--orange);">Shroom #3</span></div><div class="timeline-marker" style="left:8.80%;border-color:var(--yellow);opacity:0.4;"><span class="label" style="color:var(--yellow);">Vines</span></div><div class="timeline-marker" style="left:18.82%;border-color:var(--yellow);opacity:0.4;"><span class="label" style="color:var(--yellow);">Vines</span></div><div class="timeline-marker" style="left:36.63%;border-color:var(--yellow);opacity:0.4;"><span class="label" style="color:var(--yellow);">Vines</span></div><div class="timeline-marker" style="left:46.65%;border-color:var(--yellow);opacity:0.4;"><span class="label" style="color:var(--yellow);">Vines</span></div><div class="timeline-marker" style="left:64.46%;border-color:var(--yellow);opacity:0.4;"><span class="label" style="color:var(--yellow);">Vines</span></div><div class="timeline-marker" style="left:74.48%;border-color:var(--yellow);opacity:0.4;"><span class="label" style="color:var(--yellow);">Vines</span></div><div class="timeline-marker" style="left:92.28%;border-color:var(--yellow);opacity:0.4;"><span class="label" style="color:var(--yellow);">Vines</span></div>
+  <span class="timeline-time" style="left:4px;">0:00</span>
+  <span class="timeline-time" style="left:50%;transform:translateX(-50%);">4:04</span>
+  <span class="timeline-time" style="right:4px;">8:09</span>
+</div>
+
+<table>
+<thead><tr><th>Mechanic</th><th class="num">Count</th><th>Timings</th><th>Type</th></tr></thead>
+<tbody><tr>
+    <td style="color:var(--red);font-weight:500;">Fungal Bloom</td>
+    <td class="num">3</td>
+    <td style="font-size:12px;">2:00, 4:16, 6:32</td>
+    <td><span class="cd-pill" style="background:var(--red)20;color:var(--red);">Raid-wide</span></td>
+  </tr><tr>
+    <td style="color:var(--orange);font-weight:500;">Bursting Shroom</td>
+    <td class="num">3</td>
+    <td style="font-size:12px;">2:16, 4:32, 6:48</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Raid-wide</span></td>
+  </tr><tr>
+    <td style="color:var(--yellow);font-weight:500;">Festering Vines</td>
+    <td class="num">7</td>
+    <td style="font-size:12px;">0:43, 1:32, 2:59, 3:48, 5:15, 6:04, 7:31</td>
+    <td><span class="cd-pill" style="background:var(--yellow)20;color:var(--yellow);">Movement/DoT</span></td>
+  </tr><tr>
+    <td style="color:var(--cyan);font-weight:500;">Awaken Fungi</td>
+    <td class="num">8</td>
+    <td style="font-size:12px;">0:15, 1:04, 2:31, 3:20, 4:47, 5:36, 7:03, 7:52</td>
+    <td><span class="cd-pill" style="background:var(--cyan)20;color:var(--cyan);">Adds spawn</span></td>
+  </tr><tr>
+    <td style="color:var(--purple);font-weight:500;">Bursting Pustules</td>
+    <td class="num">12</td>
+    <td style="font-size:12px;">0:10, 0:31, 1:20, 2:26, 2:47, 3:36, 4:42, 5:03, 5:52, 6:58, 7:19, 8:08</td>
+    <td><span class="cd-pill" style="background:var(--purple)20;color:var(--purple);">Soft enrage</span></td>
+  </tr><tr>
+    <td style="color:var(--dim);font-weight:500;">Putrid Fist</td>
+    <td class="num">29</td>
+    <td style="font-size:12px;">0:26, 0:38, 0:50, 1:02, 1:15, 1:27, 1:39, 1:51, 2:42, 2:54, 3:06, 3:18, 3:31, 3:43, 3:55, 4:07, 4:58, 5:10, 5:22, 5:34, 5:47, 5:59, 6:11, 6:23, 7:14, 7:26, 7:38, 7:50, 8:03</td>
+    <td><span class="cd-pill" style="background:var(--dim)20;color:var(--dim);">Tank hit</span></td>
+  </tr><tr>
+    <td style="color:var(--dim);font-weight:500;">Blightshot</td>
+    <td class="num">33</td>
+    <td style="font-size:12px;">0:25, 0:27, 0:37, 0:46, 1:14, 1:15, 1:26, 1:33, 1:42, 1:50, 2:41, 2:43, 2:51, 3:00, 3:17, 3:30, 3:32, 3:39, 3:48, 4:57, 4:59, 5:08, 5:46, 5:48, 6:04, 6:12, 6:22, 7:13, 7:14, 7:24, 7:34, 8:02, 8:04</td>
+    <td><span class="cd-pill" style="background:var(--dim)20;color:var(--dim);">Ranged attack</span></td>
+  </tr></tbody></table>
+
+<!-- CD Timing Analysis -->
+<h2>CD Timing vs Boss Events</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Dueche's major cooldown deployments mapped to Rotmire's raid-wide damage events.</p>
+
+<table>
+<thead><tr><th>Cooldown</th><th class="num">Time</th><th>Nearest Boss Event</th><th class="num">Delta</th><th>Assessment</th></tr></thead>
+<tbody><tr>
+    <td style="color:#f48cba;font-weight:500;">Divine Protection</td>
+    <td class="num">0:46</td>
+    <td>Fungal Bloom #1 (2:00)</td>
+    <td class="num">-74.0s</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Off-event</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Aura Mastery</td>
+    <td class="num">2:00</td>
+    <td>Fungal Bloom #1 (2:00)</td>
+    <td class="num">-0.2s</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">On time</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Avenging Wrath</td>
+    <td class="num">2:01</td>
+    <td>Fungal Bloom #1 (2:00)</td>
+    <td class="num">+1.5s</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">On time</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Blessing of Sacrifice</td>
+    <td class="num">3:05</td>
+    <td>Bursting Shroom #1 (2:16)</td>
+    <td class="num">+48.9s</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Off-event</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Divine Protection</td>
+    <td class="num">4:15</td>
+    <td>Fungal Bloom #2 (4:16)</td>
+    <td class="num">-1.2s</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">On time</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Avenging Wrath</td>
+    <td class="num">4:18</td>
+    <td>Fungal Bloom #2 (4:16)</td>
+    <td class="num">+2.4s</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">On time</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Lay on Hands</td>
+    <td class="num">5:07</td>
+    <td>Bursting Shroom #2 (4:32)</td>
+    <td class="num">+34.7s</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Off-event</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Divine Protection</td>
+    <td class="num">6:32</td>
+    <td>Fungal Bloom #3 (6:32)</td>
+    <td class="num">-0.6s</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">On time</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Avenging Wrath</td>
+    <td class="num">6:34</td>
+    <td>Fungal Bloom #3 (6:32)</td>
+    <td class="num">+1.5s</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">On time</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Aura Mastery</td>
+    <td class="num">6:45</td>
+    <td>Bursting Shroom #3 (6:48)</td>
+    <td class="num">-3.3s</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">On time</span></td>
+  </tr><tr>
+    <td style="color:#f48cba;font-weight:500;">Divine Protection</td>
+    <td class="num">7:54</td>
+    <td>Bursting Shroom #3 (6:48)</td>
+    <td class="num">+65.5s</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Off-event</span></td>
+  </tr></tbody></table>
+
+<!-- Team CD Coordination -->
+<h2>Team CD Coordination</h2>
+<div class="cd-grid">
+<table>
+<thead><tr><th>Healer</th><th style="text-align:center;font-size:10px;">Bloom #1<br>2:00</th><th style="text-align:center;font-size:10px;">Shroom #1<br>2:16</th><th style="text-align:center;font-size:10px;">Bloom #2<br>4:16</th><th style="text-align:center;font-size:10px;">Shroom #2<br>4:32</th><th style="text-align:center;font-size:10px;">Bloom #3<br>6:32</th><th style="text-align:center;font-size:10px;">Shroom #3<br>6:48</th></tr></thead><tbody><tr class="highlight-row">
+    <td style="white-space:nowrap;"><span style="color:#f48cba;font-weight:500;">Dueche</span><br><span style="font-size:11px;color:var(--dim);">Holy Paladin</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(244,140,186,0.15);color:#f48cba;font-size:10px;">Aura Mastery 2:00, Avenging Wrath 2:01</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(244,140,186,0.15);color:#f48cba;font-size:10px;">Aura Mastery 2:00, Avenging Wrath 2:01</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(244,140,186,0.15);color:#f48cba;font-size:10px;">Avenging Wrath 4:18</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(244,140,186,0.15);color:#f48cba;font-size:10px;">Avenging Wrath 4:18</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(244,140,186,0.15);color:#f48cba;font-size:10px;">Avenging Wrath 6:34, Aura Mastery 6:45</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(244,140,186,0.15);color:#f48cba;font-size:10px;">Avenging Wrath 6:34, Aura Mastery 6:45</span></td></tr><tr>
+    <td style="white-space:nowrap;"><span style="color:#0070de;font-weight:500;">Brewtote</span><br><span style="font-size:11px;color:var(--dim);">Resto Shaman</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,112,222,0.15);color:#0070de;font-size:10px;">Ascendance 1:58</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,112,222,0.15);color:#0070de;font-size:10px;">Ascendance 1:58</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,112,222,0.15);color:#0070de;font-size:10px;">Spirit Link Totem 4:30</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,112,222,0.15);color:#0070de;font-size:10px;">Spirit Link Totem 4:30</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,112,222,0.15);color:#0070de;font-size:10px;">Ascendance 6:30</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,112,222,0.15);color:#0070de;font-size:10px;">Ascendance 6:30</span></td></tr><tr>
+    <td style="white-space:nowrap;"><span style="color:#ff7d0a;font-weight:500;">Silencio</span><br><span style="font-size:11px;color:var(--dim);">Resto Druid</span></td><td style="text-align:center;"><span class="cd-empty">--</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(255,125,10,0.15);color:#ff7d0a;font-size:10px;">Convoke the Spirits 2:26</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(255,125,10,0.15);color:#ff7d0a;font-size:10px;">Tranquility 4:18</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(255,125,10,0.15);color:#ff7d0a;font-size:10px;">Tranquility 4:18, Convoke the Spirits 4:43</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(255,125,10,0.15);color:#ff7d0a;font-size:10px;">Convoke the Spirits 6:53</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(255,125,10,0.15);color:#ff7d0a;font-size:10px;">Convoke the Spirits 6:53</span></td></tr><tr>
+    <td style="white-space:nowrap;"><span style="color:#e0e0e0;font-weight:500;">Voidheart</span><br><span style="font-size:11px;color:var(--dim);">Disc Priest</span></td><td style="text-align:center;"><span class="cd-empty">--</span></td><td style="text-align:center;"><span class="cd-empty">--</span></td><td style="text-align:center;"><span class="cd-empty">--</span></td><td style="text-align:center;"><span class="cd-empty">--</span></td><td style="text-align:center;"><span class="cd-empty">--</span></td><td style="text-align:center;"><span class="cd-empty">--</span></td></tr><tr>
+    <td style="white-space:nowrap;"><span style="color:#00ff96;font-weight:500;">Senssay</span><br><span style="font-size:11px;color:var(--dim);">MW Monk</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,255,150,0.15);color:#00ff96;font-size:10px;">Invoke Yu'lon 2:16, Celestial Conduit 2:17</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,255,150,0.15);color:#00ff96;font-size:10px;">Invoke Yu'lon 2:16, Celestial Conduit 2:17</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,255,150,0.15);color:#00ff96;font-size:10px;">Celestial Conduit 4:31</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,255,150,0.15);color:#00ff96;font-size:10px;">Celestial Conduit 4:31</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,255,150,0.15);color:#00ff96;font-size:10px;">Celestial Conduit 6:46</span></td><td style="text-align:center;"><span class="cd-pill" style="background:rgba(0,255,150,0.15);color:#00ff96;font-size:10px;">Celestial Conduit 6:46</span></td></tr></tbody></table></div>
+
+<!-- Cast Profile Comparison -->
+<h2>Cast Profile Comparison</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Casts per minute vs primary reference (Chroneium, 8:13 kill). Dueche fight: 8:09.</p>
+
+<table>
+<thead><tr><th>Ability</th><th class="num">Player Casts</th><th class="num">Player CPM</th><th class="num">Ref Casts</th><th class="num">Ref CPM</th><th class="num">Delta</th><th>Assessment</th></tr></thead>
+<tbody><tr>
+    <td style="font-weight:500;">Holy Shock</td>
+    <td class="num">143</td>
+    <td class="num">17.55</td>
+    <td class="num">119</td>
+    <td class="num">14.49</td>
+    <td class="num" style="color:var(--green);">+21%</td>
+    <td><span class="cd-pill" style="background:var(--dim)20;color:var(--dim);">Slightly over</span></td>
+  </tr><tr style="background:rgba(219,109,40,0.04);">
+    <td style="font-weight:500;">Flash of Light</td>
+    <td class="num">30</td>
+    <td class="num">3.68</td>
+    <td class="num">78</td>
+    <td class="num">9.50</td>
+    <td class="num" style="color:var(--orange);">-61%</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Under</span></td>
+  </tr><tr style="background:rgba(219,109,40,0.04);">
+    <td style="font-weight:500;">Holy Light</td>
+    <td class="num">6</td>
+    <td class="num">0.74</td>
+    <td class="num">17</td>
+    <td class="num">2.07</td>
+    <td class="num" style="color:var(--orange);">-64%</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Under</span></td>
+  </tr><tr>
+    <td style="font-weight:500;">Light of Dawn</td>
+    <td class="num">117</td>
+    <td class="num">14.36</td>
+    <td class="num">104</td>
+    <td class="num">12.66</td>
+    <td class="num" style="color:var(--green);">+13%</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">Match</span></td>
+  </tr><tr style="background:rgba(219,109,40,0.04);">
+    <td style="font-weight:500;">Eternal Flame</td>
+    <td class="num">15</td>
+    <td class="num">1.84</td>
+    <td class="num">30</td>
+    <td class="num">3.65</td>
+    <td class="num" style="color:var(--orange);">-50%</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Under</span></td>
+  </tr><tr>
+    <td style="font-weight:500;">Judgment</td>
+    <td class="num">63</td>
+    <td class="num">7.73</td>
+    <td class="num">26</td>
+    <td class="num">3.17</td>
+    <td class="num" style="color:var(--green);">+144%</td>
+    <td><span class="cd-pill" style="background:var(--yellow)20;color:var(--yellow);">Over</span></td>
+  </tr><tr>
+    <td style="font-weight:500;">Hammer of Wrath</td>
+    <td class="num">8</td>
+    <td class="num">0.98</td>
+    <td class="num">0</td>
+    <td class="num">0.00</td>
+    <td class="num" style="color:var(--green);">+100%</td>
+    <td><span class="cd-pill" style="background:var(--cyan)20;color:var(--cyan);">Unique</span></td>
+  </tr><tr>
+    <td style="font-weight:500;">Divine Toll</td>
+    <td class="num">11</td>
+    <td class="num">1.35</td>
+    <td class="num">13</td>
+    <td class="num">1.58</td>
+    <td class="num" style="color:var(--dim);">-15%</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">Match</span></td>
+  </tr><tr>
+    <td style="font-weight:500;">Avenging Wrath</td>
+    <td class="num">3</td>
+    <td class="num">0.37</td>
+    <td class="num">4</td>
+    <td class="num">0.49</td>
+    <td class="num" style="color:var(--orange);">-24%</td>
+    <td><span class="cd-pill" style="background:var(--dim)20;color:var(--dim);">Slightly under</span></td>
+  </tr><tr style="background:rgba(219,109,40,0.04);">
+    <td style="font-weight:500;">Aura Mastery</td>
+    <td class="num">2</td>
+    <td class="num">0.25</td>
+    <td class="num">3</td>
+    <td class="num">0.37</td>
+    <td class="num" style="color:var(--orange);">-33%</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Under</span></td>
+  </tr><tr style="background:rgba(219,109,40,0.04);">
+    <td style="font-weight:500;">Divine Protection</td>
+    <td class="num">4</td>
+    <td class="num">0.49</td>
+    <td class="num">7</td>
+    <td class="num">0.85</td>
+    <td class="num" style="color:var(--orange);">-42%</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Under</span></td>
+  </tr><tr>
+    <td style="font-weight:500;">Reclamation</td>
+    <td class="num">344</td>
+    <td class="num">42.23</td>
+    <td class="num">314</td>
+    <td class="num">38.23</td>
+    <td class="num" style="color:var(--green);">+10%</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">Match</span></td>
+  </tr><tr style="background:rgba(219,109,40,0.04);">
+    <td style="font-weight:500;">Divine Steed</td>
+    <td class="num">3</td>
+    <td class="num">0.37</td>
+    <td class="num">5</td>
+    <td class="num">0.61</td>
+    <td class="num" style="color:var(--orange);">-40%</td>
+    <td><span class="cd-pill" style="background:var(--orange)20;color:var(--orange);">Under</span></td>
+  </tr><tr style="background:rgba(248,81,73,0.06);">
+    <td style="font-weight:500;">Blessing of Freedom</td>
+    <td class="num">0</td>
+    <td class="num">0.00</td>
+    <td class="num">4</td>
+    <td class="num">0.49</td>
+    <td class="num" style="color:var(--orange);">-100%</td>
+    <td><span class="cd-pill" style="background:var(--red)20;color:var(--red);">MISSING</span></td>
+  </tr><tr>
+    <td style="font-weight:500;">Beacon of Lightblind Wrath</td>
+    <td class="num">6</td>
+    <td class="num">0.74</td>
+    <td class="num">0</td>
+    <td class="num">0.00</td>
+    <td class="num" style="color:var(--green);">+100%</td>
+    <td><span class="cd-pill" style="background:var(--cyan)20;color:var(--cyan);">Unique</span></td>
+  </tr></tbody></table>
+
+<!-- Cast Profile Analysis -->
+<h2>Cast Profile Analysis</h2>
+<div class="card-grid">
+  <div class="card important">
+    <h4>Flash of Light Under-Cast</h4>
+    <p>Dueche cast Flash of Light 30 times (3.68 CPM) vs Chroneium's 78 casts (9.50 CPM) -- a 61% deficit. Flash of Light is a core direct heal that generates Holy Power and procs Infusion of Light. Under-casting it means fewer Infusion of Light procs, less Holy Power generation, and more reliance on passive/proc healing which contributes to the 30.3% overheal rate. More Flash of Light would redirect healing to targets who actually need it.</p>
+  </div>
+  <div class="card important">
+    <h4>Judgment Over-Cast</h4>
+    <p>63 Judgment casts (7.73 CPM) vs reference's 26 (3.17 CPM) -- 144% higher. While Judgment generates Holy Power and procs Greater Judgment healing, excessive Judgment casting displaces direct healing globals. The GCDs spent on extra Judgments could go to Flash of Light or Holy Light for more targeted healing.</p>
+  </div>
+  <div class="card good">
+    <h4>Strong Holy Shock Usage</h4>
+    <p>143 Holy Shock casts (17.55 CPM) vs reference's 119 (14.49 CPM) -- 21% higher. Holy Shock is the core rotational ability and Dueche is pressing it frequently. This drives Infusion of Light procs and Holy Power generation, and it is the single most important button for Holy Paladin throughput.</p>
+  </div>
+  <div class="card good">
+    <h4>Light of Dawn Consistent</h4>
+    <p>117 Light of Dawn casts (14.36 CPM) vs reference's 104 (12.66 CPM) -- 13% higher. Light of Dawn is the primary Holy Power spender for raid healing. Dueche is spending Holy Power efficiently on the correct ability.</p>
+  </div>
+</div>
+
+<!-- Healing Breakdown -->
+<h2>Healing Breakdown</h2>
+<table>
+<thead><tr><th>Source</th><th class="num">Effective</th><th class="num">OH%</th><th>Overheal Bar</th><th class="num">Ref Effective</th><th class="num">Ref OH%</th></tr></thead>
+<tbody><tr>
+    <td style="font-weight:500;">Light of Dawn</td>
+    <td class="num">23,444,772</td>
+    <td class="num" style="color:var(--dim);">30.5%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:56px;"></div>
+        <div class="bar bar-oh" style="width:25px;"></div>
+      </div>
+    </td>
+    <td class="num">27,122,857</td>
+    <td class="num">20.5%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Holy Shock</td>
+    <td class="num">12,177,057</td>
+    <td class="num" style="color:var(--yellow);">44.9%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:29px;"></div>
+        <div class="bar bar-oh" style="width:24px;"></div>
+      </div>
+    </td>
+    <td class="num">15,985,386</td>
+    <td class="num">20.6%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Beacon of Light</td>
+    <td class="num">14,895,484</td>
+    <td class="num" style="color:var(--dim);">32.6%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:36px;"></div>
+        <div class="bar bar-oh" style="width:17px;"></div>
+      </div>
+    </td>
+    <td class="num">21,274,457</td>
+    <td class="num">20.9%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Eternal Flame</td>
+    <td class="num">2,709,690</td>
+    <td class="num" style="color:var(--yellow);">39.7%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:7px;"></div>
+        <div class="bar bar-oh" style="width:4px;"></div>
+      </div>
+    </td>
+    <td class="num">7,311,190</td>
+    <td class="num">12.8%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Litany of Lightblind Wrath</td>
+    <td class="num">4,187,397</td>
+    <td class="num" style="color:var(--dim);">0.0%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:10px;"></div>
+        <div class="bar bar-oh" style="width:0px;"></div>
+      </div>
+    </td>
+    <td class="num">--</td>
+    <td class="num">--</td>
+  </tr><tr>
+    <td style="font-weight:500;">Beacon of the Savior</td>
+    <td class="num">4,135,066</td>
+    <td class="num" style="color:var(--dim);">0.0%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:10px;"></div>
+        <div class="bar bar-oh" style="width:0px;"></div>
+      </div>
+    </td>
+    <td class="num">4,279,704</td>
+    <td class="num">0.0%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Dawnlight</td>
+    <td class="num">2,059,955</td>
+    <td class="num" style="color:var(--yellow);">46.6%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:5px;"></div>
+        <div class="bar bar-oh" style="width:4px;"></div>
+      </div>
+    </td>
+    <td class="num">3,658,125</td>
+    <td class="num">26.7%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Flash of Light</td>
+    <td class="num">1,965,292</td>
+    <td class="num" style="color:var(--yellow);">43.2%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:5px;"></div>
+        <div class="bar bar-oh" style="width:4px;"></div>
+      </div>
+    </td>
+    <td class="num">8,359,586</td>
+    <td class="num">20.0%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Brought to Light</td>
+    <td class="num">2,960,717</td>
+    <td class="num" style="color:var(--dim);">6.6%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:7px;"></div>
+        <div class="bar bar-oh" style="width:1px;"></div>
+      </div>
+    </td>
+    <td class="num">3,147,692</td>
+    <td class="num">7.6%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Sun Sear</td>
+    <td class="num">2,013,416</td>
+    <td class="num" style="color:var(--dim);">30.6%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:5px;"></div>
+        <div class="bar bar-oh" style="width:2px;"></div>
+      </div>
+    </td>
+    <td class="num">2,278,813</td>
+    <td class="num">21.0%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Greater Judgment</td>
+    <td class="num">2,627,940</td>
+    <td class="num" style="color:var(--dim);">0.0%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:6px;"></div>
+        <div class="bar bar-oh" style="width:0px;"></div>
+      </div>
+    </td>
+    <td class="num">690,569</td>
+    <td class="num">0.0%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Light of the Martyr</td>
+    <td class="num">2,575,252</td>
+    <td class="num" style="color:var(--dim);">0.0%</td>
+    <td>
+      <div class="bar-container">
+        <div class="bar bar-eff" style="width:6px;"></div>
+        <div class="bar bar-oh" style="width:0px;"></div>
+      </div>
+    </td>
+    <td class="num">3,479,417</td>
+    <td class="num">0.0%</td>
+  </tr>
+  <tr style="font-weight:600;border-top:2px solid var(--border);">
+    <td>Total</td>
+    <td class="num">83,080,810</td>
+    <td class="num" style="color:var(--yellow);">30.3%</td>
+    <td></td>
+    <td class="num">113,327,122</td>
+    <td class="num">19.3%</td>
+  </tr>
+</tbody></table>
+
+<!-- DPS Contribution -->
+<h2>DPS Contribution</h2>
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="label">DPS</div>
+    <div class="value">8,610</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Total Damage</div>
+    <div class="value">4,208,417</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Top Source</div>
+    <div class="value" style="font-size:16px;">Sun's Avatar</div>
+  </div>
+</div>
+
+<table>
+<thead><tr><th>Ability</th><th class="num">Damage</th><th class="num">% of Total</th></tr></thead>
+<tbody><tr>
+    <td style="font-weight:500;">Sun's Avatar</td>
+    <td class="num">1,517,640</td>
+    <td class="num">36.1%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Judgment</td>
+    <td class="num">1,287,452</td>
+    <td class="num">30.6%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Beacon of Lightblind Wrath</td>
+    <td class="num">842,253</td>
+    <td class="num">20.0%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Hammer of Wrath</td>
+    <td class="num">287,968</td>
+    <td class="num">6.8%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Bursting Toadstools</td>
+    <td class="num">144,216</td>
+    <td class="num">3.4%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Melee</td>
+    <td class="num">93,375</td>
+    <td class="num">2.2%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Bombardments</td>
+    <td class="num">23,157</td>
+    <td class="num">0.6%</td>
+  </tr><tr>
+    <td style="font-weight:500;">Rune of Unleashed Fire</td>
+    <td class="num">12,356</td>
+    <td class="num">0.3%</td>
+  </tr></tbody></table>
+<p style="font-size:13px;color:var(--dim);">Holy Paladin DPS contribution comes primarily from Sun's Avatar (Herald of the Sun hero talent proc), Judgment, and Beacon of Lightblind Wrath. 8.6K DPS is moderate -- the majority of globals are correctly spent on healing.</p>
+
+<!-- Wipe Progression -->
+<h2>Wipe Progression</h2>
+<div class="wipe-bars">
+  <div class="wipe-bar" style="width:30%;">
+    <div class="bar-value" style="color:var(--yellow);">149,371</div>
+    <div class="bar-fill" style="height:92px;background:var(--yellow);"></div>
+    <div class="bar-label">Fight 1<br>6:54<br>22.45%</div>
+  </div>
+  <div class="wipe-bar" style="width:30%;">
+    <div class="bar-value" style="color:var(--yellow);">162,328</div>
+    <div class="bar-fill" style="height:100px;background:var(--yellow);"></div>
+    <div class="bar-label">Fight 2<br>8:25<br>11.61%</div>
+  </div>
+  <div class="wipe-bar" style="width:30%;">
+    <div class="bar-value" style="color:var(--green);">160,282</div>
+    <div class="bar-fill" style="height:99px;background:var(--green);"></div>
+    <div class="bar-label">Fight 3<br>8:09<br>KILL</div>
+  </div></div>
+
+<table>
+<thead><tr><th>Pull</th><th class="num">Duration</th><th class="num">HPS</th><th class="num">Overheal</th><th class="num">Boss %</th><th>Result</th></tr></thead>
+<tbody><tr>
+    <td>Fight 1</td>
+    <td class="num">6:54</td>
+    <td class="num">149,371</td>
+    <td class="num">29.0%</td>
+    <td class="num">22.45%</td>
+    <td><span class="cd-pill" style="background:var(--red)20;color:var(--red);">WIPE</span></td>
+  </tr><tr>
+    <td>Fight 2</td>
+    <td class="num">8:25</td>
+    <td class="num">162,328</td>
+    <td class="num">24.4%</td>
+    <td class="num">11.61%</td>
+    <td><span class="cd-pill" style="background:var(--red)20;color:var(--red);">WIPE</span></td>
+  </tr><tr class="highlight-row">
+    <td>Fight 3</td>
+    <td class="num">8:09</td>
+    <td class="num">160,282</td>
+    <td class="num">31.5%</td>
+    <td class="num">0.01%</td>
+    <td><span class="cd-pill" style="background:var(--green)20;color:var(--green);">KILL</span></td>
+  </tr></tbody></table>
+
+<h3>Wipe Context</h3>
+<div class="card-grid">
+  <div class="card">
+    <h4>Fight 1 (Wipe at 22.45%)</h4>
+    <p>6:54 pull. Dueche survived but the raid fell apart at the third Bloom cycle. Multiple deaths to Bursting Shroom at 4:32 and Festering Vines around 6:07-6:13 cascaded into a wipe at Fungal Bloom (6:32). 149K HPS with 29.0% overheal.</p>
+  </div>
+  <div class="card">
+    <h4>Fight 2 (Wipe at 11.61%)</h4>
+    <p>8:25 pull. Longer fight reaching 11.61% before Rotting Pustules overwhelmed the raid around 7:20-8:10. Dueche survived until 8:11 (one of the last healers alive). 162K HPS with 24.4% overheal -- better efficiency than the kill.</p>
+  </div>
+</div>
+
+<!-- Healer Team Ranking -->
+<h2>Healer Team Ranking (Kill Fight)</h2>
+<table>
+<thead><tr><th class="num">Rank</th><th>Name</th><th>Spec</th><th class="num">Total Healing</th><th class="num">HPS</th><th class="num">Overheal</th></tr></thead>
+<tbody><tr>
+    <td class="num">1</td>
+    <td style="color:#00ff96;font-weight:500;">Senssay</td>
+    <td>Mistweaver Monk</td>
+    <td class="num">83,189,066</td>
+    <td class="num">170,195</td>
+    <td class="num">27.2%</td>
+  </tr><tr>
+    <td class="num">2</td>
+    <td style="color:#0070de;font-weight:500;">Brewtote</td>
+    <td>Restoration Shaman</td>
+    <td class="num">78,669,412</td>
+    <td class="num">160,949</td>
+    <td class="num">20.6%</td>
+  </tr><tr class="highlight-row">
+    <td class="num">3</td>
+    <td style="color:#f48cba;font-weight:500;">Dueche</td>
+    <td>Holy Paladin</td>
+    <td class="num">78,343,706</td>
+    <td class="num">160,282</td>
+    <td class="num">31.5%</td>
+  </tr><tr>
+    <td class="num">4</td>
+    <td style="color:#ff7d0a;font-weight:500;">Sìlencio</td>
+    <td>Restoration Druid</td>
+    <td class="num">77,849,148</td>
+    <td class="num">159,270</td>
+    <td class="num">41.6%</td>
+  </tr><tr>
+    <td class="num">5</td>
+    <td style="color:#e0e0e0;font-weight:500;">Voidhéart</td>
+    <td>Discipline Priest</td>
+    <td class="num">69,397,940</td>
+    <td class="num">141,980</td>
+    <td class="num">25.4%</td>
+  </tr></tbody></table>
+<p style="font-size:13px;color:var(--dim);margin-top:8px;">5-healer comp on the kill. Voidheart swapped from Shadow to Disc Priest for the kill pull, adding a 5th healer. Tight HPS spread (29K difference top to bottom) indicates well-distributed healing load across the team.</p>
+
+<!-- Actionable Items -->
+<h2>Actionable Items</h2>
+
+<div class="card important" style="margin-bottom:12px;">
+  <h4>1. Increase Flash of Light Usage</h4>
+  <p>30 casts (3.68 CPM) vs reference 78 casts (9.50 CPM). Flash of Light is the primary direct heal filler and Infusion of Light consumer. The 61% deficit means fewer Infusion of Light procs are being consumed, and healing is relying heavily on passive sources (Beacon, Dawnlight, Sun Sear) which drive up overheal. Replace some Judgment casts (currently 144% above reference) with Flash of Light during damage windows to convert passive overheal into targeted effective healing.</p>
+</div>
+
+<div class="card important" style="margin-bottom:12px;">
+  <h4>2. Reduce Judgment Spam</h4>
+  <p>63 Judgment casts (7.73 CPM) is 144% above the reference rate of 3.17 CPM. While Judgment generates Holy Power and triggers Greater Judgment healing, the excessive casting displaces direct healing globals. Holy Shock (17.55 CPM) and Light of Dawn (14.36 CPM) usage is already strong -- the GCDs going to extra Judgments should shift to Flash of Light and Eternal Flame (currently 15 casts vs reference 30).</p>
+</div>
+
+<div class="card important" style="margin-bottom:12px;">
+  <h4>3. Deploy Aura Mastery at Bloom #2</h4>
+  <p>Aura Mastery was used at Bloom #1 (2:00) and Bloom #3 (6:45), but not at Bloom #2 (4:16). With a 3-minute cooldown, AM from Bloom #1 would be available by Bloom #2 (4:16 - 2:00 = 2.3 min gap). The Bloom #2 window had Tranquility + Spirit Link Totem from other healers, but Aura Mastery's raid-wide damage reduction stacks with throughput CDs. Using it at all 3 Blooms would provide maximum value.</p>
+</div>
+
+<div class="card good" style="margin-bottom:12px;">
+  <h4>4. Holy Shock Frequency is Strong</h4>
+  <p>143 Holy Shock casts at 17.55 CPM is 21% above the reference rate. This is the most important button for Holy Paladin and Dueche is pressing it aggressively. Holy Shock drives Holy Power generation, Infusion of Light procs, and direct throughput. Keep this up.</p>
+</div>
+
+<div class="card good" style="margin-bottom:12px;">
+  <h4>5. Survived All 3 Pulls</h4>
+  <p>Dueche did not die on any of the 3 Rotmire pulls. This is the single most important metric for a healer -- a dead healer contributes zero for the rest of the fight. Consistent survival across all pulls shows solid positioning and defensive cooldown usage (Divine Protection used 4 times across the kill fight).</p>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Data source: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC, Fight 3</a> &bull; Encounter: Mythic Rotmire (Sporefall, ID 3159)</p>
+  <p>Primary reference: <a href="https://www.warcraftlogs.com/reports/cDw8afW7BJhtyTQm#fight=5" target="_blank">Chroneium-Zul'jin</a> (217,600 HPS, 8:13 kill, 3 talent differences)</p>
+  <p>Both players running Herald of the Sun hero talent tree. Dueche uses Beacon of Lightblind Wrath / Hammer of Wrath where Chroneium uses more Flash of Light filler.</p>
+  <p style="margin-top:8px;">Generated by WCL Analyzer &bull; 2026-06-25</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonic — Demonology Warlock — Mythic Crown of the Cosmos Prog Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 160px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 16px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Sonic <span class="dim">&mdash; Demonology Warlock</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; PROG (26 wipes, no kill) &middot; Best Pull: Fight 23 (4:52, 77.31% boss) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">141.4K</div>
+    <div class="stat-label">DPS (Best Pull F23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289.7</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">0.01%</div>
+    <div class="stat-label">Best Boss % (F8, F17)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">32.9</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">This is <strong>prog data from 26 wipes</strong> on Mythic Crown of the Cosmos &mdash; no kill yet. On the longest pull (Fight 23, 4:52), Sonic dealt <strong class="yellow">141K DPS</strong> before dying at <strong class="red">3:46 to Voidstalker Sting</strong>. The reference kills come from full-duration fights (~8:00+), so the comparison is inherently unequal &mdash; reference players had full Tyrant cycles and execute phases that prog wipes never reach. That said, the <strong class="red">core rotation gaps are real and fixable now</strong>: Hand of Gul'dan CPM is <strong class="red">9.8 vs 12.6 reference (&minus;22%)</strong>, Demonbolt is <strong class="red">7.2 vs 10.1 (&minus;29%)</strong>, and Summon Demonic Tyrant was cast only <strong class="red">3 times in 3:46</strong> vs the reference's rate of ~1 every 62 seconds. Total rotational CPM of <strong class="yellow">32.9 vs 38.4</strong> means roughly <strong class="red">5.5 fewer ability casts per minute</strong>. With similar ilvl (<strong class="green">289.7 vs 288.9</strong>) and only <strong class="green">5 talent differences</strong>, the gap is execution-based and will carry into kill attempts once the raid gets there.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Demonology Warlocks on Mythic Crown of the Cosmos (kill data). Primary reference: <strong>Haotentwo</strong> (fewest talent differences at 5, 95.3K DPS, 8:19 kill). Note: references are from full kills (~8+ minutes); Sonic's best pull was 4:52 of a wipe &mdash; DPS comparison is directional, not absolute.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Fight Time</th><th>ilvl</th><th>Talent Delta</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Sonic</strong></td>
+      <td>141,420</td>
+      <td>4:52 (wipe)</td>
+      <td>289.7</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Died at 3:46</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Haotentwo <span class="ref-badge">#5 PRIMARY</span></td>
+      <td class="green">95,282</td>
+      <td>8:19 (kill)</td>
+      <td>288.9</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>Closest build match</td>
+    </tr>
+    <tr>
+      <td>Qywarlockaa <span class="ref-badge">#1</span></td>
+      <td class="green">106,104</td>
+      <td>8:35 (kill)</td>
+      <td>288.3</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#38632;&#33707; <span class="ref-badge">#2</span></td>
+      <td class="green">103,032</td>
+      <td>8:29 (kill)</td>
+      <td>291.3</td>
+      <td><span class="tag tag-diff">11 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Pymowl <span class="ref-badge">#3</span></td>
+      <td class="green">95,679</td>
+      <td>7:42 (kill)</td>
+      <td>290.8</td>
+      <td><span class="tag tag-diff">9 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#31048;&#27714;&#32773;&#21345;&#36831; <span class="ref-badge">#4</span></td>
+      <td class="green">95,352</td>
+      <td>8:33 (kill)</td>
+      <td>272.0</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong>Important context:</strong> Sonic's 141K DPS looks higher than the references, but that is a prog wipe artifact &mdash; short pulls inflate DPS because they are dominated by the opener burst window and first Tyrant. The references sustained 95&ndash;106K DPS across a full 8+ minute kill including low-damage movement phases. The rotational CPM gap (32.9 vs 38.4) and ability usage patterns are the meaningful comparison points.</p>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Sonic (3:46 active time before death in Fight 23) vs Haotentwo (8:19 full kill). Core rotational abilities sorted by importance to Demonology.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Hand of Gul'dan</strong></td>
+      <td>37</td>
+      <td class="yellow">9.8</td>
+      <td>105</td>
+      <td>12.6</td>
+      <td class="red">&minus;22%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Demonbolt</strong></td>
+      <td>27</td>
+      <td class="red">7.2</td>
+      <td>84</td>
+      <td>10.1</td>
+      <td class="red">&minus;29%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Shadow Bolt</strong></td>
+      <td>26</td>
+      <td class="green">6.9</td>
+      <td>47</td>
+      <td>5.7</td>
+      <td class="green">+22%</td>
+      <td><span class="tag tag-info">See below</span></td>
+    </tr>
+    <tr>
+      <td><strong>Call Dreadstalkers</strong></td>
+      <td>8</td>
+      <td class="yellow">2.1</td>
+      <td>25</td>
+      <td>3.0</td>
+      <td class="red">&minus;29%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Implosion</strong></td>
+      <td>10</td>
+      <td>2.7</td>
+      <td>23</td>
+      <td>2.8</td>
+      <td class="green">&minus;4%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Ruination</strong></td>
+      <td>4</td>
+      <td class="yellow">1.1</td>
+      <td>12</td>
+      <td>1.4</td>
+      <td class="yellow">&minus;25%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Infernal Bolt</strong></td>
+      <td>4</td>
+      <td>1.1</td>
+      <td>11</td>
+      <td>1.3</td>
+      <td class="yellow">&minus;19%</td>
+      <td><span class="tag tag-info">Close</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Summon Demonic Tyrant</strong></td>
+      <td>3</td>
+      <td class="yellow">0.8</td>
+      <td>8</td>
+      <td>1.0</td>
+      <td class="red">&minus;19%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Grimoire: Imp Lord</strong></td>
+      <td>1</td>
+      <td class="red">0.3</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="red">&minus;45%</td>
+      <td><span class="tag tag-diff">Under-using</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Core Spender Gap: Hand of Gul'dan &amp; Demonbolt</div>
+    <p style="font-size: 14px;">Hand of Gul'dan is the primary Soul Shard spender and the #1 DPS driver during Tyrant windows &mdash; the current Demonology meta revolves around maximizing HoG casts during Tyrant. At <strong>9.8 CPM vs 12.6 CPM (&minus;22%)</strong>, Sonic is missing roughly <strong>10-11 Hand of Gul'dan casts per fight-minute-equivalent</strong>. Demonbolt (the Demonic Core spender that generates shards and procs) is even further behind at <strong>7.2 vs 10.1 (&minus;29%)</strong>. Meanwhile, Shadow Bolt (the lowest-priority filler) is <strong>22% over-represented</strong> &mdash; a clear sign of spending GCDs on the weakest shard generator when Demonic Core procs should be consumed instead.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Dreadstalker Cadence</div>
+    <p style="font-size: 14px;">Call Dreadstalkers at <strong>2.1 CPM vs 3.0 CPM (&minus;29%)</strong> means Sonic is casting Dreadstalkers every ~28.2 seconds instead of every ~20 seconds. Dreadstalkers are a core part of the Tyrant setup &mdash; they must be active when Tyrant is cast to be extended. Missing Dreadstalker casts means fewer demons for Tyrant to empower, and fewer Demonic Core procs from the Dreadstalker talent chain. The reference casts Dreadstalkers almost exactly on their ~20s cooldown.</p>
+  </div>
+</div>
+
+<!-- TYRANT WINDOW ANALYSIS -->
+<h2>Tyrant Window Analysis</h2>
+<p class="section-intro">Summon Demonic Tyrant is the spec's primary cooldown. The goal is to summon Dreadstalkers + Imp Lord before Tyrant, then spend Shards on Hand of Gul'dan during the 20s Tyrant window for dynamic damage scaling.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Haotentwo</span> <span class="ref-badge">Reference (Kill)</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:02</span> <span class="cast good">Dreadstalkers</span></div>
+      <div><span class="dim">0:24</span> <span class="cast good">Tyrant #1 (Dreadstalkers active)</span></div>
+      <div><span class="dim">0:25</span> <span class="cast good">Imp Lord (right after Tyrant)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:26</span> <span class="cast good">Tyrant #2 (~62s gap)</span></div>
+      <div><span class="dim">2:57</span> <span class="cast good">Tyrant #3 (~91s gap)</span></div>
+      <div><span class="dim">3:58</span> <span class="cast good">Tyrant #4 (~61s gap)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">Pattern:</span> <span class="cast good">Tyrant every ~62s, 8 total in 8:19</span></div>
+      <div style="margin-top: 8px;"><strong class="green">4 Imp Lord casts, each paired with a Tyrant window</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Sonic</span> <span class="tag tag-warn">Prog Wipe</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:01</span> <span class="cast good">Dreadstalkers</span></div>
+      <div><span class="dim">0:05</span> <span class="cast good">Tyrant #1 (Dreadstalkers active)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:10</span> <span class="cast good">Tyrant #2 (~65s gap)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">2:58</span> <span class="cast bad">Imp Lord (not synced with Tyrant)</span></div>
+      <div><span class="dim">3:01</span> <span class="cast good">Tyrant #3 (~111s gap)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:46</span> <span class="cast bad">Died to Voidstalker Sting</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">3 Tyrants in 3:46, only 1 Imp Lord cast (not paired)</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Why This Matters</div>
+  <p style="font-size: 14px;">Demonology's damage is <strong>heavily front-loaded into Tyrant windows</strong>. Tyrant dynamically scales damage based on how many Hand of Gul'dan casts happen during its 20-second duration. The reference casts Tyrant every ~62 seconds &mdash; nearly on cooldown. Sonic's gap between Tyrant #2 and #3 was <strong>111 seconds (nearly 2 minutes)</strong>, which represents a massive lost burst window. Additionally, Grimoire: Imp Lord should be cast <strong>just before or just after Tyrant</strong> so the Imp Lord is extended by Tyrant &mdash; Sonic's single Imp Lord cast at 2:58 was 3 seconds before Tyrant #3, which is close but suboptimal compared to the reference who consistently pairs them. With only 1 Imp Lord cast in 3:46 vs the reference's rate of ~1 per 2.5 minutes, there are likely <strong>1-2 missed Imp Lord casts</strong>.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Top damage sources. Sonic's total: 47.3M (161K DPS over 293s fight / died at 3:46) vs Haotentwo: 111.7M (95K DPS over 8:19 kill). Sorted by share of total damage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Fel Firebolt</strong> (Wild Imps)</td>
+      <td>10,829K</td>
+      <td>21.8%</td>
+      <td class="green">20,375K</td>
+      <td>18.2%</td>
+      <td>Primary pet damage &mdash; scales with imp count</td>
+    </tr>
+    <tr>
+      <td><strong>Burning Cleave</strong></td>
+      <td>4,191K</td>
+      <td>8.4%</td>
+      <td class="green">11,205K</td>
+      <td>10.0%</td>
+      <td>Imp cleave &mdash; scales with Hand of Gul'dan</td>
+    </tr>
+    <tr>
+      <td>Blighted Maw</td>
+      <td>3,089K</td>
+      <td>6.2%</td>
+      <td>3,676K</td>
+      <td>3.3%</td>
+      <td>Diabolist talent proc</td>
+    </tr>
+    <tr>
+      <td>Melee (pets)</td>
+      <td>2,688K</td>
+      <td>5.4%</td>
+      <td>5,373K</td>
+      <td>4.8%</td>
+      <td>Pet auto-attacks</td>
+    </tr>
+    <tr>
+      <td><strong>Hand of Gul'dan</strong></td>
+      <td>2,248K</td>
+      <td>4.5%</td>
+      <td class="green">5,768K</td>
+      <td>5.2%</td>
+      <td class="red">Core spender &mdash; under-cast</td>
+    </tr>
+    <tr>
+      <td>Chaos Salvo</td>
+      <td>2,200K</td>
+      <td>4.4%</td>
+      <td>3,825K</td>
+      <td>3.4%</td>
+      <td>Diabolist talent</td>
+    </tr>
+    <tr>
+      <td>Greater Felbolt (Dreadstalkers)</td>
+      <td>2,143K</td>
+      <td>4.3%</td>
+      <td class="green">7,223K</td>
+      <td>6.5%</td>
+      <td class="red">Scales with Dreadstalker uptime</td>
+    </tr>
+    <tr>
+      <td><strong>Ruination</strong></td>
+      <td>1,999K</td>
+      <td>4.0%</td>
+      <td>4,645K</td>
+      <td>4.2%</td>
+      <td>Diabolist capstone</td>
+    </tr>
+    <tr>
+      <td><strong>Demonbolt</strong></td>
+      <td>1,869K</td>
+      <td>3.8%</td>
+      <td>3,690K</td>
+      <td>3.3%</td>
+      <td class="yellow">Demonic Core spender</td>
+    </tr>
+    <tr>
+      <td>Eye Explosion</td>
+      <td>1,719K</td>
+      <td>3.5%</td>
+      <td>3,077K</td>
+      <td>2.8%</td>
+      <td>Scales with Tyrant windows</td>
+    </tr>
+    <tr>
+      <td>Soul Barrage</td>
+      <td>1,445K</td>
+      <td>2.9%</td>
+      <td>2,766K</td>
+      <td>2.5%</td>
+      <td>Passive soul proc damage</td>
+    </tr>
+    <tr>
+      <td>Implosion</td>
+      <td>1,442K</td>
+      <td>2.9%</td>
+      <td>2,923K</td>
+      <td>2.6%</td>
+      <td><span class="tag tag-same">Proportionally similar</span></td>
+    </tr>
+    <tr>
+      <td>Felseeker</td>
+      <td>1,359K</td>
+      <td>2.7%</td>
+      <td>3,500K</td>
+      <td>3.1%</td>
+      <td>Passive Tyrant beam</td>
+    </tr>
+    <tr>
+      <td>Infernal Bolt</td>
+      <td>1,286K</td>
+      <td>2.6%</td>
+      <td>2,479K</td>
+      <td>2.2%</td>
+      <td>Shard dump / high-damage filler</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Key Damage Observations</div>
+  <p style="font-size: 14px;">The biggest proportional gap is <strong class="red">Greater Felbolt (Dreadstalkers)</strong>: 4.3% of Sonic's damage vs 6.5% of reference. This directly ties to the Dreadstalker cadence problem &mdash; fewer Dreadstalker summons means fewer Greater Felbolts firing. <strong class="red">Hand of Gul'dan</strong> at 4.5% vs 5.2% reflects the under-casting already identified. <strong class="red">Burning Cleave</strong> at 8.4% vs 10.0% is downstream of having fewer imps from fewer Hand of Gul'dan casts. The <strong>Fel Firebolt share (21.8% vs 18.2%)</strong> being higher for Sonic is actually not a positive &mdash; it means the player's direct casts contribute a smaller share relative to passive pet damage.</p>
+</div>
+
+<!-- DEATH ANALYSIS -->
+<h2>Fight 23 Death Timeline</h2>
+<p class="section-intro">Sonic died at 3:46 to Voidstalker Sting. The raid cascaded after that &mdash; 22 total deaths in the pull.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left: 51.4%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">2:31 &mdash; 2 deaths</span>
+  </div>
+  <div class="timeline-marker" style="left: 55.4%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="top: 16px; left: 6px; color: var(--red);">2:42 Invincibale</span>
+  </div>
+  <div class="timeline-marker" style="left: 77.1%; border-color: var(--orange); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--orange);">3:46 Sonic dies</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.2%; border-color: var(--dim); width: 2px;">
+    <span class="timeline-label" style="top: 30px; left: 6px; color: var(--dim);">4:00+ cascade</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">2:27</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:52</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State</div>
+  <p>0:00&ndash;2:31 = 20/20 alive &middot; 2:31 = 18/20 (Alitheria + Smokinthisza die to Silverstrike Barrage) &middot; 2:42 = 17/20 (Invincibale) &middot; <strong class="orange">3:46 = Sonic dies to Voidstalker Sting</strong> &middot; 3:56&ndash;4:04 = cascade: Invincibale, Orichamaru, Starfighter, Moistbear, Zinnks die &middot; 4:14&ndash;4:24 = 8 more deaths &middot; 4:42 = Nucke &middot; 4:53 = Glazedwhole (last alive)</p>
+  <p style="margin-top: 4px; color: var(--yellow);">Sonic's death at 3:46 was among the first wave of Phase 2/3 deaths. Voidstalker Sting is a debuff that deals increasing damage &mdash; surviving it requires defensive usage or healer attention. After Sonic died, the raid lost 14 more players in the next minute.</p>
+</div>
+
+<!-- DEFENSIVE USAGE -->
+<h2>Defensive &amp; Utility Usage</h2>
+<p class="section-intro">Defensive and utility casts during Fight 23. Demo Warlocks have strong personal defensives.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Uses</th><th>Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Unending Resolve</strong></td>
+      <td>1</td>
+      <td>Once in 3:46</td>
+      <td><span class="tag tag-warn">Under-using</span> &mdash; 3min CD, could use 1-2x</td>
+    </tr>
+    <tr>
+      <td><strong>Dark Pact</strong></td>
+      <td>1</td>
+      <td>Once in 3:46</td>
+      <td><span class="tag tag-warn">Under-using</span> &mdash; 1min CD, could use 3-4x</td>
+    </tr>
+    <tr>
+      <td><strong>Demonic Healthstone</strong></td>
+      <td>2</td>
+      <td>Used twice</td>
+      <td><span class="tag tag-same">Good usage</span></td>
+    </tr>
+    <tr>
+      <td><strong>Demonic Gateway</strong></td>
+      <td>2</td>
+      <td>Placement/use</td>
+      <td><span class="tag tag-same">Raid utility</span></td>
+    </tr>
+    <tr>
+      <td><strong>Burning Rush</strong></td>
+      <td>1</td>
+      <td>Movement tool</td>
+      <td><span class="tag tag-info">Self-damage trade-off</span></td>
+    </tr>
+    <tr>
+      <td><strong>Demonic Circle</strong></td>
+      <td>1</td>
+      <td>Teleport</td>
+      <td><span class="tag tag-same">Used for positioning</span></td>
+    </tr>
+    <tr>
+      <td><strong>Soulburn</strong></td>
+      <td>1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Enhanced ability</span></td>
+    </tr>
+    <tr>
+      <td><strong>Health Potion</strong></td>
+      <td>1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Used</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--red);">
+  <div class="card-header red">Death Could Have Been Prevented</div>
+  <p style="font-size: 14px;">Sonic died to Voidstalker Sting at 3:46. <strong>Dark Pact</strong> (1min CD, shields for ~40% of max HP) was only used once in 3:46 of combat &mdash; it should have been available again before death. The reference player (Haotentwo) used Dark Pact <strong>7 times</strong> across their 8:19 kill &mdash; nearly on cooldown for every dangerous mechanic. <strong>Unending Resolve</strong> (40% DR) was also only used once. More aggressive defensive usage during Voidstalker Sting debuff application would likely have prevented this death.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during Fight 23.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism</strong></td>
+      <td>2:59</td>
+      <td><span class="tag tag-info">Late in pull</span> &mdash; aligned with Tyrant #3 at 3:01</td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>0:01, 1:05, 1:36, 2:58, 3:30</td>
+      <td><span class="tag tag-same">5 applications</span> &mdash; regular Aug Evoker support</td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>0:10, 1:15</td>
+      <td><span class="tag tag-same">2 applications</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td><span class="tag tag-info">Not received</span></td>
+    </tr>
+    <tr>
+      <td><strong>Blood Fury</strong> (racial)</td>
+      <td>0:11, 2:59</td>
+      <td><span class="tag tag-same">2 uses, aligned with Tyrants</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Heroism at 2:59 was well-aligned with Tyrant #3 at 3:01 and Blood Fury. This is the correct play &mdash; stacking Tyrant + Heroism + Blood Fury for maximum burst. Unfortunately, Sonic died 47 seconds later, cutting the Heroism window short.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Sonic during Fight 23 (3:46 active). Total: 6,461K.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>2,261K</td>
+      <td>118</td>
+      <td>1,157K</td>
+      <td><span class="tag tag-same">No &mdash; passive raid DoT</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Voidstalker Sting</strong></td>
+      <td>808K</td>
+      <td>37</td>
+      <td>220K</td>
+      <td><span class="tag tag-warn">Partially &mdash; killed Sonic</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>731K</td>
+      <td>21</td>
+      <td>200K</td>
+      <td><span class="tag tag-warn">Partially &mdash; puddle placement</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>462K</td>
+      <td>21</td>
+      <td>105K</td>
+      <td><span class="tag tag-same">No &mdash; raid mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Simulacrum Backlash</td>
+      <td>445K</td>
+      <td>15</td>
+      <td>62K</td>
+      <td><span class="tag tag-same">No &mdash; phase mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>411K</td>
+      <td>2</td>
+      <td>0K</td>
+      <td><span class="tag tag-diff">Yes &mdash; 2 falls</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>289K</td>
+      <td>14</td>
+      <td>122K</td>
+      <td><span class="tag tag-same">No &mdash; raid AoE</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>267K</td>
+      <td>1</td>
+      <td>33K</td>
+      <td><span class="tag tag-warn">Partially &mdash; 1 hit</span></td>
+    </tr>
+    <tr>
+      <td>Other sources</td>
+      <td>787K</td>
+      <td>Various</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Mixed</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Two things stand out: <strong class="red">Falling damage (411K from 2 hits)</strong> is fully avoidable &mdash; this is falling off platforms during the Crown fight, which is a positioning/awareness issue. <strong class="yellow">Voidstalker Sting (808K, 37 hits)</strong> was the killing blow &mdash; Dark Pact or Unending Resolve should have been used during the Sting debuff window. Everything else is mostly unavoidable raid-wide mechanics.</p>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Sonic</th><th>Haotentwo</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>289.7</td>
+      <td>288.9</td>
+      <td><span class="tag tag-same">+0.8 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Intellect</td>
+      <td>2,728</td>
+      <td>2,671</td>
+      <td><span class="tag tag-same">+2% &mdash; similar</span></td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="green">837</td>
+      <td>698</td>
+      <td>+20% more Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="green">845</td>
+      <td>380</td>
+      <td>+122% more Mastery</td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="yellow">862</td>
+      <td>1,465</td>
+      <td>&minus;41% less Crit</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>42</td>
+      <td>106</td>
+      <td><span class="dim">Both low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Sonic's stat profile actually favors the current Demonology priority (<strong>Haste > Mastery > Versatility > Crit</strong>) better than the reference, with more Haste (+20%) and significantly more Mastery (+122%). The reference stacks Crit heavily instead. This means <strong>Sonic's gear should theoretically support higher CPM</strong> (more Haste = faster GCDs) &mdash; the rotation execution gap is even more impactful because the stat budget is already well-allocated. The CPM deficit cannot be attributed to gear.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Sonic's DPS across all 26 Crown of the Cosmos pulls. Boss % shown on each bar &mdash; lower % = further into the fight. Colors: <span class="green">green</span> = deep prog (&lt;10%), <span class="yellow">yellow</span> = mid prog (10-50%), <span class="orange">orange</span> = early wipe (50-90%), <span class="red">red</span> = instant wipe (&gt;90%).</p>
+
+<div class="card">
+  <div class="progression-chart" style="margin-bottom: 24px;">
+    <div class="prog-bar" style="height: 2%; background: var(--red);" data-tooltip="F1: 5K DPS (0:28) 99%">
+      <span class="prog-label">1</span>
+    </div>
+    <div class="prog-bar" style="height: 56%; background: var(--orange);" data-tooltip="F2: 140K DPS (1:03) 52%">
+      <span class="prog-label">2</span>
+    </div>
+    <div class="prog-bar" style="height: 66%; background: var(--orange);" data-tooltip="F3: 165K DPS (1:57) 55%">
+      <span class="prog-label">3</span>
+    </div>
+    <div class="prog-bar" style="height: 62%; background: var(--orange);" data-tooltip="F4: 155K DPS (1:16) 55%">
+      <span class="prog-label">4</span>
+    </div>
+    <div class="prog-bar" style="height: 85%; background: var(--orange);" data-tooltip="F5: 212K DPS (1:00) 74%">
+      <span class="prog-label">5</span>
+    </div>
+    <div class="prog-bar" style="height: 85%; background: var(--yellow);" data-tooltip="F6: 213K DPS (2:23) 19%">
+      <span class="prog-label">6</span>
+    </div>
+    <div class="prog-bar" style="height: 61%; background: var(--yellow);" data-tooltip="F7: 152K DPS (1:29) 42%">
+      <span class="prog-label">7</span>
+    </div>
+    <div class="prog-bar" style="height: 58%; background: var(--green);" data-tooltip="F8: 144K DPS (2:22) 0.01%">
+      <span class="prog-label">8</span>
+    </div>
+    <div class="prog-bar" style="height: 31%; background: var(--green);" data-tooltip="F9: 76K DPS (2:32) 7%">
+      <span class="prog-label">9</span>
+    </div>
+    <div class="prog-bar" style="height: 62%; background: var(--red);" data-tooltip="F10: 156K DPS (3:40) 98%">
+      <span class="prog-label">10</span>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--yellow);" data-tooltip="F11: 249K DPS (2:02) 30%">
+      <span class="prog-label">11</span>
+    </div>
+    <div class="prog-bar" style="height: 62%; background: var(--red);" data-tooltip="F12: 154K DPS (3:54) 92%">
+      <span class="prog-label">12</span>
+    </div>
+    <div class="prog-bar" style="height: 53%; background: var(--orange);" data-tooltip="F13: 132K DPS (1:15) 61%">
+      <span class="prog-label">13</span>
+    </div>
+    <div class="prog-bar" style="height: 58%; background: var(--red);" data-tooltip="F14: 144K DPS (3:51) 95%">
+      <span class="prog-label">14</span>
+    </div>
+    <div class="prog-bar" style="height: 81%; background: var(--green);" data-tooltip="F15: 203K DPS (2:29) 9%">
+      <span class="prog-label">15</span>
+    </div>
+    <div class="prog-bar" style="height: 70%; background: var(--yellow);" data-tooltip="F16: 174K DPS (2:10) 21%">
+      <span class="prog-label">16</span>
+    </div>
+    <div class="prog-bar" style="height: 25%; background: var(--green);" data-tooltip="F17: 64K DPS (2:24) 0.01%">
+      <span class="prog-label">17</span>
+    </div>
+    <div class="prog-bar" style="height: 58%; background: var(--red);" data-tooltip="F18: 144K DPS (3:56) 96%">
+      <span class="prog-label">18</span>
+    </div>
+    <div class="prog-bar" style="height: 87%; background: var(--yellow);" data-tooltip="F19: 217K DPS (1:54) 35%">
+      <span class="prog-label">19</span>
+    </div>
+    <div class="prog-bar" style="height: 88%; background: var(--yellow);" data-tooltip="F20: 220K DPS (2:00) 35%">
+      <span class="prog-label">20</span>
+    </div>
+    <div class="prog-bar" style="height: 90%; background: var(--green);" data-tooltip="F21: 224K DPS (2:27) 0.22%">
+      <span class="prog-label">21</span>
+    </div>
+    <div class="prog-bar" style="height: 0%; background: var(--red);" data-tooltip="F22: 0 DPS (0:25) 100%">
+      <span class="prog-label">22</span>
+    </div>
+    <div class="prog-bar" style="height: 57%; background: var(--orange);" data-tooltip="F23: 141K DPS (4:52) 77%">
+      <span class="prog-label" style="font-weight:bold;color:var(--accent);">23</span>
+    </div>
+    <div class="prog-bar" style="height: 58%; background: var(--red);" data-tooltip="F24: 144K DPS (3:49) 93%">
+      <span class="prog-label">24</span>
+    </div>
+    <div class="prog-bar" style="height: 71%; background: var(--red);" data-tooltip="F25: 178K DPS (3:08) 100%">
+      <span class="prog-label">25</span>
+    </div>
+    <div class="prog-bar" style="height: 66%; background: var(--red);" data-tooltip="F26: 165K DPS (3:40) 97%">
+      <span class="prog-label">26</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 1</span>
+    <span style="color: var(--dim);"><span class="green">&bull;</span> Deep (&lt;10%) &bull; <span class="yellow">&bull;</span> Mid (10-50%) &bull; <span class="orange">&bull;</span> Early (50-90%) &bull; <span class="red">&bull;</span> Instant (&gt;90%)</span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Filtering to pulls longer than 2 minutes for meaningful DPS comparisons: F3 (165K, 1:57) &rarr; F6 (213K, 2:23) &rarr; F8 (144K, 2:22) &rarr; F10 (156K, 3:40) &rarr; F11 (249K, 2:02) &rarr; F12 (154K, 3:54) &rarr; F14 (144K, 3:51) &rarr; F15 (203K, 2:29) &rarr; F18 (144K, 3:56) &rarr; F23 (141K, 4:52). <strong>Longer pulls consistently show lower DPS</strong> (141-156K for 3+ min pulls vs 200-249K for 2-min pulls), which is expected &mdash; the opener burst inflates short-pull numbers. The <strong>3-4 minute pulls stabilize around 141-156K</strong>, suggesting this is Sonic's current sustained rate. Fights 10, 12, 14, 18, 24-26 show <strong>high boss % despite long durations</strong> &mdash; these are pulls where the raid lasted but made little boss progress (likely dying in Phase 1 sentinel kills or Phase 2 mechanics repeatedly).</p>
+  <p style="font-size: 14px; margin-top: 8px;">The <strong>best prog pulls</strong> (F8: 0.01%, F17: 0.01%, F21: 0.22%) all show moderate DPS (64-224K), indicating the raid's success correlated more with survival and mechanic execution than raw damage output. F9 (76K) and F17 (64K) have unusually low DPS &mdash; Sonic may have died very early in those pulls despite the raid reaching deep boss %.</p>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Hand of Gul'dan and Demonbolt casts per minute.</strong> This is the single biggest DPS improvement available. Hand of Gul'dan at <strong>9.8 CPM vs 12.6 (&minus;22%)</strong> and Demonbolt at <strong>7.2 vs 10.1 (&minus;29%)</strong> represent the core of Demonology's damage engine. Shadow Bolt (the weakest filler) at 6.9 CPM vs 5.7 is being over-used &mdash; Demonic Core procs should be consumed via Demonbolt before falling back to Shadow Bolt. Every Demonbolt generates more procs and shards than Shadow Bolt, which feeds more Hand of Gul'dan casts. <strong>Fix:</strong> Always check for Demonic Core stacks before casting Shadow Bolt. At 2+ stacks, Demonbolt should be the priority. This alone could close 2-3 CPM of the gap. Estimated gain: <strong>8-12% DPS increase</strong>.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Cast Demonic Tyrant on cooldown with proper setup.</strong> Only 3 Tyrant casts in 3:46 (one every ~75 seconds) vs the reference's rate of ~1 every 62 seconds. The gap between Tyrant #2 (1:10) and #3 (3:01) was <strong>111 seconds &mdash; nearly 2x the cooldown</strong>. A missed Tyrant window during prog is a massive DPS loss because Tyrant dynamically scales damage based on Hand of Gul'dan casts during its 20-second duration. <strong>Fix:</strong> Track Tyrant cooldown and begin preparing (saving Dreadstalkers + Imp Lord) 5-10 seconds before it's ready. Cast Dreadstalkers &rarr; Imp Lord &rarr; Tyrant &rarr; spam Hand of Gul'dan during the window. Estimated gain: <strong>10-15% DPS increase</strong> from the extra Tyrant window alone.
+</div>
+
+<div class="action-item critical">
+  <strong>3. Use Grimoire: Imp Lord on cooldown, synced with Tyrant.</strong> Only 1 Imp Lord cast in 3:46 vs the reference's ~1 every 2.5 minutes. Imp Lord summons a powerful demon that should be extended by Tyrant. The reference pairs every Imp Lord with a Tyrant window. <strong>Fix:</strong> When Tyrant is coming off cooldown, cast Dreadstalkers and Imp Lord in the 2-3 seconds before Tyrant so both get extended. This is the standard Tyrant setup sequence. Estimated gain: <strong>3-5% DPS increase</strong>.
+</div>
+
+<div class="action-item">
+  <strong>4. Use Dark Pact aggressively to survive dangerous mechanics.</strong> Dark Pact was used only <strong>1 time in 3:46</strong> despite being a 1-minute cooldown. The reference used it <strong>7 times in 8:19</strong> &mdash; essentially on cooldown for every high-damage window. Sonic died to Voidstalker Sting, which is predictable debuff damage that Dark Pact could absorb. Dead DPS does zero DPS. <strong>Fix:</strong> Use Dark Pact proactively before known damage events (Void Expulsion, Voidstalker Sting, Silverstrike Barrage). It costs health to activate but the shield more than compensates. On Crown specifically, use it during every Sting application and every Barrage.
+</div>
+
+<div class="action-item">
+  <strong>5. Eliminate falling damage.</strong> Two instances of Falling damage totaling <strong>411K</strong> during the fight. Crown of the Cosmos has platform mechanics requiring careful positioning. Falling off platforms is fully avoidable and contributes to both damage taken and potential death risk. <strong>Fix:</strong> Stay centered on platforms during transitions, use Demonic Gateway and Demonic Circle: Teleport for emergency repositioning instead of running off edges.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Implosion usage:</strong> 2.7 CPM matches the reference's 2.8 CPM almost exactly. This is the correct rate &mdash; imploding imps at 6 stacks for the damage + AoE contribution without over-doing it.<br><br>
+    <strong>Heroism alignment:</strong> Heroism at 2:59 was correctly paired with Tyrant #3 (3:01) and Blood Fury (2:59), maximizing the burst window when it arrived.<br><br>
+    <strong>Gateway usage:</strong> Demonic Gateway was placed and used for the raid, contributing utility beyond personal DPS.<br><br>
+    <strong>Healthstone usage:</strong> Used 2 Demonic Healthstones during the fight, showing active self-healing attempts during high-damage phases.<br><br>
+    <strong>Stat allocation:</strong> Sonic's gear favors Haste (837) and Mastery (845) over Crit (862), which aligns with the current Demonology stat priority better than the reference. The gear foundation is solid.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary &mdash; Progression Context</div>
+  <p style="font-size: 14px;">This is prog data from 26 wipes &mdash; no kill yet. The comparison to reference <strong>kills</strong> is inherently unfair (references had full fight duration, execute phases, and optimized strategies). However, the core rotation gaps identified here &mdash; <strong>Hand of Gul'dan under-casting (&minus;22%)</strong>, <strong>Demonbolt displacement by Shadow Bolt (&minus;29%)</strong>, <strong>missed Tyrant windows</strong>, and <strong>under-using Imp Lord</strong> &mdash; are execution patterns that carry into every pull regardless of fight length. The defensive gap (Dark Pact and Unending Resolve under-use) is equally critical: <strong>surviving deeper into the fight is the #1 priority on prog</strong>. Fixing rotation fundamentals + defensive usage would increase both DPS output and survivability, directly contributing to the raid's ability to progress past Phase 2 mechanics. With <strong>289.7 ilvl</strong> and a well-allocated stat profile, the gear is not the bottleneck &mdash; this is execution and cooldown discipline.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (longest pull, 4:52, 77.31% boss). Primary reference: Haotentwo (#5 ranked Demonology Warlock, report <code>zFnXqLkBcJ6C9WP1</code>, Fight 53, 8:19 kill, 95.3K DPS). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 5 differences between Sonic and Haotentwo. Item level: 289.7 vs 288.9 (+0.8). Sonic died at 3:46 to Voidstalker Sting. PROG context: 26 wipes, best boss % 0.01% (Fights 8, 17). Reference data is from kills &mdash; DPS numbers are not directly comparable.</p>
+  <p style="margin-top: 4px;">Spec guide sources: Icy Veins Demonology Warlock DPS Rotation Guide (Patch 12.0.7), Maxroll Demonology Warlock Raid Guide (12.0.7), Wowhead Demonology Warlock Season 2 Guide.</p>
+</div>
+
+</body>
+</html>

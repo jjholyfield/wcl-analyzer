@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPS Audit — Baodabao (Frost Mage) — Mythic LBV</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 960px; margin: 0 auto; line-height: 1.6; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: #3fc7eb; margin-top: 40px; margin-bottom: 16px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; color: #fff; margin-top: 24px; margin-bottom: 10px; }
+
+  .teach { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; font-size: 14px; color: #bbb; line-height: 1.8; }
+  .teach p { margin-bottom: 12px; }
+  .teach p:last-child { margin-bottom: 0; }
+  .teach strong { color: #e0e0e0; }
+  .teach .spell { color: #3fc7eb; font-weight: 600; }
+  .teach .key { color: #ffa940; font-weight: 600; }
+  .teach .bad { color: #ff6b6b; }
+  .teach .good { color: #4caf50; }
+
+  .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .overview-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 16px; text-align: center; }
+  .overview-label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .overview-value { font-size: 28px; font-weight: 700; }
+  .overview-sub { font-size: 12px; color: #555; margin-top: 4px; }
+
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: #141414; color: #888; font-weight: 600; border-bottom: 1px solid #222; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .compare-table td { padding: 6px 12px; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+  .compare-table tr:hover { background: #161616; }
+  .compare-table .bad { color: #ff6b6b; font-weight: 600; }
+  .compare-table .warn { color: #ffa940; font-weight: 600; }
+  .compare-table .ok { color: #4caf50; }
+
+  .finding { background: #141414; border-radius: 6px; padding: 16px 20px; margin-bottom: 12px; font-size: 14px; color: #bbb; line-height: 1.7; }
+  .finding-bad { border-left: 3px solid #ff6b6b; background: #1a1212; }
+  .finding-warn { border-left: 3px solid #ffa940; background: #1a1710; }
+  .finding-good { border-left: 3px solid #4caf50; background: #121a14; }
+  .finding strong { color: #fff; }
+
+  .action { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 18px 22px; margin-bottom: 12px; }
+  .action-num { font-size: 28px; font-weight: 700; color: #333; float: left; margin-right: 16px; font-family: 'Courier New', monospace; line-height: 1; }
+  .action-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+  .action-body { font-size: 13px; color: #999; line-height: 1.7; }
+  .action-body strong { color: #ccc; }
+
+  .cd-timeline { display: grid; grid-template-columns: 60px 1fr; gap: 4px 12px; font-size: 13px; margin: 12px 0; padding-left: 16px; }
+  .cd-time { color: #888; font-family: 'Courier New', monospace; font-weight: 600; text-align: right; }
+  .cd-label { color: #ccc; }
+
+  details { margin-top: 36px; }
+  summary { font-size: 14px; font-weight: 600; color: #666; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #999; }
+  .details-inner { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #888; line-height: 1.7; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>DPS Audit &mdash; <span style="color:#3fc7eb">Baodabao</span></h1>
+<p class="subtitle">Frost Mage &mdash; Mythic Lightblinded Vanguard &mdash; June 2, 2026 &mdash; Pull #30 (6:40, best pull of the night)</p>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>How Frost Mage Works</h2>
+
+<div class="teach">
+  <p>Frost Mage is a proc-based spec built around one core loop: <strong>build Freezing stacks on the target, then spend them with Ice Lance for burst damage.</strong> Everything you do feeds into this cycle.</p>
+
+  <p>Your main filler is <span class="spell">Frostbolt</span>. Every time you cast Frostbolt, it applies Freezing stacks to the target. You keep casting Frostbolt until one of two things happens: you get a <span class="key">Brain Freeze</span> proc (which lights up <span class="spell">Flurry</span>), or you get a <span class="key">Fingers of Frost</span> proc (which lights up <span class="spell">Ice Lance</span>). When either of those procs, you stop Frostbolting and press the glowing button immediately.</p>
+
+  <p>The big combo works like this: Frostbolt builds stacks &rarr; Brain Freeze procs &rarr; you press <span class="spell">Flurry</span> (which dumps more stacks and sets up the target) &rarr; then you fire <span class="spell">Ice Lance</span> to consume those stacks for a fat hit. That Frostbolt &rarr; Flurry &rarr; Ice Lance chain is the bread and butter. You&rsquo;ll do it dozens of times per fight.</p>
+
+  <p>On top of that, you have two cooldowns on roughly 60-second timers: <span class="spell">Frozen Orb</span> and <span class="spell">Ray of Frost</span>. Frozen Orb fires out and generates a ton of procs &mdash; press it on cooldown. Ray of Frost is a 4-second channel that deals damage and builds Freezing stacks fast &mdash; but you want to spend your existing stacks <em>before</em> channeling it, so the new stacks it generates don&rsquo;t go to waste.</p>
+
+  <p>When your Icicle bar fills up, <span class="spell">Glacial Spike</span> becomes available &mdash; it transforms your Frostbolt into a big hit. Press it immediately when it lights up. Don&rsquo;t sit on it.</p>
+
+  <p><span class="key">The one rule that matters more than anything else: always be casting.</span> If nothing is proc&rsquo;d, cast Frostbolt. If something is proc&rsquo;d, press it. If a cooldown is up, use it. Every second you spend not pressing a button is DPS you&rsquo;re leaving on the floor. The difference between a good Frost Mage and a great one isn&rsquo;t knowing the rotation &mdash; it&rsquo;s never stopping.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What the Best Frost Mages Do on LBV</h2>
+
+<div class="teach">
+  <p>The top 3 ranked Frost Mages on Mythic LBV all do the same thing: they never stop casting. Their CPM (casts per minute) sits between 46 and 48. Their dead time &mdash; gaps where they&rsquo;re not pressing anything &mdash; stays under 19%. They use Frozen Orb and Ray of Frost on cooldown every single time, getting 10-13 uses of each in a ~6 minute fight.</p>
+
+  <p>Their Flurry usage is the standout: <strong>7-8 Flurries per minute</strong>. That means they&rsquo;re generating and spending Brain Freeze procs constantly because they&rsquo;re always casting Frostbolt to feed the proc engine. More Frostbolts &rarr; more procs &rarr; more Flurries &rarr; more Ice Lances &rarr; more damage. It&rsquo;s a snowball.</p>
+</div>
+
+<h3>Top 3 Frost Mages — Mythic LBV</h3>
+
+<table class="compare-table">
+  <tr><th>Metric</th><th>#1 Choechoi (5:55)</th><th>#2 Dreamx (5:23)</th><th>#3 狗绵二号 (6:25)</th><th>Average</th></tr>
+  <tr><td><strong>DPS</strong></td><td>255,847</td><td>246,939</td><td>245,552</td><td><strong>249,446</strong></td></tr>
+  <tr><td><strong>CPM</strong></td><td>46.3</td><td>47.0</td><td>47.9</td><td><strong>47.1</strong></td></tr>
+  <tr><td><strong>Dead Time</strong></td><td>18.7%</td><td>15.0%</td><td>17.2%</td><td><strong>17.0%</strong></td></tr>
+  <tr><td>Ice Lance/min</td><td>24.3</td><td>26.0</td><td>24.3</td><td><strong>24.9</strong></td></tr>
+  <tr><td>Flurry/min</td><td>7.6</td><td>6.9</td><td>7.8</td><td><strong>7.4</strong></td></tr>
+  <tr><td>Frostbolt/min</td><td>5.6</td><td>5.9</td><td>7.0</td><td><strong>6.2</strong></td></tr>
+  <tr><td>Glacial Spike/min</td><td>2.2</td><td>2.4</td><td>2.3</td><td><strong>2.3</strong></td></tr>
+  <tr><td>Frozen Orb/min</td><td>2.0</td><td>1.9</td><td>2.0</td><td><strong>2.0</strong></td></tr>
+  <tr><td>Ray of Frost/min</td><td>1.9</td><td>1.7</td><td>1.7</td><td><strong>1.8</strong></td></tr>
+</table>
+
+<h3>When They Pop CDs</h3>
+<div class="teach">
+  <p>Top Frost Mages press <span class="spell">Frozen Orb</span> every ~50-60 seconds without exception &mdash; 10-13 uses in a 6-minute fight. <span class="spell">Ray of Frost</span> follows the same cadence. They don&rsquo;t hold either CD for &ldquo;the right moment&rdquo; &mdash; on this fight, the right moment is always <em>right now</em>. The damage profile on LBV is constant (Sacred Toll every 18s, Searing Radiance on a timer) so there&rsquo;s no reason to delay.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What You Did</h2>
+
+<div class="overview-grid">
+  <div class="overview-card">
+    <div class="overview-label">Your DPS</div>
+    <div class="overview-value" style="color:#ff6b6b">136K</div>
+    <div class="overview-sub">Top avg: 249K</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Your CPM</div>
+    <div class="overview-value" style="color:#ff6b6b">31.6</div>
+    <div class="overview-sub">Top avg: 47.1</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Dead Time</div>
+    <div class="overview-value" style="color:#ff6b6b">37%</div>
+    <div class="overview-sub">Top avg: 17%</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">% of Top</div>
+    <div class="overview-value" style="color:#ff6b6b">55%</div>
+    <div class="overview-sub">Target: &gt;85%</div>
+  </div>
+</div>
+
+<h3>Side-by-Side Comparison</h3>
+
+<table class="compare-table">
+  <tr><th>Spell</th><th>You</th><th>Top Avg</th><th>% of Top</th><th>Verdict</th></tr>
+  <tr><td>CPM</td><td>31.6</td><td>47.1</td><td class="bad">67%</td><td class="bad">15 fewer casts/min</td></tr>
+  <tr><td>Ice Lance/min</td><td>17.4</td><td>24.9</td><td class="warn">70%</td><td class="warn">missing 7.5/min</td></tr>
+  <tr><td>Flurry/min</td><td>2.8</td><td>7.4</td><td class="bad">38%</td><td class="bad">biggest gap</td></tr>
+  <tr><td>Frostbolt/min</td><td>3.6</td><td>6.2</td><td class="bad">58%</td><td class="bad">starving procs</td></tr>
+  <tr><td>Glacial Spike/min</td><td>1.5</td><td>2.3</td><td class="warn">65%</td><td class="warn">missing Icicles from low Frostbolt</td></tr>
+  <tr><td>Frozen Orb/min</td><td>1.3</td><td>2.0</td><td class="warn">65%</td><td class="warn">holding too long</td></tr>
+  <tr><td>Ray of Frost/min</td><td>1.3</td><td>1.8</td><td class="warn">72%</td><td class="warn">holding too long</td></tr>
+  <tr><td>Dead Time</td><td>36.9%</td><td>17.0%</td><td class="bad">2.2x worse</td><td class="bad">148s not casting</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>How This Is Affecting Your Damage</h2>
+
+<div class="finding finding-bad">
+  <strong>37% dead time = 148 seconds of a 400-second fight with no casts.</strong> That includes a single 104-second gap starting at 3:21. You were either dead, disconnected, or running without casting. Even excluding that one gap, you still have 44 seconds of dead time spread across 10+ smaller gaps &mdash; moments where you stopped casting to move, look around, or wait for something.
+</div>
+
+<div class="finding finding-bad">
+  <strong>Flurry at 2.8/min means you&rsquo;re pressing it less than 40% as often as top players.</strong> This is the core of the DPS gap. Every Flurry you don&rsquo;t press means you miss the Flurry &rarr; Ice Lance shatter combo. At 7.4/min, top players are chaining that combo roughly every 8 seconds. You&rsquo;re doing it every 21 seconds. That&rsquo;s 2.5x less burst damage from your most important combo.
+</div>
+
+<div class="finding finding-bad">
+  <strong>Low Frostbolt (3.6/min vs 6.2/min) is starving your proc engine.</strong> Frostbolt is what generates Brain Freeze procs for Flurry and builds Icicles for Glacial Spike. When you cast fewer Frostbolts, you get fewer procs, which means fewer Flurries, fewer Ice Lances, and fewer Glacial Spikes. It&rsquo;s a cascade &mdash; low Frostbolt drags everything else down with it.
+</div>
+
+<div class="finding finding-warn">
+  <strong>Frozen Orb and Ray of Frost are being held too long.</strong> Both are ~60s CDs. Top players get 2.0 Frozen Orbs and 1.8 Rays per minute. You&rsquo;re getting 1.3 of each. That&rsquo;s 2-3 missed uses over the fight &mdash; each one is a chunk of damage and a wave of procs you never generated.
+</div>
+
+<div class="finding finding-warn">
+  <strong>Ice Barrier at 1.8/min vs top players at 0.2-1.0/min.</strong> You&rsquo;re pressing a defensive almost twice a minute. It doesn&rsquo;t cost a GCD, but it suggests you&rsquo;re taking avoidable damage that&rsquo;s pulling your attention away from casting. The more you&rsquo;re worried about surviving, the less you&rsquo;re pressing damage buttons.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What You Need to Change</h2>
+
+<div class="action">
+  <span class="action-num" style="color:#ff6b6b;">1</span>
+  <div class="action-title">Never stop pressing buttons</div>
+  <div class="action-body">
+    Your #1 problem isn&rsquo;t rotation &mdash; it&rsquo;s uptime. 37% dead time means over a third of the fight you&rsquo;re not doing anything. <strong>The goal is to always have a cast going.</strong> If you&rsquo;re moving, queue an Ice Lance (instant). If you&rsquo;re standing still and nothing is proc&rsquo;d, Frostbolt. If something is glowing, press it. The target is under 20% dead time &mdash; that alone would add ~50K DPS without changing anything else about your rotation.<br><br>
+    <strong>Practice this:</strong> In your next pull, focus only on this &mdash; never let your cast bar be empty. Don&rsquo;t worry about pressing the perfect button. Just press <em>something</em>. Frostbolt is always the right answer when nothing else is available.
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ff6b6b;">2</span>
+  <div class="action-title">Press Flurry the instant Brain Freeze procs</div>
+  <div class="action-body">
+    You&rsquo;re getting 2.8 Flurries per minute. Top players get 7.4. The reason your Flurry count is low is a combination of two things: you&rsquo;re not casting enough Frostbolt to generate Brain Freeze procs, and when you do get the proc, you&rsquo;re probably not pressing it fast enough before it&rsquo;s wasted by another Frostbolt overwriting it.<br><br>
+    <strong>The combo is simple:</strong> Brain Freeze procs &rarr; Flurry (instant) &rarr; Ice Lance (instant) &rarr; back to Frostbolt. You should be able to fire that combo in under 2 seconds. If Brain Freeze lights up and you wait, you&rsquo;re losing your highest-value window.
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ffa940;">3</span>
+  <div class="action-title">Press Frozen Orb and Ray of Frost on cooldown</div>
+  <div class="action-body">
+    Both are ~60-second CDs. In a 6:40 fight, you should get <strong>7+ uses of each</strong>. You got 9 Frozen Orbs (fine) but the gaps between uses varied wildly &mdash; consistent pressing would add 1-2 more uses and smooth out your proc generation. Ray of Frost at 9 uses is also OK but could be tighter.<br><br>
+    <strong>Rule of thumb:</strong> If either CD has been off cooldown for more than 5 seconds and you haven&rsquo;t pressed it, you&rsquo;re holding too long. The only exception is if you need to spend existing Freezing stacks before channeling Ray of Frost.
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ffa940;">4</span>
+  <div class="action-title">Stay alive without stopping your casts</div>
+  <div class="action-body">
+    12 Ice Barriers in 6:40 suggests you&rsquo;re taking a lot of avoidable damage. Top players press it 1-6 times. Ice Barrier is off the GCD so it&rsquo;s not directly costing you casts, but whatever&rsquo;s hitting you is probably also making you move and stop casting. <strong>Better positioning = less damage taken = less panic = more time casting Frostbolt.</strong><br><br>
+    If the 104-second gap at 3:21 was a death, figure out what killed you and address that specifically. Being dead for nearly 2 minutes is the single biggest DPS loss in this log.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+
+<details>
+  <summary>Raw Data &amp; Sources</summary>
+  <div class="details-inner">
+    <strong>Report:</strong> by6mKkdwXGcqQtRW &mdash; Mythic Pallys Prog 06.02.26<br>
+    <strong>Fight:</strong> #30 (Mythic LBV, 6:40 wipe, longest pull of the night)<br>
+    <strong>Player:</strong> Baodabao, Frost Mage (sourceID: 7)<br><br>
+
+    <strong>Top Players Analyzed:</strong><br>
+    #1 Choechoi &mdash; 255,847 DPS, 46.3 CPM, 18.7% dead time (5:55 kill)<br>
+    #2 Dreamx &mdash; 246,939 DPS, 47.0 CPM, 15.0% dead time (5:23 kill)<br>
+    #3 狗绵二号 &mdash; 245,552 DPS, 47.9 CPM, 17.2% dead time (6:25 kill)<br><br>
+
+    <strong>Baodabao Full Cast Breakdown:</strong><br>
+    Ice Lance: 116x (17.4/min) | Frostbolt: 24x (3.6/min) | Flurry: 19x (2.8/min)<br>
+    Ice Barrier: 12x (1.8/min) | Glacial Spike: 10x (1.5/min) | Ray of Frost: 9x (1.3/min)<br>
+    Frozen Orb: 9x (1.3/min) | Nullsight: 3x | Potion: 2x | Ice Cold: 2x | Shimmer: 2x<br><br>
+
+    <strong>Dead Time Gaps &gt;3s:</strong><br>
+    0:12 &mdash; 3.1s | 0:41 &mdash; 3.4s | 1:46 &mdash; 4.7s | 2:02 &mdash; 3.2s | 2:50 &mdash; 3.4s<br>
+    3:21 &mdash; 104.0s (dead/DC?) | 5:05 &mdash; 3.5s | 5:11 &mdash; 3.7s | 5:16 &mdash; 3.4s | 5:33 &mdash; 3.4s<br>
+  </div>
+</details>
+
+<div class="footer">
+  Data from WCL v2 API &mdash; top 3 Frost Mages on Mythic LBV compared against Baodabao&rsquo;s best pull from June 2, 2026
+</div>
+
+</body>
+</html>

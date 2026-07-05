@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blowe - BM Hunter - Crown of the Cosmos Prog Night 5</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --hunter: #aad372;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 16px; font-weight: 600; margin: 20px 0 10px; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.back-link:hover { color: var(--accent); }
+
+.header-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.prog-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+  background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.night-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+  background: rgba(88, 166, 255, 0.15); color: var(--accent); border: 1px solid rgba(88, 166, 255, 0.3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+.subtitle span { margin-right: 16px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px;
+  text-align: center;
+}
+.card-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+.card-value.green { color: var(--green); }
+.card-value.yellow { color: var(--yellow); }
+.card-value.red { color: var(--red); }
+.card-value.hunter { color: var(--hunter); }
+
+table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); font-weight: 600; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 8px 12px; border: 1px solid var(--border); }
+tr:nth-child(even) td { background: rgba(22, 27, 34, 0.5); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; margin: 16px 0; padding: 0 4px; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.bar {
+  width: 100%; min-width: 18px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s;
+}
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-rl; text-orientation: mixed; height: 40px; overflow: hidden; }
+.bar-value { font-size: 9px; color: var(--text); margin-bottom: 2px; font-weight: 600; }
+.bar.survived { background: var(--green); }
+.bar.died { background: var(--red); }
+.bar.died-cascade { background: var(--orange); }
+.bar.short { background: var(--border); }
+
+.callout {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin: 16px 0;
+}
+.callout.green { border-left: 3px solid var(--green); }
+.callout.red { border-left: 3px solid var(--red); }
+.callout.yellow { border-left: 3px solid var(--yellow); }
+.callout.blue { border-left: 3px solid var(--accent); }
+.callout.purple { border-left: 3px solid var(--purple); }
+.callout-title { font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+.callout-body { font-size: 13px; color: var(--dim); }
+.callout-body strong { color: var(--text); }
+
+.phase-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin: 12px 0; border: 1px solid var(--border); }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text); }
+.phase-segment.p1 { background: rgba(63, 185, 80, 0.25); }
+.phase-segment.inter { background: rgba(210, 153, 34, 0.25); }
+.phase-segment.p2 { background: rgba(88, 166, 255, 0.25); }
+.phase-segment.p3 { background: rgba(248, 81, 73, 0.25); }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge.green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge.red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge.yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge.blue { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+.badge.purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+.improvement-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin: 10px 0;
+}
+.improvement-item .number {
+  display: inline-block; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); color: var(--bg); font-size: 13px; font-weight: 700;
+  text-align: center; line-height: 24px; margin-right: 8px;
+}
+.improvement-item .title { font-weight: 600; font-size: 15px; display: inline; }
+.improvement-item .detail { font-size: 13px; color: var(--dim); margin-top: 8px; }
+.improvement-item .detail strong { color: var(--text); }
+
+.ref-note { font-size: 12px; color: var(--dim); font-style: italic; margin: 8px 0; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.stat-comparison { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; }
+.stat-pair { text-align: center; }
+.stat-pair .label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-pair .value { font-size: 16px; font-weight: 600; }
+.stat-pair .ref { font-size: 12px; color: var(--purple); }
+
+.trend-arrow { font-size: 14px; margin-left: 4px; }
+.trend-arrow.up { color: var(--green); }
+.trend-arrow.down { color: var(--red); }
+
+.dps-inline { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260630-crown" class="back-link">&larr; June 30, 2026 Log Analysis</a>
+
+<div class="header-row">
+  <h1 style="color: var(--hunter);">Blowe</h1>
+  <span class="prog-tag">Progression</span>
+  <span class="night-tag">Night 5</span>
+</div>
+<p style="font-size: 16px; color: var(--dim); margin-bottom: 4px;">Beast Mastery Hunter &middot; Dark Ranger</p>
+<div class="subtitle">
+  <span>Mythic Crown of the Cosmos</span>
+  <span>June 30, 2026</span>
+  <span>20 pulls analyzed</span>
+  <span>Report: qDfTzvAyV3pRb6rG</span>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg Active DPS</div>
+    <div class="card-value hunter">58.5K</div>
+    <div class="card-sub">10 long pulls (5min+)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">292</div>
+    <div class="card-sub">Ref avg: 291</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value green">0 early deaths</div>
+    <div class="card-sub">Never 1st or 2nd to die</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value">69.6K</div>
+    <div class="card-sub">Fight 25 (7:55)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Deepest Pull</div>
+    <div class="card-value green">7:56</div>
+    <div class="card-sub">Fight 25 &mdash; Night's best</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Session Trend</div>
+    <div class="card-value green">+27%</div>
+    <div class="card-sub">F1: 54.8K &rarr; F25: 69.6K</div>
+  </div>
+</div>
+
+<!-- Phase Timeline Visual -->
+<h2>Fight Phase Structure</h2>
+<div class="phase-bar">
+  <div class="phase-segment p1" style="width:28%;">P1: Sentinels (0:00-2:14)</div>
+  <div class="phase-segment inter" style="width:8%;">Inter</div>
+  <div class="phase-segment p2" style="width:29%;">P2: Rift (2:53-5:09)</div>
+  <div class="phase-segment p3" style="width:35%;">P3: Cosmos (5:09+)</div>
+</div>
+<p style="font-size: 12px; color: var(--dim); margin-bottom: 8px;">
+  P1: Alleria + Sentinels + Void Droplets. Intermission: Stellar Emission channel (survival). P2: Rift Simulacrum + Voidspawn + Silver Simulacrum. P3: Cosmic Radiation overlaps everything.
+</p>
+
+<!-- Phase Reach Rate -->
+<h2>Phase Reach Rate</h2>
+<table>
+  <tr>
+    <th>Phase</th>
+    <th class="num">Pulls Reached</th>
+    <th class="num">Reach Rate</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>P1: Sentinels</td>
+    <td class="num">20 / 20</td>
+    <td class="num">100%</td>
+    <td><span class="badge green">Full</span></td>
+  </tr>
+  <tr>
+    <td>Intermission</td>
+    <td class="num">15 / 20</td>
+    <td class="num">75%</td>
+    <td><span class="badge yellow">Good</span></td>
+  </tr>
+  <tr>
+    <td>P2: Rift</td>
+    <td class="num">14 / 20</td>
+    <td class="num">70%</td>
+    <td><span class="badge yellow">Good</span></td>
+  </tr>
+  <tr>
+    <td>P3: Devouring Cosmos</td>
+    <td class="num">11 / 20</td>
+    <td class="num">55%</td>
+    <td><span class="badge yellow">Developing</span></td>
+  </tr>
+</table>
+<p class="ref-note">Phase reach is limited by raid wipes, not individual deaths. Blowe was never the cause of a wipe.</p>
+
+<!-- Per-Phase Performance Breakdown -->
+<h2>Per-Phase Performance Breakdown</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">DPS calculated from raw damage events per phase window. Only includes time while Blowe was alive. Short pulls (&lt;60s) are P1-only burst windows with inflated numbers and excluded from averages below.</p>
+
+<table>
+  <tr>
+    <th>Phase</th>
+    <th class="num">Pulls Seen</th>
+    <th class="num">Avg DPS</th>
+    <th class="num">Best DPS</th>
+    <th class="num">Worst DPS</th>
+    <th class="num">Deaths in Phase</th>
+    <th>Top Death Cause</th>
+  </tr>
+  <tr>
+    <td>P1: Sentinels</td>
+    <td class="num">20</td>
+    <td class="num" style="color: var(--hunter);">296.6K</td>
+    <td class="num">336.7K (F10)</td>
+    <td class="num">196.1K (F16)</td>
+    <td class="num">5</td>
+    <td>Raid wipe (all cascade)</td>
+  </tr>
+  <tr>
+    <td>Intermission</td>
+    <td class="num">15</td>
+    <td class="num" style="color: var(--hunter);">~1K</td>
+    <td class="num" colspan="2" style="text-align: center; color: var(--dim);">Survival phase &mdash; minimal targets</td>
+    <td class="num">3</td>
+    <td>Silverstrike Barrage, Bursting Emptiness</td>
+  </tr>
+  <tr>
+    <td>P2: Rift</td>
+    <td class="num">12</td>
+    <td class="num" style="color: var(--hunter);">126.3K</td>
+    <td class="num">145.7K (F6)</td>
+    <td class="num">110.1K (F3)</td>
+    <td class="num">2</td>
+    <td>Void Barrage, Bursting Emptiness</td>
+  </tr>
+  <tr>
+    <td>P3: Cosmos</td>
+    <td class="num">10</td>
+    <td class="num" style="color: var(--hunter);">58.2K</td>
+    <td class="num">79.2K (F25)</td>
+    <td class="num">14.5K (F6)</td>
+    <td class="num">10</td>
+    <td>Voidstalker Sting (3), Bursting Emptiness (2)</td>
+  </tr>
+</table>
+
+<div class="callout blue">
+  <div class="callout-title">Phase Performance Pattern</div>
+  <div class="callout-body">
+    <strong>P1 DPS is very strong</strong> at 296.6K average, driven by opener cooldowns (Bestial Wrath + Dark Ranger burst). P2 sustains at 126.3K with consistent add cleave. <strong>P3 drops to 58.2K</strong>, but this is partly expected -- P3 Cosmic Radiation creates heavy movement and the raid is taking stacking damage, creating survival pressure. The 14.5K worst-case in F6 is a death-at-5:20 pull where Blowe barely entered P3 before dying.
+    <br><br>Across long pulls, best DPS correlates with latest death time -- the longer Blowe stays alive, the better the numbers. F25 (best pull at 69.6K overall) had the highest P3 DPS at 79.2K, showing strong improvement.
+  </div>
+</div>
+
+<!-- DPS Per Pull Chart -->
+<h2>DPS Across All Pulls</h2>
+<p style="font-size: 12px; color: var(--dim); margin-bottom: 8px;">
+  Active DPS (damage / time alive). <span style="color: var(--orange);">Orange</span> = died after raid was compromised (cascade). <span style="color: var(--border); font-weight: 600;">Gray</span> = sub-60s pull. All deaths were cascade -- Blowe was never one of the first 2 to die.
+</p>
+
+<div class="bar-chart" style="height: 200px;">
+  <!-- F1: 54.8K, 7:18, died 6:04 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">54.8K</div>
+    <div class="bar died-cascade" style="height: 32%;" title="F1: 54.8K DPS, 7:18, died 6:04 (#9)"></div>
+    <div class="bar-label">F1 7:18</div>
+  </div>
+  <!-- F2: 419.8K, 1:33, died 1:24 cascade - CAPPED for display -->
+  <div class="bar-wrapper">
+    <div class="bar-value">420K</div>
+    <div class="bar short" style="height: 95%;" title="F2: 419.8K DPS, 1:33, died 1:24 (#15) - short pull burst"></div>
+    <div class="bar-label">F2 1:33</div>
+  </div>
+  <!-- F3: 54.8K, 7:06, died 6:53 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">54.8K</div>
+    <div class="bar died-cascade" style="height: 32%;" title="F3: 54.8K DPS, 7:06, died 6:53 (#18)"></div>
+    <div class="bar-label">F3 7:06</div>
+  </div>
+  <!-- F4: 309.7K, 1:32, died 1:23 -->
+  <div class="bar-wrapper">
+    <div class="bar-value">310K</div>
+    <div class="bar short" style="height: 70%;" title="F4: 309.7K DPS, 1:32, died 1:23 (#7) - short pull"></div>
+    <div class="bar-label">F4 1:32</div>
+  </div>
+  <!-- F5: 55.3K, 5:06, died 4:57 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">55.3K</div>
+    <div class="bar died-cascade" style="height: 33%;" title="F5: 55.3K DPS, 5:06, died 4:57 (#13)"></div>
+    <div class="bar-label">F5 5:06</div>
+  </div>
+  <!-- F6: 61.0K, 6:10, died 5:20 #3 -->
+  <div class="bar-wrapper">
+    <div class="bar-value">61.0K</div>
+    <div class="bar died-cascade" style="height: 36%;" title="F6: 61.0K DPS, 6:10, died 5:20 (#3)"></div>
+    <div class="bar-label">F6 6:10</div>
+  </div>
+  <!-- F7: 59.7K, 7:07, died 6:56 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">59.7K</div>
+    <div class="bar died-cascade" style="height: 35%;" title="F7: 59.7K DPS, 7:07, died 6:56 (#15)"></div>
+    <div class="bar-label">F7 7:07</div>
+  </div>
+  <!-- F8: 299.7K, 1:00, died 0:43 -->
+  <div class="bar-wrapper">
+    <div class="bar-value">300K</div>
+    <div class="bar short" style="height: 68%;" title="F8: 299.7K DPS, 1:00, died 0:43 (#3) - short pull"></div>
+    <div class="bar-label">F8 1:00</div>
+  </div>
+  <!-- F9: 49.5K, 5:08, died 4:50 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">49.5K</div>
+    <div class="bar died-cascade" style="height: 29%;" title="F9: 49.5K DPS, 5:08, died 4:50 (#7)"></div>
+    <div class="bar-label">F9 5:08</div>
+  </div>
+  <!-- F10: 54.5K, 6:16, died 6:00 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">54.5K</div>
+    <div class="bar died-cascade" style="height: 32%;" title="F10: 54.5K DPS, 6:16, died 6:00 (#11)"></div>
+    <div class="bar-label">F10 6:16</div>
+  </div>
+  <!-- F11: 266.2K active, died 2:30 -->
+  <div class="bar-wrapper">
+    <div class="bar-value">266K</div>
+    <div class="bar short" style="height: 60%;" title="F11: 266.2K active DPS, 7:45 pull, died 2:30 (#3) - died in Intermission"></div>
+    <div class="bar-label">F11 7:45</div>
+  </div>
+  <!-- F12: 61.2K, 7:34, died 7:10 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">61.2K</div>
+    <div class="bar died-cascade" style="height: 36%;" title="F12: 61.2K DPS, 7:34, died 7:10 (#15)"></div>
+    <div class="bar-label">F12 7:34</div>
+  </div>
+  <!-- F15: 58.2K, 7:37, died 7:32 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">58.2K</div>
+    <div class="bar died-cascade" style="height: 34%;" title="F15: 58.2K DPS, 7:37, died 7:32 (#18)"></div>
+    <div class="bar-label">F15 7:37</div>
+  </div>
+  <!-- F16: 196.1K, 1:01, died 0:49 -->
+  <div class="bar-wrapper">
+    <div class="bar-value">196K</div>
+    <div class="bar short" style="height: 45%;" title="F16: 196.1K DPS, 1:01, died 0:49 (#4) - short pull"></div>
+    <div class="bar-label">F16 1:01</div>
+  </div>
+  <!-- F17: 67.4K, 7:48, died 7:35 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">67.4K</div>
+    <div class="bar died-cascade" style="height: 40%;" title="F17: 67.4K DPS, 7:48, died 7:35 (#17)"></div>
+    <div class="bar-label">F17 7:48</div>
+  </div>
+  <!-- F18: 252.9K, 1:00, died 0:50 -->
+  <div class="bar-wrapper">
+    <div class="bar-value">253K</div>
+    <div class="bar short" style="height: 58%;" title="F18: 252.9K DPS, 1:00, died 0:50 (#7) - short pull"></div>
+    <div class="bar-label">F18 1:00</div>
+  </div>
+  <!-- F22: 285.3K, 2:18, died 2:15 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">285K</div>
+    <div class="bar short" style="height: 65%;" title="F22: 285.3K DPS, 2:18, died 2:15 (#13) - P1 wipe"></div>
+    <div class="bar-label">F22 2:18</div>
+  </div>
+  <!-- F23: 53.4K, 5:52, died 5:45 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">53.4K</div>
+    <div class="bar died-cascade" style="height: 31%;" title="F23: 53.4K DPS, 5:52, died 5:45 (#14)"></div>
+    <div class="bar-label">F23 5:52</div>
+  </div>
+  <!-- F24: 246.7K active, died 2:42 -->
+  <div class="bar-wrapper">
+    <div class="bar-value">247K</div>
+    <div class="bar short" style="height: 56%;" title="F24: 246.7K active DPS, 3:58, died 2:42 (#3) - died in Intermission"></div>
+    <div class="bar-label">F24 3:58</div>
+  </div>
+  <!-- F25: 69.6K, 7:55, died 7:39 cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">69.6K</div>
+    <div class="bar died-cascade" style="height: 41%;" title="F25: 69.6K DPS, 7:55, died 7:39 (#18) - best pull"></div>
+    <div class="bar-label">F25 7:55</div>
+  </div>
+</div>
+
+<div class="callout green">
+  <div class="callout-title">Session Trend: Improving</div>
+  <div class="callout-body">
+    Looking at long pulls only (5min+): early pulls F1/F3/F5 averaged <strong>54.9K</strong>. Late pulls F17/F25 averaged <strong>68.5K</strong>. That is a <strong>+25% improvement</strong> through the session.
+    Best overall pull came last (F25, 69.6K DPS, 7:55 duration) -- Blowe was still performing at peak at the end of the night.
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="callout green">
+  <div class="callout-title">Zero Actionable Deaths</div>
+  <div class="callout-body">
+    Blowe died in <strong>20/20 pulls</strong>, but was <strong>never one of the first 2 deaths</strong> in any pull. Under the 2-death threshold rule, all 20 deaths are classified as cascade deaths -- the raid was already compromised before Blowe went down. This means Blowe is <strong>not a wipe contributor</strong>. Every death occurred after the pull was already lost.
+  </div>
+</div>
+
+<h3>Death Timing by Phase</h3>
+<table>
+  <tr>
+    <th>Phase</th>
+    <th class="num">Deaths</th>
+    <th>Context</th>
+  </tr>
+  <tr>
+    <td>P1: Sentinels</td>
+    <td class="num">5</td>
+    <td>All in sub-2-minute raid wipes (F2, F4, F8, F16, F18). Entire raid collapsed.</td>
+  </tr>
+  <tr>
+    <td>Intermission</td>
+    <td class="num">3</td>
+    <td>Silverstrike Barrage (F11, F24) and Bursting Emptiness (F22). Intermission survival is a known raid challenge.</td>
+  </tr>
+  <tr>
+    <td>P2: Rift</td>
+    <td class="num">2</td>
+    <td>Void Barrage (F5) and Bursting Emptiness (F9). Both after multiple raid deaths.</td>
+  </tr>
+  <tr>
+    <td>P3: Cosmos</td>
+    <td class="num">10</td>
+    <td>Various -- Voidstalker Sting (3), Bursting Emptiness (2), Gravity Collapse (1), Cosmic Barrier (1), Void Expulsion (1), Unknown (2). All late in fight after raid was falling apart.</td>
+  </tr>
+</table>
+
+<h3>Full Death Log</h3>
+<table>
+  <tr>
+    <th>Pull</th>
+    <th>Duration</th>
+    <th class="num">Died At</th>
+    <th class="num">Death #</th>
+    <th>Killing Ability</th>
+    <th>Phase</th>
+  </tr>
+  <tr><td>F1</td><td>7:18</td><td class="num">6:04</td><td class="num">#9</td><td>Unknown</td><td>P3</td></tr>
+  <tr><td>F2</td><td>1:33</td><td class="num">1:24</td><td class="num">#15</td><td>Unknown</td><td>P1</td></tr>
+  <tr><td>F3</td><td>7:06</td><td class="num">6:53</td><td class="num">#18</td><td>Bursting Emptiness</td><td>P3</td></tr>
+  <tr><td>F4</td><td>1:32</td><td class="num">1:23</td><td class="num">#7</td><td>Unknown</td><td>P1</td></tr>
+  <tr><td>F5</td><td>5:06</td><td class="num">4:57</td><td class="num">#13</td><td>Void Barrage</td><td>P2</td></tr>
+  <tr><td>F6</td><td>6:10</td><td class="num">5:20</td><td class="num">#3</td><td>Voidstalker Sting</td><td>P3</td></tr>
+  <tr><td>F7</td><td>7:07</td><td class="num">6:56</td><td class="num">#15</td><td>Bursting Emptiness</td><td>P3</td></tr>
+  <tr><td>F8</td><td>1:00</td><td class="num">0:43</td><td class="num">#3</td><td>Silverstrike Arrow</td><td>P1</td></tr>
+  <tr><td>F9</td><td>5:08</td><td class="num">4:50</td><td class="num">#7</td><td>Bursting Emptiness</td><td>P2</td></tr>
+  <tr><td>F10</td><td>6:16</td><td class="num">6:00</td><td class="num">#11</td><td>Voidstalker Sting</td><td>P3</td></tr>
+  <tr><td>F11</td><td>7:45</td><td class="num">2:30</td><td class="num">#3</td><td>Silverstrike Barrage</td><td>Inter</td></tr>
+  <tr><td>F12</td><td>7:34</td><td class="num">7:10</td><td class="num">#15</td><td>Cosmic Barrier</td><td>P3</td></tr>
+  <tr><td>F15</td><td>7:37</td><td class="num">7:32</td><td class="num">#18</td><td>Voidstalker Sting</td><td>P3</td></tr>
+  <tr><td>F16</td><td>1:01</td><td class="num">0:49</td><td class="num">#4</td><td>Unknown</td><td>P1</td></tr>
+  <tr><td>F17</td><td>7:48</td><td class="num">7:35</td><td class="num">#17</td><td>Void Expulsion</td><td>P3</td></tr>
+  <tr><td>F18</td><td>1:00</td><td class="num">0:50</td><td class="num">#7</td><td>Unknown</td><td>P1</td></tr>
+  <tr><td>F22</td><td>2:18</td><td class="num">2:15</td><td class="num">#13</td><td>Bursting Emptiness</td><td>Inter</td></tr>
+  <tr><td>F23</td><td>5:52</td><td class="num">5:45</td><td class="num">#14</td><td>Unknown</td><td>P3</td></tr>
+  <tr><td>F24</td><td>3:58</td><td class="num">2:42</td><td class="num">#3</td><td>Silverstrike Barrage</td><td>Inter</td></tr>
+  <tr><td>F25</td><td>7:55</td><td class="num">7:39</td><td class="num">#18</td><td>Gravity Collapse</td><td>P3</td></tr>
+</table>
+<p class="ref-note">Death # indicates how many players had already died before Blowe. #3 means Blowe was the 3rd death. Since the 2-death threshold classifies all deaths after #2 as cascade, none of these are individual accountability failures.</p>
+
+<!-- Damage Taken Analysis -->
+<h2>Damage Taken Analysis</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Aggregated across all 20 pulls. Crown of the Cosmos has heavy unavoidable raid damage in all phases. BM Hunter mobility helps mitigate many mechanics.</p>
+
+<table>
+  <tr>
+    <th>Ability</th>
+    <th class="num">Total Damage</th>
+    <th class="num">Hits</th>
+    <th class="num">Avg/Hit</th>
+    <th class="num">Pulls</th>
+    <th>Category</th>
+  </tr>
+  <tr>
+    <td>Echoing Darkness</td>
+    <td class="num">39.6M</td>
+    <td class="num">2,147</td>
+    <td class="num">18.4K</td>
+    <td class="num">20</td>
+    <td><span class="badge blue">Unavoidable</span></td>
+  </tr>
+  <tr>
+    <td>Voidstalker Sting</td>
+    <td class="num">39.1M</td>
+    <td class="num">1,861</td>
+    <td class="num">21.0K</td>
+    <td class="num">12</td>
+    <td><span class="badge blue">Unavoidable</span></td>
+  </tr>
+  <tr>
+    <td>Void Expulsion</td>
+    <td class="num">20.7M</td>
+    <td class="num">585</td>
+    <td class="num">35.4K</td>
+    <td class="num">20</td>
+    <td><span class="badge blue">Unavoidable</span></td>
+  </tr>
+  <tr>
+    <td>Simulacrum Backlash</td>
+    <td class="num">20.5M</td>
+    <td class="num">817</td>
+    <td class="num">25.1K</td>
+    <td class="num">12</td>
+    <td><span class="badge blue">Unavoidable</span></td>
+  </tr>
+  <tr>
+    <td>Cosmic Barrier</td>
+    <td class="num">8.9M</td>
+    <td class="num">473</td>
+    <td class="num">18.7K</td>
+    <td class="num">12</td>
+    <td><span class="badge blue">Unavoidable</span></td>
+  </tr>
+  <tr>
+    <td>Gravity Collapse</td>
+    <td class="num">6.2M</td>
+    <td class="num">58</td>
+    <td class="num">106.2K</td>
+    <td class="num">8</td>
+    <td><span class="badge yellow">Partially Avoidable</span></td>
+  </tr>
+  <tr>
+    <td>Grasp of Emptiness</td>
+    <td class="num">5.6M</td>
+    <td class="num">140</td>
+    <td class="num">40.0K</td>
+    <td class="num">8</td>
+    <td><span class="badge yellow">Partially Avoidable</span></td>
+  </tr>
+  <tr>
+    <td>Falling</td>
+    <td class="num">5.6M</td>
+    <td class="num">26</td>
+    <td class="num">213.8K</td>
+    <td class="num">14</td>
+    <td><span class="badge red">Avoidable</span></td>
+  </tr>
+  <tr>
+    <td>Void Barrage</td>
+    <td class="num">5.0M</td>
+    <td class="num">81</td>
+    <td class="num">62.0K</td>
+    <td class="num">12</td>
+    <td><span class="badge yellow">Partially Avoidable</span></td>
+  </tr>
+  <tr>
+    <td>Stellar Emission</td>
+    <td class="num">4.6M</td>
+    <td class="num">185</td>
+    <td class="num">24.7K</td>
+    <td class="num">14</td>
+    <td><span class="badge blue">Unavoidable</span></td>
+  </tr>
+  <tr>
+    <td>Silverstrike Barrage</td>
+    <td class="num">2.6M</td>
+    <td class="num">21</td>
+    <td class="num">123.8K</td>
+    <td class="num">14</td>
+    <td><span class="badge yellow">Partially Avoidable</span></td>
+  </tr>
+  <tr>
+    <td>Silverstrike Arrow</td>
+    <td class="num">2.0M</td>
+    <td class="num">9</td>
+    <td class="num">225.6K</td>
+    <td class="num">8</td>
+    <td><span class="badge yellow">Partially Avoidable</span></td>
+  </tr>
+</table>
+
+<div class="callout yellow">
+  <div class="callout-title">Falling Damage: 5.6M across 14 pulls</div>
+  <div class="callout-body">
+    <strong>26 falling damage hits</strong> across 14/20 pulls is notable. This likely comes from Gravity Collapse knockbacks or positioning issues during phase transitions. Falling damage averaging 213.8K per hit can contribute to cascade deaths in late P3. Using <strong>Disengage</strong> to cancel momentum or <strong>Aspect of the Cheetah</strong> for repositioning can help -- Blowe did use Disengage in F25 (2 casts) and Aspect of the Cheetah (2 casts), showing awareness of the mechanic.
+  </div>
+</div>
+
+<!-- Cast Profile (Best Pull) -->
+<h2>Cast Profile &mdash; Best Pull (Fight 25, 7:55)</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Blowe was alive for 7:39 of the 7:55 pull. 369 total casts. Active DPS: 69.6K.</p>
+
+<table>
+  <tr>
+    <th>Ability</th>
+    <th class="num">Casts</th>
+    <th class="num">CPM</th>
+    <th>Role</th>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Kill Command</td>
+    <td class="num">95</td>
+    <td class="num">12.0</td>
+    <td>Core rotational</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Barbed Shot</td>
+    <td class="num">70</td>
+    <td class="num">8.8</td>
+    <td>Core rotational (charge-based)</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Black Arrow</td>
+    <td class="num">56</td>
+    <td class="num">7.1</td>
+    <td>Dark Ranger proc</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Cobra Shot</td>
+    <td class="num">50</td>
+    <td class="num">6.3</td>
+    <td>Filler</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Dire Beast</td>
+    <td class="num">46</td>
+    <td class="num">5.8</td>
+    <td>Talent proc / CD</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Bestial Wrath</td>
+    <td class="num">15</td>
+    <td class="num">1.9</td>
+    <td>Major CD</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Wailing Arrow</td>
+    <td class="num">11</td>
+    <td class="num">1.4</td>
+    <td>Dark Ranger finisher</td>
+  </tr>
+  <tr>
+    <td>Wild Thrash</td>
+    <td class="num">4</td>
+    <td class="num">0.5</td>
+    <td>AoE</td>
+  </tr>
+  <tr>
+    <td>Algeth'ar Puzzle</td>
+    <td class="num">4</td>
+    <td class="num">0.5</td>
+    <td>Trinket</td>
+  </tr>
+  <tr>
+    <td>Hunter's Mark</td>
+    <td class="num">3</td>
+    <td class="num">0.4</td>
+    <td>Target setup</td>
+  </tr>
+  <tr>
+    <td>Exhilaration</td>
+    <td class="num">2</td>
+    <td class="num">0.3</td>
+    <td>Self-heal</td>
+  </tr>
+  <tr>
+    <td>Survival of the Fittest</td>
+    <td class="num">2</td>
+    <td class="num">0.3</td>
+    <td>Defensive</td>
+  </tr>
+  <tr>
+    <td>Aspect of the Turtle</td>
+    <td class="num">1</td>
+    <td class="num">0.1</td>
+    <td>Immunity</td>
+  </tr>
+  <tr>
+    <td>Healthstone</td>
+    <td class="num">1</td>
+    <td class="num">-</td>
+    <td>Emergency heal</td>
+  </tr>
+  <tr>
+    <td>Silvermoon Health Potion</td>
+    <td class="num">1</td>
+    <td class="num">-</td>
+    <td>Heal pot</td>
+  </tr>
+</table>
+
+<div class="callout blue">
+  <div class="callout-title">Rotation Assessment</div>
+  <div class="callout-body">
+    <strong>Kill Command at 12.0 CPM</strong> and <strong>Barbed Shot at 8.8 CPM</strong> show good core ability usage. The Dark Ranger rotation (Black Arrow 7.1 CPM, Bestial Wrath 15 casts, Wailing Arrow 11 casts) looks mechanically sound -- Bestial Wrath enables Withering Fire windows, and Wailing Arrow is being fired to consume the buff. <strong>Cobra Shot at 6.3 CPM</strong> as the filler is correct for the Dark Ranger build.
+    <br><br>
+    <strong>Defensive usage in P3</strong> shows good awareness: Aspect of the Turtle at 5:50 (P3 entry), Survival of the Fittest at 6:24 and 7:00, Exhilaration at 6:24 and 7:30. Health pot and Healthstone also used. Blowe is using the full defensive toolkit to survive as long as possible in P3.
+  </div>
+</div>
+
+<!-- Damage Breakdown -->
+<h2>Damage Source Breakdown (Fight 25)</h2>
+<table>
+  <tr>
+    <th>Source</th>
+    <th class="num">DPS</th>
+    <th class="num">% Total</th>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Dark Hound (pet)</td>
+    <td class="num">10.7K</td>
+    <td class="num">15.9%</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Kill Command</td>
+    <td class="num">7.7K</td>
+    <td class="num">11.5%</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">BigBag (pet)</td>
+    <td class="num">7.7K</td>
+    <td class="num">11.4%</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Barbed Shot</td>
+    <td class="num">6.2K</td>
+    <td class="num">9.2%</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Bloodshed</td>
+    <td class="num">5.2K</td>
+    <td class="num">7.7%</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Huntmaster's Call</td>
+    <td class="num">2.3K</td>
+    <td class="num">3.4%</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Cobra Shot</td>
+    <td class="num">2.0K</td>
+    <td class="num">2.9%</td>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Stomp</td>
+    <td class="num">2.0K</td>
+    <td class="num">3.0%</td>
+  </tr>
+  <tr>
+    <td>Bleak Arrows</td>
+    <td class="num">1.5K</td>
+    <td class="num">2.3%</td>
+  </tr>
+  <tr>
+    <td>Melee (pet)</td>
+    <td class="num">1.2K</td>
+    <td class="num">1.7%</td>
+  </tr>
+  <tr>
+    <td>Laceration</td>
+    <td class="num">0.6K</td>
+    <td class="num">1.0%</td>
+  </tr>
+</table>
+
+<!-- Long Pull Performance Table -->
+<h2>Long Pull Performance (5min+)</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">These 10 pulls provide the most meaningful performance comparison. Short pulls are excluded because burst-phase DPS inflates the numbers.</p>
+
+<table>
+  <tr>
+    <th>Pull</th>
+    <th>Duration</th>
+    <th class="num">Active DPS</th>
+    <th class="num">Died At</th>
+    <th class="num">Death #</th>
+    <th>Death Ability</th>
+    <th class="num">P1 DPS</th>
+    <th class="num">P2 DPS</th>
+    <th class="num">P3 DPS</th>
+  </tr>
+  <tr>
+    <td>F1</td><td>7:18</td>
+    <td class="num">54.8K</td><td class="num">6:04</td><td class="num">#9</td><td>Unknown</td>
+    <td class="num">329.6K</td><td class="num">125.2K</td><td class="num">28.6K</td>
+  </tr>
+  <tr>
+    <td>F3</td><td>7:06</td>
+    <td class="num">54.8K</td><td class="num">6:53</td><td class="num">#18</td><td>Bursting Emptiness</td>
+    <td class="num">287.2K</td><td class="num">110.1K</td><td class="num">73.9K</td>
+  </tr>
+  <tr>
+    <td>F5</td><td>5:06</td>
+    <td class="num">55.3K</td><td class="num">4:57</td><td class="num">#13</td><td>Void Barrage</td>
+    <td class="num">277.2K</td><td class="num">129.8K</td><td class="num">-</td>
+  </tr>
+  <tr>
+    <td>F6</td><td>6:10</td>
+    <td class="num">61.0K</td><td class="num">5:20</td><td class="num">#3</td><td>Voidstalker Sting</td>
+    <td class="num">289.9K</td><td class="num">145.7K</td><td class="num">15.6K</td>
+  </tr>
+  <tr>
+    <td>F7</td><td>7:07</td>
+    <td class="num">59.7K</td><td class="num">6:56</td><td class="num">#15</td><td>Bursting Emptiness</td>
+    <td class="num">292.6K</td><td class="num">126.0K</td><td class="num">69.8K</td>
+  </tr>
+  <tr>
+    <td>F9</td><td>5:08</td>
+    <td class="num">49.5K</td><td class="num">4:50</td><td class="num">#7</td><td>Bursting Emptiness</td>
+    <td class="num">287.5K</td><td class="num">111.3K</td><td class="num">-</td>
+  </tr>
+  <tr>
+    <td>F10</td><td>6:16</td>
+    <td class="num">54.5K</td><td class="num">6:00</td><td class="num">#11</td><td>Voidstalker Sting</td>
+    <td class="num">336.7K</td><td class="num">114.6K</td><td class="num">72.2K</td>
+  </tr>
+  <tr style="background: rgba(63, 185, 80, 0.05);">
+    <td>F12</td><td>7:34</td>
+    <td class="num">61.2K</td><td class="num">7:10</td><td class="num">#15</td><td>Cosmic Barrier</td>
+    <td class="num">283.5K</td><td class="num">125.5K</td><td class="num">64.0K</td>
+  </tr>
+  <tr style="background: rgba(63, 185, 80, 0.05);">
+    <td>F15</td><td>7:37</td>
+    <td class="num">58.2K</td><td class="num">7:32</td><td class="num">#18</td><td>Voidstalker Sting</td>
+    <td class="num">284.8K</td><td class="num">116.4K</td><td class="num">78.7K</td>
+  </tr>
+  <tr style="background: rgba(63, 185, 80, 0.1);">
+    <td><strong>F17</strong></td><td>7:48</td>
+    <td class="num"><strong>67.4K</strong></td><td class="num">7:35</td><td class="num">#17</td><td>Void Expulsion</td>
+    <td class="num">303.0K</td><td class="num">139.5K</td><td class="num">75.1K</td>
+  </tr>
+  <tr>
+    <td>F23</td><td>5:52</td>
+    <td class="num">53.4K</td><td class="num">5:45</td><td class="num">#14</td><td>Unknown</td>
+    <td class="num">315.1K</td><td class="num">128.5K</td><td class="num">40.0K</td>
+  </tr>
+  <tr style="background: rgba(63, 185, 80, 0.1);">
+    <td><strong>F25</strong></td><td>7:55</td>
+    <td class="num"><strong>69.6K</strong></td><td class="num">7:39</td><td class="num">#18</td><td>Gravity Collapse</td>
+    <td class="num">280.7K</td><td class="num">143.4K</td><td class="num">79.2K</td>
+  </tr>
+</table>
+
+<!-- Consistency Analysis -->
+<h2>Consistency Analysis</h2>
+<div class="two-col">
+  <div class="callout blue">
+    <div class="callout-title">Early Pulls (F1-F10)</div>
+    <div class="callout-body">
+      <strong>6 long pulls:</strong> F1, F3, F5, F6, F7, F9, F10<br>
+      Avg active DPS: <strong>55.7K</strong><br>
+      P2 avg: <strong>123.2K</strong><br>
+      P3 avg: <strong>43.6K</strong> (5 pulls reached P3)<br>
+      F9 was the weakest long pull at 49.5K.
+    </div>
+  </div>
+  <div class="callout green">
+    <div class="callout-title">Late Pulls (F12-F25)</div>
+    <div class="callout-body">
+      <strong>5 long pulls:</strong> F12, F15, F17, F23, F25<br>
+      Avg active DPS: <strong>62.0K</strong><br>
+      P2 avg: <strong>130.7K</strong><br>
+      P3 avg: <strong>67.4K</strong> (all 5 reached P3)<br>
+      F25 was the best pull of the night at 69.6K.
+    </div>
+  </div>
+</div>
+
+<div class="callout green">
+  <div class="callout-title">Late-night P3 improvement is significant</div>
+  <div class="callout-body">
+    P3 DPS went from <strong>43.6K average in early pulls to 67.4K in late pulls</strong> -- a <strong>+55% increase</strong>. Blowe is clearly learning the P3 mechanics and becoming more comfortable maintaining DPS through Cosmic Radiation overlaps and Voidstalker Sting movement. The P2 improvement is more modest (+6%) which makes sense -- P2 was already more consistent by early in the session.
+  </div>
+</div>
+
+<!-- Defensive Usage -->
+<h2>Defensive Usage (Fight 25)</h2>
+<table>
+  <tr>
+    <th>Ability</th>
+    <th>Time</th>
+    <th>Phase</th>
+    <th>Context</th>
+  </tr>
+  <tr>
+    <td>Aspect of the Cheetah</td>
+    <td>1:00</td>
+    <td>P1</td>
+    <td>Movement speed for P1 mechanics</td>
+  </tr>
+  <tr>
+    <td>Aspect of the Turtle</td>
+    <td>5:50</td>
+    <td>P3</td>
+    <td>Immunity for heavy P3 damage overlap</td>
+  </tr>
+  <tr>
+    <td>Aspect of the Cheetah</td>
+    <td>6:02</td>
+    <td>P3</td>
+    <td>Movement during P3 mechanics</td>
+  </tr>
+  <tr>
+    <td>Exhilaration</td>
+    <td>6:24</td>
+    <td>P3</td>
+    <td>Self-heal under pressure</td>
+  </tr>
+  <tr>
+    <td>Survival of the Fittest</td>
+    <td>6:39</td>
+    <td>P3</td>
+    <td>Damage reduction</td>
+  </tr>
+  <tr>
+    <td>Survival of the Fittest</td>
+    <td>7:00</td>
+    <td>P3</td>
+    <td>Second use for sustained survival</td>
+  </tr>
+  <tr>
+    <td>Exhilaration</td>
+    <td>7:30</td>
+    <td>P3</td>
+    <td>Emergency heal near end of pull</td>
+  </tr>
+  <tr>
+    <td>Healthstone</td>
+    <td>-</td>
+    <td>P3</td>
+    <td>Emergency heal</td>
+  </tr>
+  <tr>
+    <td>Silvermoon Health Potion</td>
+    <td>-</td>
+    <td>P3</td>
+    <td>Heal pot used</td>
+  </tr>
+</table>
+<p class="ref-note">All defensives concentrated in P3 (5:50+), showing good defensive planning. Blowe is stacking cooldowns through the highest-damage portion of the fight.</p>
+
+<!-- Reference Comparison (De-emphasized) -->
+<h2>Reference Context</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Top-ranked BM Hunters on Mythic Crown of the Cosmos with 4-heal comps (US/EU regions). These are kill logs -- Blowe has not yet killed this boss. Reference numbers represent ceiling performance for context, not a direct comparison target.</p>
+
+<table>
+  <tr>
+    <th>Player</th>
+    <th>Server</th>
+    <th class="num">DPS</th>
+    <th class="num">Kill Time</th>
+    <th class="num">ilvl</th>
+    <th class="num">Talent Diffs</th>
+  </tr>
+  <tr style="color: var(--purple);">
+    <td>Ithariusx</td><td>Draenor (EU)</td>
+    <td class="num">100,926</td><td class="num">8:19</td>
+    <td class="num">291</td><td class="num">46</td>
+  </tr>
+  <tr style="color: var(--purple);">
+    <td>Zyrani</td><td>Eredar (EU)</td>
+    <td class="num">100,459</td><td class="num">8:43</td>
+    <td class="num">290</td><td class="num">45</td>
+  </tr>
+  <tr style="color: var(--purple);">
+    <td>Yeat</td><td>Burning Legion (EU)</td>
+    <td class="num">98,973</td><td class="num">8:12</td>
+    <td class="num">289</td><td class="num">46</td>
+  </tr>
+  <tr style="color: var(--purple);">
+    <td>Nazragor</td><td>Hyjal (US)</td>
+    <td class="num">97,695</td><td class="num">8:05</td>
+    <td class="num">293</td><td class="num">44</td>
+  </tr>
+  <tr style="color: var(--purple);">
+    <td>Equarah</td><td>Twisting Nether (EU)</td>
+    <td class="num">97,634</td><td class="num">8:38</td>
+    <td class="num">290</td><td class="num">44</td>
+  </tr>
+  <tr style="background: rgba(170, 211, 114, 0.1);">
+    <td style="color: var(--hunter);"><strong>Blowe</strong></td><td>-</td>
+    <td class="num"><strong>69,600</strong></td><td class="num">7:55 (best)</td>
+    <td class="num"><strong>292</strong></td><td class="num">-</td>
+  </tr>
+</table>
+
+<div class="callout purple">
+  <div class="callout-title">Reference Notes</div>
+  <div class="callout-body">
+    <strong>High talent diffs (44-46)</strong> across all references likely indicate a different hero talent tree (Pack Leader vs Dark Ranger) or significant class tree differences. Direct rotation comparison is not meaningful with this many talent differences.
+    <br><br>
+    <strong>ilvl is competitive:</strong> Blowe's 292 matches or exceeds most references (avg 291). The DPS gap between Blowe's best pull (69.6K) and the reference average (99.1K) is <strong>30%</strong>, but this comparison is between a prog wipe at 7:55 and a full kill at 8:12-8:43. Kill pulls benefit from execute phase, PI alignment, full-raid Bloodlust at optimal timing, and no cascade deaths compressing uptime. The gap is expected and will narrow as the team progresses deeper.
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<h2>Actionable Improvements</h2>
+
+<div class="improvement-item">
+  <span class="number">1</span>
+  <span class="title">P3 Survival and Uptime (Primary Focus)</span>
+  <div class="detail">
+    P3 DPS averages <strong>58.2K</strong> across 10 pulls, with a wide range from 14.5K (barely entered P3 before dying) to 79.2K (best pull F25). The P3 improvement trend is positive (+55% from early to late session), so the learning curve is working. Focus areas: <strong>positioning during Cosmic Radiation overlaps</strong> to minimize movement, <strong>pre-planning defensive cooldown usage</strong> so Survival of the Fittest and Aspect of the Turtle are available for the highest-damage windows. Blowe's F25 defensive usage (starting Turtle at 5:50, stacking SotF through 6:39-7:00, double Exhil) is a good template.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">2</span>
+  <span class="title">Reduce Falling Damage (5.6M across 14 pulls)</span>
+  <div class="detail">
+    <strong>26 falling damage instances</strong> across 14 of 20 pulls at 213.8K average per hit. This is likely from Gravity Collapse knockbacks or platform edge positioning. As a BM Hunter, <strong>Disengage can cancel knockback momentum</strong> -- Blowe used Disengage in F25 (2 casts) but the falling damage persisted. Working on positioning further from edges during Gravity Collapse and reactive Disengage timing will reduce unnecessary damage taken and ease healer burden.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">3</span>
+  <span class="title">Intermission Survival (3 Deaths)</span>
+  <div class="detail">
+    Blowe died in the Intermission phase 3 times (F11 at 2:30, F22 at 2:15, F24 at 2:42), with <strong>Silverstrike Barrage</strong> and <strong>Bursting Emptiness</strong> as the killing abilities. All were cascade deaths (#3+ in the pull), but surviving the Intermission is critical for reaching P2/P3. Saving <strong>Aspect of the Turtle</strong> for Intermission Silverstrike Barrage and using <strong>Survival of the Fittest</strong> during Stellar Emission channel would improve Intermission survival. BM Hunters can maintain DPS while moving during this phase, which is a class advantage to leverage.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">4</span>
+  <span class="title">Maintain DPS Consistency Across Sessions</span>
+  <div class="detail">
+    Active DPS on long pulls ranged from <strong>49.5K (F9) to 69.6K (F25)</strong>, a 41% spread. The good news is the trend is clearly upward -- late-session pulls are the best. F17 and F25 (67.4K and 69.6K) show what Blowe is capable of when the fight is going well. The goal for next session is to <strong>start closer to 60K</strong> rather than needing 10+ pulls to ramp up. Reviewing notes on P2 target priority and P3 positioning before the pull could help establish the performance baseline faster.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">5</span>
+  <span class="title">Talent Build Investigation</span>
+  <div class="detail">
+    All 5 comp-matched references had <strong>44-46 talent differences</strong> from Blowe, suggesting they may be running a different hero talent tree or significantly different class tree. This is worth investigating -- if top BM Hunters on this boss universally run a specific build, there may be fight-specific advantages. However, <strong>talent changes should only be made after verifying from CombatantInfo data</strong>, not from generic guides. Blowe's Dark Ranger build (Black Arrow, Wailing Arrow, Withering Fire) is a valid choice and the rotation looks clean.
+  </div>
+</div>
+
+<!-- What's Going Well -->
+<h2>What's Working</h2>
+<div class="callout green">
+  <div class="callout-title">Strong Foundation</div>
+  <div class="callout-body">
+    <strong>Zero wipe responsibility:</strong> In 20 pulls, Blowe was never one of the first 2 deaths. Every death was cascade -- happening after the pull was already compromised by multiple other deaths. This is exactly what a DPS should look like on progression.
+    <br><br>
+    <strong>Session improvement:</strong> +27% DPS improvement from first long pull to last. P3 DPS improved +55%. The learning trajectory is strong and accelerating, not plateauing.
+    <br><br>
+    <strong>Gear is competitive:</strong> At 292 ilvl, Blowe matches or exceeds reference players (avg 291). The DPS gap is not gear-related.
+    <br><br>
+    <strong>Rotation execution:</strong> Kill Command 12.0 CPM, Barbed Shot 8.8 CPM, good Dark Ranger proc usage (56 Black Arrows, 11 Wailing Arrows on the best pull). Core abilities are being pressed consistently.
+    <br><br>
+    <strong>Active defensive play:</strong> On the best pull, 9 defensive actions in P3 alone (Turtle, 2x SotF, 2x Exhil, Cheetah, Healthstone, Health Pot). Blowe is not passively dying -- active survival efforts are extending uptime.
+    <br><br>
+    <strong>BM Hunter mobility advantage:</strong> As the only spec that can execute a full rotation while moving, BM Hunter is well-suited for Crown's heavy movement requirements. This is being leveraged effectively in P2 (126.3K avg) where movement-constrained specs often see bigger DPS drops.
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG" target="_blank">Warcraft Logs Report qDfTzvAyV3pRb6rG</a></p>
+  <p>Reference data: Top 5 BM Hunters on Mythic Crown of the Cosmos (4-heal comps, US/EU regions)</p>
+  <p>Analysis mode: PROG &mdash; aggregate across 20 pulls, per-phase breakdown, 2-death threshold applied</p>
+  <p>Phase boundaries: P1 0:00-2:14, Intermission 2:14-2:53, P2 2:53-5:09, P3 5:09+</p>
+</div>
+
+</body>
+</html>

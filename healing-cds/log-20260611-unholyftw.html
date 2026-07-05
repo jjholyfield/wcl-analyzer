@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unholyftw — Unholy Death Knight — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 160px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .phase-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin: 12px 0; font-size: 12px; font-weight: 600; }
+  .phase-bar > div { display: flex; align-items: center; justify-content: center; color: #fff; }
+  .boss-pct-label { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 600; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Unholyftw <span class="dim">&mdash; Unholy Death Knight</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; PROG (No Kill &mdash; 26 Wipes) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">157.3K</div>
+    <div class="stat-label">DPS (Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289.7</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">0.01%</div>
+    <div class="stat-label">Best Pull (Boss %)</div>
+    <div style="font-size:11px;color:var(--dim);margin-top:2px;">Fight 8 &mdash; 2:22</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">35.2</div>
+    <div class="stat-label">Rotational CPM</div>
+    <div style="font-size:11px;color:var(--dim);margin-top:2px;">Based on 4:14 alive time</div>
+  </div>
+</div>
+
+<!-- PROG CONTEXT -->
+<div class="card" style="border-left: 3px solid var(--orange); margin-top: 16px;">
+  <div class="card-header orange">Progression Context</div>
+  <p style="font-size: 14px;">This is <strong>progression data</strong> &mdash; 26 wipe pulls on Mythic Crown of the Cosmos with no kill. The primary analysis uses <strong>Fight 23</strong> (the longest pull at 4:52, reaching 77.31% boss). The reference comparison is against <strong>Lanadk</strong>, the #1 ranked Unholy DK who achieved a <strong>kill in 8:28</strong> (508s). Prog pulls involve learning mechanics, deaths, and incomplete fight execution &mdash; DPS gaps vs a kill reference should be interpreted with that context. The raid reached 0.01% boss on fights 8 and 17 (very short pulls likely involving phase 1 burst), but fight 23 is the most data-rich pull for rotation analysis.</p>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Unholyftw dealt <strong class="yellow">157K DPS</strong> on the best long pull (Fight 23, 4:52) before dying at <strong class="red">4:14 to Simulacrum Backlash</strong> during the Phase 2 transition. Active DPS before death was <strong class="green">203K</strong> &mdash; actually <strong class="green">7.4% above</strong> the reference Lanadk's kill DPS of 189K, which is strong for a prog pull. The core rotation shows solid cooldown alignment &mdash; Dark Transformation was cast <strong class="green">5 times in 4:14</strong> (1.2 CPM, matching reference), and Army of the Dead was correctly paired with every other DT window. However, rotational CPM is <strong class="red">35.2 vs 49.3</strong> for the reference &mdash; a <strong class="red">28.6% gap</strong>. Approximately <strong>50 seconds</strong> of that gap comes from the Phase 1&rarr;2 intermission (2:04&ndash;2:58) where the boss is untargetable and movement is required, plus additional downtime around deaths at 2:30+. Adjusting for the intermission, active-phase CPM is closer to <strong class="yellow">~43</strong>, still below the reference but much more reasonable for prog. The biggest improvement areas are <strong>Scourge Strike CPM</strong> (11.9 vs 21.1 &mdash; the largest single ability gap) and <strong>Death Coil + Necrotic Coil frequency</strong> (9.6 combined vs 17.7).</p>
+</div>
+
+<!-- FIGHT PHASES -->
+<h2>Fight Phase Structure</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase encounter: Phase 1 (Sentinels/Demibosses), Intermission (Silverstrike Barrage dodge), Phase 2 (Alleria + Rift Simulacrum), potential second Intermission, then Phase 3 (Devouring Cosmos). Fight 23 reached Phase 2 before wiping.</p>
+
+<div class="phase-bar">
+  <div style="width: 43%; background: #2ea043;">P1: Sentinels (0:00&ndash;2:04)</div>
+  <div style="width: 18%; background: #6e40c9;">Intermission (2:04&ndash;2:58)</div>
+  <div style="width: 26%; background: #1f6feb;">P2: Rift Simulacrum (2:58&ndash;4:14&dagger;)</div>
+  <div style="width: 13%; background: var(--border); color: var(--dim);">Wipe (4:14&ndash;4:52)</div>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State &mdash; Fight 23</div>
+  <p>0:00&ndash;2:31 = 20/20 alive &middot; 2:31 = 18/20 (Alitheria + Smokinthisza die to Silverstrike Barrage) &middot; 2:42 = 17/20 (Invincibale) &middot; 3:46&ndash;4:06 = rapid collapse &middot; 4:14 = <strong class="red">Unholyftw dies</strong> (Simulacrum Backlash) &middot; 4:14&ndash;4:25 = full raid wipe</p>
+  <p style="margin-top: 4px; color: var(--yellow);">&dagger; Unholyftw died at 4:14. The fight continued for 38 more seconds as tanks slowly died, but no meaningful DPS happened after 4:25.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Unholy Death Knights on Mythic Crown of the Cosmos (kills only). Primary reference: <strong>Lanadk</strong> (fewest talent differences at 7, closest build match, #1 ranked, 101K DPS in 8:28 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Unholyftw</strong></td>
+      <td>157,290</td>
+      <td>4:52 (wipe)</td>
+      <td>289.7</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Prog &mdash; died 4:14</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Lanadk <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">101,481</td>
+      <td>8:28 (kill)</td>
+      <td>272.8</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#21507;&#32043;&#34223; <span class="ref-badge">#2</span></td>
+      <td class="green">101,390</td>
+      <td>8:42 (kill)</td>
+      <td>290.3</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#1040;&#1076;&#1100;&#1086;&#1089;&#1090;&#1086;&#1085;&#1090;&#1086;&#1089; <span class="ref-badge">#3</span></td>
+      <td class="green">100,753</td>
+      <td>8:33 (kill)</td>
+      <td>291.5</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Banandk <span class="ref-badge">#4</span></td>
+      <td class="green">100,267</td>
+      <td>6:47 (kill)</td>
+      <td>291.5</td>
+      <td><span class="tag tag-diff">11 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#44396;&#50872;&#53804;&#48176;&#47085; <span class="ref-badge">#5</span></td>
+      <td class="green">99,643</td>
+      <td>8:44 (kill)</td>
+      <td>290.6</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="yellow">Critical context:</strong> Unholyftw's 157K DPS appears higher than kill references (~101K), but this is expected &mdash; prog wipes end during burst-heavy early phases, inflating per-second damage. Kill pulls include the full 8+ minute fight where sustained DPS naturally normalizes lower. The reference CPM (49.3) from an 8:28 kill is the meaningful comparison for rotation efficiency, not raw DPS numbers. Lanadk was chosen as primary reference despite 7 talent differences because no closer match exists among ranked kills.</p>
+
+<!-- COOLDOWN ALIGNMENT -->
+<h2>Cooldown Alignment</h2>
+<p class="section-intro">Unholy DK's burst revolves around <strong>Dark Transformation</strong> (45s CD) paired with <strong>Army of the Dead</strong> (90s CD) every other DT window. During DT, <strong>Commander of the Dead</strong> buffs all minion damage by 30% and <strong>Putrefy</strong> should be concentrated inside the window. Soul Reaper and Blood Fury should align with DT windows.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Unholyftw</span> &mdash; Fight 23 (4:14 alive)</div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:02</span> <span class="cast good">Army + DT + Soul Reaper + Blood Fury</span></div>
+      <div><span class="dim">0:04</span> <span class="cast good">Putrefy + Potion</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">0:49</span> <span class="cast good">DT + Soul Reaper</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:37</span> <span class="cast good">DT + Army (correctly paired)</span></div>
+      <div><span class="dim">1:52</span> <span class="cast good">Putrefy x2 inside DT window</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:00</span> <span class="cast good">DT (post-intermission, with Heroism)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:46</span> <span class="cast good">DT + Army (correctly paired)</span></div>
+      <div style="margin-top: 8px;"><strong class="green">5 DT in 4:14 = 1.2 CPM. Army paired every other DT. Strong CD discipline.</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="purple">Lanadk</span> <span class="ref-badge">Reference (Kill)</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:08</span> <span class="cast good">Army + DT + Blood Fury + AMS</span></div>
+      <div><span class="dim">0:13</span> <span class="cast good">Putrefy inside DT</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">0:53</span> <span class="cast good">DT</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:38</span> <span class="cast good">DT + Army</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:09</span> <span class="cast good">Army + DT + Blood Fury</span></div>
+      <div><span class="dim">...</span> <span class="cast neutral">continues through 10 DT windows in 8:28</span></div>
+      <div style="margin-top: 8px;"><strong class="purple">10 DT, 6 Army in 8:28 = 1.2 CPM DT. Perfect 1:2 Army:DT ratio.</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--green);">
+  <div class="card-header green">Cooldown Usage: Strong</div>
+  <p style="font-size: 14px;">Unholyftw's cooldown alignment is <strong>correct</strong>. Dark Transformation is used on cooldown at 1.2 CPM (matching reference exactly). Army of the Dead is paired with every other DT cast. Soul Reaper and Blood Fury are aligned with DT windows. Putrefy charges are banked for DT windows. The opener follows the standard Rider of the Apocalypse sequence (Outbreak &rarr; Festering Strike &rarr; Army + DT + Soul Reaper + Blood Fury &rarr; Putrefy). This is not a cooldown problem &mdash; it's a <strong>between-cooldowns filler execution</strong> problem.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Unholyftw (4:14 alive in Fight 23, 293s total) vs Lanadk (8:28 kill). CPM calculated using <strong>alive time</strong> (254s) for the player to avoid penalizing for death downtime. Abilities sorted by impact.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Scourge Strike</strong></td>
+      <td>58</td>
+      <td class="red">13.7</td>
+      <td>179</td>
+      <td>21.1</td>
+      <td class="red">&minus;35%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Death Coil</strong></td>
+      <td>26</td>
+      <td class="yellow">6.1</td>
+      <td>90</td>
+      <td>10.6</td>
+      <td class="red">&minus;42%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Necrotic Coil</strong></td>
+      <td>21</td>
+      <td class="yellow">5.0</td>
+      <td>60</td>
+      <td>7.1</td>
+      <td class="red">&minus;30%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Festering Strike</td>
+      <td>6</td>
+      <td>1.4</td>
+      <td>22</td>
+      <td>2.6</td>
+      <td class="red">&minus;46%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Festering Scythe</td>
+      <td>5</td>
+      <td>1.2</td>
+      <td>22</td>
+      <td>2.6</td>
+      <td class="red">&minus;54%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Soul Reaper</td>
+      <td>6</td>
+      <td>1.4</td>
+      <td>17</td>
+      <td>2.0</td>
+      <td class="yellow">&minus;30%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Dark Transformation</td>
+      <td>5</td>
+      <td>1.2</td>
+      <td>10</td>
+      <td>1.2</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Putrefy</td>
+      <td>4</td>
+      <td>0.9</td>
+      <td>8</td>
+      <td>0.9</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Army of the Dead</td>
+      <td>3</td>
+      <td>0.7</td>
+      <td>6</td>
+      <td>0.7</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Outbreak</td>
+      <td>12</td>
+      <td>2.8</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td class="yellow">+700%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr>
+      <td>Death and Decay</td>
+      <td>3</td>
+      <td>0.7</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">AoE phases</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Scourge Strike Deficit: &minus;35% CPM</div>
+    <p style="font-size: 14px;">Scourge Strike is the primary rune spender that consumes Festering Wounds to spawn Lesser Ghouls, which then deal significant pet damage through <strong>Sweeping Claws</strong> and <strong>Infected Claws</strong>. At 13.7 CPM vs 21.1 CPM, Unholyftw is casting ~35% fewer Scourge Strikes. Part of this gap comes from the 50-second intermission where no targets exist, but even adjusting for that (~40s of dead time), active-phase Scourge Strike CPM is still well below reference. Each missed Scourge Strike means fewer Lesser Ghouls spawned, fewer wound pops for <strong>Festermight</strong> stacks, and less Runic Power generated for Death Coil.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Death Coil + Necrotic Coil Combined Gap</div>
+    <p style="font-size: 14px;">Death Coil (6.1 CPM) + Necrotic Coil (5.0 CPM) = <strong>11.1 combined CPM</strong> vs reference's 10.6 + 7.1 = <strong>17.7 CPM</strong>. This is a <strong>&minus;37%</strong> gap in Runic Power spending. Death Coil is the primary Runic Power dump and triggers <strong>Runic Corruption</strong> (rune regeneration), <strong>Sudden Doom</strong> procs, and maintains <strong>Icy Talons</strong> haste buff. Necrotic Coil replaces Death Coil during Army of the Dead windows. Fewer Death Coils means slower rune regeneration, which cascades into fewer Scourge Strikes and Festering Strikes.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--yellow);">
+  <div class="card-header yellow">Outbreak Over-Casting: 12 vs 3</div>
+  <p style="font-size: 14px;">Unholyftw cast Outbreak <strong>12 times</strong> vs the reference's <strong>3</strong>. Outbreak applies Virulent Plague, which only needs to be refreshed when it falls off (rare in single target) or applied to new targets. With <strong>Blightburst</strong> talented (which provides infinite plague duration on single target), Outbreak should almost never be needed after the opener. Those 12 Outbreak GCDs displaced ~9 Scourge Strikes or Death Coils. On a multi-target fight like Crown (with demibosses and adds), some additional Outbreaks are justified for spreading diseases to new targets, but 12 is excessive &mdash; the reference managed with 3 across a full 8:28 kill.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Fight 23 total: Unholyftw <strong>51.8M</strong> (157K DPS over 4:52, 203K active before death) vs Lanadk <strong>96.1M</strong> (189K DPS over 8:28 kill). Per-minute damage rate comparison is more meaningful than totals given the duration difference.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Melee</strong></td>
+      <td>5,858K</td>
+      <td>11.3%</td>
+      <td>12,593K</td>
+      <td>13.1%</td>
+      <td><span class="tag tag-same">Auto-attacks, similar %</span></td>
+    </tr>
+    <tr>
+      <td><strong>Putrefy</strong></td>
+      <td>5,189K</td>
+      <td>10.0%</td>
+      <td>9,960K</td>
+      <td>10.4%</td>
+      <td><span class="tag tag-same">Good &mdash; matching share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Scourge Strike</strong></td>
+      <td>4,154K</td>
+      <td>8.0%</td>
+      <td>7,456K</td>
+      <td>7.8%</td>
+      <td><span class="tag tag-same">Similar % despite CPM gap</span></td>
+    </tr>
+    <tr>
+      <td><strong>Sweeping Claws</strong></td>
+      <td>3,997K</td>
+      <td>7.7%</td>
+      <td>8,170K</td>
+      <td>8.5%</td>
+      <td><span class="tag tag-info">Pet damage &mdash; tied to wound pops</span></td>
+    </tr>
+    <tr>
+      <td><strong>Death Coil</strong></td>
+      <td>3,784K</td>
+      <td>7.3%</td>
+      <td>6,382K</td>
+      <td>6.6%</td>
+      <td><span class="tag tag-same">Similar share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Necrotic Coil</strong></td>
+      <td>3,551K</td>
+      <td>6.9%</td>
+      <td>7,927K</td>
+      <td>8.2%</td>
+      <td><span class="tag tag-warn">Lower share &mdash; fewer casts</span></td>
+    </tr>
+    <tr>
+      <td><strong>Shadow Bolt</strong></td>
+      <td>3,083K</td>
+      <td>6.0%</td>
+      <td>6,054K</td>
+      <td>6.3%</td>
+      <td><span class="tag tag-info">Pet (Gargoyle/Magus)</span></td>
+    </tr>
+    <tr>
+      <td><strong>Gargoyle Strike</strong></td>
+      <td>2,713K</td>
+      <td>5.2%</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Gargoyle pet</span></td>
+    </tr>
+    <tr>
+      <td>Dread Plague</td>
+      <td>2,348K</td>
+      <td>4.5%</td>
+      <td>4,406K</td>
+      <td>4.6%</td>
+      <td><span class="dim">DoT damage</span></td>
+    </tr>
+    <tr>
+      <td>Pestilence</td>
+      <td>2,342K</td>
+      <td>4.5%</td>
+      <td>3,757K</td>
+      <td>3.9%</td>
+      <td><span class="dim">DoT proc damage</span></td>
+    </tr>
+    <tr>
+      <td>Ruptured Viscera</td>
+      <td>2,271K</td>
+      <td>4.4%</td>
+      <td>3,700K</td>
+      <td>3.9%</td>
+      <td><span class="dim">Wound burst damage</span></td>
+    </tr>
+    <tr>
+      <td>Infected Claws</td>
+      <td>1,522K</td>
+      <td>2.9%</td>
+      <td>2,944K</td>
+      <td>3.1%</td>
+      <td><span class="dim">Pet proc damage</span></td>
+    </tr>
+    <tr>
+      <td>Coil of Devastation</td>
+      <td>1,462K</td>
+      <td>2.8%</td>
+      <td>2,850K</td>
+      <td>3.0%</td>
+      <td><span class="dim">DC/NC splash</span></td>
+    </tr>
+    <tr>
+      <td>Frostbolt</td>
+      <td>1,433K</td>
+      <td>2.8%</td>
+      <td>2,563K</td>
+      <td>2.7%</td>
+      <td><span class="dim">Pet (Magus)</span></td>
+    </tr>
+    <tr>
+      <td>Virulent Plague</td>
+      <td>1,354K</td>
+      <td>2.6%</td>
+      <td>2,820K</td>
+      <td>2.9%</td>
+      <td><span class="dim">Disease DoT</span></td>
+    </tr>
+    <tr>
+      <td>Soul Reaper</td>
+      <td>984K</td>
+      <td>1.9%</td>
+      <td>1,778K</td>
+      <td>1.8%</td>
+      <td><span class="tag tag-same">Matching share</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Damage Profile Assessment</div>
+  <p style="font-size: 14px;">The <strong>damage distribution by percentage</strong> is remarkably close to the reference across nearly every ability. Putrefy (10.0% vs 10.4%), Scourge Strike (8.0% vs 7.8%), Death Coil (7.3% vs 6.6%), and Soul Reaper (1.9% vs 1.8%) all match within 1%. This confirms the rotation <strong>priority is correct</strong> &mdash; Unholyftw is pressing the right buttons in the right order. The gap is purely about <strong>pressing more buttons per minute</strong>, not pressing the wrong ones. The total damage difference (51.8M vs 96.1M) is primarily a function of fight duration (4:14 alive vs 8:28 full kill).</p>
+</div>
+
+<!-- CASTING GAP ANALYSIS -->
+<h2>Casting Gap Analysis</h2>
+<p class="section-intro">Periods during Fight 23 where Unholyftw had no cast events for 2.5+ seconds. Total identified gap time: ~62 seconds across the fight.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Time</th><th>Gap</th><th>Before</th><th>After</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0:32</td>
+      <td>4.0s</td>
+      <td>Scourge Strike</td>
+      <td>Scourge Strike</td>
+      <td><span class="tag tag-warn">Minor &mdash; possible movement</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>1:26</td>
+      <td>6.6s</td>
+      <td>Anti-Magic Shell</td>
+      <td>Death Charge</td>
+      <td><span class="tag tag-warn">AMS cast + repositioning</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td>2:04</td>
+      <td>26.0s</td>
+      <td>Scourge Strike</td>
+      <td>Icebound Fortitude</td>
+      <td><span class="tag tag-info">Intermission &mdash; boss untargetable</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>2:33</td>
+      <td>10.2s</td>
+      <td>Death Charge</td>
+      <td>Death Charge</td>
+      <td><span class="tag tag-info">Intermission &mdash; dodge Silverstrike</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>2:45</td>
+      <td>13.2s</td>
+      <td>Raise Ally</td>
+      <td>Blood Fury</td>
+      <td><span class="tag tag-info">Intermission &mdash; battle rez + waiting</span></td>
+    </tr>
+    <tr>
+      <td>3:31</td>
+      <td>2.7s</td>
+      <td>Scourge Strike</td>
+      <td>Outbreak</td>
+      <td><span class="tag tag-warn">Minor</span></td>
+    </tr>
+    <tr>
+      <td>3:38</td>
+      <td>3.2s</td>
+      <td>Death Coil</td>
+      <td>Scourge Strike</td>
+      <td><span class="tag tag-warn">Minor &mdash; P2 repositioning</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Gap Analysis Summary</div>
+  <p style="font-size: 14px;">The three largest gaps (26s + 10.2s + 13.2s = <strong>49.4s total</strong>) all occur during the <strong>Phase 1 &rarr; Phase 2 intermission</strong> (2:04&ndash;2:58) where the boss is untargetable and players must dodge Silverstrike Barrage. This is <strong>unavoidable downtime</strong> &mdash; the reference also has a 15s gap at the same phase transition (2:04 in their kill). Unholyftw used the intermission productively by casting <strong>Raise Ally</strong> (battle rez) at 2:45. The remaining gaps in Phase 1 and Phase 2 are minor (2.7s&ndash;6.6s) and likely movement-related. Post-intermission (3:00+), cast frequency returns to normal density until death at 4:14.</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Unholyftw during Fight 23. Total: 12.0M across 314 events. Death cause: Simulacrum Backlash at 4:14.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>3,259K</td>
+      <td>118</td>
+      <td><span class="tag tag-same">No &mdash; passive raid-wide DoT</span></td>
+    </tr>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>2,037K</td>
+      <td>62</td>
+      <td><span class="tag tag-warn">Partially &mdash; raid mechanic (kill cause)</span></td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td>
+      <td>1,220K</td>
+      <td>7</td>
+      <td><span class="tag tag-warn">Partially &mdash; void zones on ground</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,161K</td>
+      <td>27</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>1,073K</td>
+      <td>43</td>
+      <td><span class="tag tag-same">No &mdash; stacking debuff</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>607K</td>
+      <td>10</td>
+      <td><span class="tag tag-warn">Partially &mdash; targeted mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>594K</td>
+      <td>15</td>
+      <td><span class="tag tag-same">No &mdash; passive damage</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>535K</td>
+      <td>21</td>
+      <td><span class="tag tag-same">No &mdash; shield mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>398K</td>
+      <td>2</td>
+      <td><span class="tag tag-diff">Yes &mdash; positioning error</span></td>
+    </tr>
+    <tr>
+      <td>Ravenous Abyss</td>
+      <td>359K</td>
+      <td>1</td>
+      <td><span class="tag tag-warn">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>249K</td>
+      <td>3</td>
+      <td><span class="tag tag-warn">Partially &mdash; raid mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Barrage</td>
+      <td>101K</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Expected &mdash; intermission debuff removal</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Most damage taken is unavoidable raid-wide mechanics (Echoing Darkness, Voidstalker Sting, Void Expulsion). The <strong class="yellow">Falling damage (398K, 2 hits)</strong> is the only clearly avoidable source &mdash; this indicates positioning issues during platform transitions. The death to <strong>Simulacrum Backlash</strong> is a raid-wide wipe mechanic when the Rift Simulacrum is not properly handled, not an individual error. Defensive usage was reasonable: Anti-Magic Shell, Anti-Magic Zone, and Icebound Fortitude were all deployed.</p>
+
+<!-- DEFENSIVE USAGE -->
+<h2>Defensive &amp; Utility Usage</h2>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Uses</th><th>Ref Uses</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Anti-Magic Shell</strong></td>
+      <td>1</td>
+      <td>6</td>
+      <td><span class="tag tag-diff">Under-using</span></td>
+    </tr>
+    <tr>
+      <td><strong>Anti-Magic Zone</strong></td>
+      <td>1</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td><strong>Icebound Fortitude</strong></td>
+      <td>1</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td><strong>Death Charge</strong></td>
+      <td>5</td>
+      <td>11</td>
+      <td><span class="tag tag-same">Proportional to fight length</span></td>
+    </tr>
+    <tr>
+      <td>Mind Freeze (Interrupt)</td>
+      <td>0</td>
+      <td>6</td>
+      <td><span class="tag tag-warn">No interrupts</span></td>
+    </tr>
+    <tr>
+      <td>Raise Ally (Battle Rez)</td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-same">Good &mdash; rezzed during intermission</span></td>
+    </tr>
+    <tr>
+      <td>Lichborne</td>
+      <td>0</td>
+      <td>3</td>
+      <td><span class="tag tag-warn">Not used</span></td>
+    </tr>
+    <tr>
+      <td>Death Grip</td>
+      <td>2</td>
+      <td>6</td>
+      <td><span class="tag tag-same">Proportional</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--cyan);">
+  <div class="card-header cyan">Anti-Magic Shell: Significant DPS &amp; Survivability Gap</div>
+  <p style="font-size: 14px;">Lanadk used Anti-Magic Shell <strong>6 times</strong> across 8:28 vs Unholyftw's <strong>1 use</strong> in 4:14. AMS is a 45-second cooldown that absorbs magic damage and <strong>generates Runic Power</strong> from absorbed damage. On Crown of the Cosmos, Echoing Darkness is constant magic damage (118 hits, 3.3M total) &mdash; every AMS absorbs multiple ticks and generates bonus Runic Power that fuels extra Death Coils. This is both a <strong>defensive and offensive</strong> button. With a 45s cooldown, Unholyftw should have used it 5+ times in 4:14 of combat. Each missed AMS is both lost survivability and lost Runic Power generation.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during Fight 23.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism</strong></td>
+      <td>2:59 (Phase 2 start)</td>
+      <td><span class="tag tag-info">Used at P2 entry &mdash; aligns with DT #4</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>3:06</td>
+      <td><span class="tag tag-same">Received &mdash; inside DT + Heroism window</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>6 applications (0:01, 1:05, 1:35, 2:57, 3:30, 3:59)</td>
+      <td><span class="tag tag-same">Good uptime from Aug Evoker</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>5 applications (0:32, 0:55, 3:05, 3:40, 4:00)</td>
+      <td><span class="tag tag-same">Consistent crit buff</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Good external buff alignment. Heroism + PI + DT all stacked at 3:00&ndash;3:06 for the Phase 2 opening burst. The reference kill does not have identical external buff context (different raid, different timing), so direct buff-to-buff comparison is not meaningful. What matters is that Unholyftw correctly aligned DT #4 with Heroism at the Phase 2 transition.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Unholyftw's DPS across all 26 Crown of the Cosmos pulls. Color indicates best boss % reached: <span class="green">green &lt;10%</span>, <span class="yellow">yellow 10&ndash;50%</span>, <span class="orange">orange 50&ndash;90%</span>, <span class="red">red &gt;90%</span>. Boss % labels on each bar. Fight 22 data missing (very short pull, player may not have engaged).</p>
+
+<div class="card">
+  <div class="progression-chart" style="height: 200px; padding-bottom: 24px;">
+    <!-- F1: 54 DPS, 28s, boss 99.45% -->
+    <div class="prog-bar" style="height: 2%; background: var(--red);" data-tooltip="F1: 54 DPS (0:28) Boss: 99.5%">
+      <span class="prog-label" style="color:var(--red);">99%</span>
+    </div>
+    <!-- F2: 51K, 63s, boss 51.98% -->
+    <div class="prog-bar" style="height: 18%; background: var(--orange);" data-tooltip="F2: 51K DPS (1:03) Boss: 52.0%">
+      <span class="prog-label" style="color:var(--orange);">52%</span>
+    </div>
+    <!-- F3: 125K, 117s, boss 54.75% -->
+    <div class="prog-bar" style="height: 45%; background: var(--orange);" data-tooltip="F3: 125K DPS (1:57) Boss: 54.8%">
+      <span class="prog-label" style="color:var(--orange);">55%</span>
+    </div>
+    <!-- F4: 52K, 76s, boss 54.62% -->
+    <div class="prog-bar" style="height: 18%; background: var(--orange);" data-tooltip="F4: 52K DPS (1:16) Boss: 54.6%">
+      <span class="prog-label" style="color:var(--orange);">55%</span>
+    </div>
+    <!-- F5: 148K, 60s, boss 74.02% -->
+    <div class="prog-bar" style="height: 53%; background: var(--orange);" data-tooltip="F5: 148K DPS (1:00) Boss: 74.0%">
+      <span class="prog-label" style="color:var(--orange);">74%</span>
+    </div>
+    <!-- F6: 173K, 143s, boss 19.48% -->
+    <div class="prog-bar" style="height: 62%; background: var(--yellow);" data-tooltip="F6: 173K DPS (2:23) Boss: 19.5%">
+      <span class="prog-label" style="color:var(--yellow);">19%</span>
+    </div>
+    <!-- F7: 75K, 89s, boss 41.72% -->
+    <div class="prog-bar" style="height: 27%; background: var(--yellow);" data-tooltip="F7: 75K DPS (1:29) Boss: 41.7%">
+      <span class="prog-label" style="color:var(--yellow);">42%</span>
+    </div>
+    <!-- F8: 265K, 142s, boss 0.01% -->
+    <div class="prog-bar" style="height: 94%; background: var(--green);" data-tooltip="F8: 265K DPS (2:22) Boss: 0.01%">
+      <span class="prog-label" style="color:var(--green);">0%</span>
+    </div>
+    <!-- F9: 225K, 152s, boss 7.27% -->
+    <div class="prog-bar" style="height: 80%; background: var(--green);" data-tooltip="F9: 225K DPS (2:32) Boss: 7.3%">
+      <span class="prog-label" style="color:var(--green);">7%</span>
+    </div>
+    <!-- F10: 215K, 220s, boss 98.36% -->
+    <div class="prog-bar" style="height: 77%; background: var(--red);" data-tooltip="F10: 215K DPS (3:40) Boss: 98.4%">
+      <span class="prog-label" style="color:var(--red);">98%</span>
+    </div>
+    <!-- F11: 217K, 122s, boss 30.29% -->
+    <div class="prog-bar" style="height: 77%; background: var(--yellow);" data-tooltip="F11: 217K DPS (2:02) Boss: 30.3%">
+      <span class="prog-label" style="color:var(--yellow);">30%</span>
+    </div>
+    <!-- F12: 86K, 234s, boss 92.06% -->
+    <div class="prog-bar" style="height: 31%; background: var(--red);" data-tooltip="F12: 86K DPS (3:54) Boss: 92.1%">
+      <span class="prog-label" style="color:var(--red);">92%</span>
+    </div>
+    <!-- F13: 162K, 75s, boss 60.77% -->
+    <div class="prog-bar" style="height: 58%; background: var(--orange);" data-tooltip="F13: 162K DPS (1:15) Boss: 60.8%">
+      <span class="prog-label" style="color:var(--orange);">61%</span>
+    </div>
+    <!-- F14: 181K, 231s, boss 95.25% -->
+    <div class="prog-bar" style="height: 65%; background: var(--red);" data-tooltip="F14: 181K DPS (3:51) Boss: 95.3%">
+      <span class="prog-label" style="color:var(--red);">95%</span>
+    </div>
+    <!-- F15: 280K, 149s, boss 9.05% -->
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F15: 280K DPS (2:29) Boss: 9.1%">
+      <span class="prog-label" style="color:var(--green);">9%</span>
+    </div>
+    <!-- F16: 207K, 130s, boss 21.23% -->
+    <div class="prog-bar" style="height: 74%; background: var(--yellow);" data-tooltip="F16: 207K DPS (2:10) Boss: 21.2%">
+      <span class="prog-label" style="color:var(--yellow);">21%</span>
+    </div>
+    <!-- F17: 212K, 144s, boss 0.01% -->
+    <div class="prog-bar" style="height: 76%; background: var(--green);" data-tooltip="F17: 212K DPS (2:24) Boss: 0.01%">
+      <span class="prog-label" style="color:var(--green);">0%</span>
+    </div>
+    <!-- F18: 158K, 236s, boss 95.72% -->
+    <div class="prog-bar" style="height: 56%; background: var(--red);" data-tooltip="F18: 158K DPS (3:56) Boss: 95.7%">
+      <span class="prog-label" style="color:var(--red);">96%</span>
+    </div>
+    <!-- F19: 189K, 114s, boss 34.53% -->
+    <div class="prog-bar" style="height: 67%; background: var(--yellow);" data-tooltip="F19: 189K DPS (1:54) Boss: 34.5%">
+      <span class="prog-label" style="color:var(--yellow);">35%</span>
+    </div>
+    <!-- F20: 132K, 120s, boss 35.43% -->
+    <div class="prog-bar" style="height: 47%; background: var(--yellow);" data-tooltip="F20: 132K DPS (2:00) Boss: 35.4%">
+      <span class="prog-label" style="color:var(--yellow);">35%</span>
+    </div>
+    <!-- F21: 274K, 147s, boss 0.22% -->
+    <div class="prog-bar" style="height: 98%; background: var(--green);" data-tooltip="F21: 274K DPS (2:27) Boss: 0.22%">
+      <span class="prog-label" style="color:var(--green);">0%</span>
+    </div>
+    <!-- F22: 0 DPS, 25s, boss 99.7% (not engaged) -->
+    <div class="prog-bar" style="height: 1%; background: var(--dim);" data-tooltip="F22: No data (0:25)">
+      <span class="prog-label" style="color:var(--dim);">?</span>
+    </div>
+    <!-- F23: 157K, 293s, boss 77.31% (primary analysis) -->
+    <div class="prog-bar" style="height: 56%; background: var(--orange); border: 2px solid var(--accent);" data-tooltip="F23: 157K DPS (4:52) Boss: 77.3% ★ ANALYSIS FIGHT">
+      <span class="prog-label" style="color:var(--accent);">77%*</span>
+    </div>
+    <!-- F24: 187K, 229s, boss 92.92% -->
+    <div class="prog-bar" style="height: 67%; background: var(--red);" data-tooltip="F24: 187K DPS (3:49) Boss: 92.9%">
+      <span class="prog-label" style="color:var(--red);">93%</span>
+    </div>
+    <!-- F25: 203K, 188s, boss 99.88% -->
+    <div class="prog-bar" style="height: 72%; background: var(--red);" data-tooltip="F25: 203K DPS (3:08) Boss: 99.9%">
+      <span class="prog-label" style="color:var(--red);">100%</span>
+    </div>
+    <!-- F26: 218K, 220s, boss 96.91% -->
+    <div class="prog-bar" style="height: 78%; background: var(--red);" data-tooltip="F26: 218K DPS (3:40) Boss: 96.9%">
+      <span class="prog-label" style="color:var(--red);">97%</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px; margin-top: 20px;">
+    <span>Fight 1</span>
+    <span style="color: var(--dim);"><span class="green">&lt;10% boss</span> &bull; <span class="yellow">10&ndash;50%</span> &bull; <span class="orange">50&ndash;90%</span> &bull; <span class="red">&gt;90%</span> &bull; <span class="accent">&#9733; Analysis fight</span></span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">DPS varies significantly across pulls, but this is <strong>expected on prog</strong> &mdash; short Phase 1 wipes inflate DPS (burst phase bias), while longer pulls into Phase 2+ naturally show lower overall DPS as the intermission dead time is included. Filtering to the best boss % pulls (fights that reached Phase 2+): <strong>F8</strong> (265K, 0.01%, 2:22) &rarr; <strong>F9</strong> (225K, 7.3%, 2:32) &rarr; <strong>F15</strong> (280K, 9.1%, 2:29) &rarr; <strong>F17</strong> (212K, 0.01%, 2:24) &rarr; <strong>F21</strong> (274K, 0.22%, 2:27). These are all short pulls that burned Phase 1 fast. <strong>F23</strong> (157K, 77.3%, 4:52) is the longest pull and shows sustained output through Phase 2. The DPS on the analysis fight is consistent with the player's longer-pull performance on this encounter.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. For Unholy DK (Rider of the Apocalypse), Mastery (Dreadblade) increases Shadow damage and minion damage. Haste increases rune regeneration and GCD speed. Crit and Versatility are lower priority.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Unholyftw</th><th>Lanadk</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>289.7</td>
+      <td>272.8</td>
+      <td><span class="tag tag-same">+16.9 ilvl advantage</span></td>
+    </tr>
+    <tr>
+      <td>Strength</td>
+      <td>2,026</td>
+      <td>2,056</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="green">1,041</td>
+      <td>649 (est.)</td>
+      <td>Player has significantly more Crit</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="yellow">423</td>
+      <td>407</td>
+      <td><span class="tag tag-same">Similar &mdash; both low</span></td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="green">1,201</td>
+      <td>1,099</td>
+      <td>Player has +9% more Mastery</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="dim">Zero Vers</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Unholyftw actually has a <strong class="green">16.9 ilvl advantage</strong> over the #1 ranked reference, with more Mastery (+9%) and similar Haste. This means the gear is <strong>not holding performance back</strong> &mdash; any CPM gap is purely execution and fight mechanics, not stat budget. Both players have relatively low Haste, which is typical for Unholy DK's preferred Mastery-heavy stat profile. The zero Versatility is unusual but not a rotation concern.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Scourge Strike frequency between cooldown windows.</strong> Scourge Strike at 13.7 CPM vs reference's 21.1 CPM is the single largest ability gap (&minus;35%). Even after accounting for ~50 seconds of intermission downtime, active-phase Scourge Strike CPM is still below reference. Scourge Strike consumes Festering Wounds to spawn Lesser Ghouls (which generate substantial pet damage via Sweeping Claws and Infected Claws) and generates Runic Power for Death Coil. Every missed Scourge Strike cascades: fewer wounds popped &rarr; fewer Lesser Ghouls &rarr; less pet damage &rarr; less Runic Power &rarr; fewer Death Coils &rarr; slower Runic Corruption rune regen. Focus on pressing Scourge Strike whenever you have 1+ Festering Wounds and runes available. The rune-to-Scourge-Strike pipeline is the core of the spec's economy. <strong>Estimated impact: largest single improvement available.</strong>
+</div>
+
+<div class="action-item critical">
+  <strong>2. Use Anti-Magic Shell on cooldown for Runic Power generation.</strong> AMS was used <strong>1 time</strong> vs reference's <strong>6 times</strong> in a fight nearly twice as long. On Crown of the Cosmos, Echoing Darkness deals constant magic damage (118 hits, 3.3M total on this pull). Each AMS absorbs multiple ticks and <strong>generates bonus Runic Power</strong> from the absorbed damage. With a 45-second cooldown, AMS should be used 5+ times in a 4:14 pull. This is both a survivability button (absorbed damage does not need healing) and a DPS button (extra Runic Power = extra Death Coils). The reference used it at 0:09, 4:06, 5:49, 6:29, 7:12, and 8:03 &mdash; essentially on cooldown whenever magic damage was incoming. <strong>Estimated impact: +3&ndash;5 extra Death Coils per fight from bonus RP.</strong>
+</div>
+
+<div class="action-item">
+  <strong>3. Reduce Outbreak casts from 12 to 3&ndash;4.</strong> Outbreak was cast 12 times vs reference's 3. With Blightburst talented, Virulent Plague has infinite duration on single targets and should only need reapplication on new adds. Each unnecessary Outbreak GCD displaces a Scourge Strike or Death Coil. On Crown of the Cosmos, you need Outbreak for the opener, once for the Rift Simulacrum in Phase 2, and possibly 1&ndash;2 for demiboss target swaps in Phase 1. That is 3&ndash;4 total, not 12. <strong>Estimated impact: recovery of ~8 GCDs for higher-priority abilities.</strong>
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Festering Scythe uptime.</strong> Festering Scythe at 1.2 CPM vs reference's 2.6 CPM (&minus;54%). Festering Scythe maintains a debuff that triggers Dread Plague and feeds the Festering Wound system. The reference casts it every ~23 seconds. Unholyftw cast it 5 times in 4:14, averaging every ~51 seconds. The debuff should be maintained continuously &mdash; when it falls off, prioritize recasting it before other fillers. This passively generates more Festering Wounds for Scourge Strike to consume.
+</div>
+
+<div class="action-item">
+  <strong>5. Spend Runic Power more aggressively on Death Coil.</strong> Combined Death Coil + Necrotic Coil CPM is 11.1 vs reference's 17.7 (&minus;37%). Death Coil is the primary Runic Power dump and triggers Runic Corruption (rune regeneration), which feeds back into more Scourge Strikes and Festering Strikes. Avoid sitting on high Runic Power &mdash; dump it with Death Coil whenever you are above ~80 RP and no higher-priority ability is available. During Army of the Dead windows, Necrotic Coil replaces Death Coil and should be spent even more aggressively to buff the summoned ghouls. <strong>Estimated impact: faster rune regeneration cycle, more total casts per minute.</strong>
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Cooldown Discipline:</strong> Dark Transformation was used on cooldown at 1.2 CPM (matching reference exactly). Army of the Dead was correctly paired with every other DT window. Soul Reaper and Blood Fury aligned with burst windows. Putrefy charges banked for DT windows. The opener is textbook Rider of the Apocalypse sequence.<br><br>
+    <strong>Damage Profile:</strong> The percentage breakdown across abilities matches the reference within 1% for nearly every ability. This means the rotation <strong>priority</strong> is correct &mdash; Unholyftw is pressing the right buttons in the right order. The gap is about frequency, not priority.<br><br>
+    <strong>Active DPS:</strong> Before death at 4:14, active DPS was 203K &mdash; actually 7.4% <strong>above</strong> the reference kill's 189K DPS, showing strong burst and Phase 1 execution when alive and engaged.<br><br>
+    <strong>Intermission Utility:</strong> Used the Phase 1&rarr;2 intermission productively to cast Raise Ally (battle rez), contributing to raid recovery.<br><br>
+    <strong>Gear:</strong> At ilvl 289.7 with strong Mastery (1,201) and the correct stat profile for Rider of the Apocalypse, the gear is more than adequate. The 16.9 ilvl advantage over the #1 reference means gear is a strength, not a weakness.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">This is a <strong>prog analysis</strong> &mdash; 26 wipes, no kill. The primary improvement areas are <strong>filler execution between cooldown windows</strong> (more Scourge Strikes, fewer wasted Outbreaks), <strong>Anti-Magic Shell usage</strong> for both survivability and RP generation, and <strong>Festering Scythe debuff maintenance</strong>. The cooldown framework is solid and the rotation priority is correct &mdash; the biggest gains will come from pressing buttons faster during non-cooldown segments and using AMS on cooldown for bonus resources. As the raid learns Crown mechanics and progresses further into Phase 2 and Phase 3, the intermission downtime will shrink proportionally and sustained DPS will naturally improve. Focus on the CPM gap during <strong>active combat phases</strong>, not the raw DPS number vs kill references.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (Wipe, 4:52, 77.31% boss). Reference: Lanadk (#1 ranked Unholy Death Knight, report <code>BKaGdHMFDwfhb2RY</code>, Fight 4, 8:28 kill, 101K DPS). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 7 differences between Unholyftw and Lanadk. Item level difference: +16.9 (289.7 vs 272.8). External buffs: Unholyftw received Heroism at 2:59, Power Infusion at 3:06, and regular Ebon Might/Prescience from Aug Evoker. Reference context is a full kill with different raid comp and buff timing &mdash; direct DPS comparison is informational only.</p>
+  <p style="margin-top: 4px;">Spec guide sources: <a href="https://www.icy-veins.com/wow/unholy-death-knight-pve-dps-rotation-cooldowns-abilities" style="color:var(--accent);">Icy Veins Unholy DK Rotation Guide</a>, <a href="https://www.method.gg/guides/unholy-death-knight/playstyle-and-rotation" style="color:var(--accent);">Method Unholy DK Guide</a>.</p>
+</div>
+
+</body>
+</html>

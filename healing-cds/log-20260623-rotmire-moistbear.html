@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moistbear (Feral Druid) - Mythic Rotmire Kill Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --druid: #ff7c0a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; font-size:14px; line-height:1.6; }
+.container { max-width:1200px; margin:0 auto; padding:24px; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+
+/* Header */
+.header { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px 32px; margin-bottom:24px; }
+.header-top { display:flex; align-items:center; gap:16px; margin-bottom:8px; }
+.player-name { font-size:28px; font-weight:700; color:var(--druid); }
+.spec-badge { background:rgba(255,124,10,0.15); color:var(--druid); padding:4px 12px; border-radius:6px; font-size:13px; font-weight:600; }
+.kill-badge { background:rgba(63,185,80,0.15); color:var(--green); padding:4px 12px; border-radius:6px; font-size:13px; font-weight:600; }
+.header-meta { color:var(--dim); font-size:13px; }
+.header-meta span { margin-right:16px; }
+
+/* Cards */
+.card-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; }
+.card-label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--dim); margin-bottom:4px; }
+.card-value { font-size:24px; font-weight:700; }
+.card-sub { font-size:12px; color:var(--dim); margin-top:4px; }
+
+/* Sections */
+.section { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px; margin-bottom:24px; }
+.section-title { font-size:18px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.section-title .icon { font-size:20px; }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:10px 12px; border-bottom:2px solid var(--border); color:var(--dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:8px 12px; border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+tr:hover { background:rgba(88,166,255,0.04); }
+.highlight-row { background:rgba(255,124,10,0.06); }
+.ref-row { background:rgba(188,140,255,0.06); }
+
+/* Bars */
+.cps-bar-container { display:flex; align-items:center; gap:8px; }
+.cps-bar { height:8px; border-radius:4px; min-width:2px; }
+.cps-bar.player { background:var(--druid); }
+.cps-bar.ref { background:var(--purple); }
+
+/* Badges */
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.badge-green { background:rgba(63,185,80,0.15); color:var(--green); }
+.badge-yellow { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.badge-red { background:rgba(248,81,73,0.15); color:var(--red); }
+.badge-purple { background:rgba(188,140,255,0.15); color:var(--purple); }
+.badge-blue { background:rgba(88,166,255,0.15); color:var(--accent); }
+.badge-orange { background:rgba(219,109,40,0.15); color:var(--orange); }
+
+/* Timeline */
+.timeline { position:relative; height:180px; background:rgba(0,0,0,0.2); border-radius:8px; padding:8px 0; margin:16px 0; overflow:hidden; }
+.timeline-row { position:relative; height:24px; margin:2px 0; display:flex; align-items:center; }
+.timeline-label { position:absolute; left:8px; font-size:10px; color:var(--dim); white-space:nowrap; z-index:2; font-weight:600; }
+.timeline-marker { position:absolute; width:6px; height:16px; border-radius:3px; top:4px; }
+.timeline-marker.bloom { background:var(--red); }
+.timeline-marker.vines { background:var(--yellow); }
+.timeline-marker.adds { background:var(--cyan); }
+.timeline-marker.pustules { background:var(--orange); }
+
+/* Wipe chart */
+.wipe-chart { display:flex; align-items:flex-end; gap:8px; height:120px; padding:0 4px; }
+.wipe-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.wipe-bar { width:100%; border-radius:4px 4px 0 0; transition:opacity 0.2s; position:relative; }
+.wipe-bar:hover { opacity:0.8; }
+.wipe-label { font-size:10px; color:var(--dim); text-align:center; }
+.wipe-dps { font-size:11px; font-weight:600; text-align:center; }
+
+/* Callout */
+.callout { background:rgba(248,81,73,0.08); border:1px solid rgba(248,81,73,0.3); border-radius:8px; padding:16px; margin:12px 0; }
+.callout-title { font-weight:700; color:var(--red); margin-bottom:4px; }
+.callout-green { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.3); }
+.callout-green .callout-title { color:var(--green); }
+.callout-yellow { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.3); }
+.callout-yellow .callout-title { color:var(--yellow); }
+.callout-blue { background:rgba(88,166,255,0.08); border:1px solid rgba(88,166,255,0.3); }
+.callout-blue .callout-title { color:var(--accent); }
+
+/* Actionable items */
+.action-item { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:12px; border-left:4px solid var(--accent); }
+.action-item h4 { font-size:15px; font-weight:700; margin-bottom:8px; }
+.action-item .impact { color:var(--yellow); font-weight:600; font-size:13px; }
+.action-item p { color:var(--dim); font-size:13px; margin-top:6px; }
+
+/* Verdict */
+.verdict { background:linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.08)); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:24px; }
+.verdict h3 { font-size:16px; font-weight:700; margin-bottom:12px; }
+.verdict p { color:var(--dim); font-size:14px; line-height:1.7; }
+
+/* Footer */
+.footer { text-align:center; padding:24px; color:var(--dim); font-size:12px; border-top:1px solid var(--border); margin-top:32px; }
+
+/* Responsive */
+@media (max-width:768px) {
+  .card-grid { grid-template-columns:repeat(2,1fr); }
+  .container { padding:16px; }
+}
+
+/* Legend */
+.legend { display:flex; gap:16px; margin:8px 0; font-size:12px; color:var(--dim); flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:4px; }
+.legend-dot { width:10px; height:10px; border-radius:50%; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Back Link -->
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23, 2026 Rotmire Log Analysis</a>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <span class="player-name">Moistbear</span>
+    <span class="spec-badge">Feral Druid</span>
+    <span class="kill-badge">KILL</span>
+  </div>
+  <div class="header-meta">
+    <span>Mythic Rotmire</span>
+    <span>Kill Time: 8:09</span>
+    <span>June 23, 2026</span>
+    <span>Report: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC</a></span>
+    <span>20-player (5 heal)</span>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+  <div class="card">
+    <div class="card-label">DPS on Kill</div>
+    <div class="card-value" style="color:var(--druid)">100,218</div>
+    <div class="card-sub">53.4% of #1 reference (187,802)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">292</div>
+    <div class="card-sub">Same as reference (292)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Kill Status</div>
+    <div class="card-value" style="color:var(--green)">Survived</div>
+    <div class="card-sub">0 deaths on kill fight</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Rotational CPM</div>
+    <div class="card-value">40.3</div>
+    <div class="card-sub">Ref: 46.5 CPM (<span style="color:var(--red)">-13.3%</span>)</div>
+  </div>
+</div>
+
+<!-- Reference Comparison -->
+<div class="section">
+  <div class="section-title">Reference Comparison (Top 5 Feral Druids on Mythic Rotmire)</div>
+  <div class="callout callout-blue" style="margin-bottom:16px">
+    <div class="callout-title">External Buff Context</div>
+    Moistbear received <strong>Ebon Might</strong> (15 applications) and <strong>Prescience</strong> (2x) from Aug Evoker (Zinnks) but <strong>no Power Infusion</strong>. Lust on pull (1.5s).
+    The primary reference received <strong>Power Infusion 4x</strong> (1s, 136s, 310s, 434s) but had <strong>no Aug Evoker</strong>. Lust at 395s (late, near kill).
+    These external differences partially explain the DPS gap &mdash; PI gives ~5% DPS per window, while Aug buffs provide more sustained benefit throughout the fight.
+  </div>
+  <table>
+    <thead>
+      <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>iLvl</th><th>Talent Delta</th><th>Rot. CPM</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td><strong style="color:var(--druid)">Moistbear</strong></td>
+        <td><strong>100,218</strong></td>
+        <td>8:09</td>
+        <td>292</td>
+        <td>&mdash;</td>
+        <td>40.3</td>
+        <td>Analyzed player</td>
+      </tr>
+      <tr class="ref-row">
+        <td><strong style="color:var(--purple)">&#23376;&#23433;&#20116;&#20161;</strong> <span class="badge badge-purple">PRIMARY REF</span></td>
+        <td><strong>187,802</strong></td>
+        <td>8:03</td>
+        <td>292</td>
+        <td><span class="badge badge-green">2 diffs</span></td>
+        <td>46.5</td>
+        <td>Rank #1, nearly identical build</td>
+      </tr>
+      <tr>
+        <td>&#32769;&#27611;&#24618;</td>
+        <td>178,985</td>
+        <td>8:03</td>
+        <td>291</td>
+        <td><span class="badge badge-red">14 diffs</span></td>
+        <td>&mdash;</td>
+        <td>Rank #2, different build</td>
+      </tr>
+      <tr>
+        <td>Kayakosdog</td>
+        <td>176,843</td>
+        <td>7:27</td>
+        <td>291</td>
+        <td><span class="badge badge-red">12 diffs</span></td>
+        <td>&mdash;</td>
+        <td>Rank #3</td>
+      </tr>
+      <tr>
+        <td>Vachu</td>
+        <td>176,601</td>
+        <td>7:49</td>
+        <td>289</td>
+        <td><span class="badge badge-orange">10 diffs</span></td>
+        <td>&mdash;</td>
+        <td>Rank #4</td>
+      </tr>
+      <tr>
+        <td>&#27784;&#29287;&#20043;</td>
+        <td>174,295</td>
+        <td>6:57</td>
+        <td>292</td>
+        <td><span class="badge badge-orange">10 diffs</span></td>
+        <td>&mdash;</td>
+        <td>Rank #5, faster kill</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:12px;font-size:12px;color:var(--dim)">
+    Primary reference selected by fewest talent differences (2) and matching item level (292). With only 2 talent diffs and identical ilvl, the performance gap is primarily <strong>execution-based</strong>.
+  </div>
+</div>
+
+<!-- Boss Mechanic Timeline -->
+<div class="section">
+  <div class="section-title">Boss Mechanic Timeline (8:09 Kill)</div>
+  <p style="color:var(--dim);font-size:13px;margin-bottom:12px">
+    Rotmire is a single-phase fight with a repeating cycle: Awaken Fungi (adds) every ~65s, Festering Vines (movement) every ~68s, Fungal Bloom (100-energy raid-wide) every ~136s. Bursting Pustules ramp as a soft enrage.
+  </p>
+  <div class="timeline" style="height:170px">
+    <!-- Fungal Bloom row -->
+    <div class="timeline-row">
+      <span class="timeline-label" style="color:var(--red)">Fungal Bloom</span>
+      <div class="timeline-marker bloom" style="left:calc(120/489*100% + 80px)" title="Bloom #1 @ 2:00"></div>
+      <div class="timeline-marker bloom" style="left:calc(256/489*100% + 80px)" title="Bloom #2 @ 4:16"></div>
+      <div class="timeline-marker bloom" style="left:calc(392/489*100% + 80px)" title="Bloom #3 @ 6:32"></div>
+    </div>
+    <!-- Festering Vines row -->
+    <div class="timeline-row">
+      <span class="timeline-label" style="color:var(--yellow)">Festering Vines</span>
+      <div class="timeline-marker vines" style="left:calc(43/489*100% + 80px)" title="Vines #1 @ 0:43"></div>
+      <div class="timeline-marker vines" style="left:calc(92/489*100% + 80px)" title="Vines #2 @ 1:32"></div>
+      <div class="timeline-marker vines" style="left:calc(179/489*100% + 80px)" title="Vines #3 @ 2:59"></div>
+      <div class="timeline-marker vines" style="left:calc(228/489*100% + 80px)" title="Vines #4 @ 3:48"></div>
+      <div class="timeline-marker vines" style="left:calc(315/489*100% + 80px)" title="Vines #5 @ 5:15"></div>
+      <div class="timeline-marker vines" style="left:calc(364/489*100% + 80px)" title="Vines #6 @ 6:04"></div>
+      <div class="timeline-marker vines" style="left:calc(451/489*100% + 80px)" title="Vines #7 @ 7:31"></div>
+    </div>
+    <!-- Awaken Fungi row -->
+    <div class="timeline-row">
+      <span class="timeline-label" style="color:var(--cyan)">Awaken Fungi</span>
+      <div class="timeline-marker adds" style="left:calc(15/489*100% + 80px)" title="Fungi #1 @ 0:15"></div>
+      <div class="timeline-marker adds" style="left:calc(64/489*100% + 80px)" title="Fungi #2 @ 1:04"></div>
+      <div class="timeline-marker adds" style="left:calc(151/489*100% + 80px)" title="Fungi #3 @ 2:31"></div>
+      <div class="timeline-marker adds" style="left:calc(200/489*100% + 80px)" title="Fungi #4 @ 3:20"></div>
+      <div class="timeline-marker adds" style="left:calc(287/489*100% + 80px)" title="Fungi #5 @ 4:47"></div>
+      <div class="timeline-marker adds" style="left:calc(336/489*100% + 80px)" title="Fungi #6 @ 5:36"></div>
+      <div class="timeline-marker adds" style="left:calc(423/489*100% + 80px)" title="Fungi #7 @ 7:03"></div>
+      <div class="timeline-marker adds" style="left:calc(472/489*100% + 80px)" title="Fungi #8 @ 7:52"></div>
+    </div>
+    <!-- Bursting Pustules row -->
+    <div class="timeline-row">
+      <span class="timeline-label" style="color:var(--orange)">Burst. Pustules</span>
+      <div class="timeline-marker pustules" style="left:calc(10/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(31/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(80/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(146/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(167/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(216/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(282/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(303/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(352/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(418/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(439/489*100% + 80px)"></div>
+      <div class="timeline-marker pustules" style="left:calc(488/489*100% + 80px)"></div>
+    </div>
+    <!-- Cooldown usage row -->
+    <div class="timeline-row" style="margin-top:8px">
+      <span class="timeline-label" style="color:var(--druid)">Berserk + Convoke</span>
+      <div class="timeline-marker" style="background:var(--druid); left:calc(1/489*100% + 80px); width:12px" title="Berserk+Convoke @ 0:01"></div>
+      <div class="timeline-marker" style="background:var(--druid); left:calc(134/489*100% + 80px); width:12px" title="Berserk+Convoke @ 2:14"></div>
+      <div class="timeline-marker" style="background:var(--druid); left:calc(260/489*100% + 80px); width:12px" title="Berserk+Convoke @ 4:20"></div>
+      <div class="timeline-marker" style="background:var(--druid); left:calc(396/489*100% + 80px); width:12px" title="Berserk+Convoke @ 6:36"></div>
+    </div>
+    <!-- Time labels -->
+    <div style="position:absolute;bottom:2px;left:80px;right:8px;display:flex;justify-content:space-between;font-size:9px;color:var(--dim)">
+      <span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span><span>5:00</span><span>6:00</span><span>7:00</span><span>8:09</span>
+    </div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Fungal Bloom (raid-wide)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Festering Vines (movement)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div> Awaken Fungi (adds)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Bursting Pustules (soft enrage)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--druid)"></div> Berserk + Convoke</div>
+  </div>
+  <div style="font-size:12px;color:var(--dim);margin-top:8px">
+    <strong>Raid state:</strong> 0 deaths on the kill fight. Full 20/20 for the entire 8:09 duration. Clean kill.
+  </div>
+</div>
+
+<!-- Per-Mechanic Analysis -->
+<div class="section">
+  <div class="section-title">Per-Mechanic Window Analysis</div>
+  <p style="color:var(--dim);font-size:13px;margin-bottom:16px">
+    CPS = Casts Per Second during each mechanic window. Comparison vs primary reference (&#23376;&#23433;&#20116;&#20161;). Windows where player CPS is below 85% of reference are flagged.
+  </p>
+
+  <!-- Fungal Bloom (Raid-Wide) -->
+  <h4 style="color:var(--red);margin-bottom:8px">Fungal Bloom (Raid-Wide Damage)</h4>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:8px">100-energy cycle. Revives add corpses as Bursting Shrooms that must be killed in 16s. DPS check + healing check.</p>
+  <table>
+    <thead>
+      <tr><th>Event</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Player Casts</th><th>Ref Casts</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Bloom #1</td><td>2:00</td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:calc(0.87/1.1*100px)"></div>0.87</div></td>
+        <td><div class="cps-bar-container"><div class="cps-bar ref" style="width:calc(0.80/1.1*100px)"></div>0.80</div></td>
+        <td><span class="badge badge-green">+8%</span></td>
+        <td>13</td><td>12</td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>Bloom #2</td><td>4:16</td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:calc(0.73/1.1*100px)"></div>0.73</div></td>
+        <td><div class="cps-bar-container"><div class="cps-bar ref" style="width:calc(0.87/1.1*100px)"></div>0.87</div></td>
+        <td><span class="badge badge-red">-15%</span></td>
+        <td>11</td><td>13</td>
+        <td><span class="badge badge-yellow">Below</span></td>
+      </tr>
+      <tr>
+        <td>Bloom #3</td><td>6:32</td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:calc(0.87/1.1*100px)"></div>0.87</div></td>
+        <td><div class="cps-bar-container"><div class="cps-bar ref" style="width:calc(0.87/1.1*100px)"></div>0.87</div></td>
+        <td><span class="badge badge-green">0%</span></td>
+        <td>13</td><td>13</td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Festering Vines (Movement) -->
+  <h4 style="color:var(--yellow);margin:20px 0 8px">Festering Vines (Movement)</h4>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:8px">Green circles on players that create permanent ground denial. Requires repositioning. Uptime test for melee.</p>
+  <table>
+    <thead>
+      <tr><th>Event</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Casts (P/R)</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Vines #1</td><td>0:43</td>
+        <td>0.58</td><td>0.75</td>
+        <td><span class="badge badge-red">-22%</span></td>
+        <td>7 / 9</td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+      <tr>
+        <td>Vines #2</td><td>1:32</td>
+        <td>0.92</td><td>1.08</td>
+        <td><span class="badge badge-yellow">-15%</span></td>
+        <td>11 / 13</td>
+        <td><span class="badge badge-yellow">Below</span></td>
+      </tr>
+      <tr>
+        <td>Vines #3</td><td>2:59</td>
+        <td>0.75</td><td>1.00</td>
+        <td><span class="badge badge-red">-25%</span></td>
+        <td>9 / 12</td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+      <tr>
+        <td>Vines #4</td><td>3:48</td>
+        <td>1.00</td><td>0.83</td>
+        <td><span class="badge badge-green">+20%</span></td>
+        <td>12 / 10</td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>Vines #5</td><td>5:15</td>
+        <td>0.67</td><td>1.00</td>
+        <td><span class="badge badge-red">-33%</span></td>
+        <td>8 / 12</td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+      <tr>
+        <td>Vines #6</td><td>6:04</td>
+        <td>1.00</td><td>1.00</td>
+        <td><span class="badge badge-green">0%</span></td>
+        <td>12 / 12</td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>Vines #7</td><td>7:31</td>
+        <td>0.67</td><td>1.08</td>
+        <td><span class="badge badge-red">-38%</span></td>
+        <td>8 / 13</td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout" style="margin-top:12px">
+    <div class="callout-title">Pattern: Festering Vines Uptime Drops</div>
+    5 of 7 Vines windows are below reference CPS. Vines #5 (-33%) and #7 (-38%) are the worst. This is a consistent pattern of losing uptime during movement phases &mdash; likely caused by moving out of melee range instead of pre-positioning to maintain boss contact, or by Bear Form usage (seen at 282s, 301s, 444s) eating GCDs.
+  </div>
+
+  <!-- Awaken Fungi (Adds) -->
+  <h4 style="color:var(--cyan);margin:20px 0 8px">Awaken Fungi (Add Phases)</h4>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:8px">Spawns Shroomlings and Funglings that must be killed in separate corpse piles (Mythic Cross Fertilization). Adds become targetable ~8-10s after cast.</p>
+  <table>
+    <thead>
+      <tr><th>Spawn</th><th>Time</th><th>Player 1st Hit</th><th>Ref 1st Hit</th><th>Player Hits</th><th>Ref Hits</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Fungi #1</td><td>0:15</td>
+        <td>+8.6s</td><td>+9.2s</td>
+        <td>188</td><td>275</td>
+        <td><span class="badge badge-green">Quick switch</span></td>
+      </tr>
+      <tr>
+        <td>Fungi #2</td><td>1:04</td>
+        <td>+8.7s</td><td>+9.0s</td>
+        <td>99</td><td>253</td>
+        <td><span class="badge badge-yellow">Low hits</span></td>
+      </tr>
+      <tr>
+        <td>Fungi #3</td><td>2:31</td>
+        <td>+9.9s</td><td>+9.4s</td>
+        <td>197</td><td>350</td>
+        <td><span class="badge badge-yellow">Low hits</span></td>
+      </tr>
+      <tr>
+        <td>Fungi #4</td><td>3:20</td>
+        <td>+8.8s</td><td>+9.4s</td>
+        <td>87</td><td>253</td>
+        <td><span class="badge badge-yellow">Low hits</span></td>
+      </tr>
+      <tr>
+        <td>Fungi #5</td><td>4:47</td>
+        <td>+10.0s</td><td>+9.0s</td>
+        <td>67</td><td>336</td>
+        <td><span class="badge badge-red">Low hits, slow switch</span></td>
+      </tr>
+      <tr>
+        <td>Fungi #6</td><td>5:36</td>
+        <td>+11.5s</td><td>+9.4s</td>
+        <td>94</td><td>192</td>
+        <td><span class="badge badge-yellow">Slow switch</span></td>
+      </tr>
+      <tr>
+        <td>Fungi #7</td><td>7:03</td>
+        <td>+8.2s</td><td>+9.2s</td>
+        <td>73</td><td>402</td>
+        <td><span class="badge badge-red">Low hits</span></td>
+      </tr>
+      <tr>
+        <td>Fungi #8</td><td>7:52</td>
+        <td>+9.5s</td><td>+8.3s</td>
+        <td>40</td><td>3</td>
+        <td><span class="badge badge-green">Final spawn</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:var(--dim);font-size:12px;margin-top:8px">
+    Add switch timing is competitive (within 1-2s of reference on most spawns), but total damage event count on adds is consistently lower. This is driven by the Primal Wrath gap (see Ability Usage below) &mdash; the reference uses Primal Wrath at 4.8 CPM to maintain Rip on all adds simultaneously, generating far more damage events per add window.
+  </p>
+</div>
+
+<!-- Damage Target Split -->
+<div class="section">
+  <div class="section-title">Damage Target Split</div>
+  <table>
+    <thead>
+      <tr><th>Target</th><th>Player Damage</th><th>Player %</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td style="font-weight:600">Rotmire (Boss)</td><td>31,746,161</td><td>62.6%</td><td>Primary target</td></tr>
+      <tr><td>Sporecap</td><td>6,756,674</td><td>13.3%</td><td>Interruptible adds (Poison Burst)</td></tr>
+      <tr><td>Shroomling</td><td>5,176,656</td><td>10.2%</td><td>Melee adds (Cross Fert. target)</td></tr>
+      <tr><td>Bursting Shroom</td><td>4,703,466</td><td>9.3%</td><td>Bloom-spawned adds (16s DPS check)</td></tr>
+      <tr><td>Fungling</td><td>2,338,290</td><td>4.6%</td><td>Ranged adds (Cross Fert. target)</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--dim);font-size:12px;margin-top:8px">
+    Reference boss damage: 56.3%. Moistbear puts 6.3% more into the boss and less into adds. This aligns with the low Primal Wrath usage &mdash; less AoE spending means less add damage but more boss-focused damage.
+  </p>
+</div>
+
+<!-- Ability Usage Comparison -->
+<div class="section">
+  <div class="section-title">Ability Usage Comparison</div>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Player CPM</th><th>Ref CPM</th><th>Delta</th><th>Comparison</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600">Shred</td>
+        <td>15.6</td><td>16.3</td>
+        <td><span class="badge badge-green">-4%</span></td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:78px"></div><div class="cps-bar ref" style="width:82px"></div></div></td>
+        <td>Primary builder</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Ferocious Bite</td>
+        <td>9.2</td><td>8.9</td>
+        <td><span class="badge badge-green">+3%</span></td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:69px"></div><div class="cps-bar ref" style="width:67px"></div></div></td>
+        <td>Primary spender</td>
+      </tr>
+      <tr style="background:rgba(248,81,73,0.08)">
+        <td style="font-weight:600;color:var(--red)">Rake</td>
+        <td style="color:var(--red)">5.2</td><td>8.4</td>
+        <td><span class="badge badge-red">-39%</span></td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:39px"></div><div class="cps-bar ref" style="width:63px"></div></div></td>
+        <td>Bleed builder (snapshot)</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Swipe</td>
+        <td>5.9</td><td>5.1</td>
+        <td><span class="badge badge-green">+16%</span></td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:44px"></div><div class="cps-bar ref" style="width:38px"></div></div></td>
+        <td>AoE builder</td>
+      </tr>
+      <tr style="background:rgba(248,81,73,0.08)">
+        <td style="font-weight:600;color:var(--red)">Primal Wrath</td>
+        <td style="color:var(--red)">0.9</td><td>4.8</td>
+        <td><span class="badge badge-red">-82%</span></td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:7px"></div><div class="cps-bar ref" style="width:36px"></div></div></td>
+        <td>AoE finisher (applies Rip)</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Rip</td>
+        <td>2.3</td><td>1.9</td>
+        <td><span class="badge badge-green">+25%</span></td>
+        <td><div class="cps-bar-container"><div class="cps-bar player" style="width:17px"></div><div class="cps-bar ref" style="width:14px"></div></div></td>
+        <td>ST bleed finisher</td>
+      </tr>
+      <tr>
+        <td>Tiger's Fury</td>
+        <td>1.8</td><td>1.9</td>
+        <td><span class="badge badge-green">-1%</span></td>
+        <td>&mdash;</td>
+        <td>CD (30s), off-GCD</td>
+      </tr>
+      <tr>
+        <td>Frantic Frenzy</td>
+        <td>1.2</td><td>1.0</td>
+        <td><span class="badge badge-green">+24%</span></td>
+        <td>&mdash;</td>
+        <td>Talent proc</td>
+      </tr>
+      <tr>
+        <td>Berserk</td>
+        <td>0.5</td><td>0.5</td>
+        <td><span class="badge badge-green">-1%</span></td>
+        <td>&mdash;</td>
+        <td>Major CD (2min)</td>
+      </tr>
+      <tr>
+        <td>Convoke the Spirits</td>
+        <td>0.5</td><td>0.5</td>
+        <td><span class="badge badge-green">-1%</span></td>
+        <td>&mdash;</td>
+        <td>Major CD (1min w/ talent)</td>
+      </tr>
+      <tr>
+        <td>Skull Bash</td>
+        <td>1.0</td><td>0.2</td>
+        <td><span class="badge badge-blue">+295%</span></td>
+        <td>&mdash;</td>
+        <td>Interrupt (8 vs 2 uses)</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout" style="margin-top:12px">
+    <div class="callout-title">Critical Gap: Rake (-39%) and Primal Wrath (-82%)</div>
+    These two abilities represent the largest execution gaps. The reference uses Rake 68 times vs Moistbear's 42 &mdash; Rake should be refreshed on every target during add windows and maintained on the boss with Tiger's Fury snapshots. Primal Wrath (39 ref vs 7 player) is used by top players as the primary AoE finisher, applying Rip to all adds simultaneously. Moistbear is using single-target Rip (19x) where Primal Wrath would be far more efficient during add phases.
+  </div>
+</div>
+
+<!-- Cast Gap Analysis -->
+<div class="section">
+  <div class="section-title">Cast Gap Analysis</div>
+  <p style="color:var(--dim);font-size:13px;margin-bottom:12px">
+    Periods of 2.5+ seconds between consecutive casts. Each gap represents lost GCDs that could have been Shred or other rotational abilities.
+  </p>
+  <div class="card-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+    <div class="card">
+      <div class="card-label">Total Gaps (&gt;2.5s)</div>
+      <div class="card-value" style="color:var(--red)">32</div>
+      <div class="card-sub">Reference: 19 gaps</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Dead Time</div>
+      <div class="card-value" style="color:var(--red)">115.3s</div>
+      <div class="card-sub">Reference: 73.9s (56% more downtime)</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Est. Lost Casts</div>
+      <div class="card-value" style="color:var(--yellow)">~33</div>
+      <div class="card-sub">41.4s extra dead time &times; 0.80 CPS</div>
+    </div>
+  </div>
+  <h4 style="margin-bottom:8px">Gaps by Preceding Ability</h4>
+  <table>
+    <thead>
+      <tr><th>Ability Before Gap</th><th>Gap Count</th><th>Pattern</th></tr>
+    </thead>
+    <tbody>
+      <tr><td style="font-weight:600">Shred</td><td>13</td><td>Most gaps follow the primary filler &mdash; likely energy pooling or decision hesitation</td></tr>
+      <tr><td>Convoke the Spirits</td><td>4</td><td>Post-Convoke transition &mdash; re-entering rotation after channel</td></tr>
+      <tr><td>Rake</td><td>4</td><td>After applying Rake, delay before next action</td></tr>
+      <tr><td>Swipe</td><td>3</td><td>AoE transitions</td></tr>
+      <tr><td>Bear Form</td><td>2</td><td>Defensive form swap eats GCDs returning to Cat Form</td></tr>
+      <tr><td>Ferocious Bite</td><td>2</td><td>Post-spend delay</td></tr>
+      <tr><td>Frantic Frenzy</td><td>2</td><td>Post-proc transition</td></tr>
+      <tr><td>Other</td><td>2</td><td>Barkskin, Frenzied Regeneration</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--dim);font-size:12px;margin-top:8px">
+    The 13 gaps after Shred suggest energy starving or decision-making hesitation at the core rotation level. The 4 gaps after Convoke indicate a consistent post-channel re-entry delay of 4-5 seconds each time. Bear Form swaps at 282s, 301s, and 444s also created dead GCDs due to the Cat Form transition cost.
+  </p>
+</div>
+
+<!-- Quiet Window Uptime -->
+<div class="section">
+  <div class="section-title">Quiet Window Uptime</div>
+  <p style="color:var(--dim);font-size:13px;margin-bottom:12px">
+    Uptime during gaps between mechanics where full DPS is expected. These windows test pure rotational execution.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Window</th><th>Time Range</th><th>Duration</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Opener</td><td>0:00 - 0:15</td><td>15s</td>
+        <td>1.07</td><td>1.00</td>
+        <td><span class="badge badge-green">+7%</span></td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>Pre-Fungi #2</td><td>0:55 - 1:04</td><td>9s</td>
+        <td>0.89</td><td>0.44</td>
+        <td><span class="badge badge-green">+100%</span></td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>Post-Bloom #1</td><td>2:15 - 2:31</td><td>16s</td>
+        <td>0.69</td><td>0.94</td>
+        <td><span class="badge badge-red">-27%</span></td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+      <tr>
+        <td>Pre-Fungi #4</td><td>3:11 - 3:20</td><td>9s</td>
+        <td>0.78</td><td>1.00</td>
+        <td><span class="badge badge-red">-22%</span></td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+      <tr>
+        <td>Pre-Vines #4</td><td>3:40 - 3:48</td><td>8s</td>
+        <td>0.63</td><td>1.13</td>
+        <td><span class="badge badge-red">-44%</span></td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+      <tr>
+        <td>Pre-Vines #7</td><td>7:23 - 7:31</td><td>8s</td>
+        <td>0.50</td><td>0.88</td>
+        <td><span class="badge badge-red">-43%</span></td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:var(--dim);font-size:12px;margin-top:8px">
+    Opener and early windows are strong. Mid-to-late fight shows increasing uptime drops during quiet periods, especially the "Pre-Vines" windows at 3:40 (-44%) and 7:23 (-43%). This suggests fatigue or energy management issues compounding as the fight progresses and Pustule stacks increase raid pressure.
+  </p>
+</div>
+
+<!-- Cooldown Alignment -->
+<div class="section">
+  <div class="section-title">Cooldown Alignment</div>
+  <table>
+    <thead>
+      <tr><th>Cooldown</th><th>Player Timing</th><th>Reference Timing</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600">Berserk (2min)</td>
+        <td>0:01, 2:14, 4:20, 6:36</td>
+        <td>0:01, 2:04, 4:19, 6:38</td>
+        <td><span class="badge badge-green">Matched</span> &mdash; 4 uses each, aligned within 10s</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Convoke (1min)</td>
+        <td>0:04, 2:16, 4:23, 6:39</td>
+        <td>0:06, 2:06, 4:21, 6:40</td>
+        <td><span class="badge badge-green">Matched</span> &mdash; 4 uses each, synced with Berserk</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Tiger's Fury (30s)</td>
+        <td colspan="2">15 uses each &mdash; both used on cooldown consistently</td>
+        <td><span class="badge badge-green">Matched</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-green" style="margin-top:12px">
+    <div class="callout-title">Cooldown Usage is Excellent</div>
+    Berserk, Convoke, and Tiger's Fury are all used on cooldown with proper alignment. Berserk + Convoke are correctly paired together every time. Tiger's Fury is used exactly 15 times across both players. This is not where the DPS gap comes from.
+  </div>
+</div>
+
+<!-- Damage Taken -->
+<div class="section">
+  <div class="section-title">Damage Taken</div>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg/Hit</th><th>Category</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Rotting Pustules</td>
+        <td>13,823,182</td><td>478</td><td>28,919</td>
+        <td><span class="badge badge-blue">Unavoidable</span> (periodic raid ticks, soft enrage)</td>
+      </tr>
+      <tr>
+        <td>Bursting Pustules</td>
+        <td>2,986,870</td><td>46</td><td>64,932</td>
+        <td><span class="badge badge-blue">Unavoidable</span> (energy-cycle burst)</td>
+      </tr>
+      <tr>
+        <td>Fungal Bloom</td>
+        <td>2,729,083</td><td>51</td><td>53,511</td>
+        <td><span class="badge badge-blue">Unavoidable</span> (100-energy raid-wide)</td>
+      </tr>
+      <tr>
+        <td>Melee</td>
+        <td>1,390,298</td><td>51</td><td>27,261</td>
+        <td><span class="badge badge-blue">Unavoidable</span> (add melee hits)</td>
+      </tr>
+      <tr style="background:rgba(248,81,73,0.06)">
+        <td style="font-weight:600;color:var(--yellow)">Festering Vines</td>
+        <td>840,910</td><td>10</td><td>84,091</td>
+        <td><span class="badge badge-yellow">Avoidable</span> (got hit by vine damage)</td>
+      </tr>
+      <tr>
+        <td>Bursting Shroom</td>
+        <td>577,836</td><td>3</td><td>192,612</td>
+        <td><span class="badge badge-blue">Unavoidable</span> (proximity on add death)</td>
+      </tr>
+      <tr>
+        <td>Poison Burst</td>
+        <td>313,902</td><td>3</td><td>104,634</td>
+        <td><span class="badge badge-blue">Unavoidable</span> (Sporecap cast, interruptible)</td>
+      </tr>
+      <tr>
+        <td>Blightshot</td>
+        <td>126,302</td><td>2</td><td>63,151</td>
+        <td><span class="badge badge-yellow">Partially avoidable</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:var(--dim);font-size:12px;margin-top:8px">
+    Overall damage intake is reasonable. The 10 hits from Festering Vines (840K total) suggest getting clipped by vine ground effects. This correlates with the CPS drops during Vines windows &mdash; possibly standing in vine areas while trying to maintain uptime rather than cleanly repositioning.
+  </p>
+</div>
+
+<!-- Defensive Usage -->
+<div class="section">
+  <div class="section-title">Defensive &amp; Utility Usage</div>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Uses</th><th>Timing</th><th>Context</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600">Barkskin</td>
+        <td>5</td>
+        <td>0:04, 1:57, 4:12, 6:29, 7:51</td>
+        <td>Used proactively before Bloom #1 (1:57), Bloom #2 (4:12), Bloom #3 (6:29). Good timing.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Bear Form</td>
+        <td>4</td>
+        <td>0:48, 4:42, 5:01, 7:24</td>
+        <td>Defensive form swaps &mdash; costs 2+ GCDs each time (Bear + Cat Form back). 4 swaps = ~8-10 lost GCDs.</td>
+      </tr>
+      <tr>
+        <td>Survival Instincts</td>
+        <td>1</td>
+        <td>6:45</td>
+        <td>Emergency personal during late Pustule ramp</td>
+      </tr>
+      <tr>
+        <td>Frenzied Regeneration</td>
+        <td>1</td>
+        <td>0:50</td>
+        <td>Used in Bear Form (requires Bear Form, costs GCD)</td>
+      </tr>
+      <tr>
+        <td>Health Potion</td>
+        <td>1</td>
+        <td>7:00</td>
+        <td>Late-fight healing</td>
+      </tr>
+      <tr>
+        <td>Healthstone</td>
+        <td>1</td>
+        <td>7:21</td>
+        <td>Emergency heal</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Skull Bash (Interrupt)</td>
+        <td>8</td>
+        <td>Various</td>
+        <td>Excellent interrupt contribution (ref: 2). Interrupting Sporecap Poison Burst casts.</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow" style="margin-top:12px">
+    <div class="callout-title">Bear Form GCD Tax</div>
+    4 Bear Form swaps cost approximately 8-10 GCDs total (Bear Form + Frenzied Regeneration + Cat Form back). At the player's ~0.80 CPS rate, that is roughly 10-12 seconds of dead time. The reference only uses Bear Form twice. Consider whether Barkskin + Survival Instincts alone can cover the incoming damage to avoid the form-swap tax.
+  </div>
+</div>
+
+<!-- Wipe Progression -->
+<div class="section">
+  <div class="section-title">Wipe Progression</div>
+  <div class="wipe-chart">
+    <div class="wipe-bar-wrap">
+      <div class="wipe-dps" style="color:var(--yellow)">107.5K</div>
+      <div class="wipe-bar" style="height:90px;background:var(--yellow)" title="Fight 1: 6:54, 22.45% wipe, 107.5K DPS"></div>
+      <div class="wipe-label">Pull 1<br>6:54<br>22.5%</div>
+    </div>
+    <div class="wipe-bar-wrap">
+      <div class="wipe-dps" style="color:var(--orange)">97.2K</div>
+      <div class="wipe-bar" style="height:81px;background:var(--orange)" title="Fight 2: 8:25, 11.61% wipe, 97.2K DPS"></div>
+      <div class="wipe-label">Pull 2<br>8:25<br>11.6%</div>
+    </div>
+    <div class="wipe-bar-wrap">
+      <div class="wipe-dps" style="color:var(--green)">100.2K</div>
+      <div class="wipe-bar" style="height:84px;background:var(--green)" title="Fight 3: 8:09, KILL, 100.2K DPS"></div>
+      <div class="wipe-label">Pull 3<br>8:09<br>KILL</div>
+    </div>
+  </div>
+  <div class="legend" style="margin-top:12px">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Short wipe (&lt;7min)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Long wipe (&gt;7min)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Kill</div>
+  </div>
+  <table style="margin-top:16px">
+    <thead>
+      <tr><th>Pull</th><th>Duration</th><th>Boss %</th><th>DPS</th><th>Deaths</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td><td>6:54</td><td>22.45%</td><td>107,506</td>
+        <td><span class="badge badge-red">Died 2x</span></td>
+        <td>Died at 4:32 to Bursting Shroom, battle-rezzed, died again at 6:48 to Bursting Shroom. Higher DPS inflated by shorter duration + burst phase weighting.</td>
+      </tr>
+      <tr>
+        <td>2</td><td>8:25</td><td>11.61%</td><td>97,157</td>
+        <td><span class="badge badge-yellow">Died 1x</span></td>
+        <td>Died at 7:21 to Rotting Pustules (soft enrage damage). Survived deep into the fight.</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>3 (Kill)</td><td>8:09</td><td>0.01%</td><td>100,218</td>
+        <td><span class="badge badge-green">Survived</span></td>
+        <td>Clean kill, no deaths, DPS improved vs Pull 2. Best full-fight performance.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:var(--dim);font-size:12px;margin-top:8px">
+    Clear improvement across pulls: Pull 1 deaths to Bursting Shroom (add proximity damage), Pull 2 survived to 7:21, Pull 3 clean kill with no deaths. The DPS decrease from Pull 1 (107.5K) to Pull 3 (100.2K) is expected &mdash; shorter fights inflate DPS with opener burst, and Pull 1 had the "dead man's DPS" effect from dying early (only 6:54 of active time).
+  </p>
+</div>
+
+<!-- External Buffs -->
+<div class="section">
+  <div class="section-title">External Buffs Received</div>
+  <table>
+    <thead>
+      <tr><th>Buff</th><th>Player Timing</th><th>Reference</th><th>Impact</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600">Time Warp (Lust)</td>
+        <td>0:02 (on pull)</td>
+        <td>6:35 (late, near kill)</td>
+        <td><span class="badge badge-yellow">Different</span> &mdash; Player lusts on pull (with Berserk), ref lusts at end. Pull lust favors frontloaded damage.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Power Infusion</td>
+        <td>None received</td>
+        <td>4x (0:01, 2:16, 5:10, 7:14)</td>
+        <td><span class="badge badge-red">Missing</span> &mdash; Ref gets ~5% DPS boost per PI window. ~15-20% of DPS gap explained by PI alone.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Ebon Might</td>
+        <td>15 applications (from Zinnks, Aug Evo)</td>
+        <td>None (no Aug in raid)</td>
+        <td><span class="badge badge-green">Advantage</span> &mdash; ~5-8% sustained DPS boost from Aug Evoker</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Prescience</td>
+        <td>2x (0:01, 1:34)</td>
+        <td>None</td>
+        <td><span class="badge badge-green">Advantage</span> &mdash; Crit buff during opener and second window</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Pre-pot</td>
+        <td>Algeth'ar Puzzle @ 0:02 (trinket)</td>
+        <td>Algeth'ar Puzzle @ 0:04</td>
+        <td><span class="badge badge-green">Good</span> &mdash; Both used on pull</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color:var(--dim);font-size:12px;margin-top:8px">
+    Net external buff impact is roughly neutral: Moistbear has Aug Evoker (~5-8% sustained) but no PI, while reference has PI 4x (~5% per window, ~3-4% sustained) but no Aug. Lust timing differs significantly (pull vs end) but both are valid strategies. The remaining ~40%+ DPS gap is execution-driven.
+  </p>
+</div>
+
+<!-- Actionable Improvements -->
+<div class="section">
+  <div class="section-title" style="color:var(--accent)">Actionable Improvements</div>
+
+  <div class="action-item" style="border-left-color:var(--red)">
+    <h4>1. Replace Single-Target Rip with Primal Wrath During Add Windows</h4>
+    <div class="impact">Impact: +30-40 Primal Wrath casts, estimated +15-20% add damage, +5-8% overall DPS</div>
+    <p>
+      Moistbear used Primal Wrath only 7 times vs the reference's 39 (0.9 vs 4.8 CPM, -82%). During every Awaken Fungi window, the reference spends combo points on Primal Wrath to apply Rip to all nearby adds simultaneously rather than using single-target Rip (19 casts). This is the single largest execution gap. Every add window with 2+ targets should prioritize Primal Wrath as the finisher &mdash; it applies Rip to all targets in range. Only use single-target Rip on the boss when no adds are present.
+    </p>
+  </div>
+
+  <div class="action-item" style="border-left-color:var(--red)">
+    <h4>2. Increase Rake Usage Across All Targets</h4>
+    <div class="impact">Impact: +26 Rake casts, estimated +5-8% overall DPS</div>
+    <p>
+      Rake CPM is 5.2 vs reference's 8.4 (-39%, 42 vs 68 casts). Rake should be maintained on the boss at all times AND applied to every add target during Fungi windows. Rake is a builder that snapshots Tiger's Fury damage, meaning Rakes applied during Tiger's Fury deal increased damage for their entire duration. The reference is multi-dotting Rake on every add as they spawn, which also generates combo points for Primal Wrath finishers. During each add window: Rake each add target, then spend combo points on Primal Wrath.
+    </p>
+  </div>
+
+  <div class="action-item" style="border-left-color:var(--yellow)">
+    <h4>3. Reduce Bear Form Usage</h4>
+    <div class="impact">Impact: ~8-10 recovered GCDs, estimated +2-3% DPS</div>
+    <p>
+      4 Bear Form swaps (at 0:48, 4:42, 5:01, 7:24) vs the reference's 2. Each swap costs 2-3 GCDs (Bear Form + potential Frenzied Regen + Cat Form back). Barkskin (1min CD, already used well at 5x) and Survival Instincts (used only 1x) should cover most damage intake without needing Bear Form. Save Bear Form for true emergencies where you would otherwise die. The reference manages survival with fewer defensive form swaps.
+    </p>
+  </div>
+
+  <div class="action-item" style="border-left-color:var(--yellow)">
+    <h4>4. Maintain Uptime During Festering Vines</h4>
+    <div class="impact">Impact: ~15-20 recovered casts, estimated +3-4% DPS</div>
+    <p>
+      5 of 7 Vines windows show CPS below reference, with the worst at -38% (Vines #7, 7:31). Pre-position before Vines goes out so you don't have to move far from the boss. If targeted by Vines, use Wild Charge to quickly return to boss range after placing the circle. The reference maintains near-full uptime during most Vines windows, suggesting they minimize displacement rather than running far.
+    </p>
+  </div>
+
+  <div class="action-item" style="border-left-color:var(--accent)">
+    <h4>5. Tighten Post-Convoke Transitions</h4>
+    <div class="impact">Impact: ~4 x 4.5s = 18s recovered, estimated +2% DPS</div>
+    <p>
+      All 4 Convoke casts are followed by a 4-5 second gap before the next ability. After Convoke channels, immediately resume the rotation &mdash; the next priority is typically a Tiger's Fury-buffed Rip refresh or Ferocious Bite at 5 combo points. The reference transitions out of Convoke within 2-3 seconds.
+    </p>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div class="verdict">
+  <h3>Context &amp; Verdict</h3>
+  <p>
+    Moistbear's 100.2K DPS on the Mythic Rotmire kill represents <strong>53.4% of the rank #1 reference</strong> (187.8K). After accounting for external buff differences (no PI received vs reference's 4x PI, offset by Aug Evoker buffs Moistbear did receive), roughly <strong>40% of the gap is execution-based</strong> with only 2 talent differences and identical item level.
+  </p>
+  <p style="margin-top:12px">
+    The two dominant issues are <strong>Primal Wrath underuse (-82% CPM)</strong> and <strong>Rake underuse (-39% CPM)</strong>. Together these represent the core of the DPS gap: the reference multi-dots Rake across all add targets and uses Primal Wrath as their primary AoE finisher, generating far more damage during the 8 Awaken Fungi windows that define this fight. Moistbear is playing a single-target rotation on a fight that demands heavy multi-dotting.
+  </p>
+  <p style="margin-top:12px">
+    <strong>What's already good:</strong> Cooldown alignment is textbook &mdash; Berserk and Convoke are paired correctly every use and Tiger's Fury is used on cooldown. Add switch timing is competitive (within 1-2s of reference). Interrupt contribution is outstanding (8 Skull Bashes vs reference's 2). Barkskin timing is proactive and well-placed before Fungal Blooms. The kill itself was clean with zero deaths after dying in both wipe pulls, showing clear learning and adaptation.
+  </p>
+  <p style="margin-top:12px">
+    <strong>Priority fix:</strong> Adopt the Primal Wrath + multi-Rake AoE pattern during add windows. This single change would address the largest gap in the profile.
+  </p>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a></p>
+  <p>Primary Reference: &#23376;&#23433;&#20116;&#20161; (Rank #1 Feral Druid, 187,802 DPS, 2 talent diffs, ilvl 292)</p>
+  <p>Report: <a href="https://www.warcraftlogs.com/reports/QAF7pZ4gjMm9wfNv#fight=3" target="_blank">QAF7pZ4gjMm9wfNv</a></p>
+  <p style="margin-top:8px;color:var(--dim)">Feral rotation reference: <a href="https://www.icy-veins.com/wow/feral-druid-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins Feral Druid Guide (12.0.7)</a></p>
+</div>
+
+</div>
+</body>
+</html>

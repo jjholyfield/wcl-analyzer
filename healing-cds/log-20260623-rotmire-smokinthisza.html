@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smokinthisza - MM Hunter - Mythic Rotmire Kill Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --hunter: #aad372;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 16px; font-weight: 600; margin: 20px 0 10px; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.back-link:hover { color: var(--accent); }
+
+.header-meta { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+.header-meta span { margin-right: 16px; }
+.kill-tag { display: inline-block; background: var(--green); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; margin-left: 8px; vertical-align: middle; }
+.rank-tag { display: inline-block; background: var(--hunter); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+
+/* Summary Cards */
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.summary-card .label { font-size: 11px; text-transform: uppercase; color: var(--dim); letter-spacing: 0.5px; margin-bottom: 4px; }
+.summary-card .value { font-size: 28px; font-weight: 700; }
+.summary-card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--surface); font-weight: 600; font-size: 11px; text-transform: uppercase; color: var(--dim); letter-spacing: 0.5px; }
+tr:hover { background: rgba(88,166,255,0.04); }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.card-title { font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+
+/* Bars */
+.bar-container { display: flex; align-items: center; gap: 8px; }
+.bar-bg { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.bar-label { font-size: 12px; min-width: 45px; text-align: right; }
+
+/* CPS comparison bars */
+.cps-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+.cps-label { min-width: 80px; }
+.cps-bar { height: 20px; border-radius: 3px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 600; color: #000; min-width: 30px; }
+
+/* Timeline */
+.timeline-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; overflow-x: auto; }
+.timeline-row { display: flex; align-items: center; margin-bottom: 8px; min-height: 28px; }
+.timeline-label { min-width: 140px; font-size: 12px; color: var(--dim); font-weight: 500; }
+.timeline-track { flex: 1; position: relative; height: 24px; background: rgba(48,54,61,0.5); border-radius: 4px; }
+.timeline-marker { position: absolute; width: 10px; height: 10px; border-radius: 50%; top: 7px; transform: translateX(-5px); }
+.timeline-marker.bloom { background: var(--red); }
+.timeline-marker.vines { background: var(--yellow); }
+.timeline-marker.adds { background: var(--cyan); }
+.timeline-marker.tank { background: var(--dim); }
+.timeline-marker.death { background: var(--red); width: 14px; height: 14px; top: 5px; transform: translateX(-7px); }
+.timeline-marker.trueshot { background: var(--hunter); width: 12px; height: 12px; top: 6px; transform: translateX(-6px); border-radius: 2px; }
+.timeline-marker.pi { background: var(--purple); width: 12px; height: 12px; top: 6px; transform: translateX(-6px); border-radius: 2px; }
+.timeline-time-labels { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: var(--dim); padding-left: 140px; }
+
+/* Wipe progression chart */
+.wipe-chart { display: flex; align-items: flex-end; gap: 6px; height: 180px; margin: 16px 0; padding: 0 8px; }
+.wipe-bar-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.wipe-bar { width: 100%; max-width: 60px; border-radius: 4px 4px 0 0; position: relative; min-height: 4px; }
+.wipe-bar-label { font-size: 10px; color: var(--dim); margin-top: 4px; text-align: center; }
+.wipe-bar-value { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+
+/* Status badges */
+.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+.badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
+.badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+.badge-dim { background: rgba(139,148,158,0.15); color: var(--dim); }
+
+/* Callout */
+.callout { border-left: 3px solid var(--accent); background: var(--surface); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 13px; }
+.callout.warn { border-left-color: var(--yellow); }
+.callout.good { border-left-color: var(--green); }
+.callout.bad { border-left-color: var(--red); }
+.callout.info { border-left-color: var(--purple); }
+
+/* Actionable items */
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.action-item .action-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.action-item .action-impact { font-size: 12px; color: var(--yellow); margin-bottom: 6px; }
+.action-item .action-detail { font-size: 13px; color: var(--dim); }
+
+/* Footer */
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.flex-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.flex-col { flex: 1; min-width: 300px; }
+
+@media (max-width: 768px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23 2026 Rotmire Log Analysis</a>
+
+<h1>
+  <span style="color: var(--hunter);">Smokinthisza</span>
+  <span style="font-weight: 400; font-size: 20px; color: var(--dim);"> &mdash; Marksmanship Hunter</span>
+  <span class="kill-tag">Kill</span>
+  <span class="rank-tag">#1 DPS</span>
+</h1>
+<div class="header-meta">
+  <span>Mythic Rotmire</span>
+  <span>8:09 kill</span>
+  <span>June 23, 2026</span>
+  <span>Report: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC</a></span>
+  <span>Dark Ranger</span>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">DPS</div>
+    <div class="value" style="color: var(--hunter);">174.9K</div>
+    <div class="sub">#1 in raid (14 DPS)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="sub">Same as top refs</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Kill Status</div>
+    <div class="value" style="color: var(--green);">Survived</div>
+    <div class="sub">488s active / 489s fight</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Rotational CPM</div>
+    <div class="value">34.9</div>
+    <div class="sub">Ref: 37.2 CPM (-6%)</div>
+  </div>
+</div>
+
+<!-- External Buff Context -->
+<div class="callout info">
+  <strong>External Buff Context:</strong> Smokinthisza received <strong>Power Infusion 4x</strong> (3s, 123s, 257s, 397s),
+  <strong>Ebon Might 12x</strong>, and <strong>Prescience 4x</strong> from an Aug Evoker.
+  The primary reference player (&#28385;&#26376;&#27704;&#24658;, 188.5K DPS) received <strong>none of these buffs</strong>.
+  This inflates the raw DPS comparison by an estimated 8-12%.
+  The reference's 188.5K without externals vs Smokinthisza's 174.9K with full externals suggests a meaningful execution gap in the opposite direction of the raw numbers.
+</div>
+
+<!-- Reference Comparison Table -->
+<h2>Reference Comparison</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>DPS</th>
+      <th>Kill Time</th>
+      <th>ilvl</th>
+      <th>Talent Delta</th>
+      <th>PI / Aug</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(188,140,255,0.06);">
+      <td><span style="color: var(--purple);">&#28385;&#26376;&#27704;&#24658;</span> <span class="badge badge-purple">Primary Ref</span></td>
+      <td style="color: var(--purple);">188.5K</td>
+      <td>6:50</td>
+      <td>291</td>
+      <td><span class="badge badge-green">3 diffs</span></td>
+      <td><span class="badge badge-dim">None</span></td>
+      <td>Closest build match</td>
+    </tr>
+    <tr>
+      <td>Anonymous</td>
+      <td>197.4K</td>
+      <td>7:57</td>
+      <td>291</td>
+      <td><span class="badge badge-dim">N/A</span></td>
+      <td>Unknown</td>
+      <td>Private log</td>
+    </tr>
+    <tr>
+      <td>Taewoos</td>
+      <td>191.8K</td>
+      <td>7:31</td>
+      <td>291</td>
+      <td><span class="badge badge-yellow">13 diffs</span></td>
+      <td><span class="badge badge-dim">None</span></td>
+      <td>Different build</td>
+    </tr>
+    <tr>
+      <td>&#47196;&#51200;&#48652;&#46972;&#50868;</td>
+      <td>188.8K</td>
+      <td>6:58</td>
+      <td>290</td>
+      <td><span class="badge badge-yellow">13 diffs</span></td>
+      <td><span class="badge badge-dim">None</span></td>
+      <td>Different build</td>
+    </tr>
+    <tr>
+      <td>P&ecirc;psy</td>
+      <td>188.3K</td>
+      <td>6:51</td>
+      <td>289</td>
+      <td><span class="badge badge-red">44 diffs</span></td>
+      <td><span class="badge badge-dim">None</span></td>
+      <td>Very different build</td>
+    </tr>
+    <tr style="background: rgba(170,211,114,0.06);">
+      <td><strong style="color: var(--hunter);">Smokinthisza</strong></td>
+      <td style="color: var(--hunter);"><strong>174.9K</strong></td>
+      <td>8:09</td>
+      <td>291</td>
+      <td>&mdash;</td>
+      <td><span class="badge badge-green">PI 4x + Aug</span></td>
+      <td>Analyzed player</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <strong>Key context:</strong> All 4 reference players achieved 188-197K DPS <em>without</em> PI or Aug buffs.
+  Smokinthisza's 174.9K <em>with</em> PI 4x + full Aug support puts effective performance roughly 20-25% behind the top-ranked MM Hunters on this fight.
+  The 3-talent-difference primary reference is the fairest comparison &mdash; same build, same ilvl, 13.6K DPS gap even before accounting for the external buff advantage.
+</div>
+
+<!-- Boss Mechanic Timeline -->
+<h2>Boss Mechanic Timeline</h2>
+<div class="timeline-container">
+  <div class="timeline-row">
+    <div class="timeline-label" style="color: var(--red);">Fungal Bloom</div>
+    <div class="timeline-track">
+      <div class="timeline-marker bloom" style="left: calc(120 / 489 * 100%);" title="Bloom #1 at 2:00"></div>
+      <div class="timeline-marker bloom" style="left: calc(256 / 489 * 100%);" title="Bloom #2 at 4:16"></div>
+      <div class="timeline-marker bloom" style="left: calc(392 / 489 * 100%);" title="Bloom #3 at 6:32"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color: var(--yellow);">Festering Vines</div>
+    <div class="timeline-track">
+      <div class="timeline-marker vines" style="left: calc(43 / 489 * 100%);" title="Vines #1 at 0:43"></div>
+      <div class="timeline-marker vines" style="left: calc(92 / 489 * 100%);" title="Vines #2 at 1:32"></div>
+      <div class="timeline-marker vines" style="left: calc(179 / 489 * 100%);" title="Vines #3 at 2:59"></div>
+      <div class="timeline-marker vines" style="left: calc(228 / 489 * 100%);" title="Vines #4 at 3:48"></div>
+      <div class="timeline-marker vines" style="left: calc(315 / 489 * 100%);" title="Vines #5 at 5:15"></div>
+      <div class="timeline-marker vines" style="left: calc(364 / 489 * 100%);" title="Vines #6 at 6:04"></div>
+      <div class="timeline-marker vines" style="left: calc(451 / 489 * 100%);" title="Vines #7 at 7:31"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color: var(--cyan);">Awaken Fungi</div>
+    <div class="timeline-track">
+      <div class="timeline-marker adds" style="left: calc(15 / 489 * 100%);" title="Adds #1 at 0:15"></div>
+      <div class="timeline-marker adds" style="left: calc(64 / 489 * 100%);" title="Adds #2 at 1:04"></div>
+      <div class="timeline-marker adds" style="left: calc(151 / 489 * 100%);" title="Adds #3 at 2:31"></div>
+      <div class="timeline-marker adds" style="left: calc(200 / 489 * 100%);" title="Adds #4 at 3:20"></div>
+      <div class="timeline-marker adds" style="left: calc(287 / 489 * 100%);" title="Adds #5 at 4:47"></div>
+      <div class="timeline-marker adds" style="left: calc(336 / 489 * 100%);" title="Adds #6 at 5:36"></div>
+      <div class="timeline-marker adds" style="left: calc(423 / 489 * 100%);" title="Adds #7 at 7:03"></div>
+      <div class="timeline-marker adds" style="left: calc(472 / 489 * 100%);" title="Adds #8 at 7:52"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color: var(--hunter);">Trueshot</div>
+    <div class="timeline-track">
+      <div class="timeline-marker trueshot" style="left: calc(1 / 489 * 100%);" title="Trueshot at 0:01"></div>
+      <div class="timeline-marker trueshot" style="left: calc(122 / 489 * 100%);" title="Trueshot at 2:02 (Bloom #1)"></div>
+      <div class="timeline-marker trueshot" style="left: calc(256 / 489 * 100%);" title="Trueshot at 4:16 (Bloom #2)"></div>
+      <div class="timeline-marker trueshot" style="left: calc(393 / 489 * 100%);" title="Trueshot at 6:33 (Bloom #3)"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color: var(--purple);">Power Infusion</div>
+    <div class="timeline-track">
+      <div class="timeline-marker pi" style="left: calc(3 / 489 * 100%);" title="PI at 0:03"></div>
+      <div class="timeline-marker pi" style="left: calc(123 / 489 * 100%);" title="PI at 2:03"></div>
+      <div class="timeline-marker pi" style="left: calc(257 / 489 * 100%);" title="PI at 4:17"></div>
+      <div class="timeline-marker pi" style="left: calc(397 / 489 * 100%);" title="PI at 6:37"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color: var(--dim);">Bursting Pustules</div>
+    <div class="timeline-track">
+      <div class="timeline-marker tank" style="left: calc(10 / 489 * 100%);" title="Pustules at 0:10"></div>
+      <div class="timeline-marker tank" style="left: calc(31 / 489 * 100%);" title="Pustules at 0:31"></div>
+      <div class="timeline-marker tank" style="left: calc(80 / 489 * 100%);" title="Pustules at 1:20"></div>
+      <div class="timeline-marker tank" style="left: calc(146 / 489 * 100%);" title="Pustules at 2:26"></div>
+      <div class="timeline-marker tank" style="left: calc(167 / 489 * 100%);" title="Pustules at 2:47"></div>
+      <div class="timeline-marker tank" style="left: calc(216 / 489 * 100%);" title="Pustules at 3:36"></div>
+      <div class="timeline-marker tank" style="left: calc(282 / 489 * 100%);" title="Pustules at 4:42"></div>
+      <div class="timeline-marker tank" style="left: calc(303 / 489 * 100%);" title="Pustules at 5:03"></div>
+      <div class="timeline-marker tank" style="left: calc(352 / 489 * 100%);" title="Pustules at 5:52"></div>
+      <div class="timeline-marker tank" style="left: calc(418 / 489 * 100%);" title="Pustules at 6:58"></div>
+      <div class="timeline-marker tank" style="left: calc(439 / 489 * 100%);" title="Pustules at 7:19"></div>
+      <div class="timeline-marker tank" style="left: calc(488 / 489 * 100%);" title="Pustules at 8:08"></div>
+    </div>
+  </div>
+  <div class="timeline-time-labels">
+    <span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span><span>5:00</span><span>6:00</span><span>7:00</span><span>8:09</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Raid State</div>
+  <div style="font-size: 13px; color: var(--dim);">
+    No player deaths during the kill &mdash; 21/21 alive for the entire 8:09 fight. Clean execution.
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Cooldown Alignment</div>
+  <div style="font-size: 13px;">
+    Trueshot (4 uses) aligned perfectly with Fungal Bloom windows at 0:01, 2:02, 4:16, 6:33.
+    PI received at 0:03, 2:03, 4:17, 6:37 &mdash; also aligned with Bloom/Trueshot windows.
+    This is excellent CD management &mdash; every Trueshot + PI stack coincides with the highest-value damage windows.
+    Volley used 10 times (every ~49s), maintaining high uptime.
+  </div>
+</div>
+
+<!-- Per-Mechanic Analysis -->
+<h2>Per-Mechanic Window Analysis</h2>
+
+<h3>Raid-Wide: Fungal Bloom (3 events)</h3>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Full raid AoE at 100 energy. Trueshot + PI windows. Highest-value DPS windows.</p>
+<table>
+  <thead>
+    <tr><th>Event</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Player Casts</th><th>Ref Casts</th><th>Delta</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bloom #1</td><td>2:00</td>
+      <td>0.63</td><td style="color: var(--purple);">0.56</td>
+      <td>10</td><td style="color: var(--purple);">9</td>
+      <td style="color: var(--green);">+11%</td>
+      <td><span class="badge badge-green">Good</span></td>
+    </tr>
+    <tr>
+      <td>Bloom #2</td><td>4:16</td>
+      <td>0.75</td><td style="color: var(--purple);">0.69</td>
+      <td>12</td><td style="color: var(--purple);">11</td>
+      <td style="color: var(--green);">+9%</td>
+      <td><span class="badge badge-green">Good</span></td>
+    </tr>
+    <tr>
+      <td>Bloom #3</td><td>6:32</td>
+      <td>0.69</td><td style="color: var(--purple);">0.69</td>
+      <td>11</td><td style="color: var(--purple);">11</td>
+      <td>0%</td>
+      <td><span class="badge badge-green">Match</span></td>
+    </tr>
+  </tbody>
+</table>
+<div class="callout good">
+  <strong>Strong Bloom execution.</strong> Smokinthisza matches or beats the reference during all three Fungal Bloom windows, the highest-value DPS windows in the fight.
+  Trueshot + PI alignment is ideal.
+</div>
+
+<h3>Movement: Festering Vines (7 events)</h3>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Roots players, must kite to break free. Movement-heavy &mdash; uptime loss expected.</p>
+<table>
+  <thead>
+    <tr><th>Event</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Vines #1</td><td>0:43</td><td>0.50</td><td style="color: var(--purple);">0.58</td><td style="color: var(--yellow);">-14%</td><td><span class="badge badge-yellow">Slight loss</span></td></tr>
+    <tr><td>Vines #2</td><td>1:32</td><td>0.67</td><td style="color: var(--purple);">0.50</td><td style="color: var(--green);">+33%</td><td><span class="badge badge-green">Good</span></td></tr>
+    <tr><td>Vines #3</td><td>2:59</td><td>0.42</td><td style="color: var(--purple);">0.50</td><td style="color: var(--yellow);">-17%</td><td><span class="badge badge-yellow">Slight loss</span></td></tr>
+    <tr><td>Vines #4</td><td>3:48</td><td>0.58</td><td style="color: var(--purple);">0.58</td><td>0%</td><td><span class="badge badge-green">Match</span></td></tr>
+    <tr><td>Vines #5</td><td>5:15</td><td>0.50</td><td style="color: var(--purple);">0.58</td><td style="color: var(--yellow);">-14%</td><td><span class="badge badge-yellow">Slight loss</span></td></tr>
+    <tr><td>Vines #6</td><td>6:04</td><td>0.50</td><td style="color: var(--purple);">0.67</td><td style="color: var(--red);">-25%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Vines #7</td><td>7:31</td><td>0.58</td><td style="color: var(--dim);">N/A</td><td style="color: var(--dim);">N/A</td><td><span class="badge badge-dim">Past ref</span></td></tr>
+  </tbody>
+</table>
+<div class="callout warn">
+  <strong>Vines handling is inconsistent.</strong> 4 of 6 comparable Vines windows show CPS below reference.
+  Vines #6 at 6:04 is the worst at -25%. This is a movement mechanic &mdash; as a ranged class, MM Hunter should be able to maintain
+  higher uptime during Vines by pre-positioning and using instant-cast abilities (Black Arrow, Arcane Shot with Precise Shots).
+</div>
+
+<h3>Add Phases: Awaken Fungi (8 events)</h3>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Spawns Shroomlings/Funglings. Target switch expected. ~8-10s delay before adds become targetable.</p>
+<table>
+  <thead>
+    <tr><th>Event</th><th>Time</th><th>Player First Hit</th><th>Ref First Hit</th><th>Player Hits (20s)</th><th>Ref Hits (20s)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Fungi #1</td><td>0:15</td><td>+8.4s</td><td style="color: var(--purple);">+9.3s</td><td>88</td><td style="color: var(--purple);">56</td></tr>
+    <tr><td>Fungi #2</td><td>1:04</td><td>+8.6s</td><td style="color: var(--purple);">+8.9s</td><td>166</td><td style="color: var(--purple);">126</td></tr>
+    <tr><td>Fungi #3</td><td>2:31</td><td>+8.3s</td><td style="color: var(--purple);">+12.8s</td><td>50</td><td style="color: var(--purple);">57</td></tr>
+    <tr><td>Fungi #4</td><td>3:20</td><td>+8.6s</td><td style="color: var(--purple);">+9.1s</td><td>56</td><td style="color: var(--purple);">41</td></tr>
+    <tr><td>Fungi #5</td><td>4:47</td><td>+8.3s</td><td style="color: var(--purple);">+9.2s</td><td>72</td><td style="color: var(--purple);">20</td></tr>
+    <tr><td>Fungi #6</td><td>5:36</td><td>+10.0s</td><td style="color: var(--purple);">+9.3s</td><td>33</td><td style="color: var(--purple);">29</td></tr>
+    <tr><td>Fungi #7</td><td>7:03</td><td>+10.4s</td><td style="color: var(--dim);">N/A</td><td>70</td><td style="color: var(--dim);">N/A</td></tr>
+    <tr><td>Fungi #8</td><td>7:52</td><td>+8.7s</td><td style="color: var(--dim);">N/A</td><td>32</td><td style="color: var(--dim);">N/A</td></tr>
+  </tbody>
+</table>
+
+<div class="card">
+  <div class="card-title">Boss vs Add Damage Split</div>
+  <div class="flex-row" style="margin-top: 8px;">
+    <div class="flex-col">
+      <div style="font-size: 12px; color: var(--dim); margin-bottom: 4px;">Smokinthisza</div>
+      <div class="bar-container">
+        <div class="bar-bg">
+          <div class="bar-fill" style="width: 47.1%; background: var(--red);"></div>
+        </div>
+        <div class="bar-label">Boss 47%</div>
+      </div>
+      <div class="bar-container" style="margin-top: 4px;">
+        <div class="bar-bg">
+          <div class="bar-fill" style="width: 52.9%; background: var(--cyan);"></div>
+        </div>
+        <div class="bar-label">Adds 53%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="callout good">
+  <strong>Add switching is excellent.</strong> Smokinthisza hits adds within 8-9s consistently (matching or beating the reference),
+  and delivers significantly more add hits per spawn window in most cases. The 53% add damage ratio shows strong priority target awareness.
+  This is one of the strongest aspects of the performance.
+</div>
+
+<!-- Quiet Window Uptime -->
+<h2>Quiet Window Uptime</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Gaps between mechanic windows where full uptime is expected. CPS below 0.50 is flagged.</p>
+<table>
+  <thead>
+    <tr><th>Window</th><th>Duration</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Gaps &gt;2.5s</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0:00&ndash;0:15</td><td>15s</td><td>0.93</td><td style="color: var(--purple);">0.87</td><td style="color: var(--green);">+8%</td><td>0</td><td><span class="badge badge-green">Strong</span></td></tr>
+    <tr><td>0:35&ndash;0:43</td><td>8s</td><td>0.88</td><td style="color: var(--purple);">0.75</td><td style="color: var(--green);">+17%</td><td>0</td><td><span class="badge badge-green">Strong</span></td></tr>
+    <tr><td>0:55&ndash;1:04</td><td>9s</td><td>0.67</td><td style="color: var(--purple);">0.67</td><td>0%</td><td>1</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>1:24&ndash;1:32</td><td>8s</td><td>0.50</td><td style="color: var(--purple);">0.63</td><td style="color: var(--yellow);">-20%</td><td>0</td><td><span class="badge badge-yellow">Warn</span></td></tr>
+    <tr><td>1:44&ndash;2:00</td><td>16s</td><td>0.50</td><td style="color: var(--purple);">0.63</td><td style="color: var(--yellow);">-20%</td><td>2</td><td><span class="badge badge-yellow">Warn</span></td></tr>
+    <tr><td>2:16&ndash;2:31</td><td>15s</td><td>0.47</td><td style="color: var(--purple);">0.60</td><td style="color: var(--red);">-22%</td><td>2</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>2:51&ndash;2:59</td><td>8s</td><td>0.38</td><td style="color: var(--purple);">0.75</td><td style="color: var(--red);">-50%</td><td>1</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>3:11&ndash;3:20</td><td>9s</td><td>0.67</td><td style="color: var(--purple);">0.78</td><td style="color: var(--yellow);">-14%</td><td>1</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>3:40&ndash;3:48</td><td>8s</td><td>0.50</td><td style="color: var(--purple);">0.63</td><td style="color: var(--yellow);">-20%</td><td>1</td><td><span class="badge badge-yellow">Warn</span></td></tr>
+    <tr><td>4:00&ndash;4:16</td><td>16s</td><td>0.50</td><td style="color: var(--purple);">0.56</td><td style="color: var(--yellow);">-11%</td><td>1</td><td><span class="badge badge-yellow">Warn</span></td></tr>
+    <tr><td>4:32&ndash;4:47</td><td>15s</td><td>0.53</td><td style="color: var(--purple);">0.60</td><td style="color: var(--yellow);">-11%</td><td>3</td><td><span class="badge badge-yellow">Warn</span></td></tr>
+    <tr><td>5:07&ndash;5:15</td><td>8s</td><td>0.63</td><td style="color: var(--purple);">0.75</td><td style="color: var(--yellow);">-17%</td><td>1</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>5:27&ndash;5:36</td><td>9s</td><td>0.44</td><td style="color: var(--purple);">0.56</td><td style="color: var(--red);">-20%</td><td>0</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>5:56&ndash;6:04</td><td>8s</td><td>0.50</td><td style="color: var(--purple);">0.50</td><td>0%</td><td>1</td><td><span class="badge badge-yellow">Warn</span></td></tr>
+    <tr><td>6:16&ndash;6:32</td><td>16s</td><td>0.38</td><td style="color: var(--purple);">0.50</td><td style="color: var(--red);">-25%</td><td>0</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>6:48&ndash;7:03</td><td>15s</td><td>0.60</td><td style="color: var(--dim);">N/A</td><td style="color: var(--dim);">N/A</td><td>2</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>7:23&ndash;7:31</td><td>8s</td><td>0.38</td><td style="color: var(--dim);">N/A</td><td style="color: var(--dim);">N/A</td><td>0</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>7:43&ndash;7:52</td><td>9s</td><td>0.56</td><td style="color: var(--dim);">N/A</td><td style="color: var(--dim);">N/A</td><td>0</td><td><span class="badge badge-green">OK</span></td></tr>
+  </tbody>
+</table>
+
+<div class="callout bad">
+  <strong>Pattern: Quiet window CPS drops in the back half of the fight.</strong>
+  Of 15 quiet windows with reference comparison, 11 are below reference.
+  The worst windows cluster in the 2:16&ndash;2:59 range and 5:27&ndash;6:32 range.
+  These are the periods between Trueshot windows where sustained filler rotation matters most.
+  5 windows dip to 0.38&ndash;0.44 CPS vs the reference's 0.50&ndash;0.75. This is where the CPM gap comes from.
+</div>
+
+<!-- Cast Gap Analysis -->
+<h2>Cast Gap Analysis</h2>
+
+<div class="flex-row">
+  <div class="card flex-col">
+    <div class="card-title">Smokinthisza</div>
+    <table style="margin: 0;">
+      <tr><td style="color: var(--dim);">Gaps &gt; 2.5s</td><td><strong>63</strong></td></tr>
+      <tr><td style="color: var(--dim);">Total dead time</td><td><strong>218.7s</strong></td></tr>
+      <tr><td style="color: var(--dim);">Est. lost casts</td><td><strong>~127</strong></td></tr>
+      <tr><td style="color: var(--dim);">Biggest gap</td><td><strong>8.8s</strong> (6:24)</td></tr>
+    </table>
+  </div>
+  <div class="card flex-col">
+    <div class="card-title" style="color: var(--purple);">Reference (&#28385;&#26376;&#27704;&#24658;)</div>
+    <table style="margin: 0;">
+      <tr><td style="color: var(--dim);">Gaps &gt; 2.5s</td><td><strong style="color: var(--purple);">51</strong></td></tr>
+      <tr><td style="color: var(--dim);">Total dead time</td><td><strong style="color: var(--purple);">161.6s</strong></td></tr>
+      <tr><td style="color: var(--dim);">Est. lost casts</td><td><strong style="color: var(--purple);">~100</strong></td></tr>
+      <tr><td style="color: var(--dim);">Biggest gap</td><td><strong style="color: var(--purple);">5.5s</strong> (6:26)</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Gap Pattern: After Which Abilities?</div>
+  <table>
+    <thead><tr><th>Preceding Ability</th><th>Player Gaps</th><th>Ref Gaps</th><th>Interpretation</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Black Arrow</td><td><strong>34</strong> (54%)</td><td style="color: var(--purple);">27 (53%)</td>
+        <td style="font-size: 12px; color: var(--dim);">Both players gap after Black Arrow &mdash; this is a rotation timing issue inherent to the Dark Ranger flow</td>
+      </tr>
+      <tr>
+        <td>Arcane Shot</td><td><strong>24</strong> (38%)</td><td style="color: var(--purple);">19 (37%)</td>
+        <td style="font-size: 12px; color: var(--dim);">Precise Shots spender &mdash; natural gap point when waiting for next Aimed Shot charge</td>
+      </tr>
+      <tr>
+        <td>Other</td><td><strong>5</strong> (8%)</td><td style="color: var(--purple);">5 (10%)</td>
+        <td style="font-size: 12px; color: var(--dim);">Minimal &mdash; gaps are overwhelmingly after Black Arrow and Arcane Shot</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <div class="card-title">Largest Gaps</div>
+  <table>
+    <thead><tr><th>Time</th><th>Duration</th><th>Before</th><th>After</th><th>Context</th></tr></thead>
+    <tbody>
+      <tr><td>6:24&ndash;6:33</td><td style="color: var(--red);">8.8s</td><td>Black Arrow</td><td>Volley</td><td>Pre-Bloom #3 &mdash; possibly pre-positioning for Bloom</td></tr>
+      <tr><td>4:12&ndash;4:17</td><td style="color: var(--red);">5.3s</td><td>Arcane Shot</td><td>Black Arrow</td><td>Pre-Bloom #2 window</td></tr>
+      <tr><td>5:16&ndash;5:21</td><td style="color: var(--yellow);">4.7s</td><td>Black Arrow</td><td>Aimed Shot</td><td>Post-Vines #5</td></tr>
+      <tr><td>2:09&ndash;2:14</td><td style="color: var(--yellow);">4.2s</td><td>Black Arrow</td><td>Aimed Shot</td><td>Post-Bloom #1</td></tr>
+      <tr><td>3:24&ndash;3:29</td><td style="color: var(--yellow);">4.1s</td><td>Black Arrow</td><td>Aimed Shot</td><td>During Fungi #4</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="callout">
+  <strong>The 8.8s gap at 6:24 is the single largest uptime loss.</strong> This occurs right before Bloom #3 / Trueshot #4.
+  The player may have been moving to position for Bloom. On a ranged class, 8.8 seconds of zero casts should be avoidable
+  &mdash; Black Arrow and Arcane Shot (with Precise Shots) are instant cast and usable while moving.
+</div>
+
+<!-- Ability Usage Comparison -->
+<h2>Ability Usage Comparison</h2>
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player CPM</th><th>Ref CPM</th><th>Delta</th><th>Player Casts</th><th>Ref Casts</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Aimed Shot</strong></td><td>10.1</td><td style="color: var(--purple);">10.1</td>
+      <td><span class="badge badge-green">0%</span></td><td>82</td><td style="color: var(--purple);">69</td>
+      <td style="font-size: 12px; color: var(--dim);">Identical CPM &mdash; core generator on point</td>
+    </tr>
+    <tr>
+      <td><strong>Black Arrow</strong></td><td>8.7</td><td style="color: var(--purple);">7.8</td>
+      <td><span class="badge badge-green">+12%</span></td><td>71</td><td style="color: var(--purple);">53</td>
+      <td style="font-size: 12px; color: var(--dim);">Higher proc usage &mdash; strong Dark Ranger play</td>
+    </tr>
+    <tr>
+      <td><strong>Rapid Fire</strong></td><td>4.3</td><td style="color: var(--purple);">3.7</td>
+      <td><span class="badge badge-green">+17%</span></td><td>35</td><td style="color: var(--purple);">25</td>
+      <td style="font-size: 12px; color: var(--dim);">More casts per minute &mdash; good CD usage</td>
+    </tr>
+    <tr>
+      <td><strong>Arcane Shot</strong></td><td>4.3</td><td style="color: var(--purple);">6.0</td>
+      <td><span class="badge badge-red">-28%</span></td><td>35</td><td style="color: var(--purple);">41</td>
+      <td style="font-size: 12px; color: var(--dim);">Significant gap &mdash; Precise Shots being wasted?</td>
+    </tr>
+    <tr>
+      <td><strong>Steady Shot</strong></td><td>4.1</td><td style="color: var(--purple);">6.3</td>
+      <td><span class="badge badge-red">-35%</span></td><td>33</td><td style="color: var(--purple);">43</td>
+      <td style="font-size: 12px; color: var(--dim);">Fewer filler casts = more dead GCDs</td>
+    </tr>
+    <tr>
+      <td><strong>Explosive Shot</strong></td><td>1.7</td><td style="color: var(--purple);">1.2</td>
+      <td><span class="badge badge-green">+46%</span></td><td>14</td><td style="color: var(--purple);">8</td>
+      <td style="font-size: 12px; color: var(--dim);">More uses &mdash; good add cleave</td>
+    </tr>
+    <tr>
+      <td><strong>Volley</strong></td><td>1.2</td><td style="color: var(--purple);">1.0</td>
+      <td><span class="badge badge-green">+20%</span></td><td>10</td><td style="color: var(--purple);">7</td>
+      <td style="font-size: 12px; color: var(--dim);">Higher uptime on Volley &mdash; more Trick Shots</td>
+    </tr>
+    <tr>
+      <td><strong>Trueshot</strong></td><td>0.5</td><td style="color: var(--purple);">0.6</td>
+      <td><span class="badge badge-green">Match</span></td><td>4</td><td style="color: var(--purple);">4</td>
+      <td style="font-size: 12px; color: var(--dim);">Same usage count &mdash; correct</td>
+    </tr>
+    <tr>
+      <td><strong>Wailing Arrow</strong></td><td>0.5</td><td style="color: var(--purple);">0.6</td>
+      <td><span class="badge badge-green">Match</span></td><td>4</td><td style="color: var(--purple);">4</td>
+      <td style="font-size: 12px; color: var(--dim);">Same usage count &mdash; correct</td>
+    </tr>
+    <tr>
+      <td><strong>Multi-Shot</strong></td><td>0.0</td><td style="color: var(--purple);">0.6</td>
+      <td><span class="badge badge-yellow">-100%</span></td><td>0</td><td style="color: var(--purple);">4</td>
+      <td style="font-size: 12px; color: var(--dim);">Ref uses Multi-Shot to activate Trick Shots for add cleave</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <strong>The CPM gap comes from filler abilities.</strong> Smokinthisza matches or exceeds the reference on all major abilities (Aimed Shot, Black Arrow, Rapid Fire, Trueshot, Wailing Arrow).
+  But Arcane Shot (-28% CPM) and Steady Shot (-35% CPM) are significantly lower.
+  These are the filler spells that should be filling every GCD gap. The combined 2.9 CPM deficit on fillers accounts for roughly 24 missed casts over the fight &mdash;
+  which aligns with the extra 57s of dead time compared to the reference.
+</div>
+
+<!-- Damage Taken -->
+<h2>Damage Taken</h2>
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avoidable</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td><td>12,656K</td><td>478</td>
+      <td><span class="badge badge-dim">Unavoidable</span></td>
+      <td style="font-size: 12px; color: var(--dim);">Passive raid-wide ticking damage (soft enrage)</td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td><td>2,825K</td><td>46</td>
+      <td><span class="badge badge-dim">Unavoidable</span></td>
+      <td style="font-size: 12px; color: var(--dim);">Periodic raid-wide burst</td>
+    </tr>
+    <tr>
+      <td>Melee</td><td>2,802K</td><td>111</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+      <td style="font-size: 12px; color: var(--dim);">111 melee hits &mdash; likely from adds. Some unavoidable while AoEing</td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td><td>1,071K</td><td>19</td>
+      <td><span class="badge badge-dim">Unavoidable</span></td>
+      <td style="font-size: 12px; color: var(--dim);">Raid-wide damage from Bloom</td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td><td>601K</td><td>3</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+      <td style="font-size: 12px; color: var(--dim);">Add explosion proximity damage &mdash; 3 hits is reasonable</td>
+    </tr>
+    <tr>
+      <td>Poison Burst</td><td>330K</td><td>3</td>
+      <td><span class="badge badge-yellow">Interruptible</span></td>
+      <td style="font-size: 12px; color: var(--dim);">Sporecap cast &mdash; 2 Counter Shots used, some got through</td>
+    </tr>
+  </tbody>
+</table>
+<div class="callout good">
+  <strong>Damage taken is clean.</strong> No avoidable mechanic damage. All sources are either unavoidable raid damage or expected add proximity hits.
+  Smokinthisza used Counter Shot twice on Poison Burst, contributing to interrupt duty.
+</div>
+
+<!-- Wipe Progression -->
+<h2>Wipe Progression</h2>
+<div class="wipe-chart">
+  <div class="wipe-bar-wrap">
+    <div class="wipe-bar-value" style="color: var(--yellow);">148K</div>
+    <div class="wipe-bar" style="height: calc(148 / 175 * 140px); background: var(--yellow);"></div>
+    <div class="wipe-bar-label">Fight 1<br><span style="color: var(--red);">22.5% wipe</span><br>6:54</div>
+  </div>
+  <div class="wipe-bar-wrap">
+    <div class="wipe-bar-value" style="color: var(--orange);">157K</div>
+    <div class="wipe-bar" style="height: calc(157 / 175 * 140px); background: var(--orange);"></div>
+    <div class="wipe-bar-label">Fight 2<br><span style="color: var(--red);">11.6% wipe</span><br>8:25</div>
+  </div>
+  <div class="wipe-bar-wrap">
+    <div class="wipe-bar-value" style="color: var(--green);">175K</div>
+    <div class="wipe-bar" style="height: calc(175 / 175 * 140px); background: var(--green);"></div>
+    <div class="wipe-bar-label">Fight 3<br><span style="color: var(--green);">KILL</span><br>8:09</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Progression Trend</div>
+  <div style="font-size: 13px;">
+    Clear upward trend across all 3 pulls: <strong>148K &rarr; 157K &rarr; 175K</strong> (+6% then +11%).
+    The kill pull was Smokinthisza's best performance by a significant margin.
+    The jump from wipe 2 to the kill (+18K DPS, +11%) suggests the player was still learning the fight's rhythm during earlier pulls
+    and locked in for the kill. Active time improved too: 380s/414s (92%) on pull 1 vs 488s/489s (99.8%) on the kill.
+  </div>
+</div>
+
+<!-- External Buffs -->
+<h2>External Buffs Received</h2>
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Smokinthisza</th><th>Reference</th><th>Impact</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bloodlust</td>
+      <td>0:02 (on pull)</td>
+      <td style="color: var(--purple);">0:04 (on pull)</td>
+      <td style="font-size: 12px; color: var(--dim);">Both lusted on pull &mdash; same timing</td>
+    </tr>
+    <tr>
+      <td>Power Infusion</td>
+      <td><span class="badge badge-green">4x</span> (0:03, 2:03, 4:17, 6:37)</td>
+      <td style="color: var(--purple);"><span class="badge badge-dim">None</span></td>
+      <td style="font-size: 12px; color: var(--red);">+5-8% DPS advantage for Smokinthisza</td>
+    </tr>
+    <tr>
+      <td>Ebon Might</td>
+      <td><span class="badge badge-green">12 applications</span></td>
+      <td style="color: var(--purple);"><span class="badge badge-dim">None</span></td>
+      <td style="font-size: 12px; color: var(--red);">+3-5% DPS advantage from Aug Evoker</td>
+    </tr>
+    <tr>
+      <td>Prescience</td>
+      <td><span class="badge badge-green">4 applications</span></td>
+      <td style="color: var(--purple);"><span class="badge badge-dim">None</span></td>
+      <td style="font-size: 12px; color: var(--red);">Additional crit bonus from Aug Evoker</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout warn">
+  <strong>Significant external buff advantage.</strong> Smokinthisza had PI 4x + full Aug Evoker support (Ebon Might + Prescience).
+  The reference achieved 188.5K DPS with none of these. Accounting for the estimated 10-15% external buff boost,
+  Smokinthisza's effective baseline DPS would be approximately 150-160K &mdash; well below the reference's 188.5K.
+  This makes the execution gap larger than the raw numbers suggest.
+</div>
+
+<!-- Defensive Usage -->
+<h2>Defensive Usage</h2>
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Uses</th><th>Timings</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Survival of the Fittest</td><td>3</td><td>2:48, 4:30, 7:57</td>
+      <td style="font-size: 12px; color: var(--dim);">Used during high-damage windows. Good proactive usage.</td>
+    </tr>
+    <tr>
+      <td>Aspect of the Turtle</td><td>2</td><td>4:12, 6:28</td>
+      <td style="font-size: 12px; color: var(--dim);">Immune during dangerous periods. The 6:28 usage overlaps with the 8.8s gap &mdash; this explains the largest dead time.</td>
+    </tr>
+    <tr>
+      <td>Exhilaration</td><td>1</td><td>5:54</td>
+      <td style="font-size: 12px; color: var(--dim);">Self-heal used once.</td>
+    </tr>
+    <tr>
+      <td>Disengage</td><td>1</td><td>7:17</td>
+      <td style="font-size: 12px; color: var(--dim);">Repositioning.</td>
+    </tr>
+    <tr>
+      <td>Aspect of the Cheetah</td><td>1</td><td>0:04</td>
+      <td style="font-size: 12px; color: var(--dim);">Sprint on pull for positioning.</td>
+    </tr>
+    <tr>
+      <td>Counter Shot</td><td>2</td><td>Various</td>
+      <td style="font-size: 12px; color: var(--dim);">Interrupt on Sporecap Poison Burst.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <strong>Turtle at 6:28 explains the biggest gap.</strong> The 8.8s dead time at 6:24&ndash;6:33 coincides with Aspect of the Turtle at 6:28.
+  While Turtle prevents all attacks during its duration, the player should be casting instantly before and after the immune window.
+  The gap extends 4s before Turtle and 5s after it, suggesting pre-positioning movement compounded by the Turtle.
+</div>
+
+<!-- Actionable Improvements -->
+<h2>Actionable Improvements</h2>
+
+<div class="action-item">
+  <div class="action-title">1. Fill Every GCD Between Mechanics with Steady Shot or Arcane Shot</div>
+  <div class="action-impact">Impact: ~24-30 additional casts, closing the 2.3 CPM filler gap</div>
+  <div class="action-detail">
+    Arcane Shot CPM is 4.3 vs reference's 6.0, and Steady Shot is 4.1 vs 6.3. Combined, that is 3.9 fewer filler casts per minute.
+    Over 8 minutes, that is roughly 31 missed GCDs. These are the bread-and-butter casts that keep the rotation moving between Aimed Shot charges.
+    When nothing else is available, Steady Shot must fill every gap. The reference has zero 8+ second gaps; Smokinthisza has one.
+    <strong>Fix:</strong> Treat any GCD where Aimed Shot and Rapid Fire are both on CD as a mandatory Steady Shot.
+    If Precise Shots is active, use Arcane Shot first. Never let a GCD pass empty.
+  </div>
+</div>
+
+<div class="action-item">
+  <div class="action-title">2. Reduce Dead Time During Movement (Vines and Pre-Bloom Positioning)</div>
+  <div class="action-impact">Impact: ~10-15 casts recoverable from movement windows</div>
+  <div class="action-detail">
+    4 of 6 Festering Vines windows show CPS below reference. As a ranged class with several instant-cast abilities, MM Hunter
+    should maintain high uptime during movement. Black Arrow (instant), Arcane Shot with Precise Shots (instant),
+    and Explosive Shot (instant) are all usable while repositioning for Vines or Bloom.
+    The quiet window at 2:51&ndash;2:59 drops to 0.38 CPS (half the reference's 0.75), and the 6:16&ndash;6:32 pre-Bloom #3 window is 0.38 vs 0.50.
+    <strong>Fix:</strong> Pre-position for Vines so movement is minimal. Queue up instant casts during any forced movement.
+    Plan Black Arrow and Arcane Shot usage to coincide with movement windows rather than using them during stationary periods.
+  </div>
+</div>
+
+<div class="action-item">
+  <div class="action-title">3. Minimize Turtle Downtime at 6:28</div>
+  <div class="action-impact">Impact: 3-5 recoverable casts from tighter Turtle usage</div>
+  <div class="action-detail">
+    The largest single gap (8.8s at 6:24&ndash;6:33) is partially caused by Aspect of the Turtle at 6:28.
+    The gap starts 4 seconds before Turtle and ends 5 seconds after. Cast right up until Turtle activates,
+    and resume casting the instant it drops. Also evaluate whether Turtle is necessary here &mdash; if a defensive (Survival of the Fittest)
+    could replace it, that eliminates the forced attack lockout entirely.
+    <strong>Fix:</strong> If Turtle is needed, cast an instant ability (Black Arrow) at 6:24 instead of stopping,
+    activate Turtle, and have Volley/Aimed Shot queued for the instant it drops.
+  </div>
+</div>
+
+<div class="action-item">
+  <div class="action-title">4. Use Multi-Shot to Maintain Trick Shots on Add Spawns</div>
+  <div class="action-impact">Impact: Quality improvement on add cleave efficiency</div>
+  <div class="action-detail">
+    The reference uses Multi-Shot 4 times during the fight to activate Trick Shots before Aimed Shot on multi-target windows.
+    Smokinthisza uses zero Multi-Shots, relying entirely on Volley for Trick Shots activation.
+    While Volley does activate Trick Shots, Multi-Shot is a faster, on-demand activation.
+    During add spawns where Volley is on cooldown, a Multi-Shot before Aimed Shot ensures cleave damage hits all targets.
+    <strong>Fix:</strong> When adds spawn and Volley is unavailable, use one Multi-Shot to activate Trick Shots before casting Aimed Shot into the add pack.
+  </div>
+</div>
+
+<div class="action-item">
+  <div class="action-title">5. Sustain Filler Rotation Consistency in Mid-Fight (2:00&ndash;4:00)</div>
+  <div class="action-impact">Impact: Addresses the worst quiet window cluster</div>
+  <div class="action-detail">
+    The 2:16&ndash;2:59 range has the worst quiet window performance (0.38&ndash;0.47 CPS vs 0.60&ndash;0.75 reference).
+    This is the period after Bloom #1 / Trueshot #1 expires and before the next set of add spawns.
+    It is the classic post-burst-window lull where focus drops. The reference maintains 0.60+ CPS through this zone.
+    <strong>Fix:</strong> After Trueshot expires, immediately shift mental focus to keeping GCDs rolling.
+    The rotation outside of Trueshot is simpler: Aimed Shot on CD, Rapid Fire on CD,
+    Black Arrow procs, Steady Shot as filler. Internalize the non-Trueshot priority so there is zero hesitation between casts.
+  </div>
+</div>
+
+<!-- Context Footer -->
+<h2>Summary</h2>
+
+<div class="card">
+  <div style="font-size: 14px; margin-bottom: 12px;">
+    <strong>The performance gap is execution-based, not gear or talent.</strong>
+    Same ilvl (291), nearly identical talents (3 diffs), and Smokinthisza actually received <em>more</em> external buffs
+    (PI 4x + Aug) than the reference (none). The 13.6K raw DPS gap (174.9K vs 188.5K) becomes an estimated 28-38K effective gap
+    when accounting for the ~10-15% external buff advantage.
+  </div>
+
+  <div style="font-size: 14px; margin-bottom: 12px;">
+    <strong style="color: var(--green);">What is already strong:</strong>
+  </div>
+  <ul style="font-size: 13px; margin-left: 20px; margin-bottom: 12px; color: var(--dim);">
+    <li><strong style="color: var(--text);">#1 DPS in raid</strong> &mdash; highest damage dealer in a 21-person mythic group</li>
+    <li><strong style="color: var(--text);">Trueshot + PI alignment</strong> &mdash; every cooldown stacked perfectly with Fungal Bloom windows</li>
+    <li><strong style="color: var(--text);">Add switching</strong> &mdash; faster first hits than reference, more total add damage</li>
+    <li><strong style="color: var(--text);">Bloom execution</strong> &mdash; matches or beats reference during all 3 raid-wide damage windows</li>
+    <li><strong style="color: var(--text);">Zero avoidable damage taken</strong> &mdash; clean mechanic handling, survived the full fight</li>
+    <li><strong style="color: var(--text);">Strong progression</strong> &mdash; 148K &rarr; 157K &rarr; 175K across 3 pulls, best performance on the kill</li>
+    <li><strong style="color: var(--text);">Core rotation solid</strong> &mdash; Aimed Shot, Black Arrow, Rapid Fire all match or exceed reference CPM</li>
+  </ul>
+
+  <div style="font-size: 14px; margin-bottom: 12px;">
+    <strong style="color: var(--yellow);">Where to improve:</strong>
+  </div>
+  <ul style="font-size: 13px; margin-left: 20px; color: var(--dim);">
+    <li><strong style="color: var(--text);">Filler GCD discipline</strong> &mdash; Steady Shot and Arcane Shot usage is 28-35% below reference. Every empty GCD is lost damage.</li>
+    <li><strong style="color: var(--text);">Movement uptime</strong> &mdash; Vines and pre-positioning gaps should be filled with instants (Black Arrow, Arcane Shot w/ Precise Shots)</li>
+    <li><strong style="color: var(--text);">Mid-fight consistency</strong> &mdash; the 2:00&ndash;4:00 and 5:30&ndash;6:30 ranges have noticeably lower uptime than the opener and Bloom windows</li>
+    <li><strong style="color: var(--text);">Turtle timing</strong> &mdash; the 8.8s gap at 6:24 is the single largest uptime loss; tighter play around defensive cooldowns</li>
+  </ul>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a></p>
+  <p>Primary reference: &#28385;&#26376;&#27704;&#24658; (188.5K DPS, 6:50 kill, ilvl 291, 3 talent diffs) &mdash; Report: <a href="https://www.warcraftlogs.com/reports/CDxLJ2RMmkPXGfqN#fight=84" target="_blank">CDxLJ2RMmkPXGfqN</a></p>
+  <p>Rotmire is a single-phase boss with periodic mechanics (Fungal Bloom every ~136s, Festering Vines every ~49s, Awaken Fungi every ~49s).</p>
+  <p style="margin-top: 8px;">Fight: Mythic Rotmire (encounterID 3159) &mdash; June 23, 2026 &mdash; 5-heal comp</p>
+</div>
+
+</body>
+</html>

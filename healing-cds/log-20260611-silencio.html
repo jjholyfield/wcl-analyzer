@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silencio &mdash; Restoration Druid &mdash; Mythic Crown of the Cosmos Prog</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: visible; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 20px 0 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .death-forensic { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 6px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Silencio <span class="dim">&mdash; Restoration Druid</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (26 pulls, no kill) &middot; Best: 0.01% boss &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">135.4K</div>
+    <div class="stat-label">HPS (Fight 23, alive time)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">285.5</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">0.01%</div>
+    <div class="stat-label">Best Pull (F8, 2:22)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">40.4%</div>
+    <div class="stat-label">Overheal (Fight 23)</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">Silencio died at <strong class="red">4:25</strong> in the longest pull (F23, 4:53) to <strong>Voidstalker Sting</strong> alongside most of the raid &mdash; a mass wipe, not a solo death. While alive, they delivered <strong class="green">135.4K HPS</strong> with <strong class="yellow">40.4% overheal</strong>. Compared to the #1 ranked Resto Druid Hottley (<strong class="green">227K HPS</strong> on a full kill in 7:50), core rotational abilities are significantly under-cast: <strong class="red">Wild Growth at 4.3 CPM vs 5.4</strong> (&minus;20%), <strong class="red">Swiftmend at 2.3 vs 4.7</strong> (&minus;51%), and <strong class="red">Regrowth at 9.8 vs 14.7</strong> (&minus;33%). These three abilities drive Resto Druid throughput through Mastery stacking (Harmony), Everbloom procs, and Abundance-powered free Regrowths. DPS filler during downtime is minimal for both players (<strong>2150 vs 1884</strong>), expected during progression where healing demand is constant. Tranquility overheal at <strong class="red">80%</strong> suggests poor timing &mdash; channeling during low-damage windows wastes the spec&rsquo;s most powerful CD. This is progression data (wipe pulls) compared against a kill reference, so some performance gaps are expected from shorter fight length and learning.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Restoration Druids on Mythic Crown of the Cosmos (kills). Primary reference: <strong>Hottley</strong> (closest talent match at 5 diffs, 236,623 HPS, 7:50 kill). Note: Silencio&rsquo;s data is from a <strong>wipe pull</strong> (4:25 alive), references are from <strong>full kills</strong>.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>HPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Overheal</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Silencio</strong></td>
+      <td>135,358</td>
+      <td>4:25 (died)</td>
+      <td>285.5</td>
+      <td>&mdash;</td>
+      <td>40%</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Hottley <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">236,623</td>
+      <td>7:50 (kill)</td>
+      <td>289.7</td>
+      <td><span class="tag tag-same">5 diff</span></td>
+      <td>44%</td>
+    </tr>
+    <tr>
+      <td>Asdfqwerzxcv <span class="ref-badge">#2</span></td>
+      <td class="green">221,294</td>
+      <td>8:19 (kill)</td>
+      <td>291.1</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Lightsk <span class="ref-badge">#3</span></td>
+      <td class="green">220,520</td>
+      <td>8:00 (kill)</td>
+      <td>290.6</td>
+      <td><span class="tag tag-diff">13 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>大德羅伊 <span class="ref-badge">#4</span></td>
+      <td class="green">215,543</td>
+      <td>8:16 (kill)</td>
+      <td>291.9</td>
+      <td><span class="tag tag-warn">8 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>黑子说话 <span class="ref-badge">#5</span></td>
+      <td class="green">212,047</td>
+      <td>8:17 (kill)</td>
+      <td>290.3</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Silencio (4:25 alive, F23 wipe) vs Hottley (7:50 kill). Sorted by Resto Druid priority. CPM calculated using alive time only.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rejuvenation</strong></td>
+      <td>82</td>
+      <td class="yellow">18.6</td>
+      <td>122</td>
+      <td>15.6</td>
+      <td class="yellow">+19%</td>
+      <td><span class="tag tag-info">See analysis</span></td>
+    </tr>
+    <tr>
+      <td><strong>Wild Growth</strong></td>
+      <td>19</td>
+      <td class="yellow">4.3</td>
+      <td>42</td>
+      <td>5.4</td>
+      <td class="yellow">-20%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Swiftmend</strong></td>
+      <td>10</td>
+      <td class="red">2.3</td>
+      <td>37</td>
+      <td>4.7</td>
+      <td class="red">-52%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Lifebloom</strong></td>
+      <td>11</td>
+      <td class="yellow">2.5</td>
+      <td>15</td>
+      <td>1.9</td>
+      <td class="yellow">+30%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Regrowth</strong></td>
+      <td>43</td>
+      <td class="red">9.8</td>
+      <td>115</td>
+      <td>14.7</td>
+      <td class="red">-34%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rejuvenation (Germination)</strong></td>
+      <td>37</td>
+      <td class="yellow">8.4</td>
+      <td>58</td>
+      <td>7.4</td>
+      <td class="yellow">+13%</td>
+      <td><span class="tag tag-info">See analysis</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Tranquility</strong></td>
+      <td>7</td>
+      <td class="red">1.6</td>
+      <td>24</td>
+      <td>3.1</td>
+      <td class="red">-48%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Convoke the Spirits</strong></td>
+      <td>4</td>
+      <td class="yellow">0.9</td>
+      <td>8</td>
+      <td>1.0</td>
+      <td class="yellow">-11%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Nature's Swiftness</strong></td>
+      <td>4</td>
+      <td class="yellow">0.9</td>
+      <td>9</td>
+      <td>1.1</td>
+      <td class="yellow">-21%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ironbark</strong></td>
+      <td>2</td>
+      <td class="yellow">0.5</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="yellow">-11%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Nature's Cure</strong></td>
+      <td>7</td>
+      <td class="yellow">1.6</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td class="yellow">+522%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Innervate</strong></td>
+      <td>1</td>
+      <td class="red">0.2</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td class="red">-41%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Barkskin</strong></td>
+      <td>4</td>
+      <td class="yellow">0.9</td>
+      <td>6</td>
+      <td>0.8</td>
+      <td class="yellow">+18%</td>
+      <td><span class="tag tag-info">See analysis</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Wrath</strong></td>
+      <td>0</td>
+      <td class="red">0.0</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="red">-100%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- CAST ANALYSIS CARDS -->
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Swiftmend Gap: 2.3 vs 4.7 CPM (&minus;51%)</div>
+    <p style="font-size: 14px;">Swiftmend is the highest-priority rotational button for Resto Druid &mdash; it triggers <strong>Everbloom</strong> (cleave healing to 6 nearby allies), extends HoTs via <strong>Verdant Infusion</strong>, and applies 3 Rejuvenations through <strong>Power of the Archdruid</strong>. At 10 casts vs Hottley&rsquo;s 37, Silencio is getting roughly <strong>27 fewer Everbloom procs</strong> across a comparable timeframe. Everbloom accounted for <strong>4.74M</strong> of Silencio&rsquo;s healing &mdash; imagine doubling that with more Swiftmend usage. This single ability gap cascades: fewer Swiftmends = fewer Rejuvenations applied = lower Abundance stacks = fewer free Regrowths.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Wild Growth Under-Cast: 4.3 vs 5.4 CPM (&minus;20%)</div>
+    <p style="font-size: 14px;">Wild Growth is the primary raid AoE heal and should be pressed essentially on cooldown during active damage. At 19 casts vs 42 for Hottley, Silencio is missing significant AoE throughput. Wild Growth also feeds Mastery (Harmony) stacking &mdash; each additional HoT on a target increases all healing to that target. With the tier set bonus providing <strong>+25% Wild Growth healing</strong> and <strong>&minus;2s cooldown</strong>, this ability should be a near-constant part of the rotation during any damage window.</p>
+  </div>
+</div>
+
+<!-- HEALING BREAKDOWN -->
+<h2>Healing Breakdown</h2>
+<p class="section-intro">Per-ability healing for Fight 23. Total: 35.8M effective healing, 40.4% overheal (24.3M wasted). Reference Hottley: 106.4M effective, 44.5% overheal.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Effective</th><th>Player OH%</th><th>OH Bar</th><th>Ref Effective</th><th>Ref OH%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Regrowth</strong></td>
+      <td>5.49M</td>
+      <td class="yellow">42%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:41.86765823459297%;background:var(--yellow)"></div></div></td>
+      <td>18.61M</td>
+      <td>41%</td>
+    </tr>
+    <tr>
+      <td><strong>Tranquility</strong></td>
+      <td>1.65M</td>
+      <td class="red">80%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:79.64412239476331%;background:var(--red)"></div></div></td>
+      <td>4.29M</td>
+      <td>87%</td>
+    </tr>
+    <tr>
+      <td><strong>Wild Growth</strong></td>
+      <td>4.78M</td>
+      <td class="green">34%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:33.571613814949544%;background:var(--green)"></div></div></td>
+      <td>16.02M</td>
+      <td>33%</td>
+    </tr>
+    <tr>
+      <td><strong>Rejuvenation</strong></td>
+      <td>3.32M</td>
+      <td class="green">38%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:37.75958244641726%;background:var(--yellow)"></div></div></td>
+      <td>9.03M</td>
+      <td>37%</td>
+    </tr>
+    <tr>
+      <td><strong>Everbloom</strong></td>
+      <td>4.74M</td>
+      <td class="green">11%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:10.881199171745497%;background:var(--green)"></div></div></td>
+      <td>14.21M</td>
+      <td>14%</td>
+    </tr>
+    <tr>
+      <td><strong>Lifebloom</strong></td>
+      <td>1.83M</td>
+      <td class="yellow">59%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:58.6507161770442%;background:var(--red)"></div></div></td>
+      <td>4.90M</td>
+      <td>63%</td>
+    </tr>
+    <tr>
+      <td><strong>Rejuvenation (Germination)</strong></td>
+      <td>2.02M</td>
+      <td class="green">40%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:39.960817901106424%;background:var(--yellow)"></div></div></td>
+      <td>5.89M</td>
+      <td>40%</td>
+    </tr>
+    <tr>
+      <td><strong>Symbiotic Blooms</strong></td>
+      <td>1.36M</td>
+      <td class="green">39%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:38.59149057655445%;background:var(--yellow)"></div></div></td>
+      <td>4.08M</td>
+      <td>40%</td>
+    </tr>
+    <tr>
+      <td><strong>Swiftmend</strong></td>
+      <td>0.98M</td>
+      <td class="yellow">48%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:47.77019952463847%;background:var(--yellow)"></div></div></td>
+      <td>3.06M</td>
+      <td>49%</td>
+    </tr>
+    <tr>
+      <td><strong>Efflorescence</strong></td>
+      <td>1.37M</td>
+      <td class="green">17%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:16.872765255541374%;background:var(--green)"></div></div></td>
+      <td>2.51M</td>
+      <td>27%</td>
+    </tr>
+    <tr>
+      <td><strong>Nature's Bounty</strong></td>
+      <td>0.98M</td>
+      <td class="green">36%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:35.688880692371534%;background:var(--yellow)"></div></div></td>
+      <td>6.36M</td>
+      <td>38%</td>
+    </tr>
+    <tr>
+      <td><strong>Symbiotic Relationship</strong></td>
+      <td>0.73M</td>
+      <td class="yellow">49%</td>
+      <td><div class="bar-container" style="width:80px;display:inline-block;"><div class="bar" style="width:49.45276001254315%;background:var(--yellow)"></div></div></td>
+      <td>1.91M</td>
+      <td>46%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--red);">
+  <div class="card-header red">Tranquility: 80% Overheal</div>
+  <p style="font-size: 14px;">Tranquility is Resto Druid&rsquo;s most powerful healing cooldown &mdash; it channels for ~6 seconds and also <strong>extends all active HoTs by 10 seconds</strong>. At <strong>80% overheal</strong>, Silencio is channeling Tranquility when the raid is already near full health. This wastes both the direct channel healing AND the HoT extension benefit (extending HoTs that then overheal is double waste). The reference Hottley gets significantly more value from Tranquility because it&rsquo;s timed to coincide with raid-wide damage windows. In a 4:24 alive window, there should be 1&ndash;2 well-timed Tranquility uses, not 1 channel wasted on low damage. Lifebloom at 59% overheal also suggests the HoT is not always on a target actively taking damage.</p>
+</div>
+
+<!-- DPS CONTRIBUTION -->
+<h2>DPS Contribution</h2>
+<p class="section-intro">Healers should DPS during low-damage windows. Resto Druids use Wrath (single target) and Moonfire/Sunfire (DoT maintenance) as DPS fillers.</p>
+
+<div class="grid-3">
+  <div class="card stat">
+    <div class="stat-value yellow">2,150</div>
+    <div class="stat-label">Player DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">1,884</div>
+    <div class="stat-label">Reference DPS (Hottley)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">0.57M</div>
+    <div class="stat-label">Total Damage</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">DPS Breakdown</div>
+  <table>
+    <thead><tr><th>Ability</th><th>Damage</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Moonfire</td><td>0.33M</td><td>DoT maintenance</td></tr>
+      <tr><td>Wrath</td><td>0.18M</td><td>Primary filler</td></tr>
+      <tr><td>Thorn Bloom</td><td>0.07M</td><td></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size: 14px; margin-top: 8px; color: var(--dim);">Silencio has <strong>zero Wrath casts</strong> in the cast profile, but 0.18M Wrath damage appears from a handful of casts. The reference has zero DPS filler casts (Shred/Cat Form only) &mdash; suggesting both players prioritize healing over DPS on this progression fight, which is expected. However, <strong>0 Sunfire casts</strong> means the DoT is not being maintained at all, which is free periodic damage with minimal GCD investment. During progression, every bit of DPS helps push boss percentage further.</p>
+</div>
+
+<!-- DEATH FORENSICS -->
+<h2>Death Forensics &mdash; Fight 23</h2>
+<p class="section-intro">Silencio died at <strong>4:25</strong> to <strong>Voidstalker Sting</strong>. This was part of a <strong>mass raid wipe</strong> &mdash; 22 total deaths in this pull. 18 players died within 30 seconds of Silencio.</p>
+
+<div class="card" style="border-left: 3px solid var(--red);">
+  <div class="card-header red">Raid State at Death</div>
+  <p style="font-size: 14px;">By 4:25, the raid had already lost multiple players. This was a progression wipe where the group hit a wall in Phase 3 (Devouring Cosmos). <strong>All 4 healers died within 1 second of each other</strong> (Senssay, Brewtote, Dueche, Silencio all at ~4:24). This is a raid-wide lethal mechanic, not an individual error.</p>
+  <div class="death-forensic" style="margin-top: 8px;">
+    <div style="color: var(--dim); margin-bottom: 4px;">Last 20s of damage taken:</div>
+    <div style="color: var(--red);">4:22 &mdash; Voidstalker Sting: 32,528 dmg</div>
+    <div style="color: var(--red);">4:23 &mdash; Simulacrum Backlash: 20,330 dmg</div>
+    <div style="color: var(--red);">4:23 &mdash; Simulacrum Backlash: 20,330 dmg</div>
+    <div style="color: var(--red);">4:23 &mdash; Voidstalker Sting: 38,268 dmg</div>
+    <div style="color: var(--red);">4:24 &mdash; Void Barrage: 59,793 dmg</div>
+    <div style="color: var(--red);">4:24 &mdash; Simulacrum Backlash: 23,918 dmg</div>
+    <div style="color: var(--red);">4:24 &mdash; Simulacrum Backlash: 23,918 dmg</div>
+    <div style="color: var(--red);">4:24 &mdash; Bursting Emptiness: 239,174 dmg</div>
+    <div style="color: var(--red);">4:24 &mdash; Simulacrum Backlash: 34,169 dmg</div>
+    <div style="color: var(--red);">4:24 &mdash; Voidstalker Sting: 19,103 dmg</div>
+    <div style="color: var(--red); font-weight: bold; margin-top: 4px;">4:25 &mdash; DEAD (Voidstalker Sting)</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">All Deaths in Fight 23 (22 total)</div>
+  <table>
+    <thead><tr><th>Time</th><th>Player</th><th>Killed By</th></tr></thead>
+    <tbody>
+      <tr><td>2:31</td><td>Alitheria</td><td>Silverstrike Barrage</td></tr>
+      <tr><td>2:31</td><td>Smokinthisza</td><td>Silverstrike Barrage</td></tr>
+      <tr><td>2:42</td><td>Invincibale</td><td>Silverstrike Barrage</td></tr>
+      <tr><td>3:46</td><td>Sonìc</td><td>Voidstalker Sting</td></tr>
+      <tr><td>3:56</td><td>Invincibale</td><td>Void Remnants</td></tr>
+      <tr><td>4:01</td><td>Orichamaru</td><td>Grasp of Emptiness</td></tr>
+      <tr><td>4:01</td><td>Starfighter</td><td>Void Remnants</td></tr>
+      <tr><td>4:03</td><td>Moistbear</td><td>Simulacrum Backlash</td></tr>
+      <tr><td>4:06</td><td>Zinnks</td><td>Void Barrage</td></tr>
+      <tr><td>4:12</td><td>Smokinthisza</td><td>Raid wipe</td></tr>
+      <tr><td>4:14</td><td>Unholyftw</td><td>Simulacrum Backlash</td></tr>
+      <tr><td>4:14</td><td>Nurnyx</td><td>Void Remnants</td></tr>
+      <tr><td>4:23</td><td>Snackznchill</td><td>Void Remnants</td></tr>
+      <tr><td>4:24</td><td>Senssay</td><td>Void Barrage</td></tr>
+      <tr><td>4:24</td><td>Brewtote</td><td>Bursting Emptiness</td></tr>
+      <tr><td>4:24</td><td>Baodabao</td><td>Bursting Emptiness</td></tr>
+      <tr><td>4:24</td><td>Dueche</td><td>Bursting Emptiness</td></tr>
+      <tr><td>4:24</td><td>Bebeshakur</td><td>Bursting Emptiness</td></tr>
+      <tr style="background:rgba(248,81,73,0.08);"><td>4:25</td><td><strong>Sìlencio</strong></td><td>Voidstalker Sting</td></tr>
+      <tr><td>4:28</td><td>Darthurg</td><td>Simulacrum Backlash</td></tr>
+      <tr><td>4:42</td><td>Nucke</td><td>Simulacrum Backlash</td></tr>
+      <tr><td>4:53</td><td>Glazedwhole</td><td>Voidstalker Sting</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- TEAM CD COORDINATION -->
+<h2>Team CD Coordination &mdash; Fight 23</h2>
+<p class="section-intro">Major healing CDs used by all 4 healers during the longest pull. CDs should be spread across damage windows to avoid stacking and gaps.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Healer</th><th>CDs Used</th><th>Death</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background:rgba(255,125,10,0.06);"><td><strong style="color:#ff7d0a">Silencio</strong> <span class="dim">(Restoration Druid)</span></td><td><span style="display:inline-block;background:rgba(255,125,10,0.15);color:#ff7d0a;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Convoke the Spirits 0:12</span> <span style="display:inline-block;background:rgba(255,125,10,0.15);color:#ff7d0a;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Tranquility 0:15</span> <span style="display:inline-block;background:rgba(255,125,10,0.15);color:#ff7d0a;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Convoke the Spirits 1:37</span> <span style="display:inline-block;background:rgba(255,125,10,0.15);color:#ff7d0a;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Convoke the Spirits 3:01</span> <span style="display:inline-block;background:rgba(255,125,10,0.15);color:#ff7d0a;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Convoke the Spirits 4:16</span></td><td><span class="tag tag-diff">4:25</span></td></tr>
+    <tr><td><strong style="color:#f48cba">Dueche</strong> <span class="dim">(Holy Paladin)</span></td><td><span style="display:inline-block;background:rgba(244,140,186,0.15);color:#f48cba;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Avenging Wrath 0:04</span> <span style="display:inline-block;background:rgba(244,140,186,0.15);color:#f48cba;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Aura Mastery 1:09</span> <span style="display:inline-block;background:rgba(244,140,186,0.15);color:#f48cba;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Avenging Wrath 2:57</span></td><td><span class="tag tag-diff">4:24</span></td></tr>
+    <tr><td><strong style="color:#0070de">Brewtote</strong> <span class="dim">(Restoration Shaman)</span></td><td><span style="display:inline-block;background:rgba(0,112,222,0.15);color:#0070de;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Ascendance 0:07</span> <span style="display:inline-block;background:rgba(0,112,222,0.15);color:#0070de;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Spirit Link Totem 0:27</span> <span style="display:inline-block;background:rgba(0,112,222,0.15);color:#0070de;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Ascendance 3:57</span></td><td><span class="tag tag-diff">4:24</span></td></tr>
+    <tr><td><strong style="color:#00ff96">Senssay</strong> <span class="dim">(Mistweaver Monk)</span></td><td><span style="display:inline-block;background:rgba(0,255,150,0.15);color:#00ff96;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Celestial Conduit 0:32</span> <span style="display:inline-block;background:rgba(0,255,150,0.15);color:#00ff96;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Invoke Yu'lon, the Jade Serpent 1:05</span> <span style="display:inline-block;background:rgba(0,255,150,0.15);color:#00ff96;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Revival 1:45</span> <span style="display:inline-block;background:rgba(0,255,150,0.15);color:#00ff96;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Celestial Conduit 3:13</span> <span style="display:inline-block;background:rgba(0,255,150,0.15);color:#00ff96;padding:2px 6px;border-radius:3px;font-size:11px;margin:1px;">Invoke Yu'lon, the Jade Serpent 3:30</span></td><td><span class="tag tag-diff">4:24</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">CD Timeline Summary</div>
+  <p style="font-size: 14px;">The opening 30 seconds shows <strong>heavy CD stacking</strong>: Dueche (Avenging Wrath 0:04), Brewtote (Ascendance 0:07), and Silencio (Convoke 0:12 + Tranquility 0:15) all fire major CDs at the start. While this may be necessary for an opening damage spike, it leaves the raid with a <strong>CD gap from ~0:40 to ~1:05</strong> before Senssay&rsquo;s Yu&rsquo;lon and Dueche&rsquo;s Aura Mastery fill in. Silencio uses <strong>4 Convoke the Spirits</strong> across the fight, which is solid usage for a ~4:24 alive window (roughly every 75s, close to the ~60s cooldown). The Tranquility at 0:15 with 80% overheal is the main timing issue.</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage sources hitting Silencio during Fight 23. Crown of the Cosmos has significant unavoidable raid-wide damage across all 3 phases.</p>
+
+<div class="card">
+<table>
+  <thead><tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Echoing Darkness</strong></td><td>2.78M</td><td>118</td><td>337K</td></tr>
+    <tr><td><strong>Simulacrum Backlash</strong></td><td>2.51M</td><td>84</td><td>31K</td></tr>
+    <tr><td><strong>Voidstalker Sting</strong></td><td>1.19M</td><td>52</td><td>88K</td></tr>
+    <tr><td><strong>Void Remnants</strong></td><td>1.15M</td><td>9</td><td>100K</td></tr>
+    <tr><td><strong>Void Expulsion</strong></td><td>1.12M</td><td>30</td><td>113K</td></tr>
+    <tr><td><strong>Stellar Emission</strong></td><td>0.54M</td><td>15</td><td>&mdash;</td></tr>
+    <tr><td><strong>Void Barrage</strong></td><td>0.42M</td><td>7</td><td>60K</td></tr>
+    <tr><td><strong>Grasp of Emptiness</strong></td><td>0.40M</td><td>10</td><td>&mdash;</td></tr>
+    <tr><td><strong>Cosmic Barrier</strong></td><td>0.36M</td><td>21</td><td>115K</td></tr>
+    <tr><td><strong>Falling</strong></td><td>0.33M</td><td>2</td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Silencio&rsquo;s HPS across all 26 pulls on Mythic Crown of the Cosmos. Labels show boss health % remaining (lower = better). Colors: <span class="green">green</span> = sub-10%, <span class="yellow">yellow</span> = 10&ndash;50%, <span class="orange">orange</span> = 50&ndash;90%, <span class="red">red</span> = &gt;90%.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 5%; background: var(--red);" data-tooltip="F1: 4K HPS | 0:28 | 99.5% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">99%</span>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--orange);" data-tooltip="F2: 161K HPS | 1:03 | 52.0% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">52%</span>
+    </div>
+    <div class="prog-bar" style="height: 56%; background: var(--orange);" data-tooltip="F3: 91K HPS | 1:57 | 54.8% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">55%</span>
+    </div>
+    <div class="prog-bar" style="height: 85%; background: var(--orange);" data-tooltip="F4: 137K HPS | 1:16 | 54.6% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">55%</span>
+    </div>
+    <div class="prog-bar" style="height: 72%; background: var(--orange);" data-tooltip="F5: 116K HPS | 0:60 | 74.0% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">74%</span>
+    </div>
+    <div class="prog-bar" style="height: 80%; background: var(--yellow);" data-tooltip="F6: 129K HPS | 2:23 | 19.5% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">19%</span>
+    </div>
+    <div class="prog-bar" style="height: 82%; background: var(--yellow);" data-tooltip="F7: 132K HPS | 1:29 | 41.7% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">42%</span>
+    </div>
+    <div class="prog-bar" style="height: 94%; background: var(--green);" data-tooltip="F8: 151K HPS | 2:22 | 0.0% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">0.01%</span>
+    </div>
+    <div class="prog-bar" style="height: 83%; background: var(--green);" data-tooltip="F9: 134K HPS | 2:32 | 7.3% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">7%</span>
+    </div>
+    <div class="prog-bar" style="height: 57%; background: var(--red);" data-tooltip="F10: 92K HPS | 3:40 | 98.4% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">98%</span>
+    </div>
+    <div class="prog-bar" style="height: 68%; background: var(--yellow);" data-tooltip="F11: 109K HPS | 2:02 | 30.3% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">30%</span>
+    </div>
+    <div class="prog-bar" style="height: 78%; background: var(--red);" data-tooltip="F12: 125K HPS | 3:54 | 92.1% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">92%</span>
+    </div>
+    <div class="prog-bar" style="height: 89%; background: var(--orange);" data-tooltip="F13: 144K HPS | 1:15 | 60.8% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">61%</span>
+    </div>
+    <div class="prog-bar" style="height: 56%; background: var(--red);" data-tooltip="F14: 91K HPS | 3:51 | 95.3% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">95%</span>
+    </div>
+    <div class="prog-bar" style="height: 78%; background: var(--green);" data-tooltip="F15: 125K HPS | 2:29 | 9.1% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">9%</span>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--yellow);" data-tooltip="F16: 161K HPS | 2:10 | 21.2% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">21%</span>
+    </div>
+    <div class="prog-bar" style="height: 82%; background: var(--green);" data-tooltip="F17: 132K HPS | 2:24 | 0.0% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">0.01%</span>
+    </div>
+    <div class="prog-bar" style="height: 49%; background: var(--red);" data-tooltip="F18: 80K HPS | 3:56 | 95.7% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">96%</span>
+    </div>
+    <div class="prog-bar" style="height: 83%; background: var(--yellow);" data-tooltip="F19: 133K HPS | 1:54 | 34.5% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">35%</span>
+    </div>
+    <div class="prog-bar" style="height: 61%; background: var(--yellow);" data-tooltip="F20: 98K HPS | 2:00 | 35.4% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">35%</span>
+    </div>
+    <div class="prog-bar" style="height: 72%; background: var(--green);" data-tooltip="F21: 115K HPS | 2:27 | 0.2% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">0.22%</span>
+    </div>
+    <div class="prog-bar" style="height: 79%; background: var(--orange);" data-tooltip="F23: 128K HPS | 4:53 | 77.3% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">77%</span>
+    </div>
+    <div class="prog-bar" style="height: 75%; background: var(--red);" data-tooltip="F24: 121K HPS | 3:49 | 92.9% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">93%</span>
+    </div>
+    <div class="prog-bar" style="height: 70%; background: var(--red);" data-tooltip="F25: 112K HPS | 3:08 | 99.9% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">100%</span>
+    </div>
+    <div class="prog-bar" style="height: 29%; background: var(--red);" data-tooltip="F26: 47K HPS | 3:40 | 96.9% boss">
+      <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--dim);white-space:nowrap;">97%</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span style="color: var(--dim);">Boss % remaining &bull; Lower = deeper prog</span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Across 26 pulls, the raid reached <strong>sub-1% boss health</strong> three times (F8: 0.01%, F17: 0.01%, F21: 0.22%) &mdash; extremely close to a kill. Silencio&rsquo;s HPS fluctuated between <strong>79.7K and 160.9K</strong> depending on fight duration and damage patterns. Longer pulls (3+ minutes) generally show lower HPS (90&ndash;130K range) as sustained healing normalizes, while short burst wipes inflate HPS. The <strong>best HPS on deep prog pulls</strong> (sub-10% boss): F8 at 151.4K, F9 at 134.0K, F15 at 125.3K, F17 at 131.6K, F21 at 115.4K. Consistent output in the 115&ndash;150K range during the pulls that mattered most.</p>
+</div>
+
+<!-- HEALER TEAM RANKING (Fight 23) -->
+<h2>Healer Team Ranking &mdash; Fight 23</h2>
+<p class="section-intro">All healers in the raid on the longest pull. All 4 healers died within seconds of each other at ~4:24 during a mass wipe.</p>
+
+<div class="card">
+<table>
+  <thead><tr><th>Rank</th><th>Healer</th><th>Spec</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr style="background:rgba(255,125,10,0.06);"><td>1</td><td><strong>Silencio</strong></td><td>Restoration Druid</td><td><span class="tag tag-diff">Died 4:25</span></td></tr>
+    <tr><td>2</td><td>Dueche</td><td>Holy Paladin</td><td><span class="tag tag-diff">Died 4:24</span></td></tr>
+    <tr><td>3</td><td>Brewtote</td><td>Restoration Shaman</td><td><span class="tag tag-diff">Died 4:24</span></td></tr>
+    <tr><td>4</td><td>Senssay</td><td>Mistweaver Monk</td><td><span class="tag tag-diff">Died 4:24</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference Hottley.</p>
+
+<div class="card">
+<table>
+  <thead><tr><th>Stat</th><th>Silencio</th><th>Hottley</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Item Level</strong></td><td>285.5</td><td>289.7</td><td><span class="tag tag-same">Similar</span></td></tr>
+    <tr><td>Intellect</td><td>2558</td><td>2455</td><td>Player higher</td></tr>
+    <tr><td>Haste</td><td class="yellow">1106</td><td>1365</td><td>Player has less Haste</td></tr>
+    <tr><td>Mastery</td><td class="yellow">892</td><td>1165</td><td>Player has less Mastery</td></tr>
+    <tr><td>Crit</td><td>279</td><td>138</td><td>Player has more Crit</td></tr>
+    <tr><td>Versatility</td><td>276</td><td>37</td><td>Player has more</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Silencio has <strong>&minus;19% Haste</strong> (1,106 vs 1,365) and <strong>&minus;23% Mastery</strong> (892 vs 1,165) compared to Hottley. For Resto Druid, the stat priority is <strong>Haste &gt; Mastery &gt; Versatility &gt; Crit</strong>. The Haste gap means fewer GCDs per minute (partially explaining the lower CPM across the board) and the Mastery gap means each HoT stack provides less bonus healing. However, Crit is significantly higher (279 vs 138), which is the lowest-value stat for Resto Druid. Rebalancing toward Haste/Mastery gear would passively improve throughput.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Swiftmend on cooldown &mdash; the #1 throughput lever.</strong> At <strong>2.3 CPM vs 4.7</strong> (reference), Silencio is using Swiftmend roughly half as often as they should. Every Swiftmend triggers Everbloom (cleave heal to 6 allies), extends HoTs via Verdant Infusion, and applies 3 Rejuvenations via Power of the Archdruid. This single ability generates <strong>more healing per GCD than any other button</strong> in the Resto Druid kit. In a 4:24 window, 10 Swiftmends vs the expected ~20+ means roughly 10 missed Everbloom procs and 30 missed Rejuvenation applications. Estimated throughput gain: <strong>+15&ndash;25%</strong>.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Time Tranquility for damage events, not low-damage windows.</strong> Tranquility at <strong>80% overheal</strong> means the channel went almost entirely to waste. Tranquility extends all active HoTs by 10 seconds &mdash; this extension is the real value, not just the channel healing. Pre-apply Rejuvenations to 10&ndash;12 targets, then channel Tranquility DURING raid-wide damage. The HoT extension amplifies all existing HoTs through the damage window. On Crown of the Cosmos, the Phase 1 Sentinel abilities and Phase 2 Rift Simulacrum have clear raid-wide damage windows to target.
+</div>
+
+<div class="action-item">
+  <strong>3. Increase Wild Growth usage to match cooldown (&minus;20% vs reference).</strong> Wild Growth at <strong>4.3 CPM vs 5.4</strong> means the ability is off cooldown and not being pressed for ~4 seconds every cycle. With the tier set bonus giving <strong>+25% healing and &minus;2s cooldown</strong>, Wild Growth should be pressed nearly on cooldown during any active damage. Each Wild Growth also adds another HoT to Mastery (Harmony) stacking. 19 casts in 4:24 vs 42 in 7:50 &mdash; the reference maintains a higher rate even across a much longer fight.
+</div>
+
+<div class="action-item">
+  <strong>4. Regrowth CPM gap: leverage Abundance stacks.</strong> At <strong>9.8 CPM vs 14.7</strong> (&minus;33%), Regrowth is significantly under-cast. With sufficient Rejuvenation/Germination HoTs out, Abundance stacks reduce Regrowth mana cost and increase its crit chance. At high stacks, Regrowth becomes <strong>free and guaranteed to crit</strong>. The fix is upstream: more Swiftmend (which applies Rejuvenations) builds more Abundance stacks, which makes Regrowth free, which enables more Regrowth casts. This is why Swiftmend is the keystone.
+</div>
+
+<div class="action-item">
+  <strong>5. Gear toward Haste and Mastery over Crit.</strong> Silencio has <strong>279 Crit vs 138</strong> for the reference, but Crit is the lowest-priority stat for Resto Druid. Meanwhile Haste (1,106 vs 1,365) and Mastery (892 vs 1,165) are both significantly lower. Haste directly increases the number of GCDs available (partially explaining the CPM gaps), and Mastery increases the value of each HoT on a target. Swapping Crit-heavy pieces for Haste/Mastery alternatives would passively close some of the throughput gap.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What&rsquo;s Already Working</div>
+  <p style="font-size: 14px;">
+    <strong>Convoke the Spirits usage:</strong> 4 casts in 4:24 alive is near-optimal for the ~60s cooldown. Every window was used.<br><br>
+    <strong>Rejuvenation blanket:</strong> At 18.6 CPM (82 casts), Rejuvenation is being used at a higher rate than the reference (15.6 CPM). This shows good instinct for pre-hotting, though some of this may be over-blanketing (contributing to the 40% overall overheal).<br><br>
+    <strong>Dispel awareness:</strong> 7 Nature&rsquo;s Cure casts shows active dispelling responsibility.<br><br>
+    <strong>Survival is not an issue:</strong> The death at 4:24 was a mass raid wipe &mdash; all 4 healers died within 1 second. This is a strategy/execution failure at the raid level, not a personal survivability problem. 4 Barkskin uses shows good defensive awareness.<br><br>
+    <strong>Consistent prog performance:</strong> HPS was stable across the deepest pulls (F8: 151K, F17: 132K, F21: 115K), showing reliable output when the fight mattered most.
+  </p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (Wipe, 4:53 pull, 77.31% boss). Reference: Hottley (#1 ranked Restoration Druid, report <code>PCkr7jgZDLp43xBc</code>, Fight 32, 7:50 kill). Talent delta: 5 differences. Item level: 285.5 vs 289.7. All times relative to fight start.</p>
+  <p style="margin-top: 4px;"><strong>Prog context:</strong> This is wipe data (26 pulls, no kill) compared against kill references. HPS comparisons are inherently different &mdash; kills have more total damage to heal over a longer fight, and healers in kills have optimized their CD timing to known damage patterns. Silencio&rsquo;s CPM and rotation gaps are actionable regardless of kill status.</p>
+  <p style="margin-top: 4px;">Generated 2026-06-19 by WCL Analyzer.</p>
+</div>
+
+</body>
+</html>

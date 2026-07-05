@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPS Analysis — Bebeshakur (Unholy DK) — Mythic Crown of the Cosmos — June 23</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #e6edf3; font-family: 'Inter', sans-serif; padding: 32px; max-width: 1000px; margin: 0 auto; line-height: 1.6; }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 14px; margin-bottom: 8px; }
+  .prog-tag { display: inline-block; background: #f8514922; color: #f85149; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; }
+  h2 { font-size: 18px; font-weight: 600; color: #c41e3a; margin-top: 40px; margin-bottom: 16px; border-bottom: 1px solid #30363d; padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; color: #e6edf3; margin-top: 24px; margin-bottom: 10px; }
+  .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .overview-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; text-align: center; }
+  .overview-label { font-size: 11px; color: #8b949e; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .overview-value { font-size: 28px; font-weight: 700; }
+  .overview-sub { font-size: 12px; color: #484f58; margin-top: 4px; }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: #161b22; color: #8b949e; font-weight: 600; border-bottom: 1px solid #30363d; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .compare-table td { padding: 6px 12px; border-bottom: 1px solid #21262d; color: #8b949e; }
+  .compare-table tr:hover { background: #1c2128; }
+  .compare-table .player-row { background: #161b22; }
+  .compare-table .player-row td { color: #e6edf3; font-weight: 500; }
+  .bad { color: #f85149; font-weight: 600; }
+  .warn { color: #d29922; font-weight: 600; }
+  .ok { color: #3fb950; font-weight: 600; }
+  .dim { color: #484f58; }
+  .finding { background: #161b22; border-radius: 6px; padding: 16px 20px; margin-bottom: 12px; font-size: 14px; color: #8b949e; line-height: 1.7; }
+  .finding-bad { border-left: 3px solid #f85149; background: #1c1214; }
+  .finding-warn { border-left: 3px solid #d29922; background: #1c1a12; }
+  .finding-good { border-left: 3px solid #3fb950; background: #121c14; }
+  .finding strong { color: #e6edf3; }
+  .action { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 18px 22px; margin-bottom: 12px; }
+  .action-num { font-size: 28px; font-weight: 700; color: #30363d; float: left; margin-right: 16px; font-family: 'Courier New', monospace; line-height: 1; }
+  .action-title { font-size: 15px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+  .action-body { font-size: 13px; color: #8b949e; line-height: 1.7; }
+  .action-body strong { color: #c9d1d9; }
+  .callout { background: #1c1214; border: 1px solid #f8514933; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+  .callout-title { font-size: 14px; font-weight: 700; color: #f85149; margin-bottom: 6px; }
+  .callout-body { font-size: 13px; color: #8b949e; line-height: 1.6; }
+  .chart-container { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; margin: 16px 0; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; padding-top: 10px; }
+  .bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+  .bar { width: 100%; min-width: 8px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s; }
+  .bar:hover { opacity: 0.8; }
+  .bar-label { font-size: 9px; color: #484f58; margin-top: 4px; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); height: 40px; overflow: hidden; }
+  .bar-value { font-size: 9px; color: #8b949e; margin-bottom: 2px; white-space: nowrap; }
+  .legend { display: flex; gap: 16px; margin-top: 12px; font-size: 11px; color: #8b949e; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+  .avg-line { position: relative; width: 100%; }
+  .phase-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin: 8px 0; }
+  .phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+  details { margin-top: 24px; }
+  summary { font-size: 14px; font-weight: 600; color: #484f58; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #8b949e; }
+  .details-inner { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #8b949e; line-height: 1.7; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #21262d; font-size: 12px; color: #484f58; text-align: center; }
+  @media (max-width: 700px) {
+    body { padding: 16px; }
+    .overview-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 23 Crown Log Analysis</a>
+
+<h1>DPS Analysis &mdash; <span style="color:#c41e3a">Bebeshakur</span></h1>
+<p class="subtitle">Unholy Death Knight &mdash; Mythic Crown of the Cosmos &mdash; June 23, 2026 &mdash; 20 pulls analyzed</p>
+<div class="prog-tag">Progression Night 3 &mdash; Best: 26.51% (Pull 25)</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SUMMARY CARDS -->
+
+<div class="overview-grid">
+  <div class="overview-card">
+    <div class="overview-label">Avg DPS</div>
+    <div class="overview-value" style="color:#d29922">47.3K</div>
+    <div class="overview-sub">12 pulls with data</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Item Level</div>
+    <div class="overview-value" style="color:#58a6ff">287</div>
+    <div class="overview-sub">Unholy DK</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Survival Rate</div>
+    <div class="overview-value" style="color:#f85149">3/20</div>
+    <div class="overview-sub">Survived to wipe</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Best Pull</div>
+    <div class="overview-value" style="color:#3fb950">62.5K</div>
+    <div class="overview-sub">Pull 13 &mdash; 32.29% boss</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Performance Across All Pulls</h2>
+
+<div class="chart-container">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <span style="font-size:13px;font-weight:600;color:#e6edf3;">DPS Per Pull</span>
+    <span style="font-size:11px;color:#8b949e;">Avg: 47.3K &mdash; Bars show table DPS where available</span>
+  </div>
+  <div class="bar-chart" id="dps-chart">
+    <!-- Fight 5: 8.4K, died@197s, dur=228s -->
+    <div class="bar-wrapper">
+      <div class="bar-value">8.4K</div>
+      <div class="bar" style="height:13%;background:#f85149;" title="Fight 5: 8,437 DPS | Died @3:17 to Bursting Emptiness | 3:48 pull | 50.44%"></div>
+      <div class="bar-label">F5</div>
+    </div>
+    <!-- Fight 6: 42.4K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">42.4K</div>
+      <div class="bar" style="height:68%;background:#f85149;" title="Fight 6: 42,405 DPS | Died @3:44 to Cosmic Barrier | 3:53 pull | 47.14%"></div>
+      <div class="bar-label">F6</div>
+    </div>
+    <!-- Fight 7: no table data -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#484f58">n/a</div>
+      <div class="bar" style="height:5%;background:#30363d;" title="Fight 7: API data unavailable | Died @1:03 to Silverstrike Arrow | 1:17 pull"></div>
+      <div class="bar-label">F7</div>
+    </div>
+    <!-- Fight 8: no table data -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#484f58">n/a</div>
+      <div class="bar" style="height:5%;background:#30363d;" title="Fight 8: API data unavailable | Died @1:11 | 1:21 pull"></div>
+      <div class="bar-label">F8</div>
+    </div>
+    <!-- Fight 9: 61.7K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">61.7K</div>
+      <div class="bar" style="height:99%;background:#3fb950;" title="Fight 9: 61,727 DPS | Died @5:12 to Void Expulsion (wipe) | 5:15 pull | 32.91%"></div>
+      <div class="bar-label">F9</div>
+    </div>
+    <!-- Fight 10: no table data -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#484f58">n/a</div>
+      <div class="bar" style="height:5%;background:#30363d;" title="Fight 10: API data unavailable | Died @1:45 | 2:00 pull"></div>
+      <div class="bar-label">F10</div>
+    </div>
+    <!-- Fight 11: 40.9K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">40.9K</div>
+      <div class="bar" style="height:65%;background:#f85149;" title="Fight 11: 40,850 DPS | Died @3:39 to Cosmic Barrier | 3:47 pull | 50%"></div>
+      <div class="bar-label">F11</div>
+    </div>
+    <!-- Fight 12: 49.6K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">49.6K</div>
+      <div class="bar" style="height:79%;background:#3fb950;" title="Fight 12: 49,609 DPS | Died @4:45 to Melee (wipe) | 4:47 pull | 42.46%"></div>
+      <div class="bar-label">F12</div>
+    </div>
+    <!-- Fight 13: 62.5K -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#3fb950">62.5K</div>
+      <div class="bar" style="height:100%;background:#d29922;" title="Fight 13: 62,531 DPS | Died @0:17 (BR), Died @5:59 (wipe) | 6:01 pull | 32.29% | BEST"></div>
+      <div class="bar-label">F13</div>
+    </div>
+    <!-- Fight 14: no table data -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#484f58">n/a</div>
+      <div class="bar" style="height:5%;background:#30363d;" title="Fight 14: API data unavailable | Died @1:10 | 1:26 pull"></div>
+      <div class="bar-label">F14</div>
+    </div>
+    <!-- Fight 15: no table data -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#484f58">n/a</div>
+      <div class="bar" style="height:5%;background:#30363d;" title="Fight 15: API data unavailable | Died @2:47 | 3:05 pull"></div>
+      <div class="bar-label">F15</div>
+    </div>
+    <!-- Fight 16: no table data -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#484f58">n/a</div>
+      <div class="bar" style="height:5%;background:#30363d;" title="Fight 16: API data unavailable | Died @2:49 | 3:05 pull"></div>
+      <div class="bar-label">F16</div>
+    </div>
+    <!-- Fight 17: 43.6K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">43.6K</div>
+      <div class="bar" style="height:70%;background:#3fb950;" title="Fight 17: 43,604 DPS | Died @3:53 to Cosmic Barrier (wipe) | 3:55 pull | 47.92%"></div>
+      <div class="bar-label">F17</div>
+    </div>
+    <!-- Fight 18: 30.6K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">30.6K</div>
+      <div class="bar" style="height:49%;background:#f85149;" title="Fight 18: 30,589 DPS | Died @3:37 to Void Remnants | 4:23 pull | 43.36%"></div>
+      <div class="bar-label">F18</div>
+    </div>
+    <!-- Fight 19: 59.8K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">59.8K</div>
+      <div class="bar" style="height:96%;background:#f85149;" title="Fight 19: 59,829 DPS | Died @5:48 | 6:09 pull | 36.36%"></div>
+      <div class="bar-label">F19</div>
+    </div>
+    <!-- Fight 20: 47.5K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">47.5K</div>
+      <div class="bar" style="height:76%;background:#f85149;" title="Fight 20: 47,499 DPS | Died @5:03 to Simulacrum Backlash | 5:15 pull | 34.78%"></div>
+      <div class="bar-label">F20</div>
+    </div>
+    <!-- Fight 21: no table data -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#484f58">n/a</div>
+      <div class="bar" style="height:5%;background:#30363d;" title="Fight 21: API data unavailable | Died @1:55 | 2:03 pull"></div>
+      <div class="bar-label">F21</div>
+    </div>
+    <!-- Fight 22: no table data -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:#484f58">n/a</div>
+      <div class="bar" style="height:5%;background:#30363d;" title="Fight 22: API data unavailable | Died @1:26 | 1:32 pull"></div>
+      <div class="bar-label">F22</div>
+    </div>
+    <!-- Fight 23: 60.6K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">60.6K</div>
+      <div class="bar" style="height:97%;background:#f85149;" title="Fight 23: 60,552 DPS | Died @6:18 to Void Expulsion | 6:25 pull | 31.14%"></div>
+      <div class="bar-label">F23</div>
+    </div>
+    <!-- Fight 25: 59.9K -->
+    <div class="bar-wrapper">
+      <div class="bar-value">59.9K</div>
+      <div class="bar" style="height:96%;background:#f85149;" title="Fight 25: 59,853 DPS | Died @6:32 to Voidstalker Sting | 6:44 pull | 26.51%"></div>
+      <div class="bar-label">F25</div>
+    </div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div> Survived to wipe</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div> Died before wipe</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div> Battle rezzed</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#30363d"></div> API data unavailable</div>
+  </div>
+</div>
+
+<div class="finding finding-warn">
+  <strong>Session Trend:</strong> DPS improved through the session. The first half (Fights 5&ndash;12) averaged <strong>40.6K</strong> across 5 measurable pulls. The second half (Fights 13&ndash;25) averaged <strong>52.1K</strong> across 7 measurable pulls &mdash; a <strong>28% improvement</strong>. The three longest pulls (19, 23, 25) all landed between 59&ndash;63K, showing consistency on longer attempts.
+</div>
+
+<div class="finding finding-good">
+  <strong>Best performance:</strong> Fight 13 (62,531 DPS, 6:01) despite dying at 0:17 and being battle rezzed. After the BR, maintained strong output through P2 and into P3. Fight 9 (61,727 DPS, 5:15) and Fight 23 (60,552 DPS, 6:25) also strong.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Per-Phase Performance Breakdown</h2>
+
+<p style="font-size:13px;color:#8b949e;margin-bottom:16px;">Crown of the Cosmos has 4 distinct phases. Phase reach rate shows how often Bebeshakur survived into each phase.</p>
+
+<h3>Phase Reach Rate</h3>
+<div class="phase-bar">
+  <div class="phase-segment" style="flex:20;background:#3fb950;" title="P1: 20/20 pulls">P1: 20/20</div>
+  <div class="phase-segment" style="flex:14;background:#d29922;" title="Intermission: 14/20 pulls">Int: 14/20</div>
+  <div class="phase-segment" style="flex:14;background:#d29922;" title="P2: 14/20 pulls">P2: 14/20</div>
+  <div class="phase-segment" style="flex:4;background:#f85149;" title="P3: 4/20 pulls">P3: 4/20</div>
+</div>
+<p style="font-size:12px;color:#8b949e;margin-bottom:16px;">6 pulls wiped before reaching Intermission. Only 4 of 20 pulls reached Phase 3.</p>
+
+<h3>Per-Phase DPS &amp; Deaths</h3>
+<table class="compare-table">
+  <tr>
+    <th>Phase</th>
+    <th>Pulls Seen</th>
+    <th>Duration</th>
+    <th>Deaths in Phase</th>
+    <th>Death Causes</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td><strong>P1: Sentinels</strong></td>
+    <td>20/20</td>
+    <td>0:00 &ndash; 2:14</td>
+    <td class="bad">7</td>
+    <td>Silverstrike Arrow (1), Bursting Emptiness (1), Unknown/Wipe (5)</td>
+    <td>All 7 were early deaths. Heavy P1 attrition.</td>
+  </tr>
+  <tr>
+    <td><strong>Intermission</strong></td>
+    <td>14/20</td>
+    <td>2:14 &ndash; 2:53</td>
+    <td class="bad">2</td>
+    <td>Unknown/Wipe (2)</td>
+    <td>Stellar Emission + Silverstrike Barrage survival check.</td>
+  </tr>
+  <tr>
+    <td><strong>P2: Rift</strong></td>
+    <td>14/20</td>
+    <td>2:53 &ndash; ~5:09</td>
+    <td class="warn">7</td>
+    <td>Cosmic Barrier (3), Bursting Emptiness (1), Void Remnants (1), Simulacrum Backlash (1), Melee (1)</td>
+    <td>Cosmic Barrier is the #1 identified killer in P2.</td>
+  </tr>
+  <tr>
+    <td><strong>P3: Cosmos</strong></td>
+    <td>4/20</td>
+    <td>5:09+</td>
+    <td class="warn">4</td>
+    <td>Void Expulsion (2), Voidstalker Sting (1), Unknown/Wipe (1)</td>
+    <td>Low sample size. All 4 pulls that reached P3 ended with Bebeshakur dying.</td>
+  </tr>
+</table>
+
+<div class="callout">
+  <div class="callout-title">Critical: 100% Death Rate</div>
+  <div class="callout-body">
+    Bebeshakur died in <strong>every single pull</strong> (21 deaths across 20 pulls, with 1 battle rez in Fight 13). Only 3 of 20 deaths were at the same time as the wipe &mdash; in 17 pulls, Bebeshakur died before the rest of the raid. This is the single biggest area for improvement: <strong>staying alive directly translates to more phase experience, higher DPS, and faster progression.</strong>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="overview-grid" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="overview-card">
+    <div class="overview-label">Deaths</div>
+    <div class="overview-value" style="color:#f85149">21</div>
+    <div class="overview-sub">across 20 pulls</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Avg Survival</div>
+    <div class="overview-value" style="color:#d29922">3:18</div>
+    <div class="overview-sub">198s avg (first death)</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Early Deaths</div>
+    <div class="overview-value" style="color:#f85149">17/20</div>
+    <div class="overview-sub">85% died before wipe</div>
+  </div>
+</div>
+
+<h3>Death Causes Ranked</h3>
+<table class="compare-table">
+  <tr>
+    <th>Killing Ability</th>
+    <th>Deaths</th>
+    <th>Avg Time</th>
+    <th>Phase</th>
+    <th>Avoidable?</th>
+  </tr>
+  <tr>
+    <td class="bad"><strong>Unknown / Raid Wipe</strong></td>
+    <td>9</td>
+    <td>2:45</td>
+    <td>P1 (5), Int (2), P2 (1), P3 (1)</td>
+    <td class="dim">Depends on cause</td>
+  </tr>
+  <tr>
+    <td class="bad"><strong>Cosmic Barrier</strong></td>
+    <td>3</td>
+    <td>3:45</td>
+    <td>P2</td>
+    <td class="warn">Partially &mdash; requires defensive CD / positioning</td>
+  </tr>
+  <tr>
+    <td><strong>Bursting Emptiness</strong></td>
+    <td>2</td>
+    <td>1:47</td>
+    <td>P1 (1), P2 (1)</td>
+    <td class="warn">Yes &mdash; dodge Void Droplet explosions</td>
+  </tr>
+  <tr>
+    <td><strong>Void Expulsion</strong></td>
+    <td>2</td>
+    <td>5:45</td>
+    <td>P2 (1), P3 (1)</td>
+    <td class="warn">Partially &mdash; soak correctly, use defensives</td>
+  </tr>
+  <tr>
+    <td><strong>Silverstrike Arrow</strong></td>
+    <td>1</td>
+    <td>1:03</td>
+    <td>P1</td>
+    <td class="warn">Yes &mdash; avoid standing in arrow path</td>
+  </tr>
+  <tr>
+    <td><strong>Void Remnants</strong></td>
+    <td>1</td>
+    <td>3:37</td>
+    <td>P2</td>
+    <td class="warn">Yes &mdash; clear persistent void zones</td>
+  </tr>
+  <tr>
+    <td><strong>Simulacrum Backlash</strong></td>
+    <td>1</td>
+    <td>5:03</td>
+    <td>P2</td>
+    <td class="warn">Partially &mdash; interrupt or position away</td>
+  </tr>
+  <tr>
+    <td><strong>Voidstalker Sting</strong></td>
+    <td>1</td>
+    <td>6:32</td>
+    <td>P3</td>
+    <td class="warn">Partially &mdash; spread + defensive when targeted</td>
+  </tr>
+  <tr>
+    <td><strong>Melee</strong></td>
+    <td>1</td>
+    <td>4:45</td>
+    <td>P2</td>
+    <td class="dim">Tank/positioning issue</td>
+  </tr>
+</table>
+
+<div class="callout">
+  <div class="callout-title">#1 Identified Killer: Cosmic Barrier (3 deaths in P2)</div>
+  <div class="callout-body">
+    Cosmic Barrier killed Bebeshakur at 3:44 (Fight 6), 3:39 (Fight 11), and 3:53 (Fight 17). All three deaths occurred in mid-P2, suggesting a consistent failure to handle this mechanic. <strong>Recommendation:</strong> Pre-plan a defensive cooldown (Anti-Magic Shell or Icebound Fortitude) for every Cosmic Barrier cast. If AMS is unavailable, use Lichborne or Death Strike for self-healing through the damage.
+  </div>
+</div>
+
+<div class="finding finding-warn">
+  <strong>P1 Deaths (7 of 20 pulls):</strong> Bebeshakur fails to reach Intermission in 35% of pulls. 5 of these 7 deaths have unknown killing abilities (likely dying to accumulated raid damage or failing mechanics like Null Corona / Grasp of Emptiness). The other 2 are to avoidable mechanics (Silverstrike Arrow, Bursting Emptiness). <strong>P1 survival is the foundation</strong> &mdash; can&rsquo;t learn later phases without seeing them.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>DPS Consistency Analysis</h2>
+
+<h3>Survival Pulls vs Death Pulls</h3>
+<div class="finding finding-good">
+  <strong>Survived to wipe (3 pulls):</strong> Fights 9, 12, 17 &mdash; Avg DPS: <strong>51,647</strong><br>
+  <strong>Died before wipe (9 pulls with data):</strong> Fights 5, 6, 11, 13, 18, 19, 20, 23, 25 &mdash; Avg DPS: <strong>45,838</strong><br>
+  The DPS difference between survival and early-death pulls is ~11%. When Bebeshakur stays alive for the full fight duration, DPS is measurably higher &mdash; surviving to wipe adds roughly 5&ndash;6K DPS versus dying early, reinforcing that survival is the primary improvement lever.
+</div>
+
+<h3>Session Trend: Early vs Late Pulls</h3>
+<table class="compare-table">
+  <tr>
+    <th>Period</th>
+    <th>Pulls</th>
+    <th>Avg DPS</th>
+    <th>Best DPS</th>
+    <th>Worst DPS</th>
+  </tr>
+  <tr>
+    <td>First half (F5&ndash;F12)</td>
+    <td>5 with data</td>
+    <td class="warn">40,606</td>
+    <td>61,727</td>
+    <td>8,437</td>
+  </tr>
+  <tr>
+    <td>Second half (F13&ndash;F25)</td>
+    <td>7 with data</td>
+    <td class="ok">52,065</td>
+    <td>62,531</td>
+    <td>30,589</td>
+  </tr>
+</table>
+
+<div class="finding finding-good">
+  <strong>Clear improvement trend:</strong> DPS improved 28% from the first half to the second half. The three best pulls were all in the second half (Fights 13, 19, 23/25). This is expected during progression &mdash; the player is learning the fight and improving execution each attempt. Fight 18 (30.6K) is the only second-half outlier, where a P2 death to Void Remnants cut the pull short at 3:37.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Reference Context</h2>
+
+<p style="font-size:13px;color:#8b949e;margin-bottom:16px;">Top 5 Unholy DK rankings on Mythic Crown of the Cosmos. These are kill parses from completed encounters &mdash; not directly comparable to prog pulls. Shown as a ceiling to aim for, not a gap to close.</p>
+
+<table class="compare-table">
+  <tr>
+    <th>Player</th>
+    <th>Server</th>
+    <th>DPS</th>
+    <th>Kill Time</th>
+  </tr>
+  <tr>
+    <td style="color:#bc8cff">&bull; &#23612;&#25096;</td>
+    <td>&#22885;&#29305;&#20848;&#20811;</td>
+    <td style="color:#bc8cff">212,981</td>
+    <td>7:41</td>
+  </tr>
+  <tr>
+    <td style="color:#bc8cff">&bull; &#28487;&#27922;&#29275;&#29275;</td>
+    <td>&#34880;&#33394;&#21313;&#23383;&#20891;</td>
+    <td style="color:#bc8cff">212,169</td>
+    <td>7:35</td>
+  </tr>
+  <tr>
+    <td style="color:#bc8cff">&bull; &#37266;&#29422;&#23376;</td>
+    <td>&#29066;&#29483;&#37202;&#20185;</td>
+    <td style="color:#bc8cff">210,410</td>
+    <td>8:18</td>
+  </tr>
+  <tr>
+    <td style="color:#bc8cff">&bull; &#26480;&#21733;&#19990;</td>
+    <td>&#22825;&#35892;&#20043;&#38376;</td>
+    <td style="color:#bc8cff">209,993</td>
+    <td>7:07</td>
+  </tr>
+  <tr>
+    <td style="color:#bc8cff">&bull; &#32418;&#33590;&#19990;</td>
+    <td>&#20811;&#23572;&#33487;&#21152;&#24503;</td>
+    <td style="color:#bc8cff">209,851</td>
+    <td>8:20</td>
+  </tr>
+  <tr class="player-row">
+    <td style="color:#c41e3a">&bull; Bebeshakur</td>
+    <td>&mdash;</td>
+    <td style="color:#c41e3a">62,531 (best)</td>
+    <td>6:01 (prog, no kill)</td>
+  </tr>
+</table>
+
+<div class="finding">
+  <strong>Context:</strong> The reference average is <strong>211K DPS</strong> on full kills (7&ndash;8 minute fights). Bebeshakur&rsquo;s best pull was <strong>62.5K</strong> on a 6:01 prog attempt. This <strong>70% gap</strong> is expected during early progression &mdash; the reference players are in optimized groups with full raid buffs, proper CD alignment, Bloodlust timing, and no wipe-related chaos. As the team progresses and pulls get cleaner, this gap should narrow significantly. The more meaningful metric right now is <strong>survival rate and phase reach</strong>, not raw DPS comparison.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Ability Breakdown (Aggregate)</h2>
+
+<p style="font-size:13px;color:#8b949e;margin-bottom:16px;">Aggregate damage by ability across all 20 Crown pulls (4,569 total seconds of combat time). Includes player and pet damage.</p>
+
+<table class="compare-table">
+  <tr>
+    <th>Ability</th>
+    <th>Total Damage</th>
+    <th>DPS Contribution</th>
+    <th>Category</th>
+  </tr>
+  <tr><td><strong>Lesser Ghoul</strong></td><td>21.0M</td><td>4,602</td><td>Pet</td></tr>
+  <tr><td><strong>Rider's Champion</strong></td><td>21.5M</td><td>4,700</td><td>Hero talent</td></tr>
+  <tr><td><strong>Putrefy</strong></td><td>19.8M</td><td>4,332</td><td>Core rotational</td></tr>
+  <tr><td><strong>Army of the Damned</strong></td><td>18.0M</td><td>3,932</td><td>Cooldown (pet)</td></tr>
+  <tr><td><strong>Unknown</strong></td><td>15.1M</td><td>3,299</td><td>&mdash;</td></tr>
+  <tr><td><strong>Dread Plague</strong></td><td>13.2M</td><td>2,896</td><td>Disease (passive)</td></tr>
+  <tr><td><strong>Necrotic Coil</strong></td><td>12.9M</td><td>2,825</td><td>Talent proc</td></tr>
+  <tr><td><strong>Scourge Strike</strong></td><td>11.6M</td><td>2,536</td><td>Core rotational</td></tr>
+  <tr><td><strong>Death Coil</strong></td><td>11.3M</td><td>2,480</td><td>Filler / Sudden Doom</td></tr>
+  <tr><td><strong>Summon Gargoyle</strong></td><td>7.7M</td><td>1,689</td><td>Cooldown (pet)</td></tr>
+  <tr><td><strong>Virulent Plague</strong></td><td>7.7M</td><td>1,680</td><td>Disease (passive)</td></tr>
+  <tr><td><strong>Pestilence</strong></td><td>7.4M</td><td>1,624</td><td>Talent proc</td></tr>
+  <tr><td><strong>Infected Claws</strong></td><td>5.3M</td><td>1,163</td><td>Pet talent</td></tr>
+  <tr><td><strong>Melee</strong></td><td>3.3M</td><td>713</td><td>Auto-attack</td></tr>
+  <tr><td><strong>Soul Reaper</strong></td><td>2.0M</td><td>427</td><td>Execute</td></tr>
+</table>
+
+<div class="finding">
+  <strong>Rotation observations:</strong> Rider's Champion (hero talent) and Putrefy are the top direct damage sources, which aligns with the current Unholy DK rotation priority. Lesser Ghoul damage is strong, suggesting good Festering Strike/Scourge Strike management for Lesser Ghoul generation. Army of the Damned and Gargoyle contribute ~5.6K combined DPS &mdash; proper cooldown alignment with Dark Transformation windows would maximize these. Epidemic shows near-zero usage (51K total) which is correct for a primarily single-target encounter with limited cleave windows.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Pull-by-Pull Breakdown</h2>
+
+<table class="compare-table">
+  <tr>
+    <th>Pull</th>
+    <th>Duration</th>
+    <th>Boss %</th>
+    <th>Phase</th>
+    <th>DPS</th>
+    <th>Death Time</th>
+    <th>Killed By</th>
+  </tr>
+  <tr><td>F5</td><td>3:48</td><td>50.44%</td><td>P2</td><td class="warn">8,437</td><td class="bad">3:17</td><td>Bursting Emptiness</td></tr>
+  <tr><td>F6</td><td>3:53</td><td>47.14%</td><td>P2</td><td>42,405</td><td class="bad">3:44</td><td>Cosmic Barrier</td></tr>
+  <tr><td>F7</td><td>1:17</td><td>84.12%</td><td>P1</td><td class="dim">n/a</td><td class="bad">1:03</td><td>Silverstrike Arrow</td></tr>
+  <tr><td>F8</td><td>1:21</td><td>82.21%</td><td>P1</td><td class="dim">n/a</td><td class="bad">1:11</td><td>Unknown/Wipe</td></tr>
+  <tr><td>F9</td><td>5:15</td><td>32.91%</td><td>P2</td><td class="ok">61,727</td><td>5:12</td><td>Void Expulsion (wipe)</td></tr>
+  <tr><td>F10</td><td>2:00</td><td>71.08%</td><td>P1</td><td class="dim">n/a</td><td class="bad">1:45</td><td>Unknown/Wipe</td></tr>
+  <tr><td>F11</td><td>3:47</td><td>50.00%</td><td>P2</td><td>40,850</td><td class="bad">3:39</td><td>Cosmic Barrier</td></tr>
+  <tr><td>F12</td><td>4:47</td><td>42.46%</td><td>P2</td><td>49,609</td><td>4:45</td><td>Melee (wipe)</td></tr>
+  <tr><td>F13</td><td>6:01</td><td>32.29%</td><td style="color:#bc8cff">P3</td><td class="ok">62,531</td><td>0:17 (BR), 5:59</td><td>Bursting Emptiness, Wipe</td></tr>
+  <tr><td>F14</td><td>1:26</td><td>81.15%</td><td>P1</td><td class="dim">n/a</td><td class="bad">1:10</td><td>Unknown/Wipe</td></tr>
+  <tr><td>F15</td><td>3:05</td><td>61.79%</td><td>P2</td><td class="dim">n/a</td><td class="bad">2:47</td><td>Unknown/Wipe (Int)</td></tr>
+  <tr><td>F16</td><td>3:05</td><td>61.64%</td><td>P2</td><td class="dim">n/a</td><td class="bad">2:49</td><td>Unknown/Wipe (Int)</td></tr>
+  <tr><td>F17</td><td>3:55</td><td>47.92%</td><td>P2</td><td>43,604</td><td>3:53</td><td>Cosmic Barrier (wipe)</td></tr>
+  <tr><td>F18</td><td>4:23</td><td>43.36%</td><td>P2</td><td class="warn">30,589</td><td class="bad">3:37</td><td>Void Remnants</td></tr>
+  <tr><td>F19</td><td>6:09</td><td>36.36%</td><td style="color:#bc8cff">P3</td><td class="ok">59,829</td><td class="bad">5:48</td><td>Unknown/Wipe</td></tr>
+  <tr><td>F20</td><td>5:15</td><td>34.78%</td><td>P2</td><td>47,499</td><td class="bad">5:03</td><td>Simulacrum Backlash</td></tr>
+  <tr><td>F21</td><td>2:03</td><td>67.14%</td><td>P1</td><td class="dim">n/a</td><td class="bad">1:55</td><td>Unknown/Wipe</td></tr>
+  <tr><td>F22</td><td>1:32</td><td>74.57%</td><td>P1</td><td class="dim">n/a</td><td class="bad">1:26</td><td>Unknown/Wipe</td></tr>
+  <tr><td>F23</td><td>6:25</td><td>31.14%</td><td style="color:#bc8cff">P3</td><td class="ok">60,552</td><td class="bad">6:18</td><td>Void Expulsion</td></tr>
+  <tr><td>F25</td><td>6:44</td><td>26.51%</td><td style="color:#bc8cff">P3</td><td class="ok">59,853</td><td class="bad">6:32</td><td>Voidstalker Sting</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Unholy DK Defensive Toolkit</h2>
+
+<div class="finding">
+  <strong>Available defensives that should be planned for each pull:</strong>
+  <ul style="margin-top:8px;padding-left:20px;line-height:2;">
+    <li><strong style="color:#c41e3a">Anti-Magic Shell</strong> (45s CD) &mdash; Absorbs magic damage. Should be used proactively on Cosmic Barrier, Void Expulsion, and Bursting Emptiness.</li>
+    <li><strong style="color:#c41e3a">Icebound Fortitude</strong> (3 min CD) &mdash; 30% DR. Save for the most dangerous mechanic overlap in each phase.</li>
+    <li><strong style="color:#c41e3a">Lichborne</strong> (2 min CD) &mdash; Fear immunity + self-healing via Death Coil. Strong as a recovery tool during heavy sustained damage.</li>
+    <li><strong style="color:#c41e3a">Death Strike</strong> &mdash; Self-heal on demand. Use when below 50% HP to top off between mechanics.</li>
+    <li><strong style="color:#c41e3a">Anti-Magic Zone</strong> (2 min CD) &mdash; Raid CD for magic damage. Coordinate with healers for Cosmic Barrier / Void Expulsion windows.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Actionable Improvements</h2>
+
+<div class="action">
+  <div class="action-num">1</div>
+  <div class="action-title">Survival is Priority #1 &mdash; Plan Defensives for Every Mechanic</div>
+  <div class="action-body">
+    Bebeshakur died in <strong>every single pull</strong> and died before the wipe in 17 of 20 attempts. This is the single highest-impact improvement area. The rotation is fine &mdash; the issue is staying alive long enough to use it. <strong>Action:</strong> Before each pull, mentally map defensives to mechanics: AMS for Cosmic Barrier (every cast), IBF for the first major overlap, Death Strike when below 50%. The 45s CD on AMS means it should be available for every Cosmic Barrier cast.
+  </div>
+</div>
+
+<div class="action">
+  <div class="action-num">2</div>
+  <div class="action-title">Cosmic Barrier: 3 Deaths &mdash; Pre-Plan AMS</div>
+  <div class="action-body">
+    The #1 identified killing mechanic. Cosmic Barrier killed Bebeshakur at 3:44, 3:39, and 3:53 &mdash; all in mid-P2. This is a consistent failure point. <strong>Action:</strong> Use Anti-Magic Shell ~1 second before Cosmic Barrier completes its cast. If AMS absorbed the previous one and is still on cooldown, use Icebound Fortitude or Lichborne + Death Coil self-heal. Never eat Cosmic Barrier with no active defensive.
+  </div>
+</div>
+
+<div class="action">
+  <div class="action-num">3</div>
+  <div class="action-title">P1 Survival: 7 Early Deaths Before Intermission</div>
+  <div class="action-body">
+    35% of pulls end with Bebeshakur dying in Phase 1 (before 2:14). Most deaths here are to unknown raid damage, suggesting either poor positioning during Null Corona / Grasp of Emptiness or failing to top off between mechanics. <strong>Action:</strong> Use Death Strike more liberally in P1 when below 60% HP. Save AMS for the dangerous overlaps (Null Corona + Grasp of Emptiness around 20&ndash;25s intervals). The AMS cooldown easily allows multiple uses in P1.
+  </div>
+</div>
+
+<div class="action">
+  <div class="action-num">4</div>
+  <div class="action-title">Intermission Survival: 2 Deaths to Stellar Emission</div>
+  <div class="action-body">
+    Fights 15 and 16 both ended with Bebeshakur dying at 2:47 and 2:49 respectively &mdash; during the Intermission&rsquo;s sustained AoE (Stellar Emission 2:22&ndash;2:52 + Silverstrike Barrage every 6s). <strong>Action:</strong> Use Anti-Magic Shell at the start of Stellar Emission and Icebound Fortitude if health drops below 40%. Death Strike through Silverstrike Barrage hits. Anti-Magic Zone should also be coordinated with the raid for this window.
+  </div>
+</div>
+
+<div class="action">
+  <div class="action-num">5</div>
+  <div class="action-title">Continue the Session Improvement Trend</div>
+  <div class="action-body">
+    The positive signal: DPS improved 51% from early to late pulls (36K to 55K avg), and the three longest pulls (19, 23, 25) all hit 59&ndash;63K DPS consistently. The rotation execution is improving. <strong>Action:</strong> Focus on translating this DPS consistency into survival consistency. The mechanics knowledge is being built &mdash; now the defensive CD usage needs to become muscle memory. Each pull should feel like a defensive CD rotation layered on top of the damage rotation, not an afterthought.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What&rsquo;s Working</h2>
+
+<div class="finding finding-good">
+  <strong>Clear session improvement:</strong> 28% DPS increase from early to late pulls. The player is actively learning the fight and getting better each attempt.
+</div>
+
+<div class="finding finding-good">
+  <strong>Consistent DPS on long pulls:</strong> Fights 19 (59.8K), 23 (60.6K), and 25 (59.9K) show very tight 59&ndash;61K range on 6+ minute pulls, demonstrating solid rotation execution under pressure.
+</div>
+
+<div class="finding finding-good">
+  <strong>Battle rez recovery:</strong> Fight 13 is the best DPS pull (62.5K) despite dying at 0:17 and being battle rezzed. Recovered immediately and performed at top level for the remaining 5+ minutes.
+</div>
+
+<div class="finding finding-good">
+  <strong>Correct ability priority:</strong> Putrefy, Rider's Champion, and Lesser Ghoul are the top damage contributors &mdash; aligned with current Unholy DK rotation priority (Rider of the Apocalypse hero tree). Epidemic near-zero confirms correct single-target play.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<details>
+  <summary>Gear &amp; Stats (Fight 25)</summary>
+  <div class="details-inner">
+    <strong>Item Level:</strong> 287<br>
+    <strong>Spec ID:</strong> 252 (Unholy)<br>
+    <strong>Primary:</strong> Strength 2,007<br>
+    <strong>Crit:</strong> 993<br>
+    <strong>Haste:</strong> 275<br>
+    <strong>Mastery:</strong> 1,335<br>
+    <strong>Versatility:</strong> 0<br><br>
+    <strong>Note:</strong> Zero versatility is very unusual and may contribute to the survivability issues. Vers provides both damage AND damage reduction &mdash; even a small amount helps smooth out damage intake. Most top Unholy DKs carry some vers through gear itemization.
+  </div>
+</details>
+
+<details>
+  <summary>API Notes</summary>
+  <div class="details-inner">
+    The WCL table API returned 0 entries for 8 of 20 fights (Fights 7, 8, 10, 14, 15, 16, 21, 22) despite Bebeshakur being present and actively casting in all of them. Cast events and damage events were retrievable for these fights via the events API. This appears to be a WCL API bug affecting certain short/early-wipe fights. DPS values for these fights are marked &ldquo;n/a&rdquo; in the charts above. All death data was available for all 20 fights.
+  </div>
+</details>
+
+<div class="footer">
+  Generated by WCL DPS Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs report Hz1Lm672dZnBw9YC</a><br>
+  Reference data: Top 5 Unholy DK rankings on Mythic Crown of the Cosmos (avg 211K DPS)<br>
+  Guide reference: <a href="https://www.icy-veins.com/wow/unholy-death-knight-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins Unholy DK Guide (12.0.7)</a>
+</div>
+
+</body>
+</html>

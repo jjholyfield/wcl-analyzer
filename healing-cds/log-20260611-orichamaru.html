@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orichamaru — Demonology Warlock — Mythic Crown of the Cosmos Prog</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .phase-marker { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--dim); opacity: 0.5; }
+  .phase-label { position: absolute; top: 2px; font-size: 9px; color: var(--dim); padding: 1px 4px; background: var(--surface); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Orichamaru <span class="dim">&mdash; Demonology Warlock</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (No Kill) &middot; 26 Wipe Pulls &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">155.4K</div>
+    <div class="stat-label">DPS (Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">290.8</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">0.01%</div>
+    <div class="stat-label">Best Pull (F8 &amp; F17)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">35.6</div>
+    <div class="stat-label">Total CPM (Alive)</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--green); margin-top: 16px;">
+  <div class="card-header green">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">This is <strong>wipe progression data</strong> on Crown of the Cosmos &mdash; a 3-phase fight the raid has not yet killed. Fight 23 (the longest pull at <strong>4:52</strong>) is the primary analysis pull. Orichamaru died at <strong class="yellow">4:01</strong> to Grasp of Emptiness, leaving 52s of dead time that drags the WCL-reported DPS to <strong>155K</strong>. During alive time, Orichamaru dealt <strong class="green">229K DPS</strong> &mdash; actually comparable to the #5 reference Haotentwo's <strong class="purple">224K DPS</strong> across a full 8:19 kill. Active-time rotational CPM is <strong class="green">44.7</strong> vs the reference's <strong class="purple">43.3</strong> &mdash; the rotation is tight when casting. The biggest performance lever is not rotation execution but <strong class="yellow">survival</strong>: staying alive through Phase 3 mechanics. The raid reached 0.01% boss HP on two pulls (F8 and F17) but has not closed it out. Comparing a 4:01 prog wipe to an 8:19 ranked kill is inherently unfair &mdash; the reference had double the time to use major cooldowns (8 Tyrants vs 3, 4 Imp Lords vs 2). External buff disparity is also massive: the reference received <strong class="purple">3 Power Infusions, 23 Ebon Might, and 10 Prescience</strong> vs Orichamaru's <strong>0 PI, 6 Ebon Might, and 1 Prescience</strong>.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Demonology Warlocks on Mythic Crown of the Cosmos. Primary reference: <strong>Haotentwo</strong> (closest talent match at 2 diffs, 95.3K DPS, 8:19 kill). All references are from <strong>kill fights</strong> (8&ndash;9 min) vs Orichamaru's <strong>4:52 wipe</strong>. DPS is not directly comparable due to fight length, external buffs, and wipe context.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Orichamaru</strong></td>
+      <td>155,434 <span class="dim" style="font-size:11px">(229K alive)</span></td>
+      <td>4:52 <span class="red" style="font-size:11px">(died 4:01)</span></td>
+      <td>290.8</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-crit">WIPE &mdash; Prog Pull</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Haotentwo <span class="ref-badge">#5 PRIMARY</span></td>
+      <td class="purple">95,282</td>
+      <td>8:19</td>
+      <td>288.9</td>
+      <td><span class="tag tag-same">2 diff</span></td>
+      <td><span class="tag tag-same">KILL</span></td>
+    </tr>
+    <tr>
+      <td>Qywarlockaa <span class="ref-badge">#1</span></td>
+      <td class="green">106,104</td>
+      <td>8:35</td>
+      <td>288.3</td>
+      <td><span class="tag tag-warn">3 diff</span></td>
+      <td><span class="tag tag-same">KILL</span></td>
+    </tr>
+    <tr>
+      <td>&#38654;&#38145;&#29756;&#27004; <span class="ref-badge">#2</span></td>
+      <td class="green">103,032</td>
+      <td>8:29</td>
+      <td>291.5</td>
+      <td><span class="tag tag-warn">3 diff</span></td>
+      <td><span class="tag tag-same">KILL</span></td>
+    </tr>
+    <tr>
+      <td>Pymowl <span class="ref-badge">#3</span></td>
+      <td class="green">95,679</td>
+      <td>7:42</td>
+      <td>290.8</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td><span class="tag tag-same">KILL</span></td>
+    </tr>
+    <tr>
+      <td>&#31048;&#27714;&#32773;&#21345;&#23572; <span class="ref-badge">#4</span></td>
+      <td class="green">95,352</td>
+      <td>8:33</td>
+      <td>272.0</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td><span class="tag tag-same">KILL</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Orichamaru has nearly identical ilvl to the top references (290.8 vs 288&ndash;291 range) and only 2 talent differences from Haotentwo. The raw DPS numbers are misleading &mdash; Orichamaru's 155K includes 52s of dead time in a wipe pull, while references are full kills. The alive-time comparison (229K vs 224K) suggests the rotation is solid when there are targets to hit. The real gap is fight duration context and external buff support.</p>
+
+<!-- BOSS FIGHT PHASES -->
+<h2>Boss Fight Timeline &mdash; Fight 23 (4:52)</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase fight: Phase 1 (Sentinels: Demiar, Morium, Vorelus + Void Droplets), Phase 2 (Rift Simulacrum + Alleria), Phase 3 (Alleria + Undying Voidspawn). Orichamaru died at 4:01 in Phase 3.</p>
+
+<div class="timeline" style="height: 90px;">
+  <!-- Phase markers -->
+  <div class="phase-marker" style="left: 0%;"><span class="phase-label" style="left: 4px;">P1: Sentinels</span></div>
+  <div class="phase-marker" style="left: 43.3%;"><span class="phase-label" style="left: 4px;">Transition</span></div>
+  <div class="phase-marker" style="left: 60.8%;"><span class="phase-label" style="left: 4px;">P2: Simulacrum</span></div>
+  <div class="phase-marker" style="left: 67.9%;"><span class="phase-label" style="left: 4px;">P3: Alleria</span></div>
+
+  <!-- Death marker for Orichamaru -->
+  <div class="timeline-marker" style="left: 82.2%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 50px; left: -30px; color: var(--red); font-size: 11px; font-weight: 600;">&#x2620; Orichamaru (4:01)</span>
+  </div>
+
+  <!-- Tyrant markers -->
+  <div class="timeline-marker" style="left: 1.4%; border-color: var(--purple); width: 2px;">
+    <span class="timeline-label" style="top: 24px; left: 4px; color: var(--purple); font-size: 9px;">Tyrant</span>
+  </div>
+  <div class="timeline-marker" style="left: 23.6%; border-color: var(--purple); width: 2px;">
+    <span class="timeline-label" style="top: 24px; left: 4px; color: var(--purple); font-size: 9px;">Tyrant</span>
+  </div>
+  <div class="timeline-marker" style="left: 63.4%; border-color: var(--purple); width: 2px;">
+    <span class="timeline-label" style="top: 24px; left: 4px; color: var(--purple); font-size: 9px;">Tyrant</span>
+  </div>
+
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 25%; color: var(--dim);">1:13</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">2:27</span>
+  <span class="timeline-label" style="bottom: 2px; left: 75%; color: var(--dim);">3:40</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:52</span>
+</div>
+
+<div class="grid-2">
+  <div class="card" style="font-size: 13px;">
+    <div class="card-header dim">Target Availability by Phase</div>
+    <p><strong class="green">P1 (0:00&ndash;2:05):</strong> Demiar (0&ndash;46s), Morium (33&ndash;82s), Vorelus (86&ndash;126s) + Void Droplets throughout. Multi-target cleave with add switching.</p>
+    <p style="margin-top: 6px;"><strong class="yellow">Transition (2:05&ndash;2:58):</strong> ~53s with no available targets. Boss is phasing. This gap is unavoidable and inflates the CPM deficit vs reference kills.</p>
+    <p style="margin-top: 6px;"><strong class="accent">P2 (2:58&ndash;3:19):</strong> Rift Simulacrum (178&ndash;194s). Short burst window before it dies.</p>
+    <p style="margin-top: 6px;"><strong class="red">P3 (3:19&ndash;4:52):</strong> Alleria Windrunner + Undying Voidspawn. Orichamaru died at 4:01 to Grasp of Emptiness.</p>
+  </div>
+  <div class="card" style="font-size: 13px;">
+    <div class="card-header dim">Raid State</div>
+    <p>0:00&ndash;2:31 = 20/20 alive</p>
+    <p>2:31 = 18/20 (Alitheria + Smokinthisza killed by Silverstrike Barrage)</p>
+    <p>2:42 = 17/20 (Invincibale)</p>
+    <p>3:46 = 16/20 (Son&igrave;c)</p>
+    <p>3:56&ndash;4:03 = rapid cascade: Invincibale, <strong class="red">Orichamaru</strong>, Starfighter, Moistbear, Zinnks</p>
+    <p>4:14&ndash;4:24 = 8/20 (Smokinthisza, Unholyftw, Nurnyx, Snackznchill)</p>
+    <p>4:24 = mass wipe: Senssay, Brewtote, Baodabao, Dueche, Bebeshakur, S&igrave;lencio</p>
+    <p>4:28 = 2/20 (Darthurg)</p>
+    <p>4:42 = 1/20 (Nucke)</p>
+    <p style="margin-top: 4px; color: var(--yellow);">The raid collapsed rapidly in Phase 3. Orichamaru died in the middle of the cascade at 4:01 &mdash; this was a team-wide failure, not an isolated positioning mistake.</p>
+  </div>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Orichamaru (4:52 fight, 4:01 alive, ~55s transition gap, ~3:05 active casting time) vs Haotentwo (8:19 kill, ~28s transition gap, ~7:35 active time). Key Demo Lock abilities: Hand of Gul&rsquo;dan is the primary shard spender that spawns Wild Imps, Demonbolt consumes Demonic Core procs, Call Dreadstalkers is the main pet cooldown, and Summon Demonic Tyrant amplifies damage based on active demons.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Hand of Gul'dan</strong></td>
+      <td>39</td>
+      <td class="yellow">8.0</td>
+      <td>105</td>
+      <td>12.6</td>
+      <td class="red">&minus;37%</td>
+      <td><span class="tag tag-diff">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Demonbolt</strong></td>
+      <td>29</td>
+      <td class="red">5.9</td>
+      <td>84</td>
+      <td>10.1</td>
+      <td class="red">&minus;42%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Shadow Bolt</strong></td>
+      <td>32</td>
+      <td class="yellow">6.6</td>
+      <td>47</td>
+      <td>5.7</td>
+      <td class="yellow">+16%</td>
+      <td><span class="tag tag-warn">Over-casting filler</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Call Dreadstalkers</strong></td>
+      <td>9</td>
+      <td class="yellow">1.8</td>
+      <td>25</td>
+      <td>3.0</td>
+      <td class="red">&minus;39%</td>
+      <td><span class="tag tag-diff">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Implosion</strong></td>
+      <td>10</td>
+      <td>2.0</td>
+      <td>23</td>
+      <td>2.8</td>
+      <td class="yellow">&minus;27%</td>
+      <td><span class="tag tag-warn">Slightly Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ruination</strong></td>
+      <td>4</td>
+      <td>0.8</td>
+      <td>12</td>
+      <td>1.4</td>
+      <td class="yellow">&minus;43%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Infernal Bolt</strong></td>
+      <td>4</td>
+      <td>0.8</td>
+      <td>11</td>
+      <td>1.3</td>
+      <td class="yellow">&minus;38%</td>
+      <td><span class="tag tag-info">Context-dependent</span></td>
+    </tr>
+    <tr>
+      <td><strong>Summon Demonic Tyrant</strong></td>
+      <td>3</td>
+      <td>0.6</td>
+      <td>8</td>
+      <td>1.0</td>
+      <td class="yellow">&minus;37%</td>
+      <td><span class="tag tag-info">Fight length</span></td>
+    </tr>
+    <tr>
+      <td><strong>Grimoire: Imp Lord</strong></td>
+      <td>2</td>
+      <td>0.4</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="dim">&minus;15%</td>
+      <td><span class="tag tag-same">Matched (CD limited)</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">CPM Context: Prog Wipe vs Kill</div>
+    <p style="font-size: 14px;">The raw CPM deltas look alarming but are heavily skewed by fight length. Orichamaru had <strong>~185s of active casting time</strong> (4:01 alive minus 55s transition) vs Haotentwo's <strong>~455s</strong>. In a kill fight, you get more Tyrant windows (8 vs 3), more Dreadstalker casts (25 vs 9), and more Diabolic Ritual cycles (12 Ruinations vs 4). The active-time CPM is nearly identical: <strong class="green">44.7 vs 43.3</strong>. The CPM deficits above mostly reflect the shorter fight window, not rotation errors.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Real Concern: Shadow Bolt Over-Use</div>
+    <p style="font-size: 14px;">Shadow Bolt at <strong>6.6 CPM vs 5.7 CPM</strong> is the one area where the player is consistently above reference. Shadow Bolt is the lowest-priority filler &mdash; it should only be used when Soul Shards are low and no Demonic Core procs are available. The higher Shadow Bolt CPM combined with lower Demonbolt CPM (5.9 vs 10.1) suggests Orichamaru may be defaulting to Shadow Bolt instead of spending Demonic Core procs on Demonbolt. Each Demonbolt cast generates a Soul Shard and deals 2&ndash;3x the damage of Shadow Bolt.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Orichamaru 55.3M (155K DPS over full fight, 229K alive) vs Haotentwo 111.7M (224K DPS over 8:19 kill). Sorted by contribution to overall damage. Pet damage (Fel Firebolt, Melee, Legion Strike, etc.) is indirect &mdash; driven by Wild Imp count from Hand of Gul'dan casts and Tyrant extensions.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Fel Firebolt</strong> <span class="dim">(Wild Imps)</span></td>
+      <td>12,334K</td>
+      <td>22.3%</td>
+      <td class="purple">20,375K</td>
+      <td>18.2%</td>
+      <td>Primary pet damage &mdash; scales with HoG casts</td>
+    </tr>
+    <tr>
+      <td><strong>Burning Cleave</strong></td>
+      <td>4,437K</td>
+      <td>8.0%</td>
+      <td class="purple">11,205K</td>
+      <td>10.0%</td>
+      <td>AoE cleave from pets</td>
+    </tr>
+    <tr>
+      <td><strong>Greater Felbolt</strong> <span class="dim">(Dreadstalkers)</span></td>
+      <td>3,441K</td>
+      <td>6.2%</td>
+      <td class="purple">7,223K</td>
+      <td>6.5%</td>
+      <td>Dreadstalker pet damage</td>
+    </tr>
+    <tr>
+      <td><strong>Melee</strong> <span class="dim">(Felguard)</span></td>
+      <td>3,107K</td>
+      <td>5.6%</td>
+      <td>5,373K</td>
+      <td>4.8%</td>
+      <td>Felguard auto-attacks</td>
+    </tr>
+    <tr>
+      <td><strong>Blighted Maw</strong></td>
+      <td>2,797K</td>
+      <td>5.1%</td>
+      <td>3,676K</td>
+      <td>3.3%</td>
+      <td>Good &mdash; higher % than ref</td>
+    </tr>
+    <tr>
+      <td><strong>Ruination</strong></td>
+      <td>2,670K</td>
+      <td>4.8%</td>
+      <td>4,645K</td>
+      <td>4.2%</td>
+      <td>Diabolic Ritual finisher &mdash; good per-cast</td>
+    </tr>
+    <tr>
+      <td><strong>Shadow Nova</strong></td>
+      <td>2,518K</td>
+      <td>4.6%</td>
+      <td>2,129K</td>
+      <td>1.9%</td>
+      <td class="green">Higher % than ref &mdash; good AoE use</td>
+    </tr>
+    <tr>
+      <td><strong>Hand of Gul'dan</strong></td>
+      <td>2,381K</td>
+      <td>4.3%</td>
+      <td>5,768K</td>
+      <td>5.2%</td>
+      <td>Direct HoG damage (plus imp spawns)</td>
+    </tr>
+    <tr>
+      <td><strong>Infernal Bolt</strong></td>
+      <td>2,073K</td>
+      <td>3.8%</td>
+      <td>2,479K</td>
+      <td>2.2%</td>
+      <td class="green">Higher % &mdash; good use as shard-starved filler</td>
+    </tr>
+    <tr>
+      <td><strong>Chaos Salvo</strong></td>
+      <td>1,827K</td>
+      <td>3.3%</td>
+      <td>3,825K</td>
+      <td>3.4%</td>
+      <td>Similar % share</td>
+    </tr>
+    <tr>
+      <td><strong>Demonbolt</strong></td>
+      <td>1,708K</td>
+      <td>3.1%</td>
+      <td>3,690K</td>
+      <td>3.3%</td>
+      <td>Similar % share &mdash; CPM gap offset by phase</td>
+    </tr>
+    <tr>
+      <td><strong>Diabolic Gaze</strong></td>
+      <td>1,709K</td>
+      <td>3.1%</td>
+      <td>3,138K</td>
+      <td>2.8%</td>
+      <td>Diabolist passive proc</td>
+    </tr>
+    <tr>
+      <td><strong>Implosion</strong></td>
+      <td>1,229K</td>
+      <td>2.2%</td>
+      <td>2,923K</td>
+      <td>2.6%</td>
+      <td>Similar % share</td>
+    </tr>
+    <tr>
+      <td><strong>Mind Sear</strong></td>
+      <td>1,415K</td>
+      <td>2.6%</td>
+      <td>5,831K</td>
+      <td>5.2%</td>
+      <td>Ref had 2x the % &mdash; longer fight = more procs</td>
+    </tr>
+    <tr>
+      <td><strong>Bombardments</strong></td>
+      <td>252K</td>
+      <td>0.5%</td>
+      <td class="purple">3,402K</td>
+      <td>3.0%</td>
+      <td class="red">Major gap &mdash; scales with Tyrant windows</td>
+    </tr>
+    <tr>
+      <td><strong>Soul Barrage</strong></td>
+      <td>117K</td>
+      <td>0.2%</td>
+      <td class="purple">2,766K</td>
+      <td>2.5%</td>
+      <td class="red">Major gap &mdash; passive scales with fight length</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Damage Profile Analysis</div>
+  <p style="font-size: 14px;">The damage percentage breakdown is actually healthy &mdash; Orichamaru's ability distribution matches the reference pattern closely when you account for fight length. Fel Firebolt (22.3% vs 18.2%), Blighted Maw (5.1% vs 3.3%), Shadow Nova (4.6% vs 1.9%), and Infernal Bolt (3.8% vs 2.2%) are all higher than reference, suggesting efficient AoE use during Phase 1. The two biggest absolute gaps are <strong class="red">Bombardments</strong> (0.5% vs 3.0%) and <strong class="red">Soul Barrage</strong> (0.2% vs 2.5%), both passive effects that ramp with more Tyrant cycles &mdash; the reference had 8 Tyrant windows vs Orichamaru's 3. These gaps close naturally as fight length increases.</p>
+</div>
+
+<!-- TYRANT ALIGNMENT -->
+<h2>Demonic Tyrant Windows</h2>
+<p class="section-intro">Summon Demonic Tyrant is Demo Lock's primary damage cooldown (~90s CD). It empowers and extends all active demons. Setup: have Dreadstalkers + Grimoire: Imp Lord active, then maximize Hand of Gul'dan casts during the 15-20s window. Orichamaru used 3 Tyrants; the reference used 8 across a kill that was 2x longer.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Orichamaru</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:01</span> <span class="cast neutral">Dreadstalkers (pre-pull setup)</span></div>
+      <div><span class="dim">0:04</span> <span class="cast good">Tyrant #1 (after Dreadstalkers)</span></div>
+      <div><span class="dim">0:07</span> <span class="cast good">Imp Lord (reinforcing Tyrant window)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:07</span> <span class="cast neutral">Dreadstalkers</span></div>
+      <div><span class="dim">1:09</span> <span class="cast good">Tyrant #2 (3s after Dreadstalkers)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:04</span> <span class="cast neutral">Dreadstalkers</span></div>
+      <div><span class="dim">3:06</span> <span class="cast good">Tyrant #3 (2s after Dreadstalkers)</span></div>
+      <div><span class="dim">3:08</span> <span class="cast good">Imp Lord (reinforcing Tyrant window)</span></div>
+      <div style="margin-top: 8px;"><strong class="green">3/3 Tyrants paired with Dreadstalkers &mdash; correct setup</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="purple">Haotentwo</span> <span class="ref-badge">Reference</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:24</span> <span class="cast good">Tyrant #1</span></div>
+      <div><span class="dim">1:26</span> <span class="cast good">Tyrant #2</span></div>
+      <div><span class="dim">2:57</span> <span class="cast good">Tyrant #3</span></div>
+      <div><span class="dim">3:58</span> <span class="cast good">Tyrant #4</span></div>
+      <div><span class="dim">4:59</span> <span class="cast good">Tyrant #5</span></div>
+      <div><span class="dim">6:04</span> <span class="cast good">Tyrant #6</span></div>
+      <div><span class="dim">7:06</span> <span class="cast good">Tyrant #7</span></div>
+      <div><span class="dim">8:08</span> <span class="cast good">Tyrant #8</span></div>
+      <div style="margin-top: 8px;"><strong class="purple">8 Tyrants across 8:19 kill &mdash; ~62s avg gap (on CD)</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Tyrant Assessment</div>
+  <p style="font-size: 14px;">Orichamaru's Tyrant usage is <strong class="green">correct for the fight length</strong>. All 3 Tyrants were properly paired with Dreadstalkers (within 3s), and both Imp Lord casts were aligned with Tyrant windows. The 65s gap between Tyrant #1 (0:04) and #2 (1:09) is tight. The gap between Tyrant #2 (1:09) and #3 (3:06) is 117s &mdash; this includes the ~55s P1-to-P2 transition where no targets were available, so the effective gap was ~62s. Orichamaru correctly held Tyrant for when targets reappeared in Phase 2 rather than wasting it during transition. This is smart cooldown management for a phase-based prog fight.</p>
+</div>
+
+<!-- DREADSTALKER GAP ANALYSIS -->
+<h2>Call Dreadstalkers Analysis</h2>
+<p class="section-intro">Call Dreadstalkers has a ~20s effective cooldown and is the most important ability to keep on cooldown. Each cast summons Dreadstalkers that contribute Greater Felbolt damage and can be extended by Tyrant.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cast #</th><th>Time</th><th>Gap from Previous</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>0:02</td><td>&mdash;</td><td><span class="tag tag-same">On-pull</span></td>
+    </tr>
+    <tr>
+      <td>2</td><td>0:22</td><td>20.5s</td><td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>3</td><td>0:44</td><td>22.1s</td><td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>4</td><td>1:07</td><td>22.3s</td><td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>5</td><td>1:27</td><td>20.7s</td><td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>6</td><td>1:49</td><td>21.4s</td><td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>7</td><td>3:04</td><td class="yellow">75.3s</td><td><span class="tag tag-info">Includes 55s P1&rarr;P2 transition</span></td>
+    </tr>
+    <tr>
+      <td>8</td><td>3:27</td><td>23.2s</td><td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>9</td><td>3:49</td><td>21.9s</td><td><span class="tag tag-same">Good</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Excluding the phase transition gap, Dreadstalker usage is <strong class="green">consistent at 20&ndash;23s intervals</strong> &mdash; nearly on-cooldown. The reference's average gap (excluding transition) is 20.6s, while Orichamaru's is 21.5s. This is solid execution. The 75.3s gap at cast #7 includes the ~55s boss phase transition where there were no targets.</p>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received. This is where the <strong class="red">biggest disparity</strong> between Orichamaru's prog pull and the reference kill exists.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player</th><th>Ref (Haotentwo)</th><th>Impact</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism / Time Warp</strong></td>
+      <td>2:59 (P2 start)</td>
+      <td>2:56 (similar timing)</td>
+      <td><span class="tag tag-same">Same &mdash; P2 opener</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Power Infusion</strong></td>
+      <td class="red">None</td>
+      <td class="purple">3 applications (0:21, 3:01, 6:07)</td>
+      <td><span class="tag tag-crit">Major gap &mdash; ~5-8% DPS loss</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Ebon Might</strong></td>
+      <td class="yellow">6 applications</td>
+      <td class="purple">23 applications</td>
+      <td><span class="tag tag-diff">3.8x fewer &mdash; major DPS loss</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Prescience</strong></td>
+      <td class="yellow">1 application</td>
+      <td class="purple">10 applications</td>
+      <td><span class="tag tag-diff">10x fewer &mdash; significant crit loss</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--red);">
+  <div class="card-header red">External Buff Disparity</div>
+  <p style="font-size: 14px;">This is the elephant in the room. Haotentwo received <strong>3 Power Infusions</strong> throughout the fight, was prioritized by an Augmentation Evoker for <strong>23 Ebon Might</strong> and <strong>10 Prescience</strong> applications. Orichamaru received <strong>zero PI, 6 Ebon Might, and 1 Prescience</strong>. Ebon Might alone adds roughly <strong>5-8% DPS</strong> when maintained consistently, and Power Infusion adds another <strong>5-8%</strong> per application window. Prescience boosts crit chance significantly. Combined, these external buffs could easily account for <strong>15-20% of the reference's DPS</strong>. Any DPS comparison between these two players without acknowledging this gap is misleading. The raid team should consider PI and Aug Evoker buff allocation for Orichamaru &mdash; Demo Locks benefit enormously from haste (more casts during Tyrant windows) and crit (more Demonic Core procs).</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Orichamaru during Fight 23. Total: 7.4M damage taken. Died at 4:01 to Grasp of Emptiness.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>2,593K</td>
+      <td>118</td>
+      <td>990K</td>
+      <td><span class="tag tag-same">No &mdash; persistent raid ticks</span></td>
+    </tr>
+    <tr>
+      <td><strong>Void Expulsion</strong></td>
+      <td>1,102K</td>
+      <td>26</td>
+      <td>147K</td>
+      <td><span class="tag tag-warn">Partially &mdash; puddle placement</span></td>
+    </tr>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>1,055K</td>
+      <td>36</td>
+      <td>224K</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide AoE</span></td>
+    </tr>
+    <tr>
+      <td><strong>Voidstalker Sting</strong></td>
+      <td>536K</td>
+      <td>25</td>
+      <td>170K</td>
+      <td><span class="tag tag-same">No &mdash; assigned debuff</span></td>
+    </tr>
+    <tr>
+      <td><strong>Falling</strong></td>
+      <td>411K</td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Yes &mdash; platform transition</span></td>
+    </tr>
+    <tr>
+      <td><strong>Stellar Emission</strong></td>
+      <td>311K</td>
+      <td>14</td>
+      <td>127K</td>
+      <td><span class="tag tag-same">No &mdash; raid mechanic</span></td>
+    </tr>
+    <tr>
+      <td><strong>Cosmic Barrier</strong></td>
+      <td>295K</td>
+      <td>21</td>
+      <td>283K</td>
+      <td><span class="tag tag-same">No &mdash; mostly absorbed</span></td>
+    </tr>
+    <tr>
+      <td><strong>Silverstrike Arrow/Barrage</strong></td>
+      <td>425K</td>
+      <td>3</td>
+      <td>91K</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning dependent</span></td>
+    </tr>
+    <tr>
+      <td><strong>Grasp of Emptiness</strong></td>
+      <td class="red">163K</td>
+      <td>4</td>
+      <td>23K</td>
+      <td><span class="tag tag-crit">KILLING BLOW &mdash; obelisk beam</span></td>
+    </tr>
+    <tr>
+      <td>Interrupting Tremor</td>
+      <td>228K</td>
+      <td>2</td>
+      <td>29K</td>
+      <td><span class="tag tag-warn">Partially avoidable</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="yellow">Grasp of Emptiness killed Orichamaru at 4:01.</strong> This is the obelisk beam mechanic where a player gets tethered and must angle beams away from the raid. The 4 hits suggest Orichamaru was caught in beams while the raid was already falling apart (5 players died within 7 seconds of each other at 3:56&ndash;4:03). The <strong>411K falling damage</strong> (2 hits) indicates platform transition issues &mdash; possibly a missed feather pickup or bad gateway timing. Defensive usage was minimal: only <strong>1 Dark Pact</strong> (the reference used 7). More proactive shielding could help survive through damage spikes.</p>
+
+<!-- DEFENSIVE & UTILITY -->
+<h2>Defensive &amp; Utility Usage</h2>
+<p class="section-intro">Comparison of non-DPS ability usage. Demo Locks have strong defensives &mdash; Dark Pact shields based on HP, Mortal Coil self-heals, and Soulburn enhances utility spells.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Uses</th><th>Ref Uses</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Dark Pact</strong></td>
+      <td class="red">1</td>
+      <td>7</td>
+      <td><span class="tag tag-diff">Under-using &mdash; key survival tool</span></td>
+    </tr>
+    <tr>
+      <td><strong>Mortal Coil</strong></td>
+      <td>2</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Adequate</span></td>
+    </tr>
+    <tr>
+      <td><strong>Soulburn</strong></td>
+      <td>1</td>
+      <td>2</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td><strong>Demonic Gateway</strong></td>
+      <td>1</td>
+      <td>4</td>
+      <td><span class="tag tag-warn">Raid utility &mdash; fight length</span></td>
+    </tr>
+    <tr>
+      <td><strong>Demonic Circle: Teleport</strong></td>
+      <td>1</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td><strong>Glide</strong></td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Movement</span></td>
+    </tr>
+    <tr>
+      <td>Nullsight</td>
+      <td>0</td>
+      <td>4</td>
+      <td><span class="tag tag-warn">Ref used this CD</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--red);">
+  <div class="card-header red">Dark Pact: 1 vs 7 Uses</div>
+  <p style="font-size: 14px;">Dark Pact is a <strong>1-minute cooldown</strong> that provides a substantial absorb shield (sacrifices 20% current HP for a 200% shield). The reference used it <strong>7 times</strong> across 8:19 &mdash; essentially on cooldown. Orichamaru used it <strong>once</strong> in 4:01, meaning it was available but unused for at least 2 additional casts. On a fight with constant raid damage (Echoing Darkness ticks, Void Expulsion puddles, Simulacrum Backlash), proactive Dark Pact usage is critical for survival. <strong>This is likely the single biggest survival improvement available</strong> &mdash; each Dark Pact provides ~200K absorb, which could have prevented the death to Grasp of Emptiness (163K damage).</p>
+</div>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Orichamaru's DPS across all 26 Crown of the Cosmos pulls. Boss % labels show how close the raid got to killing each phase. Colors indicate boss % remaining: <span class="green">green</span> = near kill (&lt;10%), <span class="yellow">yellow</span> = deep pull (10&ndash;50%), <span class="orange">orange</span> = mid pull (50&ndash;90%), <span class="red">red</span> = early wipe (&gt;90%). Fight 1 excluded (0 DPS &mdash; instant wipe).</p>
+
+<div class="card">
+  <div class="progression-chart" style="margin-bottom: 24px;">
+    <div class="prog-bar" style="height: 82%; background: var(--orange);" data-tooltip="F2: 304K DPS (1:03) — 52.0% boss">
+      <span class="prog-label">52%</span>
+    </div>
+    <div class="prog-bar" style="height: 40%; background: var(--orange);" data-tooltip="F3: 148K DPS (1:57) — 54.8% boss">
+      <span class="prog-label">55%</span>
+    </div>
+    <div class="prog-bar" style="height: 46%; background: var(--orange);" data-tooltip="F4: 169K DPS (1:16) — 54.6% boss">
+      <span class="prog-label">55%</span>
+    </div>
+    <div class="prog-bar" style="height: 59%; background: var(--orange);" data-tooltip="F5: 219K DPS (1:00) — 74.0% boss">
+      <span class="prog-label">74%</span>
+    </div>
+    <div class="prog-bar" style="height: 84%; background: var(--yellow);" data-tooltip="F6: 311K DPS (2:23) — 19.5% boss">
+      <span class="prog-label">19%</span>
+    </div>
+    <div class="prog-bar" style="height: 36%; background: var(--orange);" data-tooltip="F7: 132K DPS (1:29) — 41.7% boss">
+      <span class="prog-label">42%</span>
+    </div>
+    <div class="prog-bar" style="height: 89%; background: var(--green);" data-tooltip="F8: 330K DPS (2:22) — 0.01% boss !!!">
+      <span class="prog-label" style="color:var(--green)">0.01%</span>
+    </div>
+    <div class="prog-bar" style="height: 77%; background: var(--green);" data-tooltip="F9: 286K DPS (2:32) — 7.3% boss">
+      <span class="prog-label">7%</span>
+    </div>
+    <div class="prog-bar" style="height: 55%; background: var(--red);" data-tooltip="F10: 204K DPS (3:40) — 98.4% boss">
+      <span class="prog-label">98%</span>
+    </div>
+    <div class="prog-bar" style="height: 72%; background: var(--yellow);" data-tooltip="F11: 265K DPS (2:02) — 30.3% boss">
+      <span class="prog-label">30%</span>
+    </div>
+    <div class="prog-bar" style="height: 54%; background: var(--red);" data-tooltip="F12: 200K DPS (3:54) — 92.1% boss">
+      <span class="prog-label">92%</span>
+    </div>
+    <div class="prog-bar" style="height: 69%; background: var(--orange);" data-tooltip="F13: 255K DPS (1:15) — 60.8% boss">
+      <span class="prog-label">61%</span>
+    </div>
+    <div class="prog-bar" style="height: 51%; background: var(--red);" data-tooltip="F14: 188K DPS (3:51) — 95.3% boss">
+      <span class="prog-label">95%</span>
+    </div>
+    <div class="prog-bar" style="height: 74%; background: var(--green);" data-tooltip="F15: 273K DPS (2:29) — 9.1% boss">
+      <span class="prog-label">9%</span>
+    </div>
+    <div class="prog-bar" style="height: 72%; background: var(--yellow);" data-tooltip="F16: 265K DPS (2:10) — 21.2% boss">
+      <span class="prog-label">21%</span>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F17: 369K DPS (2:24) — 0.01% boss !!!">
+      <span class="prog-label" style="color:var(--green);font-weight:700">0.01%</span>
+    </div>
+    <div class="prog-bar" style="height: 58%; background: var(--red);" data-tooltip="F18: 214K DPS (3:56) — 95.7% boss">
+      <span class="prog-label">96%</span>
+    </div>
+    <div class="prog-bar" style="height: 73%; background: var(--yellow);" data-tooltip="F19: 271K DPS (1:54) — 34.5% boss">
+      <span class="prog-label">35%</span>
+    </div>
+    <div class="prog-bar" style="height: 61%; background: var(--yellow);" data-tooltip="F20: 224K DPS (2:00) — 35.4% boss">
+      <span class="prog-label">35%</span>
+    </div>
+    <div class="prog-bar" style="height: 72%; background: var(--green);" data-tooltip="F21: 264K DPS (2:27) — 0.22% boss">
+      <span class="prog-label" style="color:var(--green)">0.2%</span>
+    </div>
+    <div class="prog-bar" style="height: 2%; background: var(--red);" data-tooltip="F22: 6K DPS (0:25) — 99.7% boss">
+      <span class="prog-label">100%</span>
+    </div>
+    <div class="prog-bar" style="height: 42%; background: var(--orange);" data-tooltip="F23: 155K DPS (4:52) — 77.3% boss (LONGEST PULL)">
+      <span class="prog-label">77%</span>
+    </div>
+    <div class="prog-bar" style="height: 54%; background: var(--red);" data-tooltip="F24: 198K DPS (3:49) — 92.9% boss">
+      <span class="prog-label">93%</span>
+    </div>
+    <div class="prog-bar" style="height: 53%; background: var(--red);" data-tooltip="F25: 196K DPS (3:08) — 99.9% boss">
+      <span class="prog-label">100%</span>
+    </div>
+    <div class="prog-bar" style="height: 54%; background: var(--red);" data-tooltip="F26: 201K DPS (3:40) — 96.9% boss">
+      <span class="prog-label">97%</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span><span class="green">&bull; Near Kill (&lt;10%)</span> &middot; <span class="yellow">&bull; Deep (10-50%)</span> &middot; <span class="orange">&bull; Mid (50-90%)</span> &middot; <span class="red">&bull; Early (&gt;90%)</span></span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">The raid reached <strong class="green">0.01% boss HP twice</strong> (Fights 8 and 17), meaning the kill is extremely close. Orichamaru's <strong>highest DPS pulls</strong> are: F17 (369K, 2:24, 0.01%), F8 (330K, 2:22, 0.01%), F6 (311K, 2:23, 19.5%). These are all Phase 1 wipes or short pulls where burst DPS is front-loaded. For pulls that reach Phase 3 (F23 at 4:52, F10-F14-F18-F24-F26 at 3:40&ndash;3:56), DPS drops to <strong>155&ndash;214K</strong> as expected &mdash; longer fights normalize burst phase bias. The pattern shows <strong>consistent execution across all phases</strong> &mdash; high-DPS Phase 1 pulls, competitive sustained DPS when the fight reaches Phase 3. The late-session regression (F22&ndash;F26) with 77&ndash;100% boss wipes is a raid-wide issue, not an individual performance problem.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. Demo Warlock stat priority: Haste &gt; Crit &gt; Mastery &gt; Versatility (for Diabolist builds).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Orichamaru</th><th>Haotentwo</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>290.8</td>
+      <td>288.9</td>
+      <td><span class="tag tag-same">+1.9 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Intellect</td>
+      <td>2,724</td>
+      <td>2,671</td>
+      <td><span class="tag tag-same">+2% &mdash; nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="yellow">739</td>
+      <td>698</td>
+      <td>Player has +6% more Haste</td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td>1,188</td>
+      <td class="green">1,465</td>
+      <td class="yellow">Ref has +23% more Crit</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="yellow">520</td>
+      <td>380</td>
+      <td>Player has +37% more Mastery</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td class="red">0</td>
+      <td>106</td>
+      <td class="yellow">Zero Versatility &mdash; no damage reduction</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Overall stats are comparable. Orichamaru has slightly higher ilvl (+1.9) and more Haste (+6%), which should translate to marginally more GCDs per minute &mdash; consistent with the equal active CPM observed. The reference has significantly more Crit (+23%), which means more Demonic Core procs from Burning Cleave crits, explaining part of the Demonbolt frequency gap. <strong class="yellow">Zero Versatility</strong> is notable &mdash; Vers provides both damage and damage reduction. The lack of any Vers means Orichamaru takes ~3-5% more damage than players with even modest Vers, which compounds on a fight with constant ticking damage like Echoing Darkness.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Use Dark Pact proactively and often.</strong> This is the single biggest survival improvement. Only 1 Dark Pact in 4:01 vs the reference's 7 in 8:19. Dark Pact is a <strong>1-minute cooldown</strong> that absorbs ~200K damage. On a fight with constant Echoing Darkness ticks and periodic raid damage spikes, it should be used on cooldown or saved for known damage events (Simulacrum Backlash, Grasp of Emptiness windows). The killing blow (Grasp of Emptiness, 163K) was less damage than a single Dark Pact shield. <strong>Staying alive for the full fight is worth more DPS than any rotation optimization.</strong> Dead at 4:01 = 52s of zero DPS.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Prioritize Demonbolt over Shadow Bolt when Demonic Core is available.</strong> Shadow Bolt is at 6.6 CPM vs the reference's 5.7 CPM, while Demonbolt is at 5.9 vs 10.1 CPM. Shadow Bolt is the lowest-priority filler in the Demo rotation &mdash; it should only be cast when you have zero Demonic Core stacks AND are below 3 Soul Shards. Demonbolt deals 2-3x more damage, generates a Soul Shard (enabling more Hand of Gul'dan casts), and consumes Demonic Core procs that would otherwise cap. Watch for the Demonic Core buff icon and prioritize Demonbolt whenever 2+ stacks are available. This is where the current spec guide emphasizes: "Cast Demonbolt with 2+ stacks of Demonic Core" before ever touching Shadow Bolt.
+</div>
+
+<div class="action-item">
+  <strong>3. Request Power Infusion and Aug Evoker prioritization.</strong> The external buff disparity is massive: 0 PI vs 3, 6 Ebon Might vs 23, 1 Prescience vs 10. Demo Locks are one of the best PI targets in the game because Haste directly translates to more casts during Tyrant windows, and the class scales multiplicatively with crit (more Demonic Core procs). If a Shadow Priest is in the raid, Orichamaru should be a high-priority PI target. Similarly, if an Aug Evoker is buffing other players preferentially, coordinating Ebon Might alignment with Tyrant windows would be a significant DPS increase &mdash; estimated <strong>10-15K DPS</strong> from external buffs alone.
+</div>
+
+<div class="action-item">
+  <strong>4. Use Demonic Circle and Gateway for Grasp of Emptiness survival.</strong> Grasp of Emptiness reduces movement speed by 60% on Mythic and killed Orichamaru. Pre-placing Demonic Circle before Phase 3 obelisk windows gives an instant repositioning tool to angle beams away without needing to walk through the slow. The reference used Demonic Circle: Teleport once &mdash; Orichamaru also used it once but died to the mechanic regardless. Combined with preemptive Dark Pact before the obelisk activates, this should be survivable.
+</div>
+
+<div class="action-item">
+  <strong>5. Avoid Falling damage in phase transitions.</strong> Orichamaru took <strong>411K falling damage</strong> across 2 hits &mdash; this is completely avoidable. On Crown of the Cosmos, platform transitions via Devouring Cosmos require picking up a feather or using the Warlock gateway. Falling damage suggests a missed feather or gateway mis-timing. Each 200K hit is equivalent to losing a Dark Pact's worth of effective HP. Use Glide (which Orichamaru did cast twice) or ensure feather pickup timing to eliminate this entirely.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Active rotation:</strong> 44.7 active CPM matches the reference's 43.3 &mdash; there is zero meaningful rotation gap when targets are available. GCD usage during casting windows is tight with only one gap >3s outside the phase transition.<br><br>
+    <strong>Tyrant setup:</strong> All 3 Tyrant casts were properly paired with Call Dreadstalkers (within 2-3s), and both Grimoire: Imp Lord casts aligned with Tyrant windows. This is textbook Demo Lock cooldown sequencing. Tyrant #3 was correctly held for Phase 2 targets rather than wasted during the transition.<br><br>
+    <strong>Dreadstalker consistency:</strong> 20-23s intervals between casts, nearly on-cooldown. Average gap (excluding transition) of 21.5s vs the reference's 20.6s. Excellent.<br><br>
+    <strong>AoE damage:</strong> Shadow Nova (4.6% vs 1.9%), Blighted Maw (5.1% vs 3.3%), and Infernal Bolt (3.8% vs 2.2%) all show higher percentage contributions than the reference, indicating smart use of multi-target abilities during Phase 1 Sentinel + Droplet windows.<br><br>
+    <strong>Alive-time DPS:</strong> 229K DPS while alive competes with the reference's 224K across a full kill. The rotation is producing results &mdash; the improvement vector is survival, not throughput.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">Orichamaru's Demonology Warlock performance is <strong class="green">fundamentally sound</strong> from a rotation and cooldown management perspective. The active CPM, Tyrant alignment, Dreadstalker usage, and damage distribution all match or exceed the reference during active casting windows. The two primary improvement areas are: <strong class="red">(1) Survival</strong> &mdash; Dark Pact usage (1 vs 7), falling damage avoidance (411K), and Grasp of Emptiness positioning. Staying alive for the full fight would add ~52s of casting time, equivalent to roughly <strong>12M additional damage</strong>. <strong class="yellow">(2) Demonbolt prioritization</strong> &mdash; spending Demonic Core procs on Demonbolt instead of defaulting to Shadow Bolt would increase both shard generation and direct damage. Additionally, the <strong>external buff gap</strong> (0 PI, minimal Aug Evoker support) accounts for an estimated 15-20% DPS disparity that is entirely outside Orichamaru's control. When this raid gets the kill, Orichamaru's DPS should be competitive with rankings given proper fight length and buff allocation.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (Wipe, 4:52, 77.31% boss). Primary reference: Haotentwo (#5 ranked Demonology Warlock, report <code>zFnXqLkBcJ6C9WP1</code>, Fight 53, 8:19 kill, 95,282 DPS). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 2 differences between Orichamaru and Haotentwo. Item level: 290.8 vs 288.9 (+1.9). External buff disparity: Player received 0 PI, 6 Ebon Might, 1 Prescience. Reference received 3 PI, 23 Ebon Might, 10 Prescience. Both used Heroism/Time Warp at ~3:00 (Phase 2 start).</p>
+  <p style="margin-top: 4px;">Spec mechanics referenced from Icy Veins and Maxroll Demonology Warlock Raid Guide (Patch 12.0.7, TWW Season 2). Progression context: 26 wipe pulls, best boss % 0.01% (Fights 8, 17).</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nurnyx &mdash; Shadow Priest &mdash; Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .ramp-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .ramp-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .ramp-timeline .good { background: rgba(63,185,80,0.12); }
+  .ramp-timeline .bad { background: rgba(248,81,73,0.12); }
+  .ramp-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .ramp-timeline .bloom-hit { background: rgba(248,81,73,0.25); border: 1px solid rgba(248,81,73,0.5); padding: 4px 8px; border-radius: 4px; font-weight: 700; display: block; margin: 4px 0; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .death-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; }
+  .death-timeline .dmg { color: var(--red); }
+  .death-timeline .heal { color: var(--green); }
+  .death-timeline .absorb { color: var(--cyan); }
+  .death-timeline .ts { color: var(--dim); display: inline-block; width: 50px; }
+  .oh-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .oh-eff { background: var(--green); }
+  .oh-over { background: var(--red); opacity: 0.6; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Nurnyx <span class="dim">&mdash; Shadow Priest</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value red">82.2K</div>
+    <div class="stat-label">DPS (Full Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">290</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">Died 6:07</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">44.9</div>
+    <div class="stat-label">Active CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 16px;">
+  <div class="card-header red">Bottom Line</div>
+  <p style="font-size: 15px;">Nurnyx died at <strong class="red">6:07</strong> to Festering Vines and died in <strong class="red">all 20 pulls</strong> of the night &mdash; a 100% death rate. The kill-fight DPS was <strong class="red">82.2K</strong> (full fight, including dead time) vs the reference at <strong class="green">171.5K</strong>. Even measuring only alive time (6:07), DPS was ~<strong class="yellow">107K</strong> &mdash; still a <strong class="red">38% gap</strong> below the reference. The biggest execution gap is <strong class="red">Mind Flay usage at 5.2 CPM vs reference 13.2 CPM (-61%)</strong> &mdash; the primary filler spell is being cast roughly once every 12 seconds instead of constantly filling empty GCDs. The gear gap (ilvl 289.7 vs 272.8) accounts for some difference, but the cast efficiency gap (44.9 active CPM vs 54.3) and <strong class="red">100% death rate</strong> are the dominant factors. Talent builds are <strong class="green">identical (0 diffs)</strong>, so the entire gap is execution.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Shadow Priests on Mythic Rotmire. Primary reference: <strong>Salmer</strong> (identical talent build, 0 diffs, 171.5K DPS, 6:58 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Active CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Nurnyx</strong> <span class="death-marker">died 6:07</span></td>
+      <td class="red">82,150</td>
+      <td>7:58</td>
+      <td>289.7</td>
+      <td>&mdash;</td>
+      <td class="yellow">44.9</td>
+    </tr>
+    <tr>
+      <td>Peanuto <span class="ref-badge">#1</span></td>
+      <td class="green">178,430</td>
+      <td>7:57</td>
+      <td>271.9</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Loyalxdice <span class="ref-badge">#2</span></td>
+      <td class="green">177,006</td>
+      <td>5:55</td>
+      <td>290.1</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Liliaess <span class="ref-badge">#3</span></td>
+      <td class="green">176,149</td>
+      <td>8:16</td>
+      <td>272.8</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Worstx <span class="ref-badge">#4</span></td>
+      <td class="green">172,644</td>
+      <td>8:42</td>
+      <td>255.5</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Salmer <span class="ref-badge">#5 PRIMARY</span></td>
+      <td class="green">171,486</td>
+      <td>6:58</td>
+      <td>272.8</td>
+      <td><span class="tag tag-same">0 diff</span></td>
+      <td class="purple">54.3</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Note: Salmer is the ideal comparison &mdash; identical talent build (0 differences) with the same spec. Salmer's ilvl is 15.2 higher (272.8 vs 289.7), which accounts for roughly 10-15% of the DPS gap. The remaining gap is cast efficiency and survivability. Notably, Worstx ranks #4 at 172.6K DPS with a <em>lower</em> ilvl (255.5) than Nurnyx, demonstrating that gear is not the primary limiter.</p>
+
+<!-- BOSS TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major mechanics on a fixed cycle. Blooms fire every ~136s. Nurnyx survived through Bloom #2 (4:16) but died at 6:07 to Festering Vines, missing Bloom #3 (6:32) entirely.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px; opacity: 0.4;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red); opacity: 0.6;">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Death marker -->
+  <div class="timeline-marker" style="left: 76.8%; border-color: var(--text); width: 2px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--red); font-weight: 700;">&#x2620; DEAD (6:07)</span>
+  </div>
+  <!-- Alive zone -->
+  <div style="position: absolute; left: 0; top: 0; width: 76.8%; height: 100%; background: rgba(63,185,80,0.06); border-right: 2px dashed var(--red);"></div>
+  <div style="position: absolute; left: 76.8%; top: 0; width: 23.2%; height: 100%; background: rgba(248,81,73,0.04);">
+    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: var(--dim); font-size: 12px;">Dead (1:51)</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<!-- RAID DEATHS TIMELINE -->
+<h2>Kill Fight Death Timeline</h2>
+<p class="section-intro">8 total deaths in the kill fight. A cluster of 3 deaths (including Nurnyx) at 6:07, followed by more deaths as the fight closed out.</p>
+
+<div class="card">
+  <div class="death-marker"><strong>3:08</strong> &mdash; Tiareynna (Disc Priest) &mdash; Writhing Vines</div>
+  <div style="margin: 4px 0; padding: 4px 0; font-size: 12px; color: var(--dim);">19/19 &rarr; 18/19 (healer lost)</div>
+  <div class="death-marker" style="background: rgba(248,81,73,0.25);"><strong>6:07</strong> &mdash; Nurnyx (Shadow Priest) &mdash; Festering Vines</div>
+  <div class="death-marker"><strong>6:07</strong> &mdash; Snackznchill (Frost Mage) &mdash; Festering Vines</div>
+  <div class="death-marker"><strong>6:07</strong> &mdash; Son&igrave;c (Demo Warlock) &mdash; Festering Vines</div>
+  <div style="margin: 4px 0; padding: 4px 0; font-size: 12px; color: var(--dim);">18/19 &rarr; 15/19 (3 DPS lost simultaneously)</div>
+  <div class="death-marker"><strong>6:40</strong> &mdash; Zinnks (Aug Evoker) &mdash; Fungal Bloom</div>
+  <div class="death-marker"><strong>7:38</strong> &mdash; Invincibale (Ele Shaman) &mdash; Festering Vines</div>
+  <div class="death-marker"><strong>7:39</strong> &mdash; Unholyftw (Unholy DK) &mdash; Festering Vines</div>
+  <div class="death-marker"><strong>7:41</strong> &mdash; Nucke (Veng DH, Tank) &mdash; Melee</div>
+  <div style="margin: 4px 0; padding: 4px 0; font-size: 12px; color: var(--dim);">Boss died at 7:58 with 11/19 alive</div>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Nurnyx died alongside 2 other DPS to the same Festering Vines cast. This was a group positioning failure, not a solo mistake. However, Nurnyx has been dying to Vines-related mechanics consistently across the night (see wipe progression below).</p>
+
+<!-- DEATH FORENSICS -->
+<h2>Death Forensics</h2>
+<p class="section-intro">Nurnyx died at 6:07 (367.1s) to Festering Vines. The final 15 seconds show Vines tick damage stacking on top of the ever-present Rotting Pustules soft enrage.</p>
+
+<div class="mechanic-card death">
+  <div class="card-header">Cause of Death: Festering Vines (6:07)</div>
+  <div class="death-timeline" style="max-height: 400px; overflow-y: auto;">
+    <div><span class="ts">350.0s</span> <span class="dmg">Rotting Pustules 43K</span> <span class="dim">(soft enrage ticking)</span></div>
+    <div><span class="ts">352.0s</span> <span class="dmg">Bursting Pustules 70K + 35K + 63K + 70K</span> <span class="dim">(238K burst in 1s)</span></div>
+    <div><span class="ts">352.6s</span> <span class="dim">Shadow Word: Death (self-damage 11K)</span></div>
+    <div><span class="ts">354.0s</span> <span class="dmg">Rotting Pustules 48K</span></div>
+    <div><span class="ts">354.4s</span> <span class="dim">Fade cast (defensive)</span></div>
+    <div><span class="ts">356.1s</span> <span class="dmg">Blightshot 54K</span></div>
+    <div><span class="ts">356.7s</span> <span class="dim">Psychic Scream (fear, panic defensive)</span></div>
+    <div style="margin: 4px 0; border-top: 1px dashed var(--yellow); padding-top: 4px;">
+      <span class="dim">359-364s: Continuing to DPS (Mind Blast, Mind Flay, SW:Madness) through Pustules damage</span>
+    </div>
+    <div><span class="ts">364.0s</span> <span class="dim">Silence cast (interrupt attempt)</span></div>
+    <div style="border-top: 1px dashed var(--red); margin: 6px 0; padding-top: 6px;">
+      <span class="ts">365.0s</span> <span class="dmg">Festering Vines 74K</span> + <span class="dmg">Pustules 48K</span> &mdash; <strong>Vines root starts</strong>
+    </div>
+    <div><span class="ts">366.0s</span> <span class="dmg">Festering Vines 74K</span> + <span class="dmg">Pustules 48K</span></div>
+    <div><span class="ts">366.5s</span> <span class="dim">Angelic Feather (movement attempt, cannot break root)</span></div>
+    <div style="background: rgba(248,81,73,0.25); padding: 4px 6px; border-radius: 4px;">
+      <span class="ts">367.1s</span> <span class="dmg"><strong>Festering Vines 18K &mdash; DEAD</strong></span>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Analysis</div>
+  <p style="font-size: 14px;">The death was caused by Festering Vines root damage stacking on top of the Rotting Pustules soft enrage (ticking for 43-48K per second by this point in the fight). At 6:07, the raid has been fighting long enough for Pustules to deal significant passive damage. Nurnyx used Angelic Feather at 366.5s to try to escape, but Feather grants speed, not root immunity. The Psychic Scream at 356.7s was also ineffective as a defensive. Notably, Fade was used at 354s and Desperate Prayer was not available (or not cast) during the final Vines. The simultaneous death of 3 players suggests a group positioning issue with the Vines spawn.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Nurnyx (6:07 alive) vs Salmer (6:58 full fight, survived). Abilities sorted by impact on Shadow Priest performance. Talent builds are identical.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Nurnyx CPM</th>
+      <th>Nurnyx Casts</th>
+      <th>Salmer CPM</th>
+      <th>Salmer Casts</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Mind Flay</strong></td>
+      <td class="red"><strong>5.2</strong></td>
+      <td>32</td>
+      <td>13.2</td>
+      <td>92</td>
+      <td class="red">&minus;61%</td>
+      <td><span class="tag tag-crit">Critical Gap</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Shadow Word: Madness</td>
+      <td class="yellow">7.2</td>
+      <td>44</td>
+      <td>9.2</td>
+      <td>64</td>
+      <td class="yellow">&minus;22%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Mind Blast</td>
+      <td class="yellow">9.3</td>
+      <td>57</td>
+      <td>11.3</td>
+      <td>79</td>
+      <td class="yellow">&minus;18%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Mind Flay: Insanity</td>
+      <td>3.9</td>
+      <td>24</td>
+      <td>4.0</td>
+      <td>28</td>
+      <td class="dim">&minus;3%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Void Volley</td>
+      <td>2.0</td>
+      <td>12</td>
+      <td>2.3</td>
+      <td>16</td>
+      <td class="dim">&minus;13%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Halo</td>
+      <td>1.0</td>
+      <td>6</td>
+      <td>1.0</td>
+      <td>7</td>
+      <td class="dim">0%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Voidform</td>
+      <td>0.5</td>
+      <td>3</td>
+      <td>0.6</td>
+      <td>4</td>
+      <td class="dim">&minus;17%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Death</td>
+      <td class="green">2.5</td>
+      <td>15</td>
+      <td>1.3</td>
+      <td>9</td>
+      <td class="green">+92%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Shadow Word: Pain</td>
+      <td class="yellow">3.6</td>
+      <td>22</td>
+      <td>2.3</td>
+      <td>16</td>
+      <td class="yellow">+57%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Vampiric Touch</td>
+      <td class="red">0.2</td>
+      <td>1</td>
+      <td>0.9</td>
+      <td>6</td>
+      <td class="red">&minus;78%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Power Infusion</td>
+      <td class="green">1.0</td>
+      <td>6</td>
+      <td>0.6</td>
+      <td>4</td>
+      <td class="green">+67%</td>
+      <td><span class="tag tag-info">Self-PI</span></td>
+    </tr>
+    <tr>
+      <td>Vampiric Embrace</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>0.6</td>
+      <td>4</td>
+      <td class="dim">&minus;50%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Nullsight</td>
+      <td>0.5</td>
+      <td>3</td>
+      <td>0.6</td>
+      <td>4</td>
+      <td class="dim">&minus;17%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Tentacle Slam</td>
+      <td>3.4</td>
+      <td>21</td>
+      <td>2.9</td>
+      <td>20</td>
+      <td class="dim">+17%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Shadowy Apparition</td>
+      <td>35.8</td>
+      <td>219</td>
+      <td>38.3</td>
+      <td>267</td>
+      <td class="dim">&minus;7%</td>
+      <td><span class="tag tag-info">Passive proc</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Angelic Feather</td>
+      <td class="yellow">1.6</td>
+      <td>10</td>
+      <td>0.1</td>
+      <td>1</td>
+      <td class="yellow">+1500%</td>
+      <td><span class="tag tag-warn">Panic movement</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Mind Flay Filler Gap (Critical)</div>
+    <p style="font-size: 14px;">Mind Flay is the primary filler spell for Shadow Priest &mdash; it should be channeled between cooldowns any time there is no higher-priority ability available. Nurnyx is casting Mind Flay at <strong>5.2 CPM</strong> vs Salmer's <strong>13.2 CPM</strong>, a <strong>61% deficit</strong>. This means roughly 8 Mind Flay casts per minute are missing. Over the 6:07 alive time, that is approximately <strong>49 missing Mind Flay casts</strong>. Since Mind Flay generates Insanity (for SW:Madness procs) and deals steady damage, this single gap cascades into lower SW:Madness procs and lower total damage output.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Total Active CPM: 44.9 vs 54.3</div>
+    <p style="font-size: 14px;">Across all actively-pressed abilities (excluding Shadowy Apparition procs), Nurnyx is pressing <strong>9.4 fewer buttons per minute</strong> than the reference. This translates to <strong>74 seconds of total dead time</strong> across 22 casting gaps longer than 2.5 seconds. The longest gaps occurred at <strong>186-193s (6.3s gap)</strong> and <strong>65-69s (3.7s gap)</strong>. Every second without a cast is a second without damage &mdash; the gap is not about pressing the wrong buttons, it is about not pressing buttons fast enough.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Nurnyx total damage: 40.6M (82.2K DPS full fight / ~107K alive). Salmer total damage: 73.1M (171.5K DPS). Top damage sources compared.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Nurnyx Dmg</th><th>% Total</th><th>Salmer Dmg</th><th>% Total</th><th>Observation</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Shadow Word: Madness</strong></td>
+      <td>5,466K</td>
+      <td>13.5%</td>
+      <td>7,900K</td>
+      <td>10.8%</td>
+      <td><span class="tag tag-same">Similar share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Mind Blast</strong></td>
+      <td>5,405K</td>
+      <td>13.3%</td>
+      <td>7,738K</td>
+      <td>10.6%</td>
+      <td><span class="tag tag-same">Similar share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Shadowy Apparition</strong></td>
+      <td>4,164K</td>
+      <td>10.3%</td>
+      <td>8,446K</td>
+      <td>11.5%</td>
+      <td><span class="tag tag-warn">Lower proc rate</span></td>
+    </tr>
+    <tr>
+      <td>Halo</td>
+      <td>3,033K</td>
+      <td>7.5%</td>
+      <td>5,836K</td>
+      <td>8.0%</td>
+      <td><span class="tag tag-same">Proportional</span></td>
+    </tr>
+    <tr>
+      <td>Mind Flay: Insanity</td>
+      <td>2,960K</td>
+      <td>7.3%</td>
+      <td>3,603K</td>
+      <td>4.9%</td>
+      <td><span class="tag tag-same">Good share</span></td>
+    </tr>
+    <tr>
+      <td>Void Apparition</td>
+      <td>2,889K</td>
+      <td>7.1%</td>
+      <td>4,988K</td>
+      <td>6.8%</td>
+      <td><span class="tag tag-same">Proportional</span></td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Pain</td>
+      <td>2,842K</td>
+      <td>7.0%</td>
+      <td>3,117K</td>
+      <td>4.3%</td>
+      <td><span class="tag tag-warn">Higher share</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Psychic Link</strong></td>
+      <td>2,530K</td>
+      <td>6.2%</td>
+      <td class="green">12,832K</td>
+      <td class="green">17.5%</td>
+      <td><span class="tag tag-crit">Massive gap</span></td>
+    </tr>
+    <tr>
+      <td>Void Volley</td>
+      <td>2,393K</td>
+      <td>5.9%</td>
+      <td>2,980K</td>
+      <td>4.1%</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td>Mind Flay</td>
+      <td>1,572K</td>
+      <td>3.9%</td>
+      <td>3,754K</td>
+      <td>5.1%</td>
+      <td><span class="tag tag-diff">Low from fewer casts</span></td>
+    </tr>
+    <tr>
+      <td>Vampiric Touch</td>
+      <td>1,721K</td>
+      <td>4.2%</td>
+      <td>3,600K</td>
+      <td>4.9%</td>
+      <td><span class="tag tag-same">DoT tick rate</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 12px;">
+  <div class="card-header red">Psychic Link: The Hidden Multiplier</div>
+  <p style="font-size: 14px;">Psychic Link transfers a percentage of single-target damage to nearby enemies affected by Vampiric Touch. Salmer's Psychic Link did <strong>12.8M damage (17.5% of total)</strong> compared to Nurnyx's <strong>2.5M (6.2%)</strong>. This 5x difference is caused by two factors: (1) Nurnyx only cast Vampiric Touch <strong>once</strong> vs Salmer's 6 casts, meaning fewer enemies had VT active for Psychic Link to transfer damage to, and (2) the lower Mind Flay filler usage means less single-target damage to transfer in the first place. Better Vampiric Touch uptime on multiple targets would dramatically increase total damage through Psychic Link alone.</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Total damage taken by Nurnyx across the kill fight. Rotting Pustules (soft enrage) dominates, as expected. Festering Vines was the killing mechanic.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rotting Pustules</strong></td>
+      <td>8,531K</td>
+      <td>357</td>
+      <td>23.9K</td>
+      <td><span class="tag tag-info">Unavoidable (soft enrage)</span></td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>2,560K</td>
+      <td>34</td>
+      <td>75.3K</td>
+      <td><span class="tag tag-info">Unavoidable (raid-wide)</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2,409K</td>
+      <td>36</td>
+      <td>66.9K</td>
+      <td><span class="tag tag-info">Unavoidable (soft enrage)</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>1,798K</td>
+      <td>62</td>
+      <td>29.0K</td>
+      <td><span class="tag tag-warn">Positioning &mdash; avoid cleave</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Festering Vines</strong></td>
+      <td>1,429K</td>
+      <td>21</td>
+      <td>68.0K</td>
+      <td><span class="tag tag-diff">Partially avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Blightshot</td>
+      <td>425K</td>
+      <td>7</td>
+      <td>60.7K</td>
+      <td><span class="tag tag-info">Tank mechanic splash</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>256K</td>
+      <td>1</td>
+      <td>255.7K</td>
+      <td><span class="tag tag-diff">Avoidable &mdash; proximity</span></td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Death</td>
+      <td>156K</td>
+      <td>14</td>
+      <td>11.2K</td>
+      <td><span class="tag tag-info">Self-inflicted (normal)</span></td>
+    </tr>
+    <tr>
+      <td>Writhing Vines</td>
+      <td>147K</td>
+      <td>1</td>
+      <td>146.7K</td>
+      <td><span class="tag tag-diff">Avoidable</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">62 melee hits is high for a ranged DPS and suggests frequent proximity to the boss or adds. The 256K Bursting Shroom hit (add death explosion) means Nurnyx was within range when a Shroomling died. Both are positioning-related.</p>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs Received</h2>
+<p class="section-intro">Key buffs that affected Nurnyx's performance on the kill fight.</p>
+
+<div class="grid-3">
+  <div class="card">
+    <div class="card-header accent">Bloodlust / Heroism</div>
+    <p style="font-size: 14px;"><strong>Time Warp</strong> at <strong class="green">0.7s</strong> (pull). Lust on pull is standard. Aligns with opener burst.</p>
+  </div>
+  <div class="card">
+    <div class="card-header accent">Power Infusion</div>
+    <p style="font-size: 14px;">Self-cast at <strong>3.1s</strong>, <strong>125.3s</strong>, and <strong>256.7s</strong>. Three uses during alive time is appropriate cadence. PI aligns with Voidform windows.</p>
+  </div>
+  <div class="card">
+    <div class="card-header accent">Vampiric Embrace</div>
+    <p style="font-size: 14px;">2 uses during the fight (reference used 4). VE is a raid healing CD on a 2-minute cooldown &mdash; with 6:07 alive time, 3 uses were possible.</p>
+  </div>
+</div>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Nurnyx's DPS across all 20 pulls on Mythic Rotmire. <strong class="red">Died in all 20 pulls.</strong> Bars show DPS (higher = better). Color reflects pull duration: <span class="red">red = short wipe (&lt;2min)</span>, <span class="orange">orange = medium (2-5min)</span>, <span class="yellow">yellow = long (5-7min)</span>, <span class="green">green = kill</span>.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 51%; background: var(--red);" data-tooltip="F2: 89.9K DPS (1:13) Died 1:03"></div>
+    <div class="prog-bar" style="height: 51%; background: var(--red);" data-tooltip="F3: 89.1K DPS (1:11) Died 1:09"></div>
+    <div class="prog-bar" style="height: 92%; background: var(--red);" data-tooltip="F4: 160.5K DPS (0:51) Died 0:47"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--orange);" data-tooltip="F5: 118.2K DPS (2:42) Died 2:17"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--orange);" data-tooltip="F7: 118.8K DPS (2:18) Died 2:07"></div>
+    <div class="prog-bar" style="height: 55%; background: var(--orange);" data-tooltip="F8: 95.2K DPS (2:17) Died 2:08"></div>
+    <div class="prog-bar" style="height: 55%; background: var(--orange);" data-tooltip="F9: 95.2K DPS (3:14) Died 2:16"></div>
+    <div class="prog-bar" style="height: 67%; background: var(--yellow);" data-tooltip="F10: 116.5K DPS (5:37) Died 5:17"></div>
+    <div class="prog-bar" style="height: 44%; background: var(--orange);" data-tooltip="F11: 77.2K DPS (4:48) Died 3:07"></div>
+    <div class="prog-bar" style="height: 78%; background: var(--yellow);" data-tooltip="F12: 135.8K DPS (5:42) Died 5:31"></div>
+    <div class="prog-bar" style="height: 69%; background: var(--orange);" data-tooltip="F13: 119.8K DPS (2:51) Died 2:39"></div>
+    <div class="prog-bar" style="height: 60%; background: var(--red);" data-tooltip="F14: 105.2K DPS (1:15) Died 0:45"></div>
+    <div class="prog-bar" style="height: 66%; background: var(--orange);" data-tooltip="F15: 115.3K DPS (5:05) Died 4:32"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--red);" data-tooltip="F16: 174.5K DPS (0:53) Died 0:45"></div>
+    <div class="prog-bar" style="height: 70%; background: var(--yellow);" data-tooltip="F17: 122.4K DPS (5:45) Died 5:20"></div>
+    <div class="prog-bar" style="height: 67%; background: var(--yellow);" data-tooltip="F18: 116.3K DPS (6:52) Died 6:32"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--orange);" data-tooltip="F19: 118.1K DPS (5:01) Died 4:32"></div>
+    <div class="prog-bar" style="height: 99%; background: var(--red);" data-tooltip="F20: 172.6K DPS (0:54) Died 0:50"></div>
+    <div class="prog-bar" style="height: 77%; background: var(--yellow);" data-tooltip="F21: 134.1K DPS (7:15) Died 6:49"></div>
+    <div class="prog-bar" style="height: 47%; background: var(--green);" data-tooltip="F22 KILL: 82.2K DPS (7:58) Died 6:07"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">100% Death Rate</div>
+    <p style="font-size: 14px;">Nurnyx died in every single one of the 20 pulls. The most common killing abilities across the night were: <strong>Bursting Doom Shroom</strong> (F2, F3, F4, F16, F20 &mdash; 5 pulls), <strong>Festering Vines</strong> (F5, F9, F15, F19, F21, F10, F22 &mdash; 7 pulls), <strong>Bursting Shroom</strong> (F7, F17), <strong>Fungal Bloom</strong> (F8, F18), <strong>Awaken Fungi</strong> (F13), <strong>Poison Burst</strong> (F7), and <strong>Rotting Pustules</strong> (F12). This is not one mechanic &mdash; it is a broad survivability problem across multiple boss abilities.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Survival Duration Trend</div>
+    <p style="font-size: 14px;">There is a rough upward trend in survival time across the night. Early pulls (F2-F4) had deaths under 70 seconds. By the mid-session (F10-F12), survival extended to 5+ minutes. The best survival was F21 at <strong>6:49</strong> and the kill at <strong>6:07</strong>. The improvement suggests learning, but even the best pulls end in death. For long-pull DPS, F12 (135.8K over 5:42) and F21 (134.1K over 7:15) were the best sustained performances.</p>
+  </div>
+</div>
+
+<!-- CASTING GAPS -->
+<h2>Casting Gap Analysis</h2>
+<p class="section-intro">22 gaps longer than 2.5 seconds were identified during Nurnyx's alive time. Total dead time from gaps: 74.1 seconds. At Nurnyx's average active CPS of ~0.75, this represents approximately 56 missing casts.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Time Range</th><th>Gap Duration</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0:28 &ndash; 0:31</td>
+      <td>2.6s</td>
+      <td class="dim">Early fight</td>
+    </tr>
+    <tr>
+      <td>0:54 &ndash; 0:57</td>
+      <td>3.0s</td>
+      <td class="dim">Around first mechanic</td>
+    </tr>
+    <tr>
+      <td>1:01 &ndash; 1:04</td>
+      <td>2.6s</td>
+      <td class="dim">Back-to-back gaps</td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>1:05 &ndash; 1:09</td>
+      <td class="yellow">3.7s</td>
+      <td>Near Festering Vines timing</td>
+    </tr>
+    <tr>
+      <td>1:49 &ndash; 1:52</td>
+      <td>2.7s</td>
+      <td class="dim">Pre-Bloom movement</td>
+    </tr>
+    <tr>
+      <td>2:34 &ndash; 2:37</td>
+      <td>3.0s</td>
+      <td class="dim">Post-Bloom recovery</td>
+    </tr>
+    <tr>
+      <td>2:45 &ndash; 2:48</td>
+      <td>3.1s</td>
+      <td class="dim">Movement phase</td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>3:03 &ndash; 3:06</td>
+      <td class="yellow">3.7s</td>
+      <td>Near Festering Vines timing</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td>3:06 &ndash; 3:13</td>
+      <td class="red"><strong>6.3s</strong></td>
+      <td class="red">Longest gap &mdash; likely Festering Vines root/movement</td>
+    </tr>
+    <tr>
+      <td>3:38 &ndash; 3:41</td>
+      <td>2.8s</td>
+      <td class="dim">Movement</td>
+    </tr>
+  </tbody>
+</table>
+<p style="font-size: 12px; color: var(--dim); margin-top: 8px;">Showing 10 of 22 gaps. Total: 74.1s dead time across 6:07 alive. Pattern: gaps cluster around Festering Vines timings, suggesting movement to avoid roots is causing extended GCD downtime.</p>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Stay alive.</strong> This is the #1 priority by far. Nurnyx died in all 20 pulls &mdash; a 100% death rate. Even on the kill, death came at 6:07, leaving 1:51 of zero contribution. The causes vary across mechanics (Festering Vines, Bursting Shroom, Fungal Bloom, Pustules), which means this is not about learning one mechanic &mdash; it is a general awareness and positioning discipline issue. Use Fade preemptively, save Desperate Prayer for emergencies (only 2 uses across an 8-minute fight), and stay at max range to avoid Shroom explosions and melee splash damage (62 melee hits taken).
+</div>
+
+<div class="action-item critical">
+  <strong>2. Fill empty GCDs with Mind Flay.</strong> Nurnyx cast Mind Flay at 5.2 CPM vs the reference's 13.2 CPM &mdash; a 61% deficit, approximately 49 missing casts. Mind Flay is the default filler when no other ability is available: if Mind Blast is on cooldown, no MFI proc, and no other priority &mdash; channel Mind Flay. Every empty GCD is zero damage. This single change would recover the largest portion of the DPS gap.
+</div>
+
+<div class="action-item">
+  <strong>3. Maintain Vampiric Touch on all targets.</strong> Only 1 VT cast vs the reference's 6 means Psychic Link damage was severely limited (2.5M vs 12.8M, an 80% gap). On a multi-target fight like Rotmire with adds spawning regularly, VT should be active on the boss and each priority add for maximum Psychic Link transfer damage. This single DoT management improvement could add 10M+ damage over the fight.
+</div>
+
+<div class="action-item">
+  <strong>4. Reduce Shadow Word: Pain re-application.</strong> SW:Pain at 3.6 CPM vs the reference's 2.3 CPM suggests unnecessary re-application. SW:Pain is a maintenance DoT &mdash; apply once, it refreshes through normal Shadow gameplay. Extra GCDs spent re-applying SW:Pain are GCDs not spent on Mind Flay or other damaging abilities.
+</div>
+
+<div class="action-item">
+  <strong>5. Cast while moving.</strong> 10 Angelic Feather casts (vs 1 from reference) and the correlation between movement mechanics and casting gaps suggests significant uptime loss during movement. Shadow Word: Death, Shadow Word: Pain refresh, and instant-cast abilities should be prioritized during movement phases. The 6.3-second gap at 3:06-3:13 (likely during Festering Vines) represents a complete stop in damage output that could be partially recovered with instant casts.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--accent);">
+  <div class="card-header accent">Context</div>
+  <p style="font-size: 14px;">The <strong>52% DPS gap</strong> (82.2K vs 171.5K full fight) breaks down as: <strong>~24%</strong> from dying at 6:07 (no damage for 1:51), <strong>~15%</strong> from ilvl difference (289.7 vs 272.8 &mdash; the reference has 15 ilvls more), and <strong>~13%</strong> from execution gaps (CPM deficit, VT uptime, filler usage). Gear will improve naturally. Survivability and filler discipline are the actionable levers.</p>
+  <p style="font-size: 14px; margin-top: 8px;"><strong>What is already good:</strong> Mind Flay: Insanity usage matches the reference (-3%), indicating proper proc usage when MFI is available. Halo usage is on-pace (1.0 CPM both). Voidform and Power Infusion alignment are reasonable. Shadow Word: Death usage is actually above the reference (+92%), showing good execute awareness. The core rotation priority is understood &mdash; the gap is filling the spaces between priorities.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: Salmer (#5 ranked Shadow Priest, report <code>n4kKMfWrBZJ7GAjp</code>, Fight 15, 6:58 kill). All times relative to fight start. Talent builds are identical (0 differences).</p>
+  <p style="margin-top: 4px;">Nurnyx alive time on kill: 6:07 (367.1s). CPM calculations use alive time for fair comparison. DPS displayed as full-fight DPS (total damage / total fight time) to show impact of death on overall contribution. Reference DPS is full-fight (survived).</p>
+</div>
+
+</body>
+</html>

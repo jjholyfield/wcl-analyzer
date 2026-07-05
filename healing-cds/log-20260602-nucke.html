@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tank Audit — Nucke (Vengeance DH) — Mythic LBV — June 2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 960px; margin: 0 auto; line-height: 1.6; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: #a330c9; margin-top: 40px; margin-bottom: 16px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; color: #fff; margin-top: 24px; margin-bottom: 10px; }
+  .teach { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; font-size: 14px; color: #bbb; line-height: 1.8; }
+  .teach p { margin-bottom: 12px; }
+  .teach p:last-child { margin-bottom: 0; }
+  .teach strong { color: #e0e0e0; }
+  .teach .spell { color: #a330c9; font-weight: 600; }
+  .teach .key { color: #ffa940; font-weight: 600; }
+  .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .overview-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 16px; text-align: center; }
+  .overview-label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .overview-value { font-size: 28px; font-weight: 700; }
+  .overview-sub { font-size: 12px; color: #555; margin-top: 4px; }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: #141414; color: #888; font-weight: 600; border-bottom: 1px solid #222; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .compare-table td { padding: 6px 12px; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+  .compare-table tr:hover { background: #161616; }
+  .bad { color: #ff6b6b; font-weight: 600; }
+  .warn { color: #ffa940; font-weight: 600; }
+  .ok { color: #4caf50; font-weight: 600; }
+  .finding { background: #141414; border-radius: 6px; padding: 16px 20px; margin-bottom: 12px; font-size: 14px; color: #bbb; line-height: 1.7; }
+  .finding-bad { border-left: 3px solid #ff6b6b; background: #1a1212; }
+  .finding-warn { border-left: 3px solid #ffa940; background: #1a1710; }
+  .finding-good { border-left: 3px solid #4caf50; background: #121a14; }
+  .finding strong { color: #fff; }
+  .action { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 18px 22px; margin-bottom: 12px; }
+  .action-num { font-size: 28px; font-weight: 700; color: #333; float: left; margin-right: 16px; font-family: 'Courier New', monospace; line-height: 1; }
+  .action-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+  .action-body { font-size: 13px; color: #999; line-height: 1.7; }
+  .action-body strong { color: #ccc; }
+  .cd-timeline { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 0; font-size: 13px; margin-bottom: 20px; }
+  .cd-timeline .cd-header { background: #141414; color: #888; font-weight: 600; padding: 8px 12px; border-bottom: 1px solid #222; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .cd-timeline .cd-cell { padding: 6px 12px; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+  .cd-timeline .cd-label { font-weight: 600; color: #ccc; }
+  details { margin-top: 36px; }
+  summary { font-size: 14px; font-weight: 600; color: #666; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #999; }
+  .details-inner { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #888; line-height: 1.7; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Tank Audit &mdash; <span style="color:#a330c9">Nucke</span></h1>
+<p class="subtitle">Vengeance Demon Hunter &mdash; Mythic Lightblinded Vanguard &mdash; June 2, 2026 &mdash; 26 pulls analyzed</p>
+
+<div class="overview-grid">
+  <div class="overview-card">
+    <div class="overview-label">Avg DPS</div>
+    <div class="overview-value" style="color:#ffa940">80K</div>
+    <div class="overview-sub">#1 VDH: 139K (58%)</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Avg DTPS</div>
+    <div class="overview-value" style="color:#4caf50">59K</div>
+    <div class="overview-sub">#1: 81K &mdash; takes less damage</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Early Deaths</div>
+    <div class="overview-value" style="color:#4caf50">1/26</div>
+    <div class="overview-sub">4% &mdash; excellent</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Pre-Pot</div>
+    <div class="overview-value" style="color:#4caf50">26/26</div>
+    <div class="overview-sub">100%</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Defensives &amp; Survivability</h2>
+
+<table class="compare-table">
+  <tr><th>Consumable</th><th>Across 26 Pulls</th><th>Verdict</th></tr>
+  <tr>
+    <td><strong>Pre-Pot</strong></td>
+    <td class="ok">26/26 pulls (100%)</td>
+    <td class="ok">Light&rsquo;s Potential every pull</td>
+  </tr>
+  <tr>
+    <td><strong>Healthstone</strong></td>
+    <td class="warn">14/26 pulls (54%)</td>
+    <td class="warn">Just over half</td>
+  </tr>
+  <tr>
+    <td><strong>Health Potion</strong></td>
+    <td class="bad">0/26 pulls (0%)</td>
+    <td class="bad">Never uses health pot &mdash; separate CD from DPS pot</td>
+  </tr>
+</table>
+
+<h3>Early Deaths (1/26 pulls)</h3>
+<table class="compare-table">
+  <tr><th>Pull</th><th>Died At</th><th>Killed By</th></tr>
+  <tr><td>#28</td><td>3:06</td><td>Divine Consecration</td></tr>
+</table>
+
+<table class="compare-table" style="margin-top:16px;">
+  <tr><th>Defensive CD</th><th>Avg/min (26 pulls)</th><th>Top Avg</th><th>Verdict</th></tr>
+  <tr>
+    <td><strong>Demon Spikes</strong></td>
+    <td>3.8/min</td>
+    <td>4.9/min</td>
+    <td class="warn">78% of top &mdash; active mitigation gaps</td>
+  </tr>
+  <tr>
+    <td><strong>Fiery Brand</strong></td>
+    <td>1.1/min</td>
+    <td>1.5/min</td>
+    <td class="warn">73% of top</td>
+  </tr>
+  <tr>
+    <td><strong>Metamorphosis</strong></td>
+    <td>1.2/min</td>
+    <td>2.6/min</td>
+    <td class="bad">46% of top &mdash; less than half</td>
+  </tr>
+  <tr>
+    <td><strong>Fel Devastation</strong></td>
+    <td>0.9/min</td>
+    <td>1.2/min</td>
+    <td class="warn">75% of top</td>
+  </tr>
+</table>
+
+<div class="finding finding-good">
+  <strong>Only 1 early death in 26 pulls (4%).</strong> Excellent tank survivability. Pots every pull.
+</div>
+
+<div class="finding finding-bad">
+  <strong>0/26 health potions.</strong> Health potion is on a separate cooldown from the DPS pre-pot. Free survivability left on the table every pull.
+</div>
+
+<div class="finding finding-bad">
+  <strong>Metamorphosis at 46% of top.</strong> Top VDH #1 presses Meta 19 times in 7 minutes (~every 22 seconds). Nucke presses it 5 times in 6:40 (~every 80 seconds). With talents, Meta likely has a much shorter effective CD that top players are exploiting.
+</div>
+
+<div class="finding finding-warn">
+  <strong>Demon Spikes at 78% of top.</strong> Active mitigation gaps mean more damage taken between spikes.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>How Vengeance DH Works</h2>
+
+<div class="teach">
+  <p>Vengeance DH is a builder-spender tank that generates Soul Fragments through <span class="spell">Fracture</span> and spends them with <span class="spell">Soul Cleave</span> and <span class="spell">Spirit Bomb</span> for damage and self-healing. Every Soul Fragment you consume heals you for 6% of damage taken in the last 5 seconds or 1% of max HP, whichever is higher.</p>
+
+  <p>The core loop: <span class="spell">Fracture</span> generates Soul Fragments (your main builder &mdash; spam it). <span class="spell">Soul Cleave</span> consumes fragments for damage and healing (primary spender). <span class="spell">Spirit Bomb</span> consumes 5+ fragments for AoE damage. <span class="spell">Immolation Aura</span> generates fragments passively and deals damage.</p>
+
+  <p><span class="spell">Demon Spikes</span> is your active mitigation &mdash; 20% physical damage reduction with 2 charges. Keep at least one charge rolling at all times during active tanking. <span class="key">The goal is near-100% uptime during sustained damage.</span></p>
+
+  <p><span class="spell">Fiery Brand</span> is your big defensive &mdash; 40% damage reduction for 12 seconds. With 2 charges (Down in Flames talent), you can stagger coverage. It also buffs your Fire damage.</p>
+
+  <p><span class="spell">Metamorphosis</span> increases your max HP by 40% and armor by 200%. <span class="key">With the right talents, it has a very short effective cooldown &mdash; top players press it every 20-30 seconds, treating it as part of the rotation rather than a saved defensive.</span></p>
+
+  <p><span class="spell">Fel Devastation</span> is a channeled damage ability that also provides healing. Use on cooldown.</p>
+
+  <p>The difference between good and great VDH is casting speed. Top players press <span class="spell">Fracture</span> 54/min, <span class="spell">Soul Cleave</span> 16/min. More Fractures = more fragments = more Soul Cleaves = more damage AND more self-healing. The spec rewards you for pressing buttons faster.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Defensive CD Timing vs Boss Abilities</h2>
+
+<div class="teach">
+  <p>This section maps when Nucke pressed each defensive against when the top #1 VDH pressed theirs. Data from best pull (#30, 6:40 duration).</p>
+
+  <p><strong>Boss ability timeline (LBV):</strong> Sacred Toll (Lightblood) every ~18s throughout &mdash; constant magic damage. Searing Radiance (Senn) at 0:11, 1:03, 1:55, 3:02, 3:54, 5:41 &mdash; 15s ramping DoT. Mass Avenger&rsquo;s Shield (Bellamy) at ~1:12, ~3:54 &mdash; raid-wide. Aura of Peace + Tyr&rsquo;s Wrath at ~2:17 &mdash; prog wall. Light Infusion &mdash; constant stacking raid damage.</p>
+</div>
+
+<h3>Demon Spikes</h3>
+<table class="compare-table">
+  <tr><th>Nucke (29 uses)</th><th>Top #1 Gigabozo (52 uses)</th></tr>
+  <tr><td colspan="2" style="color:#888; font-style:italic;">Near-constant uptime both players &mdash; but Gigabozo presses nearly double</td></tr>
+</table>
+<div class="finding finding-warn">
+  <strong>29 vs 52 Demon Spikes.</strong> Top VDH maintains tighter uptime with nearly double the casts. More frequent presses = fewer gaps in active mitigation.
+</div>
+
+<h3>Fiery Brand</h3>
+<table class="compare-table">
+  <tr><th>Nucke (8 uses)</th><th>Top #1 Gigabozo (10 uses)</th></tr>
+  <tr><td>0:01</td><td rowspan="10" style="vertical-align:top; color:#888;">10 uses across 6:59</td></tr>
+  <tr><td>0:08</td></tr>
+  <tr><td>1:36</td></tr>
+  <tr><td>2:32</td></tr>
+  <tr><td>3:11</td></tr>
+  <tr><td>3:22</td></tr>
+  <tr><td>5:16</td></tr>
+  <tr><td>5:51</td></tr>
+</table>
+<div class="finding finding-good">
+  <strong>Fiery Brand usage is consistent.</strong> 8 uses in 6:40 is solid. Gigabozo gets 10 in a slightly longer fight &mdash; similar pace.
+</div>
+
+<h3>Metamorphosis</h3>
+<table class="compare-table">
+  <tr><th>Nucke (5 uses)</th><th>Top #1 Gigabozo (19 uses)</th></tr>
+  <tr><td>0:10</td><td>~every 22 seconds</td></tr>
+  <tr><td>0:40</td><td>&mdash;</td></tr>
+  <tr><td>2:18</td><td>&mdash;</td></tr>
+  <tr><td>3:05</td><td>&mdash;</td></tr>
+  <tr><td>5:57</td><td>&mdash;</td></tr>
+</table>
+<div class="finding finding-bad">
+  <strong>5 vs 19 Metamorphosis.</strong> This is the single biggest defensive gap. Gigabozo presses Meta every ~22 seconds &mdash; treating it as a rotational ability. Nucke presses it every ~80 seconds &mdash; treating it as a major cooldown. With talent-reduced CD, Meta should be pressed much more aggressively.
+</div>
+
+<h3>Fel Devastation</h3>
+<table class="compare-table">
+  <tr><th>Nucke (5 uses)</th><th>Top #1 Gigabozo (5 uses)</th></tr>
+  <tr><td>0:15</td><td rowspan="5" style="vertical-align:top; color:#888;">5 uses across 6:59</td></tr>
+  <tr><td>2:40</td></tr>
+  <tr><td>3:29</td></tr>
+  <tr><td>5:10</td></tr>
+  <tr><td>6:02</td></tr>
+</table>
+<div class="finding finding-good">
+  <strong>Fel Devastation count is identical.</strong> Both press Fel Dev 5 times. Similar usage pattern.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What the Best VDH Do on LBV</h2>
+
+<h3>Top 3 Vengeance Demon Hunters</h3>
+<table class="compare-table">
+  <tr><th>Player</th><th>DPS</th><th>DTPS</th><th>Duration</th></tr>
+  <tr><td><strong>#1 Gigabozo</strong></td><td>138,550</td><td>81,324</td><td>6:59</td></tr>
+  <tr><td><strong>#2 Felvix</strong></td><td>132,324</td><td>58,463</td><td>5:05</td></tr>
+  <tr><td><strong>#3 &#26031;&#23041;&#29305;&#23567;&#32418;&#25163;</strong></td><td>131,662</td><td>84,656</td><td>7:05</td></tr>
+</table>
+
+<h3>Top Avg Spell Rates</h3>
+<table class="compare-table">
+  <tr><th>Spell</th><th>Top Avg/min</th></tr>
+  <tr><td>Fracture</td><td><strong>54.2</strong></td></tr>
+  <tr><td>Soul Cleave</td><td><strong>15.7</strong></td></tr>
+  <tr><td>Immolation Aura</td><td><strong>4.7</strong></td></tr>
+  <tr><td>Spirit Bomb</td><td><strong>4.0</strong></td></tr>
+  <tr><td>Demon Spikes</td><td><strong>4.9</strong></td></tr>
+  <tr><td>Metamorphosis</td><td><strong>2.6</strong></td></tr>
+  <tr><td>Fiery Brand</td><td><strong>1.5</strong></td></tr>
+  <tr><td>Fel Devastation</td><td><strong>1.2</strong></td></tr>
+</table>
+
+<div class="teach">
+  <p><strong>Gigabozo</strong> (#1, 138,550 DPS) runs <span class="spell">Fracture</span> at 54.2/min and <span class="spell">Soul Cleave</span> at 15.7/min. <span class="spell">Metamorphosis</span> at 2.6/min &mdash; pressed every ~22 seconds. <span class="spell">Demon Spikes</span> at 4.9/min with 52 casts in a 7-minute fight. <span class="key">The pattern is clear: maximum Fracture, maximum Soul Cleave, treat Metamorphosis as rotational, and keep Demon Spikes rolling constantly.</span></p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What You Did (26 Pull Average)</h2>
+
+<table class="compare-table">
+  <tr><th>Spell</th><th>Your Avg/min</th><th>Top Avg/min</th><th>% of Top</th><th>Verdict</th></tr>
+  <tr>
+    <td>Fracture</td>
+    <td>36.8</td>
+    <td>54.2</td>
+    <td class="warn">68%</td>
+    <td class="warn">WARN</td>
+  </tr>
+  <tr>
+    <td>Soul Cleave</td>
+    <td>8.0</td>
+    <td>15.7</td>
+    <td class="bad">51%</td>
+    <td class="bad">BAD &mdash; biggest gap</td>
+  </tr>
+  <tr>
+    <td>Spirit Bomb</td>
+    <td>2.6</td>
+    <td>4.0</td>
+    <td class="warn">65%</td>
+    <td class="warn">WARN</td>
+  </tr>
+  <tr>
+    <td>Immolation Aura</td>
+    <td>3.0</td>
+    <td>4.7</td>
+    <td class="warn">64%</td>
+    <td class="warn">WARN</td>
+  </tr>
+  <tr>
+    <td>Demon Spikes</td>
+    <td>3.8</td>
+    <td>4.9</td>
+    <td class="warn">78%</td>
+    <td class="warn">WARN</td>
+  </tr>
+  <tr>
+    <td>Fiery Brand</td>
+    <td>1.1</td>
+    <td>1.5</td>
+    <td class="warn">73%</td>
+    <td class="warn">WARN</td>
+  </tr>
+  <tr>
+    <td>Metamorphosis</td>
+    <td>1.2</td>
+    <td>2.6</td>
+    <td class="bad">46%</td>
+    <td class="bad">BAD &mdash; less than half</td>
+  </tr>
+  <tr>
+    <td>Fel Devastation</td>
+    <td>0.9</td>
+    <td>1.2</td>
+    <td class="warn">75%</td>
+    <td class="warn">WARN</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>How This Is Affecting Your Performance</h2>
+
+<div class="finding finding-bad">
+  <strong>Soul Cleave at 51% of top is the biggest gap.</strong> Soul Cleave is your main spender and self-heal. At 8.0/min vs 15.7/min, you&rsquo;re getting roughly half the damage and half the self-healing from fragment consumption that top players get.
+</div>
+
+<div class="finding finding-bad">
+  <strong>Fracture at 68% &mdash; the cascade effect.</strong> Fewer Fractures = fewer Soul Fragments = fewer Soul Cleaves. Fracture is the engine that drives everything. 36.8/min needs to be 50+.
+</div>
+
+<div class="finding finding-bad">
+  <strong>Metamorphosis at 46% of top.</strong> Top players treat Meta as rotational (every 20-30s). Nucke uses it every ~80s. With talent-reduced CD, Meta should be pressed much more aggressively &mdash; it&rsquo;s 40% max HP and 200% armor every time you press it.
+</div>
+
+<div class="finding finding-warn">
+  <strong>DPS at 58% of top &mdash; 80K vs 134K avg.</strong> Directly from lower Fracture and Soul Cleave volume. More buttons pressed = more damage and more healing.
+</div>
+
+<div class="finding finding-good">
+  <strong>Survivability is excellent &mdash; 1/26 early deaths.</strong> Only 1 death in 26 pulls. Pots every pull.
+</div>
+
+<div class="finding finding-good">
+  <strong>Fiery Brand timing on best pull shows 8 uses &mdash; consistent usage.</strong> Fiery Brand and Fel Devastation counts are close to top players.
+</div>
+
+<div class="finding finding-warn">
+  <strong>Demon Spikes at 78% of top.</strong> Active mitigation has gaps that top players don&rsquo;t have. 29 vs 52 casts on the best pull.
+</div>
+
+<div class="finding finding-bad">
+  <strong>0 health potions across 26 pulls.</strong> Health potion is on a separate cooldown from DPS pot. Free survivability left on the table.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What You Need to Change</h2>
+
+<div class="action">
+  <span class="action-num" style="color:#ff6b6b;">1</span>
+  <div class="action-title">More Fracture &mdash; 36.8/min needs to be 50+</div>
+  <div class="action-body">
+    Fracture is your main builder. More Fractures = more Soul Fragments = more Soul Cleaves = more damage and healing. <strong>This is the engine that drives everything else. Press it faster.</strong>
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ff6b6b;">2</span>
+  <div class="action-title">More Soul Cleave &mdash; 8.0/min vs 15.7 at top</div>
+  <div class="action-body">
+    Soul Cleave is your primary spender and self-heal. Don&rsquo;t hold fragments waiting for Spirit Bomb &mdash; Soul Cleave at 3+ fragments is fine. <strong>Spend fragments faster. At 51% of top, this is the single biggest gap in your rotation.</strong>
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ff6b6b;">3</span>
+  <div class="action-title">Press Metamorphosis more aggressively &mdash; 1.2/min vs 2.6</div>
+  <div class="action-body">
+    Top VDH players press Meta every 20-30 seconds. Check your talent build to confirm CD reduction &mdash; if available, <strong>treat Meta as rotational, not as a saved defensive.</strong> 40% max HP and 200% armor should be active as often as possible.
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ffa940;">4</span>
+  <div class="action-title">Use health potion &mdash; 0/26 pulls</div>
+  <div class="action-body">
+    Health potion is on a separate cooldown from your DPS pre-pot. <strong>Free survivability every pull &mdash; use it when you take meaningful damage.</strong>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+
+<details>
+  <summary>Raw Data &amp; Sources</summary>
+  <div class="details-inner">
+    <strong>Report:</strong> by6mKkdwXGcqQtRW &mdash; Mythic LBV Prog 06.02.26<br>
+    <strong>Pulls:</strong> 26 (all Mythic LBV wipes)<br>
+    <strong>Player:</strong> Nucke, Vengeance Demon Hunter<br><br>
+
+    <strong>Night Averages:</strong><br>
+    DPS: 80,000 | DTPS: 59,000<br>
+    Fracture/min: 36.8 | Soul Cleave/min: 8.0 | Spirit Bomb/min: 2.6 | Immolation Aura/min: 3.0<br>
+    Demon Spikes/min: 3.8 | Fiery Brand/min: 1.1 | Metamorphosis/min: 1.2 | Fel Devastation/min: 0.9<br><br>
+
+    <strong>Consumables:</strong> Pre-pot 26/26 (100%), Healthstone 14/26 (54%), Health pot 0/26 (0%)<br>
+    <strong>Early Deaths:</strong> 1/26 (4%) &mdash; Divine Consecration 1x (pull #28 at 3:06)<br><br>
+
+    <strong>Top Vengeance DHs (#1-#3 on Mythic LBV):</strong><br>
+    Gigabozo &mdash; 138,550 DPS, 81,324 DTPS (6:59 kill)<br>
+    Felvix &mdash; 132,324 DPS, 58,463 DTPS (5:05 kill)<br>
+    &#26031;&#23041;&#29305;&#23567;&#32418;&#25163; &mdash; 131,662 DPS, 84,656 DTPS (7:05 kill)<br><br>
+
+    <strong>Defensive CD timing comparison:</strong> Best pull #30 (6:40 duration) vs Gigabozo kill<br>
+    <strong>Rotation research:</strong> Icy Veins Vengeance Demon Hunter guide (12.0.5)<br>
+  </div>
+</details>
+
+<div class="footer">
+  Data from WCL v2 API &mdash; 26 pulls analyzed &mdash; top 3 Vengeance DHs on Mythic LBV as benchmark &mdash; June 2, 2026
+</div>
+
+</body>
+</html>

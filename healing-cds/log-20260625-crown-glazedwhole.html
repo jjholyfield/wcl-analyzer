@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glazedwhole (Blood DK) — Crown of the Cosmos Mythic — Prog Night 4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --dk-color: #c41e3a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; font-size:14px; line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.header { margin-bottom:24px; }
+.header h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+.header h1 .player-name { color:var(--dk-color); }
+.header .subtitle { color:var(--dim); font-size:14px; }
+.prog-tag { display:inline-block; background:var(--orange); color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px; }
+.night-tag { display:inline-block; background:var(--purple); color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:4px; vertical-align:middle; }
+
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; text-align:center; }
+.card .label { font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.card .value { font-size:24px; font-weight:700; }
+.card .sub { font-size:11px; color:var(--dim); margin-top:2px; }
+
+.section { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:16px; }
+.section h2 { font-size:16px; font-weight:600; margin-bottom:12px; color:var(--text); }
+.section h3 { font-size:14px; font-weight:600; margin:16px 0 8px; color:var(--accent); }
+
+.verdict { border-left:4px solid var(--green); padding:16px; background:var(--surface); border-radius:0 8px 8px 0; margin-bottom:16px; font-size:14px; line-height:1.7; }
+.verdict strong.green { color:var(--green); }
+.verdict strong.yellow { color:var(--yellow); }
+.verdict strong.red { color:var(--red); }
+.verdict strong.orange { color:var(--orange); }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:8px 10px; border-bottom:2px solid var(--border); color:var(--dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:7px 10px; border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+tr.highlight { background:rgba(88,166,255,0.08); }
+
+.tag { display:inline-block; padding:1px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.tag-same { background:rgba(63,185,80,0.15); color:var(--green); }
+.tag-warn { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.tag-diff { background:rgba(219,109,40,0.15); color:var(--orange); }
+.tag-crit { background:rgba(248,81,73,0.15); color:var(--red); }
+.tag-info { background:rgba(88,166,255,0.15); color:var(--accent); }
+.tag-build { background:rgba(188,140,255,0.15); color:var(--purple); }
+
+.progression-chart { display:flex; align-items:flex-end; gap:3px; height:120px; margin:12px 0; padding:0 4px; }
+.prog-bar { flex:1; min-width:0; border-radius:3px 3px 0 0; position:relative; cursor:pointer; transition:opacity 0.2s; }
+.prog-bar:hover { opacity:0.8; }
+.prog-bar::after { content:attr(data-label); position:absolute; bottom:-18px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--dim); white-space:nowrap; }
+.prog-bar .tooltip { display:none; position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#1c2333; border:1px solid var(--border); border-radius:6px; padding:8px 12px; font-size:11px; white-space:nowrap; z-index:10; color:var(--text); pointer-events:none; }
+.prog-bar:hover .tooltip { display:block; }
+
+.phase-bar { display:flex; height:24px; border-radius:4px; overflow:hidden; margin:8px 0; }
+.phase-bar .segment { display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#fff; }
+
+.action-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:8px; border-left:3px solid var(--yellow); }
+.action-item.critical { border-left-color:var(--red); }
+.action-item.positive { border-left-color:var(--green); }
+.action-item .title { font-weight:600; font-size:13px; margin-bottom:4px; }
+.action-item .desc { font-size:12px; color:var(--dim); line-height:1.5; }
+
+.footer { text-align:center; color:var(--dim); font-size:11px; margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
+
+.overheal-bar { height:6px; border-radius:3px; background:var(--border); overflow:hidden; display:inline-block; width:60px; vertical-align:middle; margin-left:6px; }
+.overheal-bar .fill { height:100%; border-radius:3px; }
+
+.phase-label { display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px; font-weight:600; }
+.phase-p1 { background:rgba(63,185,80,0.15); color:var(--green); }
+.phase-inter { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.phase-p2 { background:rgba(88,166,255,0.15); color:var(--accent); }
+.phase-p3 { background:rgba(248,81,73,0.15); color:var(--red); }
+
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:768px) { .cards { grid-template-columns:repeat(2,1fr); } .stat-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Glazedwhole</span> &mdash; Blood Death Knight <span class="prog-tag">PROGRESSION</span><span class="night-tag">NIGHT 4</span></h1>
+  <div class="subtitle">
+    Crown of the Cosmos &middot; Mythic &middot; 19 usable pulls (no kill) &middot; Deepest: 7:12 (fight 14)<br>
+    June 25, 2026 &middot; <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">View on Warcraft Logs</a>
+    &middot; San'layn hero talents &middot; Co-tank: Nucke (Protection Warrior)
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color:var(--text)">25.0K</div>
+    <div class="sub">11 pulls with data</div>
+  </div>
+  <div class="card">
+    <div class="label">Avg DTPS</div>
+    <div class="value" style="color:var(--yellow)">85.3K</div>
+    <div class="sub">19 pulls &gt;60s</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--green)">18/19</div>
+    <div class="sub">1 actionable death</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value" style="color:var(--text)">287</div>
+    <div class="sub">vs ref avg 290</div>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div class="verdict">
+  Glazedwhole is performing as a <strong class="green">reliable survivability anchor</strong> on Crown of the Cosmos progression. Across 19 usable pulls, only <strong class="green">1 actionable death</strong> (fight 14, Intermission at 2:35 -- first death in the raid, to Orbiting Matter during Stellar Emission). The other 18 deaths were all cascade (death #3 or later), meaning the raid collapsed around him, not because of him. Defensive CD usage is <strong class="green">consistent</strong> -- Vampiric Blood averages 6.3 uses per long pull, Dancing Rune Weapon 2.9, Anti-Magic Shell 3.0, and Lichborne 2.0. The main growth area is <strong class="yellow">rotational throughput</strong>: total CPM of 53.1 vs reference 69.8 (24% deficit), driven primarily by <strong class="yellow">Death Strike at 10.4 CPM vs reference 14.8</strong> and Heart Strike at 7.1 vs 12.4. More Heart Strikes = more Runic Power = more Death Strikes = more Blood Shields and self-healing. <strong class="green">DTPS is comparable to reference kills</strong> at 85.3K vs 89-94K, confirming active mitigation is working -- the gap is in offensive output, not survival.
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">Computed from event-level data across 6 deepest pulls that reached P3 (fights 2, 6, 14, 17, 26, 28). DPS includes damage to all targets. DTPS includes absorbed damage.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>Avg DPS</th>
+        <th>Avg DTPS</th>
+        <th>Avg Self-HPS</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-label phase-p1">P1 Sentinels</span></td>
+        <td>19/19</td>
+        <td style="color:var(--green)">118.0K</td>
+        <td>115.7K</td>
+        <td>83.1K</td>
+        <td style="color:var(--dim);font-size:12px;">Highest DPS phase -- multi-target Sentinels + Alleria. Also highest DTPS (heavy melee + Void Droplets). Self-healing strong at 83K.</td>
+      </tr>
+      <tr>
+        <td><span class="phase-label phase-inter">Intermission</span></td>
+        <td>11/19</td>
+        <td style="color:var(--dim)">0.3K</td>
+        <td style="color:var(--green)">18.5K</td>
+        <td>1.8K</td>
+        <td style="color:var(--dim);font-size:12px;">Pure survival -- Stellar Emission + Silverstrike Barrage. Low damage intake. 1 actionable death here (fight 14).</td>
+      </tr>
+      <tr>
+        <td><span class="phase-label phase-p2">P2 Rift</span></td>
+        <td>11/19</td>
+        <td>57.8K</td>
+        <td style="color:var(--green)">77.7K</td>
+        <td>46.2K</td>
+        <td style="color:var(--dim);font-size:12px;">Rift Simulacrum + Undying Voidspawn. DTPS drops 33% from P1 -- better single-target tanking profile.</td>
+      </tr>
+      <tr>
+        <td><span class="phase-label phase-p3">P3 Devouring Cosmos</span></td>
+        <td>9/19</td>
+        <td style="color:var(--yellow)">25.5K</td>
+        <td>83.5K</td>
+        <td>47.3K</td>
+        <td style="color:var(--dim);font-size:12px;">Everything overlaps. DTPS climbs 7% over P2. DPS drops -- prioritizing survival. Zero actionable deaths in P3.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Phase Reach Rate</h3>
+  <div class="phase-bar">
+    <div class="segment" style="width:100%;background:var(--green);">P1: 19/19</div>
+  </div>
+  <div class="phase-bar">
+    <div class="segment" style="width:57.9%;background:var(--yellow);">Intermission: 11/19</div>
+    <div class="segment" style="width:42.1%;background:var(--border);color:var(--dim);">8 P1 wipes</div>
+  </div>
+  <div class="phase-bar">
+    <div class="segment" style="width:57.9%;background:var(--accent);">P2: 11/19</div>
+    <div class="segment" style="width:42.1%;background:var(--border);color:var(--dim);">8 pre-P2</div>
+  </div>
+  <div class="phase-bar">
+    <div class="segment" style="width:47.4%;background:var(--red);">P3: 9/19</div>
+    <div class="segment" style="width:52.6%;background:var(--border);color:var(--dim);">10 pre-P3</div>
+  </div>
+</div>
+
+<!-- DTPS Across All Pulls -->
+<div class="section">
+  <h2>DTPS Across All Pulls</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">Lower is better -- indicates active mitigation effectiveness. Color: <span style="color:var(--green);">P1 wipe</span> / <span style="color:var(--yellow);">P2 wipe</span> / <span style="color:var(--red);">P3 wipe</span></p>
+
+  <div class="progression-chart" style="height:140px;padding-bottom:24px;">
+    <div class="prog-bar" style="height:79.1%;background:var(--yellow);" data-label="F1">
+      <div class="tooltip">Pull 1 | 5:00 | P2<br>DTPS: 87.7K | DPS: 24.8K</div>
+    </div>
+    <div class="prog-bar" style="height:80.1%;background:var(--red);" data-label="F2">
+      <div class="tooltip">Pull 2 | 6:54 | P3<br>DTPS: 88.7K | DPS: 28.2K</div>
+    </div>
+    <div class="prog-bar" style="height:88.2%;background:var(--green);" data-label="F3">
+      <div class="tooltip">Pull 3 | 1:51 | P1<br>DTPS: 97.6K</div>
+    </div>
+    <div class="prog-bar" style="height:100%;background:var(--green);" data-label="F5">
+      <div class="tooltip">Pull 5 | 1:51 | P1<br>DTPS: 110.8K</div>
+    </div>
+    <div class="prog-bar" style="height:76.2%;background:var(--red);" data-label="F6">
+      <div class="tooltip">Pull 6 | 7:03 | P3<br>DTPS: 84.4K | DPS: 23.7K</div>
+    </div>
+    <div class="prog-bar" style="height:75.1%;background:var(--green);" data-label="F8">
+      <div class="tooltip">Pull 8 | 1:12 | P1<br>DTPS: 83.2K</div>
+    </div>
+    <div class="prog-bar" style="height:87.8%;background:var(--green);" data-label="F12">
+      <div class="tooltip">Pull 12 | 2:10 | P1<br>DTPS: 97.2K</div>
+    </div>
+    <div class="prog-bar" style="height:64.7%;background:var(--green);" data-label="F13">
+      <div class="tooltip">Pull 13 | 1:22 | P1<br>DTPS: 71.7K</div>
+    </div>
+    <div class="prog-bar" style="height:67.9%;background:var(--red);" data-label="F14">
+      <div class="tooltip">Pull 14 | 7:12 | P3 (BEST)<br>DTPS: 75.2K | DPS: 27.1K</div>
+    </div>
+    <div class="prog-bar" style="height:85.4%;background:var(--red);" data-label="F17">
+      <div class="tooltip">Pull 17 | 6:58 | P3<br>DTPS: 94.6K | DPS: 26.7K</div>
+    </div>
+    <div class="prog-bar" style="height:78.8%;background:var(--yellow);" data-label="F18">
+      <div class="tooltip">Pull 18 | 5:06 | P2<br>DTPS: 87.3K | DPS: 21.6K</div>
+    </div>
+    <div class="prog-bar" style="height:72.0%;background:var(--green);" data-label="F19">
+      <div class="tooltip">Pull 19 | 1:19 | P1<br>DTPS: 79.7K</div>
+    </div>
+    <div class="prog-bar" style="height:73.2%;background:var(--green);" data-label="F21">
+      <div class="tooltip">Pull 21 | 1:31 | P1<br>DTPS: 81.1K</div>
+    </div>
+    <div class="prog-bar" style="height:53.4%;background:var(--green);" data-label="F22">
+      <div class="tooltip">Pull 22 | 1:17 | P1<br>DTPS: 59.2K</div>
+    </div>
+    <div class="prog-bar" style="height:64.8%;background:var(--red);" data-label="F23">
+      <div class="tooltip">Pull 23 | 5:14 | P3<br>DTPS: 71.7K | DPS: 22.8K</div>
+    </div>
+    <div class="prog-bar" style="height:74.9%;background:var(--red);" data-label="F24">
+      <div class="tooltip">Pull 24 | 5:36 | P3<br>DTPS: 82.9K | DPS: 27.2K</div>
+    </div>
+    <div class="prog-bar" style="height:83.4%;background:var(--red);" data-label="F26">
+      <div class="tooltip">Pull 26 | 6:58 | P3<br>DTPS: 92.4K | DPS: 22.5K</div>
+    </div>
+    <div class="prog-bar" style="height:84.1%;background:var(--red);" data-label="F27">
+      <div class="tooltip">Pull 27 | 5:36 | P3<br>DTPS: 93.2K | DPS: 26.5K</div>
+    </div>
+    <div class="prog-bar" style="height:73.9%;background:var(--red);" data-label="F28">
+      <div class="tooltip">Pull 28 | 6:59 | P3<br>DTPS: 81.9K | DPS: 23.9K</div>
+    </div>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="stat-grid">
+    <div>
+      <h3>Actionable Deaths (First 2 in Pull)</h3>
+      <p style="font-size:13px;margin-bottom:8px;">Only <strong style="color:var(--green);">1 actionable death</strong> in 19 pulls -- exceptional survivability for prog.</p>
+      <table>
+        <thead>
+          <tr><th>Pull</th><th>Time</th><th>Phase</th><th>Death #</th><th>Context</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fight 14</td>
+            <td>2:35.7</td>
+            <td><span class="phase-label phase-inter">Intermission</span></td>
+            <td style="color:var(--red);">#1 (first raid death)</td>
+            <td style="font-size:12px;color:var(--dim);">Orbiting Matter (226K hit) + Stellar Emission during Intermission. No major defensive active at time of death.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Cascade Deaths (Not Actionable)</h3>
+      <p style="font-size:13px;margin-bottom:8px;color:var(--dim);">18 cascade deaths (death #3+). These happened after the raid was already collapsing.</p>
+      <table>
+        <thead>
+          <tr><th>Phase</th><th>Count</th><th>Typical Order</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="phase-label phase-p1">P1</span></td><td>8</td><td>#3 to #14</td></tr>
+          <tr><td><span class="phase-label phase-p2">P2</span></td><td>3</td><td>#4 to #17</td></tr>
+          <tr><td><span class="phase-label phase-p3">P3</span></td><td>7</td><td>#12 to #22</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:var(--dim);margin-top:8px;">Glazedwhole is consistently one of the last players alive in wipes. This is exactly what you want from your tank on prog.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Defensive CD Discipline -->
+<div class="section">
+  <h2>Defensive CD Discipline</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">Usage across 11 long pulls (&gt;200s). Reference comparison: Nolandk kill (508s, 56.6K DPS) and Akavinny kill (508s, 47.4K DPS).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Defensive</th>
+        <th>Total Uses</th>
+        <th>Avg/Pull</th>
+        <th>Used In</th>
+        <th>Ref (Nolandk / Akavinny)</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">Vampiric Blood</td>
+        <td>69</td>
+        <td>6.3</td>
+        <td>11/11</td>
+        <td>12 (1.4/min) / 5 (0.6/min)</td>
+        <td><span class="tag tag-same">Strong</span> Consistent in every pull</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Dancing Rune Weapon</td>
+        <td>32</td>
+        <td>2.9</td>
+        <td>11/11</td>
+        <td>6 (0.7/min) / 6 (0.7/min)</td>
+        <td><span class="tag tag-same">Good</span> On cooldown usage</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Anti-Magic Shell</td>
+        <td>33</td>
+        <td>3.0</td>
+        <td>11/11</td>
+        <td>8 (0.9/min) / 4 (0.5/min)</td>
+        <td><span class="tag tag-same">Good</span> Active in every pull</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Icebound Fortitude</td>
+        <td>14</td>
+        <td>1.3</td>
+        <td>10/11</td>
+        <td>2 (0.2/min) / 0</td>
+        <td><span class="tag tag-same">Good</span> Used regularly</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Lichborne</td>
+        <td>22</td>
+        <td>2.0</td>
+        <td>11/11</td>
+        <td>2 (0.2/min) / 0</td>
+        <td><span class="tag tag-same">Good</span> Proactive for leech</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Death Strike</td>
+        <td>734</td>
+        <td>66.7</td>
+        <td>11/11</td>
+        <td>128 (15.1 CPM) / 125 (14.8 CPM)</td>
+        <td><span class="tag tag-diff">Below Ref</span> 10.4 CPM vs 14.8-15.1 CPM</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Fight 14 (Best Pull, 7:12) Defensive Timeline</h3>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Cast Times</th><th>Phase Coverage</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Dancing Rune Weapon</td>
+        <td>0:02, 2:56, 4:32, 6:27</td>
+        <td><span class="phase-label phase-p1">P1</span> <span class="phase-label phase-p2">P2</span> <span class="phase-label phase-p2">P2</span> <span class="phase-label phase-p3">P3</span></td>
+      </tr>
+      <tr>
+        <td>Vampiric Blood</td>
+        <td>0:06, 0:57, 1:27, 2:58, 4:24, 5:31, 6:25</td>
+        <td><span class="phase-label phase-p1">P1</span> <span class="phase-label phase-p1">P1</span> <span class="phase-label phase-p1">P1</span> <span class="phase-label phase-p2">P2</span> <span class="phase-label phase-p2">P2</span> <span class="phase-label phase-p3">P3</span> <span class="phase-label phase-p3">P3</span></td>
+      </tr>
+      <tr>
+        <td>Anti-Magic Shell</td>
+        <td>1:11, 4:18, 5:40</td>
+        <td><span class="phase-label phase-p1">P1</span> <span class="phase-label phase-p2">P2</span> <span class="phase-label phase-p3">P3</span></td>
+      </tr>
+      <tr>
+        <td>Lichborne</td>
+        <td>0:06, 2:59, 5:31</td>
+        <td><span class="phase-label phase-p1">P1</span> <span class="phase-label phase-p2">P2</span> <span class="phase-label phase-p3">P3</span></td>
+      </tr>
+      <tr>
+        <td>Icebound Fortitude</td>
+        <td>6:21</td>
+        <td><span class="phase-label phase-p3">P3</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Cast Profile Comparison -->
+<div class="section">
+  <h2>Cast Profile Comparison (Fight 14 -- Best Pull, 7:12)</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">
+    Reference: Akavinny (9 talent diffs, 508s kill, San'layn). Both run San'layn hero talents.
+    Glazedwhole fight was a prog wipe (433s active), Akavinny was a kill (508s). CPM comparison is normalized per minute.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Player</th>
+        <th>CPM</th>
+        <th>Ref</th>
+        <th>Ref CPM</th>
+        <th>&Delta;</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight">
+        <td style="font-weight:600;">Death Strike</td>
+        <td>75</td>
+        <td>10.4</td>
+        <td>125</td>
+        <td>14.8</td>
+        <td style="color:var(--red);">-30%</td>
+        <td><span class="tag tag-crit">Critical</span> Primary self-heal + Blood Shield</td>
+      </tr>
+      <tr>
+        <td>Heart Strike</td>
+        <td>51</td>
+        <td>7.1</td>
+        <td>105</td>
+        <td>12.4</td>
+        <td style="color:var(--red);">-43%</td>
+        <td><span class="tag tag-crit">Low</span> Main rune spender for RP generation</td>
+      </tr>
+      <tr>
+        <td>Infliction of Sorrow</td>
+        <td>50</td>
+        <td>6.9</td>
+        <td>111</td>
+        <td>13.1</td>
+        <td style="color:var(--red);">-47%</td>
+        <td><span class="tag tag-crit">Low</span> San'layn proc -- passive, follows Vampiric Strike</td>
+      </tr>
+      <tr>
+        <td>Vampiric Strike</td>
+        <td>33</td>
+        <td>4.6</td>
+        <td>69</td>
+        <td>8.1</td>
+        <td style="color:var(--red);">-43%</td>
+        <td><span class="tag tag-crit">Low</span> San'layn core ability</td>
+      </tr>
+      <tr>
+        <td>Blood Boil</td>
+        <td>73</td>
+        <td>10.1</td>
+        <td>77</td>
+        <td>9.1</td>
+        <td style="color:var(--green);">+11%</td>
+        <td><span class="tag tag-info">Over Ref</span> AoE plague applicator</td>
+      </tr>
+      <tr>
+        <td>Death and Decay</td>
+        <td>20</td>
+        <td>2.8</td>
+        <td>20</td>
+        <td>2.4</td>
+        <td style="color:var(--green);">+17%</td>
+        <td><span class="tag tag-same">Good</span></td>
+      </tr>
+      <tr>
+        <td>Death's Caress</td>
+        <td>10</td>
+        <td>1.4</td>
+        <td>26</td>
+        <td>3.1</td>
+        <td style="color:var(--orange);">-55%</td>
+        <td><span class="tag tag-diff">Low</span> Ranged Bone Shield stacks</td>
+      </tr>
+      <tr>
+        <td>Marrowrend</td>
+        <td>7</td>
+        <td>1.0</td>
+        <td>3</td>
+        <td>0.4</td>
+        <td style="color:var(--green);">+175%</td>
+        <td><span class="tag tag-warn">Check</span> Higher than ref -- may overcap Bone Shield</td>
+      </tr>
+      <tr>
+        <td>Dancing Rune Weapon</td>
+        <td>4</td>
+        <td>0.6</td>
+        <td>6</td>
+        <td>0.7</td>
+        <td style="color:var(--dim);">-21%</td>
+        <td><span class="tag tag-warn">Slightly Low</span> Shorter fight</td>
+      </tr>
+      <tr>
+        <td>Vampiric Blood</td>
+        <td>7</td>
+        <td>1.0</td>
+        <td>5</td>
+        <td>0.6</td>
+        <td style="color:var(--green);">+64%</td>
+        <td><span class="tag tag-info">Over Ref</span> More defensive on prog (correct)</td>
+      </tr>
+      <tr>
+        <td>Anti-Magic Shell</td>
+        <td>3</td>
+        <td>0.4</td>
+        <td>4</td>
+        <td>0.5</td>
+        <td style="color:var(--dim);">-14%</td>
+        <td><span class="tag tag-same">Close</span></td>
+      </tr>
+      <tr>
+        <td>Abomination Limb</td>
+        <td>12</td>
+        <td>1.7</td>
+        <td>0</td>
+        <td>0.0</td>
+        <td>--</td>
+        <td><span class="tag tag-build">Build Diff</span> Player talent, not taken by ref</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px;padding:10px 14px;background:rgba(210,153,34,0.08);border-radius:6px;border:1px solid rgba(210,153,34,0.2);">
+    <strong style="color:var(--yellow);font-size:13px;">Total CPM: 53.1 vs Reference 69.8 (24% deficit)</strong>
+    <p style="font-size:12px;color:var(--dim);margin-top:4px;">
+      The primary driver is lower Heart Strike and Death Strike CPM. Heart Strike generates Runic Power, which funds Death Strike.
+      Fewer Heart Strikes = less RP = fewer Death Strikes = less self-healing and smaller Blood Shields. This is the core rotation gap to close.
+    </p>
+  </div>
+</div>
+
+<!-- Damage Taken Breakdown -->
+<div class="section">
+  <h2>Damage Taken Breakdown (Fight 14 -- Best Pull)</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">Total damage taken: 32.3M over 433s (75.2K DTPS). Higher absorption % = better active mitigation.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Total</th>
+        <th>%</th>
+        <th>Hits</th>
+        <th>Absorbed</th>
+        <th>Absorption %</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">Melee</td>
+        <td>18.5M</td>
+        <td>57.1%</td>
+        <td>141</td>
+        <td>9.1M</td>
+        <td><span class="tag tag-same">49%</span></td>
+      </tr>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td>3.1M</td>
+        <td>9.5%</td>
+        <td>135</td>
+        <td>617K</td>
+        <td><span class="tag tag-warn">20%</span></td>
+      </tr>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td>2.6M</td>
+        <td>8.2%</td>
+        <td>117</td>
+        <td>1.2M</td>
+        <td><span class="tag tag-same">46%</span></td>
+      </tr>
+      <tr>
+        <td>Void Expulsion</td>
+        <td>1.4M</td>
+        <td>4.4%</td>
+        <td>38</td>
+        <td>260K</td>
+        <td><span class="tag tag-warn">18%</span></td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td>1.3M</td>
+        <td>4.1%</td>
+        <td>47</td>
+        <td>42K</td>
+        <td><span class="tag tag-crit">3%</span></td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td>974K</td>
+        <td>3.0%</td>
+        <td>43</td>
+        <td>436K</td>
+        <td><span class="tag tag-same">45%</span></td>
+      </tr>
+      <tr>
+        <td>Gravity Collapse</td>
+        <td>856K</td>
+        <td>2.6%</td>
+        <td>7</td>
+        <td>151K</td>
+        <td><span class="tag tag-warn">18%</span></td>
+      </tr>
+      <tr>
+        <td>Rift Slash</td>
+        <td>613K</td>
+        <td>1.9%</td>
+        <td>3</td>
+        <td>70K</td>
+        <td><span class="tag tag-warn">11%</span></td>
+      </tr>
+      <tr>
+        <td>Void Remnants</td>
+        <td>569K</td>
+        <td>1.8%</td>
+        <td>3</td>
+        <td>292K</td>
+        <td><span class="tag tag-same">51%</span></td>
+      </tr>
+      <tr>
+        <td>Silverstrike Ricochet</td>
+        <td>516K</td>
+        <td>1.6%</td>
+        <td>5</td>
+        <td>115K</td>
+        <td><span class="tag tag-warn">22%</span></td>
+      </tr>
+      <tr>
+        <td>Cosmic Radiation</td>
+        <td>334K</td>
+        <td>1.0%</td>
+        <td>15</td>
+        <td>4K</td>
+        <td><span class="tag tag-crit">1%</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">
+    Melee at 49% absorption is solid -- Blood Shield and Bone Shield are working on physical hits.
+    Simulacrum Backlash at 3% absorption and Cosmic Radiation at 1% are magic damage with low mitigation -- AMS windows could help here.
+  </p>
+</div>
+
+<!-- Self-Healing Breakdown -->
+<div class="section">
+  <h2>Self-Healing Breakdown (Fight 14)</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">Total self-healing: 19.6M effective (45.1K HPS). Blood Shield and Frost Shield are absorption mechanics -- 0% overheal is normal for absorbs.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Effective</th>
+        <th>Hits</th>
+        <th>Overheal %</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">Blood Shield</td>
+        <td>7.5M</td>
+        <td>95</td>
+        <td>0%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:0%;background:var(--green);"></div></div> Absorption -- always effective</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Death Strike</td>
+        <td>4.4M</td>
+        <td>75</td>
+        <td>65%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:65%;background:var(--yellow);"></div></div> Expected -- minimum heal fires at full HP</td>
+      </tr>
+      <tr>
+        <td>Frost Shield</td>
+        <td>1.8M</td>
+        <td>278</td>
+        <td>0%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:0%;background:var(--green);"></div></div> Absorption</td>
+      </tr>
+      <tr>
+        <td>Leech</td>
+        <td>1.4M</td>
+        <td>153</td>
+        <td>13%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:13%;background:var(--green);"></div></div></td>
+      </tr>
+      <tr>
+        <td>Blood Plague</td>
+        <td>1.1M</td>
+        <td>95</td>
+        <td>15%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:15%;background:var(--green);"></div></div></td>
+      </tr>
+      <tr>
+        <td>Anti-Magic Shell</td>
+        <td>1.1M</td>
+        <td>21</td>
+        <td>0%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:0%;background:var(--green);"></div></div> Absorption</td>
+      </tr>
+      <tr>
+        <td>Will of the Necropolis</td>
+        <td>923K</td>
+        <td>21</td>
+        <td>0%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:0%;background:var(--green);"></div></div></td>
+      </tr>
+      <tr>
+        <td>Rune of Sanguination</td>
+        <td>209K</td>
+        <td>16</td>
+        <td>81%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:81%;background:var(--orange);"></div></div> High overheal -- passive proc</td>
+      </tr>
+      <tr>
+        <td>Vampiric Strike</td>
+        <td>171K</td>
+        <td>33</td>
+        <td>67%</td>
+        <td><div class="overheal-bar"><div class="fill" style="width:67%;background:var(--yellow);"></div></div> Expected on San'layn</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">
+    Blood Shield (Death Strike Mastery absorption) is the #1 self-sustain source at 7.5M -- Mastery and Bone Shield are working well.
+    Death Strike at 65% overheal is normal -- the minimum heal fires even at full HP, and Mastery converts excess into Blood Shield.
+    Purgatory triggered once (6K absorbed) -- cheat death activated and survived.
+  </p>
+</div>
+
+<!-- Tank Swap Pattern -->
+<div class="section">
+  <h2>Tank Swap Pattern</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">Taunts tracked via Dark Command + Death Grip (Glazedwhole) and taunt abilities (Nucke) across long pulls.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Pull</th>
+        <th>Duration</th>
+        <th>Phase</th>
+        <th>Glazedwhole</th>
+        <th>Nucke</th>
+        <th>Total Swaps</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>F1</td><td>5:00</td><td><span class="phase-label phase-p2">P2</span></td><td>12</td><td>8</td><td>20</td></tr>
+      <tr><td>F2</td><td>6:54</td><td><span class="phase-label phase-p3">P3</span></td><td>24</td><td>13</td><td>37</td></tr>
+      <tr><td>F6</td><td>7:03</td><td><span class="phase-label phase-p3">P3</span></td><td>16</td><td>14</td><td>30</td></tr>
+      <tr><td>F14</td><td>7:12</td><td><span class="phase-label phase-p3">P3</span></td><td>18</td><td>15</td><td>33</td></tr>
+      <tr><td>F17</td><td>6:58</td><td><span class="phase-label phase-p3">P3</span></td><td>15</td><td>12</td><td>27</td></tr>
+      <tr><td>F18</td><td>5:06</td><td><span class="phase-label phase-p2">P2</span></td><td>16</td><td>11</td><td>27</td></tr>
+      <tr><td>F23</td><td>5:14</td><td><span class="phase-label phase-p3">P3</span></td><td>10</td><td>8</td><td>18</td></tr>
+      <tr><td>F24</td><td>5:36</td><td><span class="phase-label phase-p3">P3</span></td><td>16</td><td>10</td><td>26</td></tr>
+      <tr><td>F26</td><td>6:58</td><td><span class="phase-label phase-p3">P3</span></td><td>17</td><td>17</td><td>34</td></tr>
+      <tr><td>F27</td><td>5:36</td><td><span class="phase-label phase-p3">P3</span></td><td>17</td><td>11</td><td>28</td></tr>
+      <tr><td>F28</td><td>6:59</td><td><span class="phase-label phase-p3">P3</span></td><td>14</td><td>12</td><td>26</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">
+    <strong style="color:var(--text);">Taunt ratio: Glazedwhole 175, Nucke 131 (57%/43%).</strong>
+    Glazedwhole taunts more frequently -- proactively picking up the boss and adds. The asymmetry is normal since Blood DK has
+    Death Grip for quick pickups in addition to Dark Command, inflating the count.
+    Swap rhythm is consistent across pulls with no obvious missed swaps or late taunts.
+  </p>
+</div>
+
+<!-- Wipe Progression -->
+<div class="section">
+  <h2>Wipe Progression</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">Pull duration as proxy for encounter progress. Longer = deeper. Best pull: fight 14 at 7:12 (deep P3). Color = phase reached.</p>
+
+  <div class="progression-chart" style="height:150px;padding-bottom:24px;">
+    <div class="prog-bar" style="height:69.3%;background:var(--yellow);" data-label="1">
+      <div class="tooltip">Pull 1 | 5:00 | P2<br>DPS: 24.8K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:95.6%;background:var(--red);" data-label="2">
+      <div class="tooltip">Pull 2 | 6:54 | P3<br>DPS: 28.2K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:25.6%;background:var(--green);" data-label="3">
+      <div class="tooltip">Pull 3 | 1:51 | P1<br>Cascade death @ 1:31</div>
+    </div>
+    <div class="prog-bar" style="height:25.6%;background:var(--green);" data-label="5">
+      <div class="tooltip">Pull 5 | 1:51 | P1<br>Cascade death @ 1:40</div>
+    </div>
+    <div class="prog-bar" style="height:97.7%;background:var(--red);" data-label="6">
+      <div class="tooltip">Pull 6 | 7:03 | P3<br>DPS: 23.7K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:16.6%;background:var(--green);" data-label="8">
+      <div class="tooltip">Pull 8 | 1:12 | P1<br>Cascade death @ 1:07</div>
+    </div>
+    <div class="prog-bar" style="height:30.0%;background:var(--green);" data-label="12">
+      <div class="tooltip">Pull 12 | 2:10 | P1<br>Cascade death @ 2:05</div>
+    </div>
+    <div class="prog-bar" style="height:18.9%;background:var(--green);" data-label="13">
+      <div class="tooltip">Pull 13 | 1:22 | P1<br>Cascade death @ 1:07</div>
+    </div>
+    <div class="prog-bar" style="height:100%;background:var(--red);" data-label="14">
+      <div class="tooltip">Pull 14 | 7:12 | P3 (BEST)<br>DPS: 27.1K | 1 actionable death @ 2:36</div>
+    </div>
+    <div class="prog-bar" style="height:96.5%;background:var(--red);" data-label="17">
+      <div class="tooltip">Pull 17 | 6:58 | P3<br>DPS: 26.7K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:70.7%;background:var(--yellow);" data-label="18">
+      <div class="tooltip">Pull 18 | 5:06 | P2<br>DPS: 21.6K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:18.2%;background:var(--green);" data-label="19">
+      <div class="tooltip">Pull 19 | 1:19 | P1<br>Cascade death @ 1:05</div>
+    </div>
+    <div class="prog-bar" style="height:21.0%;background:var(--green);" data-label="21">
+      <div class="tooltip">Pull 21 | 1:31 | P1<br>Cascade death @ 1:19</div>
+    </div>
+    <div class="prog-bar" style="height:17.8%;background:var(--green);" data-label="22">
+      <div class="tooltip">Pull 22 | 1:17 | P1<br>Cascade death @ 1:10</div>
+    </div>
+    <div class="prog-bar" style="height:72.5%;background:var(--red);" data-label="23">
+      <div class="tooltip">Pull 23 | 5:14 | P3<br>DPS: 22.8K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:77.6%;background:var(--red);" data-label="24">
+      <div class="tooltip">Pull 24 | 5:36 | P3<br>DPS: 27.2K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:96.5%;background:var(--red);" data-label="26">
+      <div class="tooltip">Pull 26 | 6:58 | P3<br>DPS: 22.5K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:77.6%;background:var(--red);" data-label="27">
+      <div class="tooltip">Pull 27 | 5:36 | P3<br>DPS: 26.5K | Cascade death</div>
+    </div>
+    <div class="prog-bar" style="height:96.8%;background:var(--red);" data-label="28">
+      <div class="tooltip">Pull 28 | 6:59 | P3<br>DPS: 23.9K | Cascade death</div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-top:20px;">
+    9 of 19 pulls reached P3 (47%). 8 pulls wiped in P1 (sub-2:14). The second half of the night shows improvement:
+    pulls 23-28 are consistently reaching P3 with 5+ minute durations. This indicates the raid is solidifying P1 execution
+    and getting more consistent P2/P3 looks.
+  </p>
+</div>
+
+<!-- Reference Comparison (de-emphasized) -->
+<div class="section">
+  <h2>Reference Comparison (De-Emphasized)</h2>
+  <p style="color:var(--dim);font-size:12px;margin-bottom:12px;">
+    Prog-to-kill comparisons are inherently unfair. References are kill fights with full uptime; prog pulls have deaths, repositioning, and learning.
+    Included for context only. All references are 4-heal comps (matching our setup), US/EU only.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Player</th>
+        <th>DPS</th>
+        <th>DTPS</th>
+        <th>HPS</th>
+        <th>Kill Time</th>
+        <th>ilvl</th>
+        <th>Talent &Delta;</th>
+        <th>Hero</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight">
+        <td>--</td>
+        <td style="color:var(--dk-color);font-weight:600;">Glazedwhole</td>
+        <td>25.0K*</td>
+        <td>85.3K</td>
+        <td>57.6K</td>
+        <td>prog</td>
+        <td>287</td>
+        <td>--</td>
+        <td><span class="tag tag-build">San'layn</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">1</td>
+        <td style="color:var(--purple);">Nolandk</td>
+        <td style="color:var(--purple);">56.6K</td>
+        <td>89.0K</td>
+        <td>63.4K</td>
+        <td>8:28</td>
+        <td>290</td>
+        <td><span class="tag tag-diff">11</span></td>
+        <td><span class="tag tag-build">San'layn</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">2</td>
+        <td style="color:var(--purple);">Cosplaywaifu</td>
+        <td style="color:var(--purple);">53.2K</td>
+        <td>--</td>
+        <td>--</td>
+        <td>8:38</td>
+        <td>291</td>
+        <td><span class="tag tag-diff">10</span></td>
+        <td>--</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">3</td>
+        <td style="color:var(--purple);">Bloobs</td>
+        <td style="color:var(--purple);">53.1K</td>
+        <td>--</td>
+        <td>--</td>
+        <td>8:04</td>
+        <td>288</td>
+        <td><span class="tag tag-diff">11</span></td>
+        <td>--</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">4</td>
+        <td style="color:var(--purple);">Akavinny</td>
+        <td style="color:var(--purple);">53.0K</td>
+        <td>94.1K</td>
+        <td>61.8K</td>
+        <td>8:28</td>
+        <td>290</td>
+        <td><span class="tag tag-warn">9</span></td>
+        <td><span class="tag tag-build">San'layn</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">5</td>
+        <td style="color:var(--purple);">Clane</td>
+        <td style="color:var(--purple);">52.2K</td>
+        <td>--</td>
+        <td>--</td>
+        <td>8:05</td>
+        <td>291</td>
+        <td><span class="tag tag-diff">11</span></td>
+        <td>--</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:11px;color:var(--dim);margin-top:8px;">
+    *Glazedwhole DPS averaged from 11 pulls with data. Reference DPS from kill fights with full uptime.
+    The DPS gap is expected on prog -- deaths, repositioning, and learning mechanics reduce DPS.
+    DTPS is comparable (85K vs 89-94K), confirming active mitigation is effective.
+    All listed references run 4-heal comps matching our raid composition.
+  </p>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Items</h2>
+
+  <div class="action-item critical">
+    <div class="title">1. Increase Death Strike CPM -- 10.4 vs 14.8 Reference (30% deficit)</div>
+    <div class="desc">
+      Death Strike is the primary self-heal and Blood Shield generator. At 10.4 CPM, Glazedwhole is pressing Death Strike 30% less than Akavinny (14.8 CPM).
+      This means fewer Blood Shields, less self-healing, and more reliance on external healing. The fix is chaining more Heart Strikes to generate Runic Power,
+      then spending it on Death Strike. Heart Strike CPM is also low (7.1 vs 12.4) -- these are linked. Prioritize Heart Strike as the primary rune spender
+      to fuel Death Strike.
+    </div>
+  </div>
+
+  <div class="action-item critical">
+    <div class="title">2. Increase Total CPM -- 53.1 vs 69.8 Reference (24% deficit)</div>
+    <div class="desc">
+      A 24% gap in total abilities pressed per minute means significant rotational downtime. On a 433-second fight, this represents approximately 120 missed button presses.
+      Focus on maintaining GCD uptime -- always have something queued. Use Blood Boil and Death's Caress as fillers when runes are regenerating and Runic Power is too low for Death Strike.
+      During Gift of the San'layn windows, chain Vampiric Strike and Death Strike rapidly to maximize the burst window.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="title">3. Use AMS for Magic-Heavy Mechanics</div>
+    <div class="desc">
+      Simulacrum Backlash (4.1% of total damage) had only 3% absorption, and Cosmic Radiation (1.0%) had 1% absorption. Both are magic damage that Anti-Magic Shell mitigates.
+      AMS usage is already 3 casts per long pull (good frequency), but timing it for Simulacrum Backlash in P2 or Cosmic Radiation in P3 would reduce magic damage intake.
+      Consider banking AMS specifically for Cosmic Radiation in P3, where incoming damage is highest.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="title">4. Intermission Survival -- Pre-Cast a Defensive Before Stellar Emission</div>
+    <div class="desc">
+      The one actionable death was during Intermission (fight 14 at 2:35) to Orbiting Matter + Stellar Emission with no major defensive active.
+      DRW was not used until 2:56 and Vampiric Blood until 2:58 -- both came after the death. Pre-casting a defensive (IBF or AMS) before the Intermission
+      Stellar Emission channel would prevent this. The Intermission starts on a fixed timer at 2:14 -- plan the defensive window.
+    </div>
+  </div>
+
+  <div class="action-item positive">
+    <div class="title">5. Strength: Defensive CD Discipline Is Excellent</div>
+    <div class="desc">
+      Vampiric Blood used in every long pull (6.3 avg), DRW in every pull (2.9 avg), AMS in every pull (3.0 avg).
+      Lichborne used proactively for leech in 11/11 pulls. IBF used in 10/11 pulls. This is above-reference defensive usage --
+      Glazedwhole is pressing defensive buttons more often than kill references, which is correct behavior for prog.
+    </div>
+  </div>
+
+  <div class="action-item positive">
+    <div class="title">6. Strength: Exceptional Survivability -- Last Player Standing in Wipes</div>
+    <div class="desc">
+      Only 1 actionable death in 19 pulls. In the other 18 deaths, Glazedwhole was death #3 to #22 -- the raid collapsed around them while they stayed alive.
+      This is the ideal profile for a prog tank: staying alive while others die, giving the raid the best possible chance to recover or learn more of the fight.
+      Multiple P3 pulls (6:58-7:12) demonstrate extended survival under the hardest mechanics.
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Generated by WCL Tank Analyzer | Data from <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">Warcraft Logs</a> |
+  Blood Death Knight (San'layn) | Crown of the Cosmos Mythic | Prog Night 4 | June 25, 2026
+</div>
+
+</body>
+</html>

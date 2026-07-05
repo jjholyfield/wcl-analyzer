@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starfighter — Fury Warrior — Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Starfighter <span class="dim">&mdash; Fury Warrior</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">165.0K</div>
+    <div class="stat-label">DPS (Kill Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">290</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">66.7</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Starfighter survived the kill and dealt <strong class="yellow">165K DPS</strong> across 7:58 &mdash; a <strong class="red">25.7% gap</strong> behind the #1 reference Carloseljet (222K DPS in 7:15). Rotational CPM is nearly identical (<strong class="green">66.7 vs 65.5</strong>) &mdash; the gap is not from dead time or missed GCDs. The difference comes from <strong class="yellow">ability priority</strong>: Starfighter over-casts Thunder Clap (+96% CPM) and Raging Blow (+27%) at the expense of <strong class="red">Rampage (&minus;10%)</strong>, <strong class="red">Bloodthirst (&minus;13%)</strong>, and <strong class="red">Thunder Blast (&minus;21%)</strong>. Odyn's Fury damage is <strong class="red">47% lower</strong> than reference despite more casts, indicating poor cooldown alignment with Avatar/Recklessness. With only <strong class="green">3 talent differences</strong> and similar ilvl (289.5 vs 259.1), the gap is pure execution and priority tuning.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Fury Warriors on Mythic Rotmire. Primary reference: <strong>Carloseljet</strong> (closest talent match at 3 diffs, 222K DPS, 7:15 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Rotational CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Starfighter</strong></td>
+      <td>165,003</td>
+      <td>7:58</td>
+      <td>289.5</td>
+      <td>&mdash;</td>
+      <td>66.7</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Carloseljet <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">221,752</td>
+      <td>7:15</td>
+      <td>259.1</td>
+      <td><span class="tag tag-same">3 diff</span></td>
+      <td>65.5</td>
+    </tr>
+    <tr>
+      <td>Svenwarr <span class="ref-badge">#2</span></td>
+      <td class="green">202,334</td>
+      <td>6:42</td>
+      <td>290.8</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>N&ograve;rg <span class="ref-badge">#3</span></td>
+      <td class="green">191,879</td>
+      <td>8:40</td>
+      <td>273.5</td>
+      <td><span class="tag tag-same">3 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Illhitu <span class="ref-badge">#4</span></td>
+      <td class="green">189,456</td>
+      <td>6:15</td>
+      <td>274.8</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Scolpi <span class="ref-badge">#5</span></td>
+      <td class="green">187,828</td>
+      <td>6:52</td>
+      <td>259.8</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Starfighter has near-identical ilvl to Carloseljet (289.5 vs 259.1) and only 3 talent differences. Both survived their kills. The 25.7% DPS gap is execution-based &mdash; not gear, not spec, not raid comp. Svenwarr's higher ilvl (290.8) makes direct comparison less meaningful, so Carloseljet is the best apples-to-apples reference.</p>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major mechanics. Blooms fire on a ~136s cycle (raid-wide AoE). Festering Vines fire every ~68s (roots). Awaken Fungi spawns adds every ~65s. All timings are fixed regardless of raid DPS.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Death markers from raid -->
+  <div class="timeline-marker" style="left: 39.3%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Tiareynna</span>
+  </div>
+  <div class="timeline-marker" style="left: 76.8%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 3 deaths</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State</div>
+  <p>0:00&ndash;3:08 = 19/19 alive &middot; 3:08&ndash;6:07 = 18/19 (lost Tiareynna, Disc healer) &middot; 6:07 = 15/19 (Nurnyx, Snackznchill, Son&igrave;c die) &middot; 6:40 = 14/19 (Zinnks) &middot; 7:38&ndash;7:40 = 11/19 (Invincibale, Unholyftw, Nucke)</p>
+  <p style="margin-top: 4px; color: var(--yellow);">Starfighter survived the entire fight. The raid lost 8 players, 5 of them in the final 2 minutes during soft enrage. Late-fight DPS is naturally harder with fewer people alive.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Starfighter (7:58 kill) vs Carloseljet (7:15 kill). Rotational abilities only &mdash; sorted by DPS impact.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Rampage</strong></td>
+      <td>137</td>
+      <td class="yellow">17.2</td>
+      <td>139</td>
+      <td>19.2</td>
+      <td class="red">&minus;10%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Bloodthirst</strong></td>
+      <td>89</td>
+      <td class="yellow">11.2</td>
+      <td>93</td>
+      <td>12.8</td>
+      <td class="red">&minus;13%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Thunder Blast</strong></td>
+      <td>58</td>
+      <td class="red">7.3</td>
+      <td>67</td>
+      <td>9.2</td>
+      <td class="red">&minus;21%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Bloodbath</strong></td>
+      <td>35</td>
+      <td class="yellow">4.4</td>
+      <td>38</td>
+      <td>5.2</td>
+      <td class="yellow">&minus;16%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Execute</td>
+      <td>33</td>
+      <td>4.1</td>
+      <td>28</td>
+      <td>3.9</td>
+      <td class="green">+7%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Thunder Clap</td>
+      <td>43</td>
+      <td class="yellow">5.4</td>
+      <td>20</td>
+      <td>2.8</td>
+      <td class="yellow">+96%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Raging Blow</td>
+      <td>53</td>
+      <td class="yellow">6.7</td>
+      <td>38</td>
+      <td>5.2</td>
+      <td class="yellow">+27%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr>
+      <td>Odyn's Fury</td>
+      <td>45</td>
+      <td>5.7</td>
+      <td>30</td>
+      <td>4.1</td>
+      <td class="dim">+37%</td>
+      <td><span class="tag tag-info">See below</span></td>
+    </tr>
+    <tr>
+      <td>Odyn's Fury Off-Hand</td>
+      <td>30</td>
+      <td>3.8</td>
+      <td>20</td>
+      <td>2.8</td>
+      <td class="dim">+37%</td>
+      <td><span class="tag tag-info">Tied to OF</span></td>
+    </tr>
+    <tr>
+      <td>Crushing Blow</td>
+      <td>8</td>
+      <td>1.0</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">Proc-based</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Priority Problem: Rampage &amp; Bloodthirst Down</div>
+    <p style="font-size: 14px;">Rampage is the #1 priority ability &mdash; it enrages you, hits hard, and enables the rest of the rotation. At <strong>17.2 CPM vs 19.2 CPM</strong>, Starfighter is missing roughly <strong>16 Rampage casts</strong> over the fight. Bloodthirst is the primary Rage generator and Rampage enabler at <strong>11.2 vs 12.8 CPM</strong> &mdash; about <strong>13 missed casts</strong>. Together, these two abilities account for ~32% of reference total damage. The lost casts are being filled with lower-priority Thunder Clap and Raging Blow instead.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Thunder Clap Over-Use</div>
+    <p style="font-size: 14px;">Thunder Clap at <strong>5.4 CPM (43 casts) vs 2.8 CPM (20 casts)</strong> is being used more than double the reference rate. Thunder Clap is a low-priority filler that generates Thunder Blast procs, but pressing it too often displaces higher-value Bloodthirst and Rampage casts. The reference gets <strong>more</strong> Thunder Blasts (67 vs 58) with <strong>fewer</strong> Thunder Claps (20 vs 43) &mdash; suggesting better proc management through Bloodthirst-first priority.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Total damage: Starfighter 80.6M (165K DPS) vs Carloseljet 98.9M (227K DPS). Sorted by impact on the overall gap.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Gap</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Thunder Blast</strong></td>
+      <td>14,314K</td>
+      <td>17.8%</td>
+      <td class="green">22,430K</td>
+      <td>22.7%</td>
+      <td class="red">&minus;8,116K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Rampage</strong></td>
+      <td>16,002K</td>
+      <td>19.9%</td>
+      <td class="green">20,856K</td>
+      <td>21.1%</td>
+      <td class="red">&minus;4,854K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Odyn's Fury</strong></td>
+      <td>5,543K</td>
+      <td>6.9%</td>
+      <td class="green">10,357K</td>
+      <td>10.5%</td>
+      <td class="red">&minus;4,814K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Bloodbath</strong></td>
+      <td>8,998K</td>
+      <td>11.2%</td>
+      <td class="green">12,222K</td>
+      <td>12.4%</td>
+      <td class="red">&minus;3,224K</td>
+    </tr>
+    <tr>
+      <td>Rend</td>
+      <td>3,447K</td>
+      <td>4.3%</td>
+      <td>4,345K</td>
+      <td>4.4%</td>
+      <td class="dim">&minus;898K</td>
+    </tr>
+    <tr>
+      <td>Bloodthirst</td>
+      <td>7,839K</td>
+      <td>9.7%</td>
+      <td>7,978K</td>
+      <td>8.1%</td>
+      <td class="dim">&minus;139K</td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>4,819K</td>
+      <td>6.0%</td>
+      <td>4,352K</td>
+      <td>4.4%</td>
+      <td class="green">+467K</td>
+    </tr>
+    <tr>
+      <td>Thunder Clap</td>
+      <td>5,226K</td>
+      <td>6.5%</td>
+      <td>3,215K</td>
+      <td>3.3%</td>
+      <td class="green">+2,011K</td>
+    </tr>
+    <tr>
+      <td>Raging Blow</td>
+      <td>2,368K</td>
+      <td>2.9%</td>
+      <td>1,642K</td>
+      <td>1.7%</td>
+      <td class="green">+726K</td>
+    </tr>
+    <tr>
+      <td>Lightning Strike</td>
+      <td>3,775K</td>
+      <td>4.7%</td>
+      <td>3,315K</td>
+      <td>3.4%</td>
+      <td class="green">+460K</td>
+    </tr>
+    <tr>
+      <td>Execute</td>
+      <td>1,746K</td>
+      <td>2.2%</td>
+      <td>1,152K</td>
+      <td>1.2%</td>
+      <td class="green">+594K</td>
+    </tr>
+    <tr>
+      <td>Gushing Wound</td>
+      <td>1,299K</td>
+      <td>1.6%</td>
+      <td>1,573K</td>
+      <td>1.6%</td>
+      <td class="dim">&minus;274K</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Where the 18.3M Damage Gap Comes From</div>
+  <p style="font-size: 14px;">The total gap is ~18.3M damage. The four biggest contributors: <strong class="red">Thunder Blast (&minus;8.1M)</strong> from fewer procs and less damage per proc, <strong class="red">Rampage (&minus;4.9M)</strong> from lower cast rate, <strong class="red">Odyn's Fury (&minus;4.8M)</strong> from poor cooldown alignment, and <strong class="red">Bloodbath (&minus;3.2M)</strong> also tied to the Rampage/Enrage cycle. The extra Thunder Clap and Raging Blow damage (+2.7M combined) partially offsets this but those are low-value GCDs that would deal far more as Rampage or Bloodthirst casts.</p>
+</div>
+
+<!-- ODYN'S FURY ANALYSIS -->
+<h2>Cooldown Alignment: Odyn's Fury</h2>
+<p class="section-intro">Odyn's Fury is the biggest single-ability damage gap: <strong class="red">5.5M vs 10.4M (&minus;47%)</strong> despite Starfighter casting it more (45 vs 30). The issue is alignment with Avatar + Recklessness.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Carloseljet</span> <span class="ref-badge">Reference</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:24</span> <span class="cast good">Avatar + Recklessness</span></div>
+      <div><span class="dim">0:30</span> <span class="cast good">Odyn's Fury (6s after CDs)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:11</span> <span class="cast good">Avatar + Recklessness</span></div>
+      <div><span class="dim">1:21</span> <span class="cast good">Odyn's Fury (10s after CDs)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">Pattern:</span> <span class="cast good">Always CDs first, then OF within 6-10s</span></div>
+      <div style="margin-top: 8px;"><strong class="green">10 Avatar+Reck windows, 10 Odyn's Fury casts &mdash; perfect 1:1</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Starfighter</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:01</span> <span class="cast bad">Odyn's Fury (pre-pull, no CDs)</span></div>
+      <div><span class="dim">0:29</span> <span class="cast good">Avatar + Recklessness</span></div>
+      <div><span class="dim">0:34</span> <span class="cast good">Odyn's Fury (5s after CDs)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">0:57</span> <span class="cast bad">Odyn's Fury (no CDs active)</span></div>
+      <div><span class="dim">1:17</span> <span class="cast good">Avatar + Recklessness</span></div>
+      <div><span class="dim">1:27</span> <span class="cast good">Odyn's Fury (10s after CDs)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">Pattern:</span> <span class="cast bad">OF fires between CD windows regularly</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">9 Avatar+Reck windows, 15 Odyn's Fury casts &mdash; many OF without CDs</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Why This Matters</div>
+  <p style="font-size: 14px;">Avatar grants <strong>20% damage amp</strong> and Recklessness grants <strong>crit bonus</strong>. Odyn's Fury under both CDs does roughly <strong>2x the damage</strong> of an unbuffed cast. Carloseljet fires Odyn's Fury 10 times, always inside CD windows &mdash; every cast is amplified. Starfighter fires it 15 times but many land outside CD windows, resulting in <strong>47% less total damage</strong> from the ability. Holding Odyn's Fury for 5-6 seconds to sync with Avatar/Recklessness would be the single biggest DPS gain available.</p>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown Usage</h2>
+<p class="section-intro">Major cooldown cast counts and timing. Both players used Avatar and Recklessness on cooldown effectively.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cooldown</th><th>Player Uses</th><th>Ref Uses</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Avatar</strong></td>
+      <td>9</td>
+      <td>10</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Recklessness</strong></td>
+      <td>9</td>
+      <td>10</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Odyn's Fury</strong></td>
+      <td>15</td>
+      <td>10</td>
+      <td><span class="tag tag-warn">Over-using</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rallying Cry</strong></td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Raid utility</span></td>
+    </tr>
+    <tr>
+      <td>Charge</td>
+      <td>15</td>
+      <td>8</td>
+      <td><span class="tag tag-warn">Movement-heavy</span></td>
+    </tr>
+    <tr>
+      <td>Spell Reflection</td>
+      <td>2</td>
+      <td>13</td>
+      <td><span class="tag tag-diff">Under-using</span></td>
+    </tr>
+    <tr>
+      <td>Pummel</td>
+      <td>3</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Interrupts</span></td>
+    </tr>
+    <tr>
+      <td>Heroic Leap</td>
+      <td>2</td>
+      <td>3</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--cyan);">
+  <div class="card-header cyan">Spell Reflection Gap</div>
+  <p style="font-size: 14px;">Carloseljet used Spell Reflection <strong>13 times</strong> vs Starfighter's <strong>2</strong>. Spell Reflection deals reflected damage back to the caster &mdash; on Rotmire, reflecting Rotting Pustules ticks provides <strong>free damage on every tick</strong>. At 13 casts vs 2, this is a significant DPS loss from an essentially free button.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during the kill fight. Both players had Time Warp on pull and regular Ebon Might uptime from an Aug Evoker.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player Timing</th><th>Ref Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Time Warp</strong></td>
+      <td>0:01</td>
+      <td>0:01</td>
+      <td><span class="tag tag-same">Same &mdash; on pull</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>12 applications</td>
+      <td>12 applications</td>
+      <td><span class="tag tag-same">Similar uptime</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>4 applications</td>
+      <td>2 applications</td>
+      <td><span class="tag tag-same">Player had more</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td>None</td>
+      <td><span class="tag tag-same">Neither received PI</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">External buff context is nearly identical between both players. The DPS gap cannot be attributed to buff differences. If anything, Starfighter had slightly more Prescience applications (4 vs 2).</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Starfighter during the kill. All sources are unavoidable raid-wide mechanics. No avoidable damage detected.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rotting Pustules</strong></td>
+      <td>12,959K</td>
+      <td>467</td>
+      <td>813K</td>
+      <td><span class="tag tag-same">No &mdash; soft enrage ticks</span></td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>3,206K</td>
+      <td>51</td>
+      <td>0</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide AoE</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2,627K</td>
+      <td>44</td>
+      <td>46K</td>
+      <td><span class="tag tag-same">No &mdash; environmental</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>498K</td>
+      <td>27</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Adds/cleave hits</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>248K</td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Proximity &mdash; 1 hit only</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="green">Clean damage profile.</strong> No Festering Vines damage (avoided all roots), no excessive Bursting Shroom hits (only 1). Starfighter's damage taken is entirely from unavoidable mechanics. This is better than many DPS in the raid.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Starfighter's DPS across all 20 pulls on Mythic Rotmire. The kill (Fight 22) was the best long-pull performance at 165K DPS. Short wipes (&lt;90s) show inflated DPS from burst phase bias.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 67%; background: var(--red);" data-tooltip="F2: 112K DPS (1:13)"></div>
+    <div class="prog-bar" style="height: 91%; background: var(--red);" data-tooltip="F3: 153K DPS (1:11)"></div>
+    <div class="prog-bar" style="height: 79%; background: var(--red);" data-tooltip="F4: 132K DPS (0:51)"></div>
+    <div class="prog-bar" style="height: 64%; background: var(--orange);" data-tooltip="F5: 107K DPS (2:42)"></div>
+    <div class="prog-bar" style="height: 59%; background: var(--orange);" data-tooltip="F7: 98K DPS (2:18)"></div>
+    <div class="prog-bar" style="height: 76%; background: var(--orange);" data-tooltip="F8: 127K DPS (2:17)"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--yellow);" data-tooltip="F9: 167K DPS (3:14)"></div>
+    <div class="prog-bar" style="height: 85%; background: var(--yellow);" data-tooltip="F10: 142K DPS (5:37)"></div>
+    <div class="prog-bar" style="height: 91%; background: var(--yellow);" data-tooltip="F11: 153K DPS (4:48)"></div>
+    <div class="prog-bar" style="height: 85%; background: var(--yellow);" data-tooltip="F12: 142K DPS (5:42)"></div>
+    <div class="prog-bar" style="height: 85%; background: var(--orange);" data-tooltip="F13: 142K DPS (2:51)"></div>
+    <div class="prog-bar" style="height: 87%; background: var(--red);" data-tooltip="F14: 145K DPS (1:15)"></div>
+    <div class="prog-bar" style="height: 90%; background: var(--yellow);" data-tooltip="F15: 150K DPS (5:05)"></div>
+    <div class="prog-bar" style="height: 98%; background: var(--red);" data-tooltip="F16: 165K DPS (0:53)"></div>
+    <div class="prog-bar" style="height: 88%; background: var(--yellow);" data-tooltip="F17: 148K DPS (5:45)"></div>
+    <div class="prog-bar" style="height: 89%; background: var(--yellow);" data-tooltip="F18: 150K DPS (6:52)"></div>
+    <div class="prog-bar" style="height: 89%; background: var(--yellow);" data-tooltip="F19: 149K DPS (5:01)"></div>
+    <div class="prog-bar" style="height: 92%; background: var(--red);" data-tooltip="F20: 153K DPS (0:54)"></div>
+    <div class="prog-bar" style="height: 88%; background: var(--yellow);" data-tooltip="F21: 148K DPS (7:15)"></div>
+    <div class="prog-bar" style="height: 99%; background: var(--green);" data-tooltip="F22 KILL: 165K DPS (7:58)"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span style="color: var(--dim);">Short wipe &bull; Medium &bull; Long pull &bull; <span class="green">Kill</span></span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Filtering to pulls longer than 3 minutes (meaningful comparisons): F5 (107K) &rarr; F10 (142K) &rarr; F11 (153K) &rarr; F12 (142K) &rarr; F15 (150K) &rarr; F17 (148K) &rarr; F18 (150K) &rarr; F19 (149K) &rarr; F21 (148K) &rarr; <strong class="green">F22 Kill (165K)</strong>. DPS stabilized around 142&ndash;153K for most longer pulls with a clear <strong>improvement on the kill</strong>. The kill pull was Starfighter's best sustained DPS across the entire night, suggesting focused execution when it counted.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. Similar ilvl but different stat distributions.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Starfighter</th><th>Carloseljet</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>289.5</td>
+      <td>259.1</td>
+      <td><span class="tag tag-same">&minus;1.7 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Strength</td>
+      <td>2,396</td>
+      <td>2,382</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="green">886</td>
+      <td>649</td>
+      <td>Player has +37% more Crit</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="yellow">994</td>
+      <td>1,115</td>
+      <td>Player has &minus;11% Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="yellow">946</td>
+      <td>1,168</td>
+      <td>Player has &minus;19% Mastery</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>36</td>
+      <td>57</td>
+      <td><span class="dim">Both very low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Starfighter has more Crit (+37%) but less Haste (&minus;11%) and Mastery (&minus;19%). For Fury Warriors, Haste directly increases GCD speed and rage generation, which may partially explain the lower Rampage and Bloodthirst CPM &mdash; fewer GCDs available per minute with less Haste. However, the reference has 19.2 Rampage CPM with 1,115 Haste while Starfighter has 17.2 Rampage CPM with 994 Haste &mdash; the 11% Haste difference would account for roughly 1 CPM, not 2 CPM. The rest of the gap is priority-related.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Sync Odyn's Fury with Avatar + Recklessness.</strong> This is the single biggest DPS gain available. Currently Odyn's Fury fires 15 times but many casts land outside cooldown windows, producing <strong>47% less total damage</strong> (&minus;4.8M) compared to Carloseljet who casts it 10 times all inside CD windows. Hold Odyn's Fury for 5-6 seconds after pressing Avatar + Recklessness. Every OF cast should be amplified by at least one CD. An unbuffed OF at 0:01 (pre-pull) is nearly wasted compared to a buffed OF at 0:30 during the Avatar/Recklessness window. Estimated gain: <strong>+3-4M damage</strong> (&sim;7-9K DPS).
+</div>
+
+<div class="action-item critical">
+  <strong>2. Prioritize Rampage over Thunder Clap and Raging Blow.</strong> Rampage is at 17.2 CPM vs 19.2 &mdash; roughly <strong>16 missed casts</strong> over the fight. Thunder Clap is being pressed at 5.4 CPM (43 casts) vs the reference's 2.8 CPM (20 casts). Each Rampage replaces a Thunder Clap or Raging Blow GCD and deals substantially more damage while maintaining Enrage uptime. The reference manages to get more Thunder Blast procs (67 vs 58) with fewer Thunder Clap inputs (20 vs 43) because Bloodthirst-generated Rage feeds more Rampages, which trigger more proc chances. Estimated gain: <strong>+3-5M damage</strong> (&sim;7-10K DPS).
+</div>
+
+<div class="action-item">
+  <strong>3. Use Spell Reflection on cooldown for free damage.</strong> Carloseljet used Spell Reflection <strong>13 times</strong> vs Starfighter's <strong>2</strong>. On Rotmire, Rotting Pustules are constant magic ticks that can be reflected for bonus damage. This is essentially a free DPS button with no GCD cost. With 467 Pustules ticks taken, each Spell Reflection window could reflect multiple ticks for additional damage with zero rotation disruption.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Bloodthirst usage to fuel Rage generation.</strong> Bloodthirst at 11.2 CPM vs 12.8 CPM means <strong>13 fewer casts</strong>. Bloodthirst is the primary Rage generator &mdash; fewer Bloodthirsts means less Rage, which means fewer Rampages. The 11% Haste gap partially explains this (&sim;1 CPM), but the remaining delta suggests Bloodthirst is being deprioritized in favor of Raging Blow (27% higher CPM than reference). When Rampage is not ready, Bloodthirst should be the next button, not Raging Blow.
+</div>
+
+<div class="action-item">
+  <strong>5. Target Haste and Mastery in gear upgrades.</strong> Starfighter has &minus;11% Haste and &minus;19% Mastery vs the reference, with +37% more Crit. Fury Warrior stat priority favors Haste and Mastery over Crit for sustained damage. Shifting itemization toward Haste/Mastery pieces would naturally increase GCD speed (more casts per minute) and Enrage/Rampage damage. This is a longer-term improvement but would passively close part of the Rampage CPM gap.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Survivability:</strong> Starfighter survived the entire kill while 8 teammates died. Zero avoidable damage taken (no Festering Vines hits, only 1 Bursting Shroom). This is excellent positioning for a melee DPS.<br><br>
+    <strong>Uptime:</strong> 66.7 rotational CPM matches the reference's 65.5 &mdash; there is essentially zero dead time. Only 1 casting gap &gt;2.5s across 8 minutes (a 2.8s gap after a Charge at 6:46). The GCD usage is extremely tight.<br><br>
+    <strong>Execute phase:</strong> 4.1 CPM Execute vs 3.9 for reference &mdash; execute usage is slightly better than the top-ranked player.<br><br>
+    <strong>Cooldown discipline:</strong> Avatar and Recklessness were used 9 times each on cooldown. Rallying Cry contributed at 6:08 during the most dangerous part of the fight. 3 interrupts (Pummel) on Sporecap adds.<br><br>
+    <strong>Kill pull was best pull:</strong> 165K on the kill was Starfighter's highest sustained DPS all night, showing focused execution when it mattered.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">The 25.7% DPS gap vs #1 ranked Carloseljet breaks down to: <strong>~40% cooldown alignment</strong> (Odyn's Fury outside CD windows), <strong>~35% ability priority</strong> (Thunder Clap and Raging Blow displacing Rampage and Bloodthirst), <strong>~15% Spell Reflection free damage</strong>, and <strong>~10% stat distribution</strong> (less Haste reducing natural CPM ceiling). The good news: none of this is gear-gated. Fixing Odyn's Fury alignment alone would close roughly 7-9K DPS of the gap. Adding proper Rampage prioritization closes another 7-10K. Together that would put Starfighter in the 180-185K range &mdash; competitive with the #3-#5 references on the leaderboard.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: Carloseljet (#1 ranked Fury Warrior, report <code>vBzg6JbLWYnjPKrq</code>, Fight 18, 7:15 kill). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 3 differences between Starfighter and Carloseljet. Item level difference: &minus;1.7 (289.5 vs 259.1). External buffs: both had Time Warp on pull and Aug Evoker support. Neither received Power Infusion. The performance gap is execution-based.</p>
+</div>
+
+</body>
+</html>

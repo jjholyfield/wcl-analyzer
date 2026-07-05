@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starfighter (Fury Warrior) — Mythic Rotmire Kill Analysis</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x2694;</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --warrior: #c69b6d;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3 { font-weight: 700; }
+h2 { font-size: 18px; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+h3 { font-size: 15px; margin: 16px 0 8px; color: var(--dim); }
+
+/* Header */
+.header { margin-bottom: 32px; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.player-name { font-size: 32px; color: var(--warrior); margin-bottom: 4px; }
+.player-spec { font-size: 14px; color: var(--dim); margin-bottom: 4px; }
+.boss-info { font-size: 14px; color: var(--dim); }
+.kill-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; background: rgba(63, 185, 80, 0.15); color: var(--green); margin-left: 8px; }
+
+/* Summary Cards */
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.summary-card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.summary-card .value { font-size: 28px; font-weight: 700; }
+.summary-card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88, 166, 255, 0.04); }
+.highlight-row { background: rgba(198, 155, 109, 0.08) !important; }
+.ref-row { background: rgba(188, 140, 255, 0.06) !important; }
+
+/* Bars */
+.bar-container { display: flex; align-items: center; gap: 8px; }
+.bar { height: 16px; border-radius: 3px; min-width: 2px; }
+.bar-sf { background: var(--warrior); }
+.bar-ref { background: var(--purple); opacity: 0.7; }
+
+/* Badge */
+.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge-purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+/* Timeline */
+.timeline { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; overflow-x: auto; }
+.timeline-row { display: flex; align-items: center; margin-bottom: 8px; min-height: 24px; }
+.timeline-label { width: 120px; flex-shrink: 0; font-size: 12px; color: var(--dim); }
+.timeline-bar { flex: 1; position: relative; height: 24px; background: rgba(48, 54, 61, 0.3); border-radius: 3px; }
+.timeline-marker { position: absolute; width: 6px; height: 20px; top: 2px; border-radius: 2px; }
+.bloom-marker { background: var(--red); }
+.vines-marker { background: var(--yellow); }
+.adds-marker { background: var(--cyan); }
+.pustule-marker { background: var(--orange); opacity: 0.5; }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.card-header { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+
+/* Action items */
+.action-item { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 12px; }
+.action-item .action-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.action-item .action-impact { font-size: 12px; color: var(--yellow); margin-bottom: 4px; }
+.action-item .action-detail { font-size: 13px; color: var(--dim); }
+
+/* Wipe chart */
+.wipe-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 0 8px; }
+.wipe-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 60px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+.wipe-bar .bar-fill { width: 100%; border-radius: 3px 3px 0 0; }
+.wipe-bar .bar-label { font-size: 11px; color: var(--dim); margin-top: 4px; position: absolute; bottom: -20px; white-space: nowrap; }
+.wipe-bar .bar-value { font-size: 11px; color: var(--text); position: absolute; top: -18px; white-space: nowrap; }
+
+/* Footer */
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+/* Mechanic window grid */
+.mech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.mech-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.mech-card .mech-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.mech-card .mech-time { font-size: 11px; color: var(--dim); }
+.cps-comparison { display: flex; gap: 4px; align-items: center; margin-top: 6px; }
+.cps-bar { height: 12px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+  <a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23, 2026 Rotmire Log Analysis</a>
+  <div class="player-name">Starfighter</div>
+  <div class="player-spec">Fury Warrior &mdash; Mountain Thane</div>
+  <div class="boss-info">
+    Mythic Rotmire &mdash; <span class="kill-badge">KILL</span> 8:09
+    &nbsp;&middot;&nbsp; June 23, 2026
+    &nbsp;&middot;&nbsp; <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Report</a>
+    &nbsp;&middot;&nbsp; #2 DPS in raid (of 14)
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Kill DPS</div>
+    <div class="value" style="color: var(--warrior)">159,605</div>
+    <div class="sub">35% below rank 1 (245,011)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">290</div>
+    <div class="sub">Ref: 293 (+3 gap)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Kill Status</div>
+    <div class="value" style="color: var(--green)">Survived</div>
+    <div class="sub">0 deaths in kill fight</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Rotational CPM</div>
+    <div class="value">65.6</div>
+    <div class="sub">Ref: 69.9 (6% gap)</div>
+  </div>
+</div>
+
+<!-- REFERENCE COMPARISON TABLE -->
+<h2>Reference Comparison</h2>
+<table>
+  <thead>
+    <tr><th>#</th><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr class="highlight-row">
+      <td>&mdash;</td>
+      <td style="color: var(--warrior); font-weight: 600">Starfighter</td>
+      <td>159,605</td>
+      <td>8:09</td>
+      <td>290</td>
+      <td>&mdash;</td>
+      <td>Analyzed player</td>
+    </tr>
+    <tr class="ref-row">
+      <td>1</td>
+      <td style="color: var(--purple)">霜斧 <span class="badge badge-purple">PRIMARY REF</span></td>
+      <td>245,011</td>
+      <td>8:44</td>
+      <td>293</td>
+      <td><span class="badge badge-yellow">5 diffs</span></td>
+      <td>Fewest talent diffs, closest match</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td style="color: var(--purple)">Garyh</td>
+      <td>234,143</td>
+      <td>8:13</td>
+      <td>290</td>
+      <td><span class="badge badge-yellow">6 diffs</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td style="color: var(--purple)">兆铭</td>
+      <td>233,809</td>
+      <td>7:00</td>
+      <td>290</td>
+      <td><span class="badge badge-yellow">6 diffs</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td style="color: var(--purple)">羽哥</td>
+      <td>233,386</td>
+      <td>6:46</td>
+      <td>290</td>
+      <td><span class="badge badge-yellow">6 diffs</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td style="color: var(--purple)">深蹲九九</td>
+      <td>231,787</td>
+      <td>7:57</td>
+      <td>?</td>
+      <td><span class="badge badge-red">13 diffs</span></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+<div class="card">
+  <div style="font-size: 13px; color: var(--dim)">
+    <strong>Note:</strong> Primary reference (霜斧) has 5 talent differences and 3 higher ilvl.
+    The 35% DPS gap reflects a combination of ilvl difference (293 vs 290), 6% lower CPM, and the reference's longer kill time (8:44 vs 8:09 — more execute-phase damage and add cleave cycles).
+    Both players received Augmentation Evoker buffs (Ebon Might, Prescience). Neither received Power Infusion.
+    Lust was used on pull (0:02) for the analyzed player.
+  </div>
+</div>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<div class="timeline">
+  <div class="timeline-row">
+    <div class="timeline-label">Fungal Bloom</div>
+    <div class="timeline-bar"><div class="timeline-marker bloom-marker" style="left: 24.553894751486336%" title="Fungal Bloom at 2:00"></div><div class="timeline-marker bloom-marker" style="left: 52.37977356143588%" title="Fungal Bloom at 4:16"></div><div class="timeline-marker bloom-marker" style="left: 80.21138084969701%" title="Fungal Bloom at 6:32"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label">Festering Vines</div>
+    <div class="timeline-bar"><div class="timeline-marker vines-marker" style="left: 8.79669221295209%" title="Festering Vines at 0:42"></div><div class="timeline-marker vines-marker" style="left: 18.823984320336507%" title="Festering Vines at 1:32"></div><div class="timeline-marker vines-marker" style="left: 36.628299501213206%" title="Festering Vines at 2:59"></div><div class="timeline-marker vines-marker" style="left: 46.65477325455312%" title="Festering Vines at 3:48"></div><div class="timeline-marker vines-marker" style="left: 64.45683796180741%" title="Festering Vines at 5:15"></div><div class="timeline-marker vines-marker" style="left: 74.48003829896929%" title="Festering Vines at 6:04"></div><div class="timeline-marker vines-marker" style="left: 92.27964794409004%" title="Festering Vines at 7:31"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label">Awaken Fungi</div>
+    <div class="timeline-bar"><div class="timeline-marker adds-marker" style="left: 3.069236843935792%" title="Awaken Fungi at 0:15"></div><div class="timeline-marker adds-marker" style="left: 13.10409872623193%" title="Awaken Fungi at 1:04"></div><div class="timeline-marker adds-marker" style="left: 30.89675236197436%" title="Awaken Fungi at 2:31"></div><div class="timeline-marker adds-marker" style="left: 40.937956488115454%" title="Awaken Fungi at 3:20"></div><div class="timeline-marker adds-marker" style="left: 58.72938259279111%" title="Awaken Fungi at 4:47"></div><div class="timeline-marker adds-marker" style="left: 68.76710871424305%" title="Awaken Fungi at 5:36"></div><div class="timeline-marker adds-marker" style="left: 86.55751187636307%" title="Awaken Fungi at 7:03"></div><div class="timeline-marker adds-marker" style="left: 96.59462423228162%" title="Awaken Fungi at 7:52"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label">Bursting Pustules</div>
+    <div class="timeline-bar"><div class="timeline-marker pustule-marker" style="left: 2.0452713457423086%" title="Bursting Pustules at 0:09"></div><div class="timeline-marker pustule-marker" style="left: 6.347972323266214%" title="Bursting Pustules at 0:31"></div><div class="timeline-marker pustule-marker" style="left: 16.36544418211651%" title="Bursting Pustules at 1:19"></div><div class="timeline-marker pustule-marker" style="left: 29.87421898335877%" title="Bursting Pustules at 2:26"></div><div class="timeline-marker pustule-marker" style="left: 34.17364654470463%" title="Bursting Pustules at 2:47"></div><div class="timeline-marker pustule-marker" style="left: 44.19705147037763%" title="Bursting Pustules at 3:36"></div><div class="timeline-marker pustule-marker" style="left: 57.70705380268666%" title="Bursting Pustules at 4:42"></div><div class="timeline-marker pustule-marker" style="left: 62.00525383296576%" title="Bursting Pustules at 5:03"></div><div class="timeline-marker pustule-marker" style="left: 72.0223165147938%" title="Bursting Pustules at 5:52"></div><div class="timeline-marker pustule-marker" style="left: 85.53190967008057%" title="Bursting Pustules at 6:58"></div><div class="timeline-marker pustule-marker" style="left: 89.83379229355997%" title="Bursting Pustules at 7:19"></div><div class="timeline-marker pustule-marker" style="left: 99.84778614772108%" title="Bursting Pustules at 8:08"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label">Recklessness</div>
+    <div class="timeline-bar"><div class="timeline-marker" style="left: 0.20458851112756912%; background: var(--warrior)" title="Recklessness at 0:01"></div><div class="timeline-marker" style="left: 10.024837045250887%; background: var(--warrior)" title="Recklessness at 0:49"></div><div class="timeline-marker" style="left: 24.755209846435864%; background: var(--warrior)" title="Recklessness at 2:01"></div><div class="timeline-marker" style="left: 34.78004689168675%; background: var(--warrior)" title="Recklessness at 2:50"></div><div class="timeline-marker" style="left: 52.78383587091283%; background: var(--warrior)" title="Recklessness at 4:18"></div><div class="timeline-marker" style="left: 62.604084405036154%; background: var(--warrior)" title="Recklessness at 5:06"></div><div class="timeline-marker" style="left: 80.40328487313467%; background: var(--warrior)" title="Recklessness at 6:33"></div><div class="timeline-marker" style="left: 89.81435638500285%; background: var(--warrior)" title="Recklessness at 7:19"></div><div class="timeline-marker" style="left: 99.02083938574346%; background: var(--warrior)" title="Recklessness at 8:04"></div>
+    </div>
+  </div>
+  <div style="margin-top: 8px; font-size: 11px; color: var(--dim)">
+    <span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;vertical-align:middle;margin-right:4px"></span>Fungal Bloom (raid-wide)
+    &nbsp;&nbsp;
+    <span style="display:inline-block;width:10px;height:10px;background:var(--yellow);border-radius:2px;vertical-align:middle;margin-right:4px"></span>Festering Vines (movement)
+    &nbsp;&nbsp;
+    <span style="display:inline-block;width:10px;height:10px;background:var(--cyan);border-radius:2px;vertical-align:middle;margin-right:4px"></span>Awaken Fungi (adds)
+    &nbsp;&nbsp;
+    <span style="display:inline-block;width:10px;height:10px;background:var(--orange);border-radius:2px;vertical-align:middle;margin-right:4px;opacity:0.5"></span>Bursting Pustules (soft enrage)
+    &nbsp;&nbsp;
+    <span style="display:inline-block;width:10px;height:10px;background:var(--warrior);border-radius:2px;vertical-align:middle;margin-right:4px"></span>Recklessness
+  </div>
+  <div style="margin-top: 6px; font-size: 12px; color: var(--dim)">
+    <strong>Raid state:</strong> 21/21 alive for entire fight &mdash; clean kill with no deaths.
+  </div>
+</div>
+
+<!-- PER-MECHANIC ANALYSIS -->
+<h2>Per-Mechanic Window Analysis</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:16px">CPS (casts per second) during each boss mechanic window. Starfighter vs primary reference (霜斧). Flagged if below 85% of reference.</p>
+
+<h3>Raid-Wide: Fungal Bloom (12s windows)</h3>
+<table>
+  <thead><tr><th>#</th><th>Time</th><th>SF CPS</th><th>Ref CPS</th><th>SF Casts</th><th>Ref Casts</th><th>Delta</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>2:00</td>
+      <td>1.333</td>
+      <td style="color: var(--purple)">1.417</td>
+      <td>16</td>
+      <td style="color: var(--purple)">17</td>
+      <td><span class="badge" style="background: var(--yellow)15; color: var(--yellow)">94%</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>4:16</td>
+      <td>1.083</td>
+      <td style="color: var(--purple)">1.500</td>
+      <td>13</td>
+      <td style="color: var(--purple)">18</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">72%</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>6:32</td>
+      <td>1.417</td>
+      <td style="color: var(--purple)">1.500</td>
+      <td>17</td>
+      <td style="color: var(--purple)">18</td>
+      <td><span class="badge" style="background: var(--yellow)15; color: var(--yellow)">94%</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Movement: Festering Vines (12s windows)</h3>
+<table>
+  <thead><tr><th>#</th><th>Time</th><th>SF CPS</th><th>Ref CPS</th><th>SF Casts</th><th>Ref Casts</th><th>Delta</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>0:42</td>
+      <td>1.083</td>
+      <td style="color: var(--purple)">1.583</td>
+      <td>13</td>
+      <td style="color: var(--purple)">19</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">68%</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>1:32</td>
+      <td>0.833</td>
+      <td style="color: var(--purple)">1.000</td>
+      <td>10</td>
+      <td style="color: var(--purple)">12</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">83%</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>2:59</td>
+      <td>1.417</td>
+      <td style="color: var(--purple)">1.000</td>
+      <td>17</td>
+      <td style="color: var(--purple)">12</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">142%</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>3:48</td>
+      <td>0.667</td>
+      <td style="color: var(--purple)">0.833</td>
+      <td>8</td>
+      <td style="color: var(--purple)">10</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">80%</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>5:15</td>
+      <td>0.667</td>
+      <td style="color: var(--purple)">0.917</td>
+      <td>8</td>
+      <td style="color: var(--purple)">11</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">73%</span></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>6:04</td>
+      <td>0.917</td>
+      <td style="color: var(--purple)">0.833</td>
+      <td>11</td>
+      <td style="color: var(--purple)">10</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">110%</span></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>7:31</td>
+      <td>1.333</td>
+      <td style="color: var(--purple)">1.000</td>
+      <td>16</td>
+      <td style="color: var(--purple)">12</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">133%</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Adds: Awaken Fungi (20s windows)</h3>
+<table>
+  <thead><tr><th>#</th><th>Time</th><th>SF CPS</th><th>Ref CPS</th><th>SF Casts</th><th>Ref Casts</th><th>Switch Delay</th><th>Delta</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>0:15</td>
+      <td>1.350</td>
+      <td style="color: var(--purple)">1.400</td>
+      <td>27</td>
+      <td style="color: var(--purple)">28</td>
+      <td>9.5s</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">96%</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>1:04</td>
+      <td>1.000</td>
+      <td style="color: var(--purple)">1.150</td>
+      <td>20</td>
+      <td style="color: var(--purple)">23</td>
+      <td>10.8s</td>
+      <td><span class="badge" style="background: var(--yellow)15; color: var(--yellow)">87%</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>2:31</td>
+      <td>1.150</td>
+      <td style="color: var(--purple)">1.000</td>
+      <td>23</td>
+      <td style="color: var(--purple)">20</td>
+      <td>8.8s</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">115%</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>3:20</td>
+      <td>0.900</td>
+      <td style="color: var(--purple)">1.200</td>
+      <td>18</td>
+      <td style="color: var(--purple)">24</td>
+      <td>13.1s</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">75%</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>4:47</td>
+      <td>1.200</td>
+      <td style="color: var(--purple)">0.900</td>
+      <td>24</td>
+      <td style="color: var(--purple)">18</td>
+      <td>8.6s</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">133%</span></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>5:36</td>
+      <td>1.200</td>
+      <td style="color: var(--purple)">1.250</td>
+      <td>24</td>
+      <td style="color: var(--purple)">25</td>
+      <td>9.7s</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">96%</span></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>7:03</td>
+      <td>1.250</td>
+      <td style="color: var(--purple)">0.950</td>
+      <td>25</td>
+      <td style="color: var(--purple)">19</td>
+      <td>9.9s</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">132%</span></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>7:52</td>
+      <td>1.100</td>
+      <td style="color: var(--purple)">1.200</td>
+      <td>22</td>
+      <td style="color: var(--purple)">24</td>
+      <td>9.0s</td>
+      <td><span class="badge" style="background: var(--yellow)15; color: var(--yellow)">92%</span></td>
+    </tr>
+  </tbody>
+</table>
+<div class="card">
+  <div style="font-size: 13px; color: var(--dim)">
+    <strong>Add switch context:</strong> Adds become targetable ~8-10s after Awaken Fungi cast (travel time).
+    Starfighter averages 9.9s switch delay.
+    Reference averages ~9.3s. Switch timing is comparable &mdash; the base delay is add travel time, not player reaction.
+    <br><br>
+    <strong>Boss vs Adds damage split:</strong> Starfighter &mdash; 46% boss / 54% adds.
+    Reference &mdash; 38% boss / 62% adds.
+    The reference player dealt significantly more damage to adds, indicating more aggressive add cleave.
+  </div>
+</div>
+
+<!-- QUIET WINDOW UPTIME -->
+<h2>Quiet Window Uptime</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:16px">CPS during gaps between boss mechanics where full uptime is expected.</p>
+<table>
+  <thead><tr><th>Window</th><th>Duration</th><th>SF CPS</th><th>Ref CPS</th><th>SF Casts</th><th>Ref Casts</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>0:00 - 0:15</td>
+      <td>15s</td>
+      <td>1.466</td>
+      <td style="color: var(--purple)">1.466</td>
+      <td>22</td>
+      <td style="color: var(--purple)">22</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">100%</span></td>
+    </tr>
+    <tr>
+      <td>0:35 - 0:42</td>
+      <td>8s</td>
+      <td>0.750</td>
+      <td style="color: var(--purple)">1.251</td>
+      <td>6</td>
+      <td style="color: var(--purple)">10</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">60%</span></td>
+    </tr>
+    <tr>
+      <td>0:56 - 1:04</td>
+      <td>8s</td>
+      <td>1.562</td>
+      <td style="color: var(--purple)">0.911</td>
+      <td>12</td>
+      <td style="color: var(--purple)">7</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">171%</span></td>
+    </tr>
+    <tr>
+      <td>1:24 - 1:32</td>
+      <td>8s</td>
+      <td>0.880</td>
+      <td style="color: var(--purple)">1.257</td>
+      <td>7</td>
+      <td style="color: var(--purple)">10</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">70%</span></td>
+    </tr>
+    <tr>
+      <td>1:44 - 2:00</td>
+      <td>16s</td>
+      <td>0.937</td>
+      <td style="color: var(--purple)">1.000</td>
+      <td>15</td>
+      <td style="color: var(--purple)">16</td>
+      <td><span class="badge" style="background: var(--yellow)15; color: var(--yellow)">94%</span></td>
+    </tr>
+    <tr>
+      <td>2:12 - 2:31</td>
+      <td>19s</td>
+      <td>1.052</td>
+      <td style="color: var(--purple)">1.316</td>
+      <td>20</td>
+      <td style="color: var(--purple)">25</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">80%</span></td>
+    </tr>
+    <tr>
+      <td>2:51 - 2:59</td>
+      <td>8s</td>
+      <td>1.123</td>
+      <td style="color: var(--purple)">1.497</td>
+      <td>9</td>
+      <td style="color: var(--purple)">12</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">75%</span></td>
+    </tr>
+    <tr>
+      <td>3:11 - 3:20</td>
+      <td>9s</td>
+      <td>0.993</td>
+      <td style="color: var(--purple)">0.993</td>
+      <td>9</td>
+      <td style="color: var(--purple)">9</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">100%</span></td>
+    </tr>
+    <tr>
+      <td>3:40 - 3:48</td>
+      <td>8s</td>
+      <td>1.133</td>
+      <td style="color: var(--purple)">1.007</td>
+      <td>9</td>
+      <td style="color: var(--purple)">8</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">113%</span></td>
+    </tr>
+    <tr>
+      <td>4:00 - 4:16</td>
+      <td>16s</td>
+      <td>0.938</td>
+      <td style="color: var(--purple)">1.001</td>
+      <td>15</td>
+      <td style="color: var(--purple)">16</td>
+      <td><span class="badge" style="background: var(--yellow)15; color: var(--yellow)">94%</span></td>
+    </tr>
+    <tr>
+      <td>4:28 - 4:47</td>
+      <td>19s</td>
+      <td>0.998</td>
+      <td style="color: var(--purple)">1.208</td>
+      <td>19</td>
+      <td style="color: var(--purple)">23</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">83%</span></td>
+    </tr>
+    <tr>
+      <td>5:07 - 5:15</td>
+      <td>8s</td>
+      <td>1.126</td>
+      <td style="color: var(--purple)">1.501</td>
+      <td>9</td>
+      <td style="color: var(--purple)">12</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">75%</span></td>
+    </tr>
+    <tr>
+      <td>5:27 - 5:36</td>
+      <td>9s</td>
+      <td>1.103</td>
+      <td style="color: var(--purple)">1.103</td>
+      <td>10</td>
+      <td style="color: var(--purple)">10</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">100%</span></td>
+    </tr>
+    <tr>
+      <td>5:56 - 6:04</td>
+      <td>8s</td>
+      <td>1.136</td>
+      <td style="color: var(--purple)">1.010</td>
+      <td>9</td>
+      <td style="color: var(--purple)">8</td>
+      <td><span class="badge" style="background: var(--green)15; color: var(--green)">113%</span></td>
+    </tr>
+    <tr>
+      <td>6:16 - 6:32</td>
+      <td>16s</td>
+      <td>0.937</td>
+      <td style="color: var(--purple)">1.062</td>
+      <td>15</td>
+      <td style="color: var(--purple)">17</td>
+      <td><span class="badge" style="background: var(--yellow)15; color: var(--yellow)">88%</span></td>
+    </tr>
+    <tr>
+      <td>6:44 - 7:03</td>
+      <td>19s</td>
+      <td>0.946</td>
+      <td style="color: var(--purple)">1.262</td>
+      <td>18</td>
+      <td style="color: var(--purple)">24</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">75%</span></td>
+    </tr>
+    <tr>
+      <td>7:23 - 7:31</td>
+      <td>8s</td>
+      <td>1.004</td>
+      <td style="color: var(--purple)">1.506</td>
+      <td>8</td>
+      <td style="color: var(--purple)">12</td>
+      <td><span class="badge" style="background: var(--red)15; color: var(--red)">67%</span></td>
+    </tr>
+    <tr>
+      <td>7:43 - 7:52</td>
+      <td>9s</td>
+      <td>0.990</td>
+      <td style="color: var(--purple)">1.100</td>
+      <td>9</td>
+      <td style="color: var(--purple)">10</td>
+      <td><span class="badge" style="background: var(--yellow)15; color: var(--yellow)">90%</span></td>
+    </tr>
+  </tbody>
+</table>
+<div class="card">
+  <div style="font-size: 13px; color: var(--dim)">
+    <strong>8 of 18</strong> quiet windows flagged below 85% of reference CPS.
+    The pattern shows consistent CPS drops in the 8-second windows between add/vines overlap mechanics,
+    suggesting GCD losses during repositioning for add cleave or Festering Vines preparation.
+  </div>
+</div>
+
+<!-- CAST GAP ANALYSIS -->
+<h2>Cast Gap Analysis</h2>
+<div class="card">
+  <div class="card-header">6 gaps > 2.5 seconds &mdash; 21.3s total dead time</div>
+  <div style="font-size: 13px; color: var(--dim); margin-bottom: 12px">
+    Estimated 23 lost casts from downtime.
+    At 65.6 CPM, each second of dead time = ~1 lost GCD.
+  </div>
+  <table>
+    <thead><tr><th>Time</th><th>Duration</th><th>Before</th><th>After</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>3:52</td>
+        <td style="color: var(--red)">5.0s</td>
+        <td>Thunder Blast</td>
+        <td>Rampage</td>
+      </tr>
+      <tr>
+        <td>5:19</td>
+        <td style="color: var(--red)">4.6s</td>
+        <td>Bloodbath</td>
+        <td>Rampage</td>
+      </tr>
+      <tr>
+        <td>4:26</td>
+        <td style="color: var(--red)">3.5s</td>
+        <td>Thunder Clap</td>
+        <td>Thunder Clap</td>
+      </tr>
+      <tr>
+        <td>0:38</td>
+        <td style="color: var(--red)">2.8s</td>
+        <td>Thunder Blast</td>
+        <td>Rampage</td>
+      </tr>
+      <tr>
+        <td>1:53</td>
+        <td style="color: var(--red)">2.7s</td>
+        <td>Thunder Blast</td>
+        <td>Bloodthirst</td>
+      </tr>
+      <tr>
+        <td>1:41</td>
+        <td style="color: var(--red)">2.7s</td>
+        <td>Rampage</td>
+        <td>Execute</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px">
+    <strong>Pattern:</strong> 3 of 6 gaps follow Thunder Blast. This suggests occasional
+    confusion on priority after Thunder Blast procs &mdash; the next GCD should always be
+    Rampage (if Rage is available) or Bloodthirst.
+  </div>
+</div>
+
+<!-- ABILITY USAGE COMPARISON -->
+<h2>Ability Usage Comparison</h2>
+<table>
+  <thead><tr><th>Ability</th><th>SF Count</th><th>SF CPM</th><th>Ref Count</th><th>Ref CPM</th><th>Delta</th><th></th></tr></thead>
+  <tbody>
+    <tr>
+      <td style="font-weight: 500">Rampage</td>
+      <td>140</td>
+      <td>17.2</td>
+      <td style="color: var(--purple)">181</td>
+      <td style="color: var(--purple)">20.7</td>
+      <td style="color: var(--red)">-3.5</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:83.04457906795487%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:100%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Bloodthirst</td>
+      <td>87</td>
+      <td>10.7</td>
+      <td style="color: var(--purple)">114</td>
+      <td style="color: var(--purple)">13.0</td>
+      <td style="color: var(--red)">-2.4</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:81.93627735482993%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:100%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Thunder Blast</td>
+      <td>55</td>
+      <td>6.8</td>
+      <td style="color: var(--purple)">78</td>
+      <td style="color: var(--purple)">8.9</td>
+      <td style="color: var(--red)">-2.2</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:75.70593265764568%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:100%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Raging Blow</td>
+      <td>68</td>
+      <td>8.3</td>
+      <td style="color: var(--purple)">42</td>
+      <td style="color: var(--purple)">4.8</td>
+      <td style="color: var(--green)">+3.5</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:100%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:57.52790391744369%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Odyn's Fury</td>
+      <td>39</td>
+      <td>4.8</td>
+      <td style="color: var(--purple)">51</td>
+      <td style="color: var(--purple)">5.8</td>
+      <td style="color: var(--red)">-1.0</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:82.10247670037722%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:100%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Execute</td>
+      <td>39</td>
+      <td>4.8</td>
+      <td style="color: var(--purple)">40</td>
+      <td style="color: var(--purple)">4.6</td>
+      <td style="color: var(--green)">+0.2</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:100%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:95.52863165778194%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Bloodbath</td>
+      <td>24</td>
+      <td>2.9</td>
+      <td style="color: var(--purple)">48</td>
+      <td style="color: var(--purple)">5.5</td>
+      <td style="color: var(--red)">-2.5</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:53.682388611785115%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:100%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Thunder Clap</td>
+      <td>40</td>
+      <td>4.9</td>
+      <td style="color: var(--purple)">23</td>
+      <td style="color: var(--purple)">2.6</td>
+      <td style="color: var(--green)">+2.3</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:100%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:53.555739123143994%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Odyn's Fury Off-Hand</td>
+      <td>26</td>
+      <td>3.2</td>
+      <td style="color: var(--purple)">34</td>
+      <td style="color: var(--purple)">3.9</td>
+      <td style="color: var(--red)">-0.7</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:82.10247670037725%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:100%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Crushing Blow</td>
+      <td>9</td>
+      <td>1.1</td>
+      <td style="color: var(--purple)">0</td>
+      <td style="color: var(--purple)">0.0</td>
+      <td style="color: var(--green)">+1.1</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:100%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:0%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Rend</td>
+      <td>7</td>
+      <td>0.9</td>
+      <td style="color: var(--purple)">0</td>
+      <td style="color: var(--purple)">0.0</td>
+      <td style="color: var(--green)">+0.9</td>
+      <td style="width: 120px">
+        <div style="position:relative;height:20px">
+          <div class="bar bar-sf" style="position:absolute;bottom:0;left:0;width:100%;height:8px"></div>
+          <div class="bar bar-ref" style="position:absolute;top:0;left:0;width:0%;height:8px"></div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div class="card">
+  <div style="font-size: 13px; color: var(--dim)">
+    <strong>Key differences:</strong><br>
+    &bull; <strong>Rampage</strong> &mdash; 3.5 CPM lower. This is the most impactful gap. Rampage triggers Enrage and is the core of the Fury loop. Fewer Rampages = lower Enrage uptime = less damage on everything else.<br>
+    &bull; <strong>Bloodthirst</strong> &mdash; 2.4 CPM lower. Primary Rage generator outside Recklessness. Directly feeds into Rampage rate.<br>
+    &bull; <strong>Bloodbath</strong> &mdash; 2.5 CPM lower. Bloodbath replaces Bloodthirst during Recklessness &mdash; fewer Recklessness windows used = fewer Bloodbath casts.<br>
+    &bull; <strong>Thunder Blast</strong> &mdash; 2.2 CPM lower. Mountain Thane proc that extends Avatar and triggers Lightning Strikes.<br>
+    &bull; <strong>Raging Blow</strong> &mdash; 3.5 CPM <em>higher</em> than reference. May indicate using Raging Blow when Bloodthirst or Rampage should have priority.<br>
+    &bull; <strong>Thunder Clap</strong> &mdash; 2.3 CPM higher. Used as filler more than reference, which is lower priority than Raging Blow and other generators.
+  </div>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<table>
+  <thead><tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg Per Hit</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td>13,671,654</td>
+      <td>478</td>
+      <td>28,602</td>
+      <td><span class="badge badge-green">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>3,220,318</td>
+      <td>51</td>
+      <td>63,143</td>
+      <td><span class="badge badge-green">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2,963,580</td>
+      <td>46</td>
+      <td>64,426</td>
+      <td><span class="badge badge-green">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Festering Vines</td>
+      <td>1,183,231</td>
+      <td>18</td>
+      <td>65,735</td>
+      <td><span class="badge badge-yellow">Avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>738,372</td>
+      <td>39</td>
+      <td>18,933</td>
+      <td><span class="badge badge-green">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>721,301</td>
+      <td>3</td>
+      <td>240,434</td>
+      <td><span class="badge badge-yellow">Avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Poison Burst</td>
+      <td>320,442</td>
+      <td>3</td>
+      <td>106,814</td>
+      <td><span class="badge badge-yellow">Avoidable</span></td>
+    </tr>
+  </tbody>
+</table>
+<div class="card">
+  <div style="font-size: 13px; color: var(--dim)">
+    <strong>Festering Vines:</strong> 18 hits totaling 1,183,231 damage. Some vine damage is expected from the root mechanic (you must kite to break free). This is normal and not a concern on this kill.<br>
+    <strong>Bursting Shroom:</strong> 3 hits for 721,301. These fire when add corpses convert during Fungal Bloom &mdash; proximity damage is hard to fully avoid.<br>
+    <strong>Poison Burst:</strong> 3 hits &mdash; one Sporecap cast got through before interrupt. Minor.
+  </div>
+</div>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<div class="card" style="padding: 24px 16px 40px">
+  <div class="wipe-chart">
+    <div class="wipe-bar">
+      <div class="bar-value">126,397</div>
+      <div class="bar-fill" style="height: 79.1936342846402%; background: var(--yellow)"></div>
+      <div class="bar-label">P1 22.45%<br>6:54</div>
+    </div>
+    <div class="wipe-bar">
+      <div class="bar-value">140,241</div>
+      <div class="bar-fill" style="height: 87.86754800914758%; background: var(--yellow)"></div>
+      <div class="bar-label">P2 11.61%<br>8:25</div>
+    </div>
+    <div class="wipe-bar">
+      <div class="bar-value">159,605</div>
+      <div class="bar-fill" style="height: 100%; background: var(--green)"></div>
+      <div class="bar-label">P3 KILL<br>8:09</div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div style="font-size: 13px; color: var(--dim)">
+    <strong>Clear progression trend:</strong> DPS improved from 126K (pull 1) to 140K (pull 2) to 160K (kill).
+    This is a 26% improvement from first pull to kill.
+    The jump from pull 2 to the kill (+14%) is notable and suggests Starfighter adapted well to mechanic timing and optimized cooldown usage.
+  </div>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs Received</h2>
+<div class="summary-grid" style="grid-template-columns: repeat(3, 1fr)">
+  <div class="summary-card">
+    <div class="label">Bloodlust</div>
+    <div class="value" style="font-size: 20px">0:02</div>
+    <div class="sub">On pull (standard)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Ebon Might</div>
+    <div class="value" style="font-size: 20px">12</div>
+    <div class="sub">applications (from Aug Evoker)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Prescience</div>
+    <div class="value" style="font-size: 20px">6</div>
+    <div class="sub">applications (from Aug Evoker)</div>
+  </div>
+</div>
+<div class="card">
+  <div style="font-size: 13px; color: var(--dim)">
+    No Power Infusion received. Aug Evoker (Zinnks) provided Ebon Might and Prescience throughout the fight.
+    Lust on pull is standard for Rotmire to maximize first add wave damage and front-load Recklessness value.
+  </div>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown Usage</h2>
+<table>
+  <thead><tr><th>Ability</th><th>Uses</th><th>Timings</th><th>Expected CD</th></tr></thead>
+  <tbody>
+    <tr>
+      <td style="font-weight: 500">Recklessness</td>
+      <td>9</td>
+      <td>0:01, 0:49, 2:01, 2:50, 4:18, 5:06, 6:33, 7:19, 8:04</td>
+      <td>~90s (Mountain Thane resets reduce this)</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 500">Avatar</td>
+      <td>13</td>
+      <td>0:01, 0:49, 1:25, 2:01, 2:50, 3:27, 4:00, 4:18, 5:03, 5:49, 6:33, 7:19, 8:04</td>
+      <td>~90s (shared CD with Reck in MT)</td>
+    </tr>
+  </tbody>
+</table>
+<div class="card">
+  <div style="font-size: 13px; color: var(--dim)">
+    Recklessness and Avatar share cooldown reduction via Mountain Thane (Thunder Blast procs).
+    9 Recklessness uses in 8:09 is solid usage. Avatar has 13 activations (some are refreshes/extensions from Thunder Blast).
+    The reference had 12 of each in their 8:44 kill, meaning similar usage rate.
+  </div>
+</div>
+
+<!-- DEFENSIVE USAGE -->
+<h2>Defensive Usage</h2>
+<table>
+  <thead><tr><th>Ability</th><th>Uses</th><th>Timings</th><th>Context</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Spell Reflection</td>
+      <td>3</td>
+      <td>3:55, 5:22, 6:32</td>
+      <td>Used during Fungal Bloom / Bursting Pustules for magic DR</td>
+    </tr>
+    <tr>
+      <td>Defensive Stance</td>
+      <td>2</td>
+      <td>3:52, 5:21</td>
+      <td>Swapped for heavy damage windows</td>
+    </tr>
+    <tr>
+      <td>Rallying Cry</td>
+      <td>1</td>
+      <td>4:21</td>
+      <td>Raid CD used at Bloom #2 (4:21)</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ACTIONABLE IMPROVEMENTS -->
+<h2>Actionable Improvements</h2>
+
+<div class="action-item" style="border-left-color: var(--red)">
+  <div class="action-title">1. Increase Rampage Usage (Highest Impact)</div>
+  <div class="action-impact">Estimated impact: +8-12% DPS from improved Enrage uptime</div>
+  <div class="action-detail">
+    Starfighter cast Rampage 140 times (17.2 CPM) vs reference's 181 (20.7 CPM) &mdash; a 3.5 CPM deficit.
+    Rampage triggers Enrage, which is a 30-50% damage multiplier on everything else.
+    Every missed Rampage cascades: lower Enrage uptime reduces the value of every other GCD.
+    <strong>Fix:</strong> Prioritize Rampage at 80+ Rage, especially outside Recklessness windows.
+    Do not sit on high Rage waiting for a "perfect" moment &mdash; Enrage uptime is king.
+  </div>
+</div>
+
+<div class="action-item" style="border-left-color: var(--orange)">
+  <div class="action-title">2. Bloodthirst Priority Over Raging Blow</div>
+  <div class="action-impact">Estimated impact: +3-5% DPS from better Rage generation</div>
+  <div class="action-detail">
+    Starfighter cast Raging Blow 68 times (8.3 CPM) &mdash; significantly more than the reference's 42 (4.8 CPM).
+    Meanwhile, Bloodthirst was 87 casts (10.7 CPM) vs reference's 114 (13.0 CPM).
+    Bloodthirst generates more Rage than Raging Blow and has a chance to proc Enrage directly.
+    <strong>Fix:</strong> In the rotation priority, Bloodthirst should come before Raging Blow outside of Recklessness.
+    Raging Blow is a filler GCD, not a priority ability. More Bloodthirst = more Rage = more Rampage = more Enrage.
+  </div>
+</div>
+
+<div class="action-item" style="border-left-color: var(--yellow)">
+  <div class="action-title">3. Reduce Thunder Clap Filler Usage</div>
+  <div class="action-impact">Estimated impact: +1-2% DPS from better GCD allocation</div>
+  <div class="action-detail">
+    Starfighter cast Thunder Clap 40 times (4.9 CPM) vs reference's 23 (2.6 CPM).
+    Thunder Clap is the lowest-priority filler in Mountain Thane &mdash; it should only be pressed when
+    literally nothing else is available. Several of these GCDs would be better spent on Bloodthirst or Raging Blow.
+    <strong>Fix:</strong> Thunder Clap only when Rampage, Bloodthirst, Execute, Thunder Blast, and Raging Blow are all unavailable.
+  </div>
+</div>
+
+<div class="action-item" style="border-left-color: var(--accent)">
+  <div class="action-title">4. Festering Vines Uptime (Mechanic-Specific)</div>
+  <div class="action-impact">Estimated impact: +2-3% DPS during movement phases</div>
+  <div class="action-detail">
+    CPS during Festering Vines windows was consistently the weakest area.
+    Vines #1 (68%), #2 (83%), #4 (80%), #5 (73%) were all significantly below reference.
+    Meanwhile, Awaken Fungi windows were generally strong (often above reference).
+    <strong>Fix:</strong> Pre-position before Vines to minimize movement. Use Charge/Heroic Leap to quickly
+    break free and return to melee range. Queue instant abilities (Rampage, Execute) while moving.
+  </div>
+</div>
+
+<div class="action-item" style="border-left-color: var(--green)">
+  <div class="action-title">5. Add Cleave Commitment</div>
+  <div class="action-impact">Estimated impact: +3-5% total damage from better cleave allocation</div>
+  <div class="action-detail">
+    Boss/adds damage split was 46/54 for Starfighter vs 38/62 for the reference.
+    The reference committed significantly more damage to adds, which suggests more aggressive Whirlwind/Thunder Clap
+    usage during add waves and better target-switching during Awaken Fungi.
+    On Mythic Rotmire, killing adds cleanly (especially before Fungal Bloom converts corpses) is critical.
+    <strong>Fix:</strong> During Awaken Fungi windows, focus damage on adds. Use Whirlwind before Rampage
+    to apply Improved Whirlwind for cleave damage.
+  </div>
+</div>
+
+<!-- CONTEXT FOOTER -->
+<h2>Summary</h2>
+<div class="card">
+  <div style="font-size: 14px;">
+    <strong style="color: var(--green)">What's working well:</strong>
+    <ul style="margin: 8px 0 16px 20px; color: var(--dim)">
+      <li>Clean kill with zero deaths &mdash; survived the entire fight</li>
+      <li>#2 DPS in the raid (behind only Marksmanship Hunter)</li>
+      <li>Strong progression: 126K &rarr; 140K &rarr; 160K across 3 pulls (26% improvement)</li>
+      <li>Recklessness usage count (9x) matches the reference rate</li>
+      <li>Add switch timing is on par with the reference (~9.8s avg vs ~9.3s avg &mdash; within travel time variance)</li>
+      <li>Awaken Fungi windows are strong, often exceeding reference CPS</li>
+      <li>Solid defensive usage &mdash; Spell Reflection and Defensive Stance used proactively</li>
+    </ul>
+    <strong style="color: var(--yellow)">The 35% DPS gap vs rank 1:</strong>
+    <ul style="margin: 8px 0 16px 20px; color: var(--dim)">
+      <li>~3 ilvl gap accounts for ~2-3% of the difference</li>
+      <li>5 talent differences may account for ~2-4%</li>
+      <li>Rotation priority (Rampage/Bloodthirst under-use, Raging Blow/Thunder Clap over-use) accounts for ~10-15%</li>
+      <li>Festering Vines uptime drops account for ~2-3%</li>
+      <li>Less aggressive add cleave (46/54 vs 38/62 split) accounts for ~3-5%</li>
+      <li>Reference had 36s longer fight (8:44 vs 8:09) = more execute phase + add wave cycles</li>
+    </ul>
+    <strong>Bottom line:</strong> The rotation priority is the highest-leverage fix. Getting Rampage from 17.2 to 19+ CPM
+    and shifting GCDs from Raging Blow/Thunder Clap to Bloodthirst would close the majority of the gap
+    that isn't explained by ilvl and talents.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  Generated by WCL DPS Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Warcraft Logs</a><br>
+  Primary reference: 霜斧-燃烧之刃 (245,011 DPS, 8:44 kill, ilvl 293, 5 talent diffs)<br>
+  Analysis date: June 25, 2026
+</div>
+
+</div>
+</body>
+</html>

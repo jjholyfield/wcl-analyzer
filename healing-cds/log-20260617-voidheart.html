@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voidheart — Holy Priest — Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .ramp-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .ramp-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .ramp-timeline .good { background: rgba(63,185,80,0.12); }
+  .ramp-timeline .bad { background: rgba(248,81,73,0.12); }
+  .ramp-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .ramp-timeline .bloom-hit { background: rgba(248,81,73,0.25); border: 1px solid rgba(248,81,73,0.5); padding: 4px 8px; border-radius: 4px; font-weight: 700; display: block; margin: 4px 0; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .healer-cd-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .healer-cd-row:last-child { border-bottom: none; }
+  .healer-name { width: 160px; font-weight: 600; font-size: 13px; }
+  .cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .cd-pill.druid { background: rgba(255,125,10,0.15); color: #ff7d0a; }
+  .cd-pill.shaman { background: rgba(0,112,222,0.15); color: #0070de; }
+  .cd-pill.priest-disc { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+  .cd-pill.priest-holy { background: rgba(255,245,105,0.15); color: #fff569; }
+  .cd-pill.missing { background: rgba(248,81,73,0.1); color: var(--red); border: 1px dashed rgba(248,81,73,0.3); }
+  .oh-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .oh-eff { background: var(--green); }
+  .oh-over { background: var(--red); opacity: 0.6; }
+  .death-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; }
+  .death-timeline .dmg { color: var(--red); }
+  .death-timeline .heal { color: var(--green); }
+  .death-timeline .absorb { color: var(--cyan); }
+  .death-timeline .ts { color: var(--dim); display: inline-block; width: 50px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Voidh&eacute;art <span class="dim">&mdash; Holy Priest</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- ═══ SUMMARY ═══ -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">135.1K</div>
+    <div class="stat-label">HPS (Full Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">283.1</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">30.1%</div>
+    <div class="stat-label">Overheal</div>
+  </div>
+</div>
+
+<!-- ═══ VERDICT ═══ -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Voidh&eacute;art survived the full fight and deployed <strong class="green">Apotheosis at every Bloom</strong> (3 uses across 3 Blooms). However, Apotheosis was consistently <strong class="yellow">4&ndash;5 seconds late</strong> &mdash; fired after Bloom damage rather than before, reducing Holy Word throughput during the burst window. <strong class="red">Holy Word: Serenity CPM of 5.0 vs reference 8.0</strong> (&minus;38%) is the largest single gap &mdash; Serenity should be on cooldown constantly during Apotheosis windows. DPS contribution of <strong class="yellow">12.2K vs reference 19.1K</strong> (&minus;36%) leaves free healing from Searing Light on the table. Overheal at 30.1% is healthy and below the reference (35.0%), indicating efficient spell targeting.</p>
+</div>
+
+<!-- ═══ REFERENCE COMPARISON ═══ -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Holy Priests on Mythic Rotmire (HPS metric). Primary reference: <strong>Nax</strong> (closest talent match at 6 diffs, 203K HPS, 7:13 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Overheal</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Voidh&eacute;art</strong></td>
+      <td>135,056</td>
+      <td>7:58</td>
+      <td>283.1</td>
+      <td>&mdash;</td>
+      <td>30.1%</td>
+    </tr>
+    <tr>
+      <td>&Acy;&Ncy;&acy;&Ncy;&ncy;&iecy;&kcy;&iecy; <span class="ref-badge">#1</span></td>
+      <td class="green">229,501</td>
+      <td>8:07</td>
+      <td>290.6</td>
+      <td><span class="tag tag-diff">11 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Graha <span class="ref-badge">#2</span></td>
+      <td class="green">209,836</td>
+      <td>7:07</td>
+      <td>290.9</td>
+      <td><span class="tag tag-diff">43 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Meliryn <span class="ref-badge">#3</span></td>
+      <td class="green">206,606</td>
+      <td>8:05</td>
+      <td>273.9</td>
+      <td><span class="tag tag-diff">11 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Bubblye <span class="ref-badge">#4</span></td>
+      <td class="green">203,916</td>
+      <td>7:50</td>
+      <td>272.5</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Nax <span class="ref-badge">#5 PRIMARY</span></td>
+      <td class="green">203,478</td>
+      <td>7:13</td>
+      <td>258.6</td>
+      <td><span class="tag tag-same">6 diff</span></td>
+      <td>35.0%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Note: Voidh&eacute;art has the 2nd highest ilvl (283.1) but the lowest HPS of all 6 players shown. Nax achieves 203K HPS at only 258.6 ilvl &mdash; 24.5 levels lower. The 6-talent-diff build is the closest match; Graha (43 diffs) runs a fundamentally different talent setup. All 5 references survived their kills.</p>
+
+<!-- ═══ BOSS TIMELINE ═══ -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major healing events. Blooms fire on a fixed ~136s cycle at 2:00, 4:16, and 6:32. Festering Vines roots at ~43s intervals. Voidh&eacute;art survived the full fight.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Apotheosis markers -->
+  <div class="timeline-marker" style="left: 26.0%; border-color: var(--cyan); width: 2px; opacity: 0.6;">
+    <span class="timeline-label" style="bottom: 18px; left: 6px; color: var(--cyan); font-size: 9px;">Apo</span>
+  </div>
+  <div class="timeline-marker" style="left: 54.5%; border-color: var(--cyan); width: 2px; opacity: 0.6;">
+    <span class="timeline-label" style="bottom: 18px; left: 6px; color: var(--cyan); font-size: 9px;">Apo</span>
+  </div>
+  <div class="timeline-marker" style="left: 83.1%; border-color: var(--cyan); width: 2px; opacity: 0.6;">
+    <span class="timeline-label" style="bottom: 18px; left: 6px; color: var(--cyan); font-size: 9px;">Apo</span>
+  </div>
+  <!-- Alive zone -->
+  <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(63,185,80,0.04);"></div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<!-- ═══ BLOOM RAMP ANALYSIS ═══ -->
+<h2>Bloom Ramp Analysis</h2>
+<p class="section-intro">Holy Priest Bloom response: activate Apotheosis for instant-cast Holy Words, spam Holy Word: Serenity and Prayer of Healing through the damage window. Ideal timing: Apotheosis 3&ndash;5 seconds <em>before</em> Bloom so Holy Words are already firing when damage hits.</p>
+
+<!-- BLOOM #1 -->
+<h3>Bloom #1 &mdash; 2:00 (120s)</h3>
+<div class="side-by-side">
+  <!-- NAX (REFERENCE) -->
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="green">Nax</span> <span class="ref-badge">Reference</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">107.6s</span> <span class="cast neutral">Smite</span></div>
+      <div><span class="dim">107.8s</span> <span class="cast neutral">Prayer of Healing</span></div>
+      <div><span class="dim">110.3s</span> <span class="cast neutral">Prayer of Mending</span></div>
+      <div><span class="dim">111.9s</span> <span class="cast neutral">Prayer of Healing</span></div>
+      <div><span class="dim">113.1s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">114.4s</span> <span class="cast good">HW: Serenity</span></div>
+      <div style="margin-top: 6px; padding: 4px 0; border-top: 1px dashed var(--green);">
+        <strong class="green">&#9654; APOTHEOSIS (4.3s before Bloom)</strong>
+      </div>
+      <div><span class="dim">115.7s</span> <span class="cast good">Apotheosis</span> <span class="dim">(instant Holy Words)</span></div>
+      <div><span class="dim">117.0s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">118.4s</span> <span class="cast good">Benediction</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (120s) &mdash; Apotheosis active, HW ready</div>
+      <div><span class="dim">122.2s</span> <span class="cast good">Prayer of Mending</span></div>
+      <div><span class="dim">123.5s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">124.2s</span> <span class="cast good">Power Infusion</span></div>
+      <div><span class="dim">125&ndash;139s</span> <span class="cast good">HW:Ser &times;6 + PoH &times;5</span> <span class="dim">(Apotheosis window)</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Result: Apotheosis pre-activated, 9 HW:Serenity in window</strong></div>
+    </div>
+  </div>
+
+  <!-- VOIDHEART -->
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Voidh&eacute;art</span> <span class="tag tag-warn">LATE</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">109.9s</span> <span class="cast neutral">Smite</span></div>
+      <div><span class="dim">111.1s</span> <span class="cast neutral">Smite</span></div>
+      <div><span class="dim">112.6s</span> <span class="cast neutral">HW: Serenity</span></div>
+      <div><span class="dim">115.1s</span> <span class="cast neutral">Smite</span></div>
+      <div><span class="dim">116.4s</span> <span class="cast good">Halo</span> <span class="dim">(AoE heal pre-Bloom)</span></div>
+      <div><span class="dim">117.6s</span> <span class="cast neutral">Smite</span></div>
+      <div><span class="dim">118.8s</span> <span class="cast neutral">Smite + PoM</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (120s) &mdash; no Apotheosis yet</div>
+      <div><span class="dim">120.8s</span> <span class="cast bad">Fade</span> <span class="dim">(defensive, not healing)</span></div>
+      <div><span class="dim">122.8s</span> <span class="cast neutral">Prayer of Healing</span></div>
+      <div style="margin-top: 6px; padding: 4px 0; border-top: 1px dashed var(--yellow);">
+        <strong class="yellow">&#9654; APOTHEOSIS (4.1s AFTER Bloom)</strong>
+      </div>
+      <div><span class="dim">124.1s</span> <span class="cast bad">Apotheosis</span> <span class="dim">(4.1s late)</span></div>
+      <div><span class="dim">125.4s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">128.4s</span> <span class="cast good">Blood Fury + PI</span></div>
+      <div><span class="dim">129&ndash;139s</span> <span class="cast good">HW:Ser &times;5 + PoH &times;4</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">Result: Apotheosis 4.1s late, missed peak damage window</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOOM #2 -->
+<h3 style="margin-top: 24px;">Bloom #2 &mdash; 4:16 (256s)</h3>
+<div class="side-by-side">
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="green">Nax</span> <span class="ref-badge">Reference</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">241.8s</span> <span class="cast neutral">Prayer of Healing</span></div>
+      <div><span class="dim">243.1s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">245.6s</span> <span class="cast neutral">Prayer of Healing</span></div>
+      <div><span class="dim">246.9s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">248.2s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">253.1s</span> <span class="cast good">Benediction</span></div>
+      <div><span class="dim">254.0s</span> <span class="cast good">Power Infusion</span></div>
+      <div><span class="dim">254.9s</span> <span class="cast good">HW: Serenity</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (256s) &mdash; PI active, HW:Ser chain-casting</div>
+      <div><span class="dim">257&ndash;275s</span> <span class="cast good">HW:Ser &times;6 + PoH &times;5</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Result: PI + Benediction pre-activated, sustained HW:Ser throughput</strong></div>
+      <div><span class="dim">Note: no Apotheosis (on CD from Bloom #1 at 1:56)</span></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Voidh&eacute;art</span> <span class="tag tag-warn">LATE</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">243.9s</span> <span class="cast neutral">PoH + PoM</span></div>
+      <div><span class="dim">246.5s</span> <span class="cast good">Halo</span> <span class="dim">(AoE pre-Bloom)</span></div>
+      <div><span class="dim">250.0s</span> <span class="cast neutral">Prayer of Healing</span></div>
+      <div><span class="dim">252.1s</span> <span class="cast neutral">Prayer of Healing</span></div>
+      <div><span class="dim">253.9s</span> <span class="cast neutral">Prayer of Healing</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (256s) &mdash; no Apotheosis, no PI</div>
+      <div><span class="dim">256.6s</span> <span class="cast neutral">Health Potion</span></div>
+      <div><span class="dim">258.0s</span> <span class="cast bad">Blood Fury + PI</span> <span class="dim">(2.0s late)</span></div>
+      <div><span class="dim">259.1s</span> <span class="cast good">HW: Serenity</span></div>
+      <div style="margin-top: 6px; padding: 4px 0; border-top: 1px dashed var(--yellow);">
+        <strong class="yellow">&#9654; APOTHEOSIS (4.1s AFTER Bloom)</strong>
+      </div>
+      <div><span class="dim">260.1s</span> <span class="cast bad">Apotheosis</span> <span class="dim">(4.1s late)</span></div>
+      <div><span class="dim">261&ndash;274s</span> <span class="cast good">HW:Ser &times;5 + PoH &times;4</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">Result: Apotheosis + PI both late, healing landed after peak damage</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOOM #3 -->
+<h3 style="margin-top: 24px;">Bloom #3 &mdash; 6:32 (392s)</h3>
+<div class="side-by-side">
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="green">Nax</span> <span class="ref-badge">Reference</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">377.2s</span> <span class="cast neutral">Smite &times;3</span></div>
+      <div><span class="dim">382.0s</span> <span class="cast neutral">PoH + PoM</span></div>
+      <div><span class="dim">383.4s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">385.9s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">388.3s</span> <span class="cast good">Benediction + Holy Nova</span></div>
+      <div><span class="dim">391.3s</span> <span class="cast good">Benediction</span></div>
+      <div><span class="dim">391.5s</span> <span class="cast good">Power Infusion</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (392s) &mdash; PI active, HW ready</div>
+      <div><span class="dim">392.5s</span> <span class="cast good">HW: Serenity</span></div>
+      <div><span class="dim">396&ndash;410s</span> <span class="cast good">HW:Ser &times;4 + PoH &times;3 + Benediction &times;3</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Result: PI pre-activated, 3 Apotheosis uses (at 5:58) for instant HW spam</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Voidh&eacute;art</span> <span class="tag tag-warn">LATE</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">381&ndash;384s</span> <span class="cast neutral">PoH &times;2</span></div>
+      <div><span class="dim">386.0s</span> <span class="cast neutral">Holy Fire</span></div>
+      <div><span class="dim">387&ndash;391s</span> <span class="cast neutral">Smite &times;4</span></div>
+      <div><span class="dim">390.7s</span> <span class="cast neutral">Fade</span></div>
+      <div><span class="dim">391.9s</span> <span class="cast bad">Desperate Prayer</span> <span class="dim">(personal CD, taking damage)</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (392s) &mdash; no Apotheosis, no PI, personal CD just fired</div>
+      <div><span class="dim">394.4s</span> <span class="cast bad">Healthstone</span> <span class="dim">(survival mode)</span></div>
+      <div><span class="dim">395.5s</span> <span class="cast good">HW: Serenity</span></div>
+      <div style="margin-top: 6px; padding: 4px 0; border-top: 1px dashed var(--yellow);">
+        <strong class="yellow">&#9654; APOTHEOSIS (4.8s AFTER Bloom)</strong>
+      </div>
+      <div><span class="dim">396.8s</span> <span class="cast bad">Apotheosis</span> <span class="dim">(4.8s late)</span></div>
+      <div><span class="dim">398.6s</span> <span class="cast good">Blood Fury + PI</span></div>
+      <div><span class="dim">400&ndash;412s</span> <span class="cast good">HW:Ser &times;3 + PoH &times;2 + Halo</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">Result: Desperate Prayer + Healthstone at Bloom = in danger. Apo 4.8s late.</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Pattern</div>
+  <p style="font-size: 14px;">Across all 3 Blooms, Voidh&eacute;art activates Apotheosis <strong>4.1&ndash;4.8 seconds after</strong> Bloom damage hits. Nax activates it <strong>4.3 seconds before</strong> Bloom #1 (and pre-buffs PI before Blooms #2 and #3). The difference: Nax has instant-cast Holy Words already chain-firing <em>as damage hits</em>, while Voidh&eacute;art spends the first 4+ seconds of the Bloom window reacting. At Bloom #3, Voidh&eacute;art also needed Desperate Prayer + Healthstone for personal survival, indicating poor positioning into the damage event.</p>
+</div>
+
+<!-- ═══ TEAM CD COORDINATION ═══ -->
+<h2>Team CD Coordination</h2>
+<p class="section-intro">Which healing CDs covered each Bloom across all 4 healers. Tiareynna (Disc) died at 3:08, leaving the team 3-healer for Blooms #2 and #3.</p>
+
+<div class="card">
+  <!-- BLOOM 1 -->
+  <h3 style="margin-bottom: 12px;">Bloom #1 &mdash; 2:00</h3>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio <span class="dim">(RDruid)</span></div>
+    <span class="cd-pill druid">Tranquility (2:03)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #0070de;">Brewtote <span class="dim">(RSham)</span></div>
+    <span class="cd-pill shaman">Ascendance (1:58)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna <span class="dim">(Disc)</span></div>
+    <span class="cd-pill priest-disc">Evangelism (2:06)</span>
+  </div>
+  <div class="healer-cd-row" style="background: rgba(255,245,105,0.04);">
+    <div class="healer-name" style="color: #fff569;">Voidh&eacute;art <span class="dim">(HPriest)</span></div>
+    <span class="cd-pill priest-holy">Apotheosis (2:04)</span>
+    <span class="tag tag-warn" style="font-size: 10px;">4.1s LATE</span>
+  </div>
+
+  <!-- BLOOM 2 -->
+  <h3 style="margin: 20px 0 12px;">Bloom #2 &mdash; 4:16</h3>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio</div>
+    <span class="cd-pill druid">Convoke the Spirits (4:28)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #0070de;">Brewtote</div>
+    <span class="cd-pill missing">No major CD</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna</div>
+    <span class="cd-pill missing">DEAD</span>
+  </div>
+  <div class="healer-cd-row" style="background: rgba(255,245,105,0.04);">
+    <div class="healer-name" style="color: #fff569;">Voidh&eacute;art</div>
+    <span class="cd-pill priest-holy">Apotheosis (4:20)</span>
+    <span class="tag tag-warn" style="font-size: 10px;">4.1s LATE</span>
+  </div>
+
+  <!-- BLOOM 3 -->
+  <h3 style="margin: 20px 0 12px;">Bloom #3 &mdash; 6:32</h3>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio</div>
+    <span class="cd-pill druid">Convoke the Spirits (6:49)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #0070de;">Brewtote</div>
+    <span class="cd-pill shaman">Spirit Link Totem (6:34)</span>
+    <span class="cd-pill shaman">Ascendance (6:40)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna</div>
+    <span class="cd-pill missing">DEAD</span>
+  </div>
+  <div class="healer-cd-row" style="background: rgba(255,245,105,0.04);">
+    <div class="healer-name" style="color: #fff569;">Voidh&eacute;art</div>
+    <span class="cd-pill priest-holy">Apotheosis (6:37)</span>
+    <span class="tag tag-warn" style="font-size: 10px;">4.8s LATE</span>
+  </div>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">With Tiareynna dead for Blooms #2 and #3, Voidh&eacute;art's Apotheosis was the only dedicated burst healing CD for 2 of 3 Blooms (Brewtote had no CD for Bloom #2, only Convoke from S&igrave;lencio). Pre-activating Apotheosis 4&ndash;5 seconds earlier would have significantly increased the team's throughput during peak damage.</p>
+
+<!-- ═══ DIVINE HYMN TIMING ═══ -->
+<h2>Divine Hymn Timing</h2>
+<p class="section-intro">Divine Hymn is a 7-second channel and Holy Priest's major raid healing CD. Optimal timing: during sustained AoE damage, not during Bloom (too short and bursty for a channel).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Usage</th><th>Voidh&eacute;art</th><th>Nax (Ref)</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1st Divine Hymn</td>
+      <td>2:27 (147s)</td>
+      <td>1:21 (81s)</td>
+      <td><span class="tag tag-info">Different timing</span></td>
+    </tr>
+    <tr>
+      <td>2nd Divine Hymn</td>
+      <td>4:44 (284s)</td>
+      <td>3:24 (204s)</td>
+      <td><span class="tag tag-info">Different timing</span></td>
+    </tr>
+    <tr>
+      <td>3rd Divine Hymn</td>
+      <td>6:58 (419s)</td>
+      <td>5:27 (327s)</td>
+      <td><span class="tag tag-info">Different timing</span></td>
+    </tr>
+    <tr>
+      <td>Total casts</td>
+      <td><strong>3</strong> (17 ticks)</td>
+      <td><strong>3</strong> (18 ticks)</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Both players use Divine Hymn 3 times. Voidh&eacute;art channels Divine Hymn 27&ndash;28 seconds after each Bloom &mdash; during sustained damage from Bursting Pustules and Festering Vines. Nax uses it in different windows (pre-Bloom sustained damage at 1:21, post-Bloom follow-up at 3:24 and 5:27). The timing is a strategic choice, not an error &mdash; both approaches are valid.</p>
+
+<!-- ═══ CAST PROFILE COMPARISON ═══ -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Voidh&eacute;art (7:58 full fight) vs Nax (7:13 full fight). Abilities sorted by impact on Holy Priest performance.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Voidh&eacute;art CPM</th>
+      <th>Voidh&eacute;art Casts</th>
+      <th>Nax CPM</th>
+      <th>Nax Casts</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Prayer of Healing</strong></td>
+      <td class="green"><strong>11.1</strong></td>
+      <td>88</td>
+      <td>9.8</td>
+      <td>71</td>
+      <td class="green">+13%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Holy Word: Serenity</strong></td>
+      <td class="red"><strong>5.0</strong></td>
+      <td>40</td>
+      <td>8.0</td>
+      <td>58</td>
+      <td class="red">&minus;38%</td>
+      <td><span class="tag tag-crit">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Smite</td>
+      <td class="green">8.4</td>
+      <td>67</td>
+      <td>7.3</td>
+      <td>53</td>
+      <td class="green">+15%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Prayer of Mending</td>
+      <td>4.5</td>
+      <td>36</td>
+      <td>5.3</td>
+      <td>38</td>
+      <td class="dim">&minus;15%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Benediction</strong></td>
+      <td class="red"><strong>1.4</strong></td>
+      <td>11</td>
+      <td>4.3</td>
+      <td>31</td>
+      <td class="red">&minus;67%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Flash Heal</td>
+      <td class="yellow">0.9</td>
+      <td>7</td>
+      <td>2.8</td>
+      <td>20</td>
+      <td class="yellow">&minus;68%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Holy Fire</td>
+      <td>1.5</td>
+      <td>12</td>
+      <td>&mdash;</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Talent diff</span></td>
+    </tr>
+    <tr>
+      <td>Halo</td>
+      <td>0.8</td>
+      <td>6</td>
+      <td>1.0</td>
+      <td>7</td>
+      <td class="dim">&minus;14%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Divine Hymn</td>
+      <td>2.1</td>
+      <td>17</td>
+      <td>2.5</td>
+      <td>18</td>
+      <td class="dim">&minus;16%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Apotheosis</td>
+      <td>0.4</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td>3</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Power Infusion</td>
+      <td>1.0</td>
+      <td>8</td>
+      <td>1.1</td>
+      <td>8</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Beacon of Lightblind Wrath</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td>0.7</td>
+      <td>5</td>
+      <td class="dim">&minus;29%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Holy Nova</td>
+      <td class="dim">0.0</td>
+      <td class="dim">0</td>
+      <td>1.7</td>
+      <td>12</td>
+      <td class="red">&mdash;</td>
+      <td><span class="tag tag-diff">Missing</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Shadow Word: Pain</td>
+      <td class="dim">0.0</td>
+      <td class="dim">0</td>
+      <td>1.5</td>
+      <td>11</td>
+      <td class="red">&mdash;</td>
+      <td><span class="tag tag-info">Talent diff</span></td>
+    </tr>
+    <tr>
+      <td>Fade</td>
+      <td>0.6</td>
+      <td>5</td>
+      <td>1.2</td>
+      <td>9</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Desperate Prayer</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>0.7</td>
+      <td>5</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Personal CD</span></td>
+    </tr>
+    <tr>
+      <td>Guardian Spirit</td>
+      <td class="dim">0.0</td>
+      <td class="dim">0</td>
+      <td>0.1</td>
+      <td>1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Unused external</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Holy Word: Serenity Gap</div>
+    <p style="font-size: 14px;">Holy Word: Serenity is the single most impactful ability for a Holy Priest &mdash; instant-cast (with Apotheosis), massive single-target heal, and each cast reduces the cooldown of Apotheosis. Voidh&eacute;art casts it <strong>40 times (5.0/min)</strong> vs Nax's <strong>58 times (8.0/min)</strong>. That is 18 fewer Serenity casts across the fight &mdash; at ~133K effective healing per cast, that is roughly <strong>2.4M missed healing</strong>. During Apotheosis windows, HW:Serenity should be cast every GCD.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Benediction Under-Use</div>
+    <p style="font-size: 14px;">Benediction (Renew extension/application talent proc) is cast <strong>11 times</strong> vs Nax's <strong>31 times</strong> (&minus;67%). Benediction feeds the Echo of Light mastery chain and sustains Renew on multiple targets. With fewer Benediction procs, Voidh&eacute;art's Renew uptime across the raid is lower (5,801K Renew healing vs 8,203K for Nax). Renew ticks heal passively, freeing GCDs for other spells.</p>
+  </div>
+</div>
+
+<!-- ═══ HEALING BREAKDOWN ═══ -->
+<h2>Healing Breakdown</h2>
+<p class="section-intro">Top healing sources with overheal percentage. Voidh&eacute;art's 7:58 full fight vs Nax's 7:13 full fight.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Voidh&eacute;art Eff.</th><th>OH%</th><th></th><th>Nax Eff.</th><th>OH%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Prayer of Healing</strong></td>
+      <td>17,158K</td>
+      <td>21.7%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 78.3%"></div>
+          <div class="oh-over" style="width: 21.7%"></div>
+        </div>
+      </td>
+      <td>16,199K</td>
+      <td>28.9%</td>
+    </tr>
+    <tr>
+      <td>Echo of Light</td>
+      <td>11,445K</td>
+      <td>32.0%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 68%"></div>
+          <div class="oh-over" style="width: 32%"></div>
+        </div>
+      </td>
+      <td>12,797K</td>
+      <td>32.4%</td>
+    </tr>
+    <tr>
+      <td>Renew</td>
+      <td>5,801K</td>
+      <td>26.6%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 73.4%"></div>
+          <div class="oh-over" style="width: 26.6%"></div>
+        </div>
+      </td>
+      <td>8,203K</td>
+      <td>29.1%</td>
+    </tr>
+    <tr>
+      <td>Holy Word: Serenity</td>
+      <td>5,324K</td>
+      <td>26.3%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 73.7%"></div>
+          <div class="oh-over" style="width: 26.3%"></div>
+        </div>
+      </td>
+      <td>8,241K</td>
+      <td>37.8%</td>
+    </tr>
+    <tr>
+      <td>Halo</td>
+      <td>5,111K</td>
+      <td class="yellow">63.8%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 36.2%"></div>
+          <div class="oh-over" style="width: 63.8%"></div>
+        </div>
+      </td>
+      <td>8,106K</td>
+      <td class="yellow">61.4%</td>
+    </tr>
+    <tr>
+      <td>Ultimate Serenity</td>
+      <td>4,080K</td>
+      <td>12.3%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 87.7%"></div>
+          <div class="oh-over" style="width: 12.3%"></div>
+        </div>
+      </td>
+      <td>6,258K</td>
+      <td>17.2%</td>
+    </tr>
+    <tr>
+      <td>Cosmic Ripple</td>
+      <td>3,688K</td>
+      <td>9.9%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 90.1%"></div>
+          <div class="oh-over" style="width: 9.9%"></div>
+        </div>
+      </td>
+      <td>6,379K</td>
+      <td>13.2%</td>
+    </tr>
+    <tr>
+      <td>Leech</td>
+      <td>3,371K</td>
+      <td>7.8%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 92.2%"></div>
+          <div class="oh-over" style="width: 7.8%"></div>
+        </div>
+      </td>
+      <td>4,461K</td>
+      <td>23.6%</td>
+    </tr>
+    <tr>
+      <td>Litany of Lightblind Wrath</td>
+      <td>2,343K</td>
+      <td>0.0%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 100%"></div>
+        </div>
+      </td>
+      <td>4,009K</td>
+      <td>0.0%</td>
+    </tr>
+    <tr>
+      <td>Divine Hymn</td>
+      <td>1,524K</td>
+      <td class="yellow">44.5%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 55.5%"></div>
+          <div class="oh-over" style="width: 44.5%"></div>
+        </div>
+      </td>
+      <td>1,500K</td>
+      <td class="yellow">45.0%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Notable gaps: HW:Serenity effective healing is <strong>2,917K lower</strong> than Nax (5,324K vs 8,241K), directly tied to the 38% fewer casts. Renew is <strong>2,402K lower</strong> (linked to Benediction under-use). Ultimate Serenity and Cosmic Ripple (passive procs from Holy Words) are both lower because fewer Holy Words were cast. Voidh&eacute;art's overheal is actually <em>lower</em> on most abilities, indicating efficient targeting &mdash; the gap is throughput volume, not waste.</p>
+
+<!-- ═══ DPS CONTRIBUTION ═══ -->
+<h2>DPS Contribution</h2>
+<p class="section-intro">Holy Priest DPS filler: Smite (deals damage and generates Searing Light healing), Holy Fire, and Halo. DPS during low-damage windows contributes to overall raid performance.</p>
+
+<div class="grid-3">
+  <div class="card stat">
+    <div class="stat-value yellow">12.2K</div>
+    <div class="stat-label">Voidh&eacute;art DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">5,830K</div>
+    <div class="stat-label">Total Damage Done</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">19.1K</div>
+    <div class="stat-label">Nax DPS (Ref)</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Voidh&eacute;art Damage</th><th>Nax Damage</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Halo</td>
+      <td>2,734K</td>
+      <td>4,504K</td>
+    </tr>
+    <tr>
+      <td>Smite</td>
+      <td>1,535K</td>
+      <td>1,264K</td>
+    </tr>
+    <tr>
+      <td>Searing Light</td>
+      <td>604K</td>
+      <td>877K</td>
+    </tr>
+    <tr>
+      <td>Holy Fire</td>
+      <td>469K</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Beacon of Lightblind Wrath</td>
+      <td>457K</td>
+      <td>798K</td>
+    </tr>
+    <tr>
+      <td>Holy Nova</td>
+      <td>&mdash;</td>
+      <td>513K</td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Pain</td>
+      <td>&mdash;</td>
+      <td>143K</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Voidh&eacute;art's DPS is <strong>36% lower</strong> than Nax (12.2K vs 19.1K). Smite counts are actually higher (67 vs 53), but Halo damage is notably lower (2,734K vs 4,504K) despite similar cast counts (6 vs 7). Nax also adds Holy Nova (12 casts, 513K damage) and Shadow Word: Pain (143K) which Voidh&eacute;art lacks &mdash; likely talent differences. The DPS gap translates to less Searing Light healing (604K vs 877K).</p>
+
+<!-- ═══ WIPE PROGRESSION ═══ -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Voidh&eacute;art's HPS across all 20 pulls on Mythic Rotmire. Clear improvement trend through the night. Kill fight (F22) at 135K HPS.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 32%; background: var(--red);" data-tooltip="F2: 43.9K HPS (1:13)"></div>
+    <div class="prog-bar" style="height: 40%; background: var(--red);" data-tooltip="F3: 55.4K HPS (1:11)"></div>
+    <div class="prog-bar" style="height: 28%; background: var(--red);" data-tooltip="F4: 38.9K HPS (0:51)"></div>
+    <div class="prog-bar" style="height: 47%; background: var(--red);" data-tooltip="F5: 63.9K HPS (2:42)"></div>
+    <div class="prog-bar" style="height: 65%; background: var(--orange);" data-tooltip="F7: 89.6K HPS (2:18)"></div>
+    <div class="prog-bar" style="height: 39%; background: var(--red);" data-tooltip="F8: 53.1K HPS (2:17)"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--orange);" data-tooltip="F9: 93.0K HPS (3:14)"></div>
+    <div class="prog-bar" style="height: 78%; background: var(--orange);" data-tooltip="F10: 107.2K HPS (5:37)"></div>
+    <div class="prog-bar" style="height: 69%; background: var(--orange);" data-tooltip="F11: 94.1K HPS (4:48)"></div>
+    <div class="prog-bar" style="height: 82%; background: var(--yellow);" data-tooltip="F12: 112.9K HPS (5:42)"></div>
+    <div class="prog-bar" style="height: 43%; background: var(--red);" data-tooltip="F13: 58.6K HPS (2:51)"></div>
+    <div class="prog-bar" style="height: 31%; background: var(--red);" data-tooltip="F14: 42.4K HPS (1:15)"></div>
+    <div class="prog-bar" style="height: 79%; background: var(--orange);" data-tooltip="F15: 107.9K HPS (5:05)"></div>
+    <div class="prog-bar" style="height: 19%; background: var(--red);" data-tooltip="F16: 26.0K HPS (0:53)"></div>
+    <div class="prog-bar" style="height: 91%; background: var(--yellow);" data-tooltip="F17: 124.5K HPS (5:45)"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--yellow);" data-tooltip="F18: 136.6K HPS (6:52)"></div>
+    <div class="prog-bar" style="height: 73%; background: var(--orange);" data-tooltip="F19: 100.3K HPS (5:01)"></div>
+    <div class="prog-bar" style="height: 6%; background: var(--red);" data-tooltip="F20: 8.2K HPS (0:54)"></div>
+    <div class="prog-bar" style="height: 82%; background: var(--yellow);" data-tooltip="F21: 112.4K HPS (7:15)"></div>
+    <div class="prog-bar" style="height: 99%; background: var(--green);" data-tooltip="F22 KILL: 135.1K HPS (7:58)"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">HPS correlates strongly with fight duration &mdash; short wipes (F4: 0:51, F16: 0:53, F20: 0:54) produce low HPS because there is no sustained damage to heal. The three longest pre-kill pulls (F17: 5:45, F18: 6:52, F21: 7:15) showed 124K, 137K, and 112K HPS respectively, establishing the performance ceiling. The kill itself (135K) was among the best, though F18 (136.6K in 6:52) was slightly higher &mdash; the shorter fight meant less healing was needed at the end.</p>
+
+<!-- ═══ HEALER RANKING (KILL FIGHT) ═══ -->
+<h2>Healer Ranking &mdash; Kill Fight</h2>
+<p class="section-intro">All 4 dedicated healers on the Mythic Rotmire kill, sorted by total HPS.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>#</th><th>Player</th><th>Spec</th><th>Total Healing</th><th>HPS</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Brewtote</strong></td>
+      <td>Resto Shaman</td>
+      <td>78,240K</td>
+      <td class="green">163,840</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Tiareynna</strong></td>
+      <td>Disc Priest</td>
+      <td>74,262K</td>
+      <td>155,511</td>
+      <td><span class="tag tag-crit">Died 3:08</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>S&igrave;lencio</strong></td>
+      <td>Resto Druid</td>
+      <td>73,782K</td>
+      <td>154,505</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+    <tr style="background: rgba(88,166,255,0.04);">
+      <td>4</td>
+      <td><strong>Voidh&eacute;art</strong></td>
+      <td>Holy Priest</td>
+      <td>64,494K</td>
+      <td>135,056</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Voidh&eacute;art ranks 4th of 4 healers at 135K HPS. Context: Tiareynna (#2 at 155K) died at 3:08 &mdash; her high HPS reflects 3 minutes of intense healing compressed into a shorter time window. Brewtote and S&igrave;lencio picked up the slack after Tiareynna died, inflating their numbers. Voidh&eacute;art's lower HPS is partly attributable to the HW:Serenity gap (38% fewer casts) and lower Benediction/Renew throughput, not to death or downtime.</p>
+
+<!-- ═══ ACTIONABLE ITEMS ═══ -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Cast Holy Word: Serenity more aggressively.</strong> This is the #1 throughput improvement available. Voidh&eacute;art cast HW:Serenity <strong>40 times (5.0/min)</strong> vs the reference's <strong>58 times (8.0/min)</strong> &mdash; a 38% gap representing roughly 2.4M missing effective healing. During Apotheosis windows, HW:Serenity should be cast every other GCD (alternating with Prayer of Healing). Outside Apotheosis, it should be used on cooldown on any target below full health. Each Serenity cast also reduces the cooldown of Apotheosis, creating a virtuous cycle.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Pre-activate Apotheosis before Bloom, not after.</strong> Across all 3 Blooms, Apotheosis was activated 4.1&ndash;4.8 seconds <em>after</em> damage hit. The reference activates it 4.3 seconds <em>before</em>. Blooms fire on a fixed timer (2:00, 4:16, 6:32). Start Apotheosis at <strong>1:56, 4:12, and 6:28</strong> so instant-cast Holy Words are already landing as damage hits. This window shift alone would improve burst throughput during the 3 most critical healing moments of the fight.
+</div>
+
+<div class="action-item">
+  <strong>3. Pre-activate Power Infusion before Bloom.</strong> PI was consistently activated 2&ndash;8 seconds after Bloom damage. The reference activates PI 1&ndash;2 seconds <em>before</em> or at the moment of Bloom. Queue PI alongside Apotheosis at 1:56, 4:12, and 6:28. Combined with earlier Apotheosis, this stacks 20% haste on top of instant-cast Holy Words during peak damage.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Benediction usage.</strong> Only 11 Benediction casts vs 31 from the reference (&minus;67%). Benediction extends and applies Renew, which feeds Echo of Light mastery healing passively. Renew healing was 5,801K vs 8,203K (&minus;29%). Using Benediction on cooldown during sustained damage windows adds passive throughput without costing GCDs on direct healing.
+</div>
+
+<div class="action-item">
+  <strong>5. Add DPS fillers during low-damage windows.</strong> 12.2K DPS vs reference's 19.1K (&minus;36%). Smite count is actually slightly higher (67 vs 53), so the gap comes from Halo damage (2,734K vs 4,504K) and missing Holy Nova/SW:Pain. If talents allow, adding Holy Nova for melee-range AoE damage during quiet windows and maintaining SW:Pain uptime on the boss would close the DPS gap and increase Searing Light passive healing.
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: Nax (#5 ranked Holy Priest, report <code>Lv2YT3KGkAhMjQcd</code>, Fight 5). All times relative to fight start. Boss ability timers verified across multiple kills.</p>
+  <p style="margin-top: 4px;">Talent delta: 6 differences between Voidh&eacute;art and Nax. Notable differences: Nax runs Holy Nova and Shadow Word: Pain, Voidh&eacute;art runs Holy Fire. The HW:Serenity, Apotheosis timing, and Benediction issues above are talent-independent.</p>
+</div>
+
+</body>
+</html>

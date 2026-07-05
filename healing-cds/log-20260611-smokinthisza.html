@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smokinthisza — MM Hunter — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 180px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .boss-pct-label { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); font-size: 9px; color: rgba(255,255,255,0.8); white-space: nowrap; font-weight: 600; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .death-timeline { position: relative; height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 8px 0; overflow: visible; }
+  .death-icon { position: absolute; top: 50%; transform: translate(-50%, -50%); font-size: 14px; cursor: default; z-index: 2; }
+  .death-icon:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; margin-bottom: 4px; }
+  .phase-band { position: absolute; top: 0; height: 100%; opacity: 0.15; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Smokinthisza <span class="dim">&mdash; Marksmanship Hunter</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (No Kill &mdash; 26 wipes) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value yellow">130K</div>
+    <div class="stat-label">DPS (Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">269</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">0.01%</div>
+    <div class="stat-label">Best Pull (F8, 2:22)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">33.9</div>
+    <div class="stat-label">Active CPM</div>
+  </div>
+</div>
+
+<div class="card" style="font-size: 13px; margin-top: 4px;">
+  <span class="dim">Analysis fight:</span> Pull 23 (longest pull at 4:53, boss reached 77.31%). <span class="dim">Active DPS when alive:</span> <strong class="green">~168K</strong> (226s active out of 293s). Smokinthisza died at <strong class="red">2:31</strong> to Silverstrike Barrage, was battle-rezzed at 2:57, then died again at <strong class="red">4:12</strong>. The 130K headline DPS includes 67s of death downtime.
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Smokinthisza's <strong class="green">active DPS of ~168K</strong> across 226 seconds of uptime is solid relative to the progression context. When alive, rotational CPM is <strong class="green">33.9 vs 34.8</strong> for the #3-ranked reference (a full kill) &mdash; only a 2.6% activity gap. The main performance limiters are <strong class="red">survivability</strong> (died twice in the analysis pull, losing 67s of damage time) and <strong class="yellow">talent choices</strong>: Smokinthisza runs Explosive Shot instead of Kill Shot with Deathblow, which costs an estimated <strong class="yellow">~4-5% DPS</strong> vs the reference build. On the positive side, the opener sequence is textbook (pre-cast Aimed Shot, Trueshot at 2.3s, Rapid Fire weaving), and when alive the Aimed Shot / Arcane Shot / Rapid Fire priority is well-executed. The ilvl gap (<strong class="red">269 vs 290</strong> for references) is significant &mdash; roughly 8-10% DPS penalty from raw stats alone. <em>This is progression data vs kill references &mdash; the comparison is contextual, not apples-to-apples.</em></p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Marksmanship Hunters on Mythic Crown of the Cosmos (kills). Primary reference: <strong>&#19968;&#23545;&#23567;&#29482;&#20180;</strong> (fewest talent differences at 6, 106K DPS, 8:37 kill). All references are from completed kills; Smokinthisza's data is from a 4:53 wipe pull.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Smokinthisza</strong></td>
+      <td>130K <span class="dim">(~168K active)</span></td>
+      <td>4:53 <span class="tag tag-crit">WIPE</span></td>
+      <td>269.3</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Died 2x</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>&#23567;&#40657;&#22235;&#21495; <span class="ref-badge">#1</span></td>
+      <td class="green">110,660</td>
+      <td>9:03</td>
+      <td>290.1</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#23567;&#40657;&#20116;&#21495; <span class="ref-badge">#2</span></td>
+      <td class="green">107,792</td>
+      <td>8:24</td>
+      <td>289.4</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>&#19968;&#23545;&#23567;&#29482;&#20180; <span class="ref-badge">#3 PRIMARY</span></td>
+      <td class="green">106,093</td>
+      <td>8:37</td>
+      <td>290.6</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#1063;&#1077;&#1089;&#1077;&#1088; <span class="ref-badge">#4</span></td>
+      <td class="green">103,461</td>
+      <td>8:25</td>
+      <td>289.1</td>
+      <td><span class="tag tag-diff">7 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#23567;&#40657;&#19971;&#21495; <span class="ref-badge">#5</span></td>
+      <td class="green">103,047</td>
+      <td>8:22</td>
+      <td>289.1</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong>Context note:</strong> Kill DPS for MM Hunter on Crown ranges 103&ndash;111K across 8&ndash;9 minute fights. Smokinthisza's 130K/168K on a 4:53 wipe is <em>not directly comparable</em> &mdash; shorter fights bias toward burst-phase DPS, and Crown's later phases add sustained damage checks. The reference comparison focuses on rotation quality (CPM, ability priority, cooldown alignment), not raw DPS numbers. The <strong class="red">21-ilvl gap</strong> (269 vs 290) means the reference has ~8&ndash;10% more raw stats.</p>
+
+<!-- DEATH TIMELINE -->
+<h2>Fight 23 Timeline &amp; Deaths</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase fight: Sentinels (Phase 1) &rarr; Rift Simulacrum (Phase 2) &rarr; Devouring Cosmos (Phase 3). This pull reached deep into Phase 3 before the raid collapsed.</p>
+
+<div class="card">
+  <div style="position: relative; height: 80px; background: var(--bg); border-radius: 6px; overflow: visible; margin-bottom: 8px;">
+    <!-- Phase bands -->
+    <div class="phase-band" style="left: 0; width: 40%; background: var(--accent);"></div>
+    <div class="phase-band" style="left: 40%; width: 30%; background: var(--yellow);"></div>
+    <div class="phase-band" style="left: 70%; width: 30%; background: var(--red);"></div>
+
+    <!-- Phase labels -->
+    <span style="position: absolute; top: 4px; left: 15%; transform: translateX(-50%); font-size: 10px; color: var(--accent); font-weight: 600;">Phase 1: Sentinels</span>
+    <span style="position: absolute; top: 4px; left: 55%; transform: translateX(-50%); font-size: 10px; color: var(--yellow); font-weight: 600;">Phase 2: Rift Simulacrum</span>
+    <span style="position: absolute; top: 4px; left: 85%; transform: translateX(-50%); font-size: 10px; color: var(--red); font-weight: 600;">Phase 3: Devouring Cosmos</span>
+
+    <!-- Player death markers -->
+    <div class="death-icon" style="left: 51.4%; color: var(--red);" data-tooltip="2:31 - Smokinthisza dies (Silverstrike Barrage)">&#x2620;</div>
+    <div class="death-icon" style="left: 51.4%; top: 70%; color: var(--dim);" data-tooltip="2:31 - Alitheria also dies (Silverstrike Barrage)">&#x2620;</div>
+    <div class="death-icon" style="left: 60.3%; color: var(--cyan);" data-tooltip="2:57 - Smokinthisza rezzed">&#x21BB;</div>
+    <div class="death-icon" style="left: 86.1%; color: var(--red);" data-tooltip="4:12 - Smokinthisza dies again">&#x2620;</div>
+
+    <!-- Time markers -->
+    <span style="position: absolute; bottom: 2px; left: 4px; font-size: 10px; color: var(--dim);">0:00</span>
+    <span style="position: absolute; bottom: 2px; left: 25%; transform: translateX(-50%); font-size: 10px; color: var(--dim);">1:13</span>
+    <span style="position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim);">2:27</span>
+    <span style="position: absolute; bottom: 2px; left: 75%; transform: translateX(-50%); font-size: 10px; color: var(--dim);">3:40</span>
+    <span style="position: absolute; bottom: 2px; right: 4px; font-size: 10px; color: var(--dim);">4:53</span>
+  </div>
+
+  <div class="card-header dim" style="margin-top: 8px;">Raid Deaths (Fight 23)</div>
+  <div style="font-size: 13px; line-height: 1.8;">
+    <span class="death-marker"><strong class="red">2:31</strong> Smokinthisza &amp; Alitheria &mdash; Silverstrike Barrage</span>
+    <span class="death-marker"><strong class="yellow">2:42</strong> Invincibale &mdash; Silverstrike Barrage</span>
+    <span class="death-marker"><strong class="orange">3:46</strong> Son&igrave;c &mdash; Voidstalker Sting</span>
+    <span class="death-marker"><strong class="orange">3:56&ndash;4:06</strong> Invincibale, Orichamaru, Starfighter, Moistbear, Zinnks</span>
+    <span class="death-marker"><strong class="red">4:12&ndash;4:24</strong> Smokinthisza, Unholyftw, Nurnyx, Snackznchill, Senssay + 4 more</span>
+    <span class="death-marker"><strong class="red">4:42&ndash;4:53</strong> Nucke, Glazedwhole &mdash; raid wipe</span>
+  </div>
+  <p style="margin-top: 8px; color: var(--yellow); font-size: 13px;">Smokinthisza was dead from <strong>2:31 to 2:57</strong> (26s, battle-rezzed), then died again at <strong>4:12</strong> along with the rest of the raid collapsing in Phase 3. The first death to Silverstrike Barrage at 2:31 is the key survivability moment to address.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">CPM calculated on <strong>active time only</strong> (226s for Smokinthisza, 517s for reference). This normalizes for death downtime and compares pure rotation execution. Reference is from a full 8:37 kill.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Aimed Shot</strong></td>
+      <td>35</td>
+      <td class="green">9.28</td>
+      <td>84</td>
+      <td>9.76</td>
+      <td class="green">&minus;5%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Arcane Shot</strong></td>
+      <td>44</td>
+      <td class="green">11.67</td>
+      <td>99</td>
+      <td>11.50</td>
+      <td class="green">+1%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rapid Fire</strong></td>
+      <td>12</td>
+      <td class="yellow">3.18</td>
+      <td>33</td>
+      <td>3.83</td>
+      <td class="yellow">&minus;17%</td>
+      <td><span class="tag tag-warn">Slightly Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Volley</strong></td>
+      <td>5</td>
+      <td class="green">1.33</td>
+      <td>8</td>
+      <td>0.93</td>
+      <td class="green">+43%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Moonlight Chakram</td>
+      <td>2</td>
+      <td>0.53</td>
+      <td>4</td>
+      <td>0.46</td>
+      <td class="green">+15%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Trueshot</td>
+      <td>2</td>
+      <td>0.53</td>
+      <td>4</td>
+      <td>0.46</td>
+      <td class="green">+15%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Steady Shot</strong></td>
+      <td>4</td>
+      <td class="red">1.06</td>
+      <td>35</td>
+      <td>4.06</td>
+      <td class="red">&minus;74%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Kill Shot</strong></td>
+      <td>0</td>
+      <td class="red">0</td>
+      <td>15</td>
+      <td>1.74</td>
+      <td class="red">&minus;100%</td>
+      <td><span class="tag tag-diff">Missing</span></td>
+    </tr>
+    <tr>
+      <td>Explosive Shot</td>
+      <td>5</td>
+      <td>1.33</td>
+      <td>0</td>
+      <td>0</td>
+      <td class="dim">N/A</td>
+      <td><span class="tag tag-info">Different talent</span></td>
+    </tr>
+    <tr>
+      <td>Algeth'ar Puzzle</td>
+      <td>1</td>
+      <td>0.27</td>
+      <td>4</td>
+      <td>0.46</td>
+      <td class="yellow">&minus;43%</td>
+      <td><span class="tag tag-warn">Trinket usage</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Kill Shot vs Explosive Shot (Talent Difference)</div>
+    <p style="font-size: 14px;">The biggest rotation difference is talent-driven. The reference runs <strong>Kill Shot with Deathblow</strong> (which resets Kill Shot off cooldown via Aimed Shot crits), producing <strong>15 Kill Shot casts for 5.04M damage</strong> (5.2% of their total). Smokinthisza runs <strong>Explosive Shot</strong> instead (5 casts, 0.77M damage, 1.8% of total). This single talent swap accounts for roughly <strong>4.27M damage difference</strong> &mdash; the equivalent of ~4% DPS. Current guides recommend Kill Shot + Deathblow for raid single-target.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Steady Shot as Focus Filler</div>
+    <p style="font-size: 14px;">The reference casts Steady Shot <strong>35 times (4.06 CPM)</strong> vs Smokinthisza's <strong>4 casts (1.06 CPM)</strong>. Steady Shot is the primary Focus regeneration tool &mdash; it generates 30 Focus per cast and is meant to be woven between Aimed Shot charges to prevent Focus starvation. Without sufficient Steady Shot weaving, Smokinthisza may be Focus-starved, leading to the slightly lower Rapid Fire CPM (using GCDs on nothing while waiting for Focus to regenerate naturally).</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Total damage: Smokinthisza <strong>~38M</strong> (130K DPS over 293s, ~168K over 226s active) vs reference <strong>~55M</strong> (106K DPS over 517s kill). Sorted by player damage contribution.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Aimed Shot</strong></td>
+      <td>17,260K</td>
+      <td class="green">40.0%</td>
+      <td>42,010K</td>
+      <td>43.7%</td>
+      <td><span class="tag tag-same">Core ability</span></td>
+    </tr>
+    <tr>
+      <td><strong>Arcane Shot</strong></td>
+      <td>7,310K</td>
+      <td>16.9%</td>
+      <td>14,840K</td>
+      <td>15.4%</td>
+      <td><span class="tag tag-same">Precise Shots spender</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rapid Fire</strong></td>
+      <td>4,580K</td>
+      <td>10.6%</td>
+      <td>7,550K</td>
+      <td>7.9%</td>
+      <td><span class="tag tag-same">Higher % share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Lunar Storm</strong></td>
+      <td>3,880K</td>
+      <td>9.0%</td>
+      <td>9,540K</td>
+      <td>9.9%</td>
+      <td><span class="tag tag-info">Sentinel proc</span></td>
+    </tr>
+    <tr>
+      <td>Master Marksman</td>
+      <td>2,590K</td>
+      <td>6.0%</td>
+      <td>5,980K</td>
+      <td>6.2%</td>
+      <td><span class="tag tag-info">Passive proc</span></td>
+    </tr>
+    <tr>
+      <td>Volley</td>
+      <td>2,570K</td>
+      <td>6.0%</td>
+      <td>3,190K</td>
+      <td>3.3%</td>
+      <td><span class="tag tag-same">Higher %</span></td>
+    </tr>
+    <tr>
+      <td>Moonlight Chakram</td>
+      <td>1,570K</td>
+      <td>3.6%</td>
+      <td>3,530K</td>
+      <td>3.7%</td>
+      <td><span class="tag tag-same">Consistent</span></td>
+    </tr>
+    <tr>
+      <td>Sanctified Armaments</td>
+      <td>860K</td>
+      <td>2.0%</td>
+      <td>1,610K</td>
+      <td>1.7%</td>
+      <td><span class="tag tag-info">Passive</span></td>
+    </tr>
+    <tr>
+      <td>Explosive Shot</td>
+      <td>770K</td>
+      <td>1.8%</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Player-only talent</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Kill Shot</strong></td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td class="green">5,040K</td>
+      <td>5.2%</td>
+      <td><span class="tag tag-diff">Ref-only talent</span></td>
+    </tr>
+    <tr>
+      <td>Let Fly!</td>
+      <td>550K</td>
+      <td>1.3%</td>
+      <td>940K</td>
+      <td>1.0%</td>
+      <td><span class="dim">Passive</span></td>
+    </tr>
+    <tr>
+      <td>Auto Shot</td>
+      <td>450K</td>
+      <td>1.0%</td>
+      <td>680K</td>
+      <td>0.7%</td>
+      <td><span class="dim">Passive</span></td>
+    </tr>
+    <tr>
+      <td>Steady Shot</td>
+      <td>360K</td>
+      <td>0.8%</td>
+      <td>1,070K</td>
+      <td>1.1%</td>
+      <td><span class="tag tag-warn">Low cast count</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Damage Distribution Analysis</div>
+  <p style="font-size: 14px;">Smokinthisza's damage <strong>proportions</strong> are healthy &mdash; Aimed Shot leads at 40% (ref: 43.7%), Arcane Shot is the #2 contributor at 16.9% (ref: 15.4%), and passive procs (Lunar Storm, Master Marksman) contribute proportionally. The key differences are: (1) <strong class="red">Kill Shot contributes 0% vs 5.2%</strong> due to different talent selection, and (2) <strong class="yellow">Steady Shot is 0.8% vs 1.1%</strong> suggesting fewer Focus-regen casts. The raw damage totals are lower across the board primarily because this is a 4:53 wipe (with 67s dead) vs an 8:37 kill.</p>
+</div>
+
+<!-- TRUESHOT COOLDOWN ANALYSIS -->
+<h2>Trueshot Cooldown Usage</h2>
+<p class="section-intro">Trueshot is the primary DPS cooldown for MM Hunter. Smokinthisza used it twice in 4:53 (2 uses in ~226s active). The reference used it 4 times in 8:37.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Smokinthisza</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:02</span> <span class="cast good">Trueshot #1 (opener)</span></div>
+      <div><span class="dim">0:03</span> <span class="cast good">Rapid Fire (inside Trueshot)</span></div>
+      <div><span class="dim">0:07</span> <span class="cast good">Aimed Shot (inside Trueshot)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">2:31</span> <span class="cast bad">DEAD &mdash; Silverstrike Barrage</span></div>
+      <div><span class="dim">2:57</span> <span class="cast neutral">Battle-rezzed</span></div>
+      <div><span class="dim">3:01</span> <span class="cast good">Trueshot #2 (post-rez)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div style="margin-top: 6px;"><strong class="green">Good opener timing. Post-rez Trueshot used immediately &mdash; correct.</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="purple">Reference</span> <span class="ref-badge">&#19968;&#23545;&#23567;&#29482;&#20180;</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:22</span> <span class="cast good">Trueshot #1</span></div>
+      <div><span class="dim">2:58</span> <span class="cast good">Trueshot #2 (2:36 gap)</span></div>
+      <div><span class="dim">5:02</span> <span class="cast good">Trueshot #3 (2:04 gap)</span></div>
+      <div><span class="dim">7:12</span> <span class="cast good">Trueshot #4 (2:10 gap)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div style="margin-top: 6px;"><strong class="purple">4 uses in 8:37 &mdash; ~2:10 average gap (with Calling the Shots CDR)</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Trueshot Assessment</div>
+  <p style="font-size: 14px;">Trueshot usage is <strong class="green">correct</strong>. The opener Trueshot at 0:02 is well-timed (just after pre-cast Aimed Shot), and Trueshot #2 was used immediately upon being battle-rezzed at 3:01, which is the right play. The death at 2:31 meant Trueshot #2 was delayed, but that is a survivability issue, not a rotation issue. The reference averages a ~2:10 Trueshot gap (reduced by Calling the Shots talent, which refunds CD on Aimed/Rapid Fire casts).</p>
+</div>
+
+<!-- OPENER ANALYSIS -->
+<h2>Opener Sequence</h2>
+<p class="section-intro">The first 15 seconds of the pull, compared against the reference opener and current spec guide recommendations.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header green">Smokinthisza &mdash; Opener</div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:01</span> <span class="cast good">Aimed Shot (pre-cast)</span></div>
+      <div><span class="dim">0:01</span> <span class="cast good">Arcane Shot (Precise Shots)</span></div>
+      <div><span class="dim">0:02</span> <span class="cast good">Trueshot</span></div>
+      <div><span class="dim">0:03</span> <span class="cast good">Rapid Fire</span></div>
+      <div><span class="dim">0:05</span> <span class="cast neutral">Light's Potential (trinket)</span></div>
+      <div><span class="dim">0:05</span> <span class="cast good">Arcane Shot</span></div>
+      <div><span class="dim">0:06</span> <span class="cast good">Moonlight Chakram</span></div>
+      <div><span class="dim">0:08</span> <span class="cast good">Aimed Shot</span></div>
+      <div><span class="dim">0:09</span> <span class="cast neutral">Survival of the Fittest</span></div>
+      <div><span class="dim">0:09</span> <span class="cast good">Arcane Shot</span></div>
+      <div><span class="dim">0:11</span> <span class="cast good">Aimed Shot</span></div>
+      <div><span class="dim">0:11</span> <span class="cast good">Volley</span></div>
+      <div><span class="dim">0:12</span> <span class="cast good">Arcane Shot</span></div>
+      <div><span class="dim">0:15</span> <span class="cast good">Aimed Shot</span></div>
+    </div>
+  </div>
+  <div class="mechanic-card cd">
+    <div class="card-header purple">Guide Recommended Opener</div>
+    <div class="cd-timeline">
+      <div><span class="dim">Pre</span> <span class="cast good">Hunter's Mark</span></div>
+      <div><span class="dim">0:00</span> <span class="cast good">Aimed Shot (pre-cast)</span></div>
+      <div><span class="dim">0:00</span> <span class="cast good">Arcane Shot (Precise Shots)</span></div>
+      <div><span class="dim">0:01</span> <span class="cast good">Trueshot</span></div>
+      <div><span class="dim">0:01</span> <span class="cast good">Rapid Fire</span></div>
+      <div><span class="dim">0:03</span> <span class="cast good">Aimed Shot</span></div>
+      <div><span class="dim">0:03</span> <span class="cast good">Arcane Shot</span></div>
+      <div><span class="dim">0:05</span> <span class="cast good">Moonlight Chakram</span></div>
+      <div><span class="dim">0:06</span> <span class="cast good">Aimed Shot</span></div>
+      <div style="margin-top: 6px;"><span class="dim">Note:</span> <span class="cast neutral">Continue Aimed Shot &gt; Arcane Shot cycling during Trueshot window</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 8px; border-left: 3px solid var(--green);">
+  <div class="card-header green">Opener Assessment: Clean</div>
+  <p style="font-size: 14px;">Smokinthisza's opener follows the recommended sequence closely. Pre-cast Aimed Shot, immediate Arcane Shot to spend Precise Shots, Trueshot into Rapid Fire, then cycling Aimed Shot + Arcane Shot during the Trueshot window. The only minor deviation is using Survival of the Fittest at 0:09 (defensive) during the Trueshot window, which consumed a GCD that could have been damage. Otherwise, the opener is <strong class="green">textbook</strong>.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during Fight 23.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>0:07</td>
+      <td><span class="tag tag-same">On pull &mdash; aligns with Trueshot opener</span></td>
+    </tr>
+    <tr>
+      <td><strong>Heroism</strong></td>
+      <td>2:59</td>
+      <td><span class="tag tag-info">Mid-fight, after battle-rez</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>0:01, 1:05, 1:36, 2:58, 3:30, 3:60</td>
+      <td><span class="tag tag-same">6 applications &mdash; regular Aug uptime</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Smokinthisza received Power Infusion at 0:07 which lined up with the Trueshot opener. Heroism was used at 2:59, coinciding with the battle-rez window. The second Trueshot at 3:01 stacked with Heroism for a strong post-rez burst.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Smokinthisza during Fight 23. Crown of the Cosmos has constant raid-wide damage alongside targeted mechanics.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>2,369K</td>
+      <td>118</td>
+      <td>546K</td>
+      <td><span class="tag tag-same">No &mdash; passive raid ticking damage</span></td>
+    </tr>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>1,233K</td>
+      <td>58</td>
+      <td>422K</td>
+      <td><span class="tag tag-same">No &mdash; Phase 2 mechanic</span></td>
+    </tr>
+    <tr>
+      <td><strong>Void Expulsion</strong></td>
+      <td>929K</td>
+      <td>26</td>
+      <td>166K</td>
+      <td><span class="tag tag-info">Partially &mdash; reduce by positioning</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Voidstalker Sting</strong></td>
+      <td>689K</td>
+      <td>39</td>
+      <td>282K</td>
+      <td><span class="tag tag-warn">Partially &mdash; targeted DoT</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Silverstrike Barrage</strong></td>
+      <td>601K</td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-diff">Yes &mdash; killed Smokinthisza at 2:31</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>335K</td>
+      <td>6</td>
+      <td>81K</td>
+      <td><span class="tag tag-info">Partially avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>303K</td>
+      <td>20</td>
+      <td>147K</td>
+      <td><span class="tag tag-same">No &mdash; environmental</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>274K</td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Targeted &mdash; movement required</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>257K</td>
+      <td>10</td>
+      <td>162K</td>
+      <td><span class="tag tag-same">No &mdash; Phase 3 mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>197K</td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-diff">Yes &mdash; avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Interrupting Tremor</td>
+      <td>190K</td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Partially &mdash; spread mechanic</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 8px; border-left: 3px solid var(--red);">
+  <div class="card-header red">Silverstrike Barrage &mdash; Primary Death Cause</div>
+  <p style="font-size: 14px;">The <strong>601K damage from Silverstrike Barrage</strong> (2 hits) killed Smokinthisza at 2:31. This is a targeted mechanic that requires movement or a defensive cooldown. Survival of the Fittest was used at 0:09 (opener) and should have been available again by 2:31 (3-min CD, so it would still be on CD). Consider saving one charge of SotF or using Exhilaration proactively when Silverstrike Barrage is incoming. Also note <strong>197K Falling damage</strong> (1 hit), which suggests a knockback or displacement mechanic that was not handled.</p>
+</div>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Smokinthisza's DPS across all 26 Crown of the Cosmos pulls. Bar height = DPS, color = boss % reached (green &lt;10%, yellow 10&ndash;50%, orange 50&ndash;90%, red &gt;90%). Best pulls: F8 &amp; F17 both reached <strong class="green">0.01%</strong> boss HP.</p>
+
+<div class="card">
+  <div class="progression-chart" style="height: 200px; padding-bottom: 24px;">
+    <div class="prog-bar" style="height: 0%; background: var(--red);" data-tooltip="F1: 0 DPS (0:28) | Boss: 99.5%">
+      <span class="prog-label">1</span>
+    </div>
+    <div class="prog-bar" style="height: 81%; background: var(--orange);" data-tooltip="F2: 271K DPS (1:03) | Boss: 52.0%">
+      <span class="boss-pct-label">52%</span>
+      <span class="prog-label">2</span>
+    </div>
+    <div class="prog-bar" style="height: 31%; background: var(--orange);" data-tooltip="F3: 104K DPS (1:57) | Boss: 54.8%">
+      <span class="prog-label">3</span>
+    </div>
+    <div class="prog-bar" style="height: 46%; background: var(--orange);" data-tooltip="F4: 156K DPS (1:16) | Boss: 54.6%">
+      <span class="prog-label">4</span>
+    </div>
+    <div class="prog-bar" style="height: 49%; background: var(--orange);" data-tooltip="F5: 163K DPS (1:00) | Boss: 74.0%">
+      <span class="prog-label">5</span>
+    </div>
+    <div class="prog-bar" style="height: 65%; background: var(--yellow);" data-tooltip="F6: 217K DPS (2:23) | Boss: 19.5%">
+      <span class="boss-pct-label">19%</span>
+      <span class="prog-label">6</span>
+    </div>
+    <div class="prog-bar" style="height: 45%; background: var(--yellow);" data-tooltip="F7: 152K DPS (1:29) | Boss: 41.7%">
+      <span class="prog-label">7</span>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F8: 335K DPS (2:22) | Boss: 0.01% BEST">
+      <span class="boss-pct-label" style="color: #fff; font-weight: 700;">0.01%</span>
+      <span class="prog-label" style="font-weight: 700;">8</span>
+    </div>
+    <div class="prog-bar" style="height: 60%; background: var(--green);" data-tooltip="F9: 201K DPS (2:32) | Boss: 7.3%">
+      <span class="boss-pct-label">7%</span>
+      <span class="prog-label">9</span>
+    </div>
+    <div class="prog-bar" style="height: 51%; background: var(--red);" data-tooltip="F10: 170K DPS (3:40) | Boss: 98.4%">
+      <span class="prog-label">10</span>
+    </div>
+    <div class="prog-bar" style="height: 60%; background: var(--yellow);" data-tooltip="F11: 202K DPS (2:02) | Boss: 30.3%">
+      <span class="prog-label">11</span>
+    </div>
+    <div class="prog-bar" style="height: 45%; background: var(--red);" data-tooltip="F12: 152K DPS (3:54) | Boss: 92.1%">
+      <span class="prog-label">12</span>
+    </div>
+    <div class="prog-bar" style="height: 49%; background: var(--orange);" data-tooltip="F13: 165K DPS (1:15) | Boss: 60.8%">
+      <span class="prog-label">13</span>
+    </div>
+    <div class="prog-bar" style="height: 44%; background: var(--red);" data-tooltip="F14: 147K DPS (3:51) | Boss: 95.3%">
+      <span class="prog-label">14</span>
+    </div>
+    <div class="prog-bar" style="height: 70%; background: var(--green);" data-tooltip="F15: 233K DPS (2:29) | Boss: 9.1%">
+      <span class="boss-pct-label">9%</span>
+      <span class="prog-label">15</span>
+    </div>
+    <div class="prog-bar" style="height: 74%; background: var(--yellow);" data-tooltip="F16: 248K DPS (2:10) | Boss: 21.2%">
+      <span class="boss-pct-label">21%</span>
+      <span class="prog-label">16</span>
+    </div>
+    <div class="prog-bar" style="height: 95%; background: var(--green);" data-tooltip="F17: 319K DPS (2:24) | Boss: 0.01% BEST">
+      <span class="boss-pct-label" style="color: #fff; font-weight: 700;">0.01%</span>
+      <span class="prog-label" style="font-weight: 700;">17</span>
+    </div>
+    <div class="prog-bar" style="height: 48%; background: var(--red);" data-tooltip="F18: 161K DPS (3:56) | Boss: 95.7%">
+      <span class="prog-label">18</span>
+    </div>
+    <div class="prog-bar" style="height: 58%; background: var(--yellow);" data-tooltip="F19: 195K DPS (1:54) | Boss: 34.5%">
+      <span class="prog-label">19</span>
+    </div>
+    <div class="prog-bar" style="height: 54%; background: var(--yellow);" data-tooltip="F20: 182K DPS (2:00) | Boss: 35.4%">
+      <span class="prog-label">20</span>
+    </div>
+    <div class="prog-bar" style="height: 51%; background: var(--green);" data-tooltip="F21: 171K DPS (2:27) | Boss: 0.22%">
+      <span class="boss-pct-label">0.2%</span>
+      <span class="prog-label">21</span>
+    </div>
+    <div class="prog-bar" style="height: 0%; background: var(--red);" data-tooltip="F22: 0 DPS (0:25) | Boss: 99.7%">
+      <span class="prog-label">22</span>
+    </div>
+    <div class="prog-bar" style="height: 39%; background: var(--orange);" data-tooltip="F23: 130K DPS (4:53) | Boss: 77.3% (ANALYSIS PULL)">
+      <span class="boss-pct-label">77%</span>
+      <span class="prog-label" style="font-weight: 700; color: var(--accent);">23*</span>
+    </div>
+    <div class="prog-bar" style="height: 45%; background: var(--red);" data-tooltip="F24: 151K DPS (3:49) | Boss: 92.9%">
+      <span class="prog-label">24</span>
+    </div>
+    <div class="prog-bar" style="height: 62%; background: var(--red);" data-tooltip="F25: 208K DPS (3:08) | Boss: 99.9%">
+      <span class="prog-label">25</span>
+    </div>
+    <div class="prog-bar" style="height: 60%; background: var(--red);" data-tooltip="F26: 201K DPS (3:40) | Boss: 96.9%">
+      <span class="prog-label">26</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px; margin-top: 20px;">
+    <span>Pull 1</span>
+    <span><span class="green">&bull;</span> Boss &lt;10% &nbsp; <span class="yellow">&bull;</span> 10&ndash;50% &nbsp; <span class="orange">&bull;</span> 50&ndash;90% &nbsp; <span class="red">&bull;</span> &gt;90% &nbsp; <strong class="accent">*</strong> = analysis pull</span>
+    <span>Pull 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">The raid had 3 pulls that nearly killed the boss: <strong class="green">F8 (0.01%, 335K DPS)</strong>, <strong class="green">F17 (0.01%, 319K DPS)</strong>, and <strong class="green">F21 (0.22%, 171K DPS)</strong>. These best pulls cluster around 2:22&ndash;2:27 duration, suggesting the fight is dying at that length when the raid executes cleanly. Smokinthisza's DPS on these best-execution pulls is exceptional (335K and 319K), indicating strong burst and add-phase damage when alive. The later pulls (F23&ndash;F26) show regression in boss % &mdash; likely fatigue or the raid trying new strategies. F23 (the analysis pull) is the longest pull at 4:53 but reached only 77.3% boss, partially because Smokinthisza and others died early.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. Note the significant item level gap.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Smokinthisza</th><th>Reference</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Item Level</strong></td>
+      <td class="red">269.3</td>
+      <td class="green">290.6</td>
+      <td><span class="tag tag-diff">&minus;21.3 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Agility</td>
+      <td>2,196</td>
+      <td>2,094</td>
+      <td><span class="tag tag-same">+5% (player higher)</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td>1,253</td>
+      <td>1,242</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="yellow">466</td>
+      <td>359</td>
+      <td>Player has +30% more Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="green">1,792</td>
+      <td>1,037</td>
+      <td><strong class="green">Player has +73% more Mastery</strong></td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>148</td>
+      <td>68</td>
+      <td>Player has +118% more Vers</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Despite the <strong class="red">21-ilvl gap</strong>, Smokinthisza's secondary stats are competitive. The Mastery rating is significantly higher (1,792 vs 1,037), which is valuable for MM Hunter (Mastery: Sniper Training increases damage when standing still). The higher Haste (466 vs 359) provides faster focus regen and shorter cast times. The stat priority for MM Hunter (Crit &ge; Mastery &gt; Vers &gt; Haste) means Smokinthisza's Mastery-heavy distribution is well-aligned. The raw stat totals suggest the ilvl gap comes from primary stat budget on armor pieces rather than secondary distribution issues.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Survive Silverstrike Barrage.</strong> Smokinthisza died at 2:31 to Silverstrike Barrage, removing 67 seconds of damage time from the fight. This single death reduced overall DPS from an estimated ~168K (active) to 130K (full fight) &mdash; a <strong>23% DPS loss from death downtime</strong>. Silverstrike Barrage is a targeted mechanic that requires either (a) positioning away from the barrage path, (b) a defensive cooldown (Survival of the Fittest, Exhilaration, or Aspect of the Turtle), or (c) a healthstone/health potion before the hit. With 601K total damage from only 2 hits, this is a one-shot mechanic at lower ilvl. Saving Survival of the Fittest for this mechanic instead of using it in the opener would be the highest-impact change.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Swap Explosive Shot for Kill Shot + Deathblow.</strong> This is a talent change, not a rotation change. The reference deals <strong>5.04M damage from Kill Shot (5.2% of total)</strong> with 15 casts across the fight thanks to Deathblow (Kill Shot resets from Aimed Shot crits). Smokinthisza's Explosive Shot contributed only 0.77M (1.8%). Current spec guides recommend Kill Shot + Deathblow for raid single-target. This swap alone would add an estimated <strong>4&ndash;5% DPS</strong> without any rotation complexity increase, since Kill Shot is a proc-based ability that simply lights up when available.
+</div>
+
+<div class="action-item">
+  <strong>3. Weave more Steady Shot for Focus management.</strong> Smokinthisza cast Steady Shot <strong>4 times (1.06 CPM)</strong> vs the reference's <strong>35 times (4.06 CPM)</strong>. Steady Shot generates 30 Focus per cast and is the primary tool to prevent Focus starvation between Aimed Shot windows. Without sufficient Steady Shot weaving, the player may be sitting at low Focus waiting for natural regen, which creates the small gaps visible in the rotation. Each Steady Shot also deals damage (360K total for 4 casts &mdash; the reference did 1.07M from 35 casts). Aim for approximately 1 Steady Shot between every 2&ndash;3 Aimed Shot casts when Rapid Fire and Arcane Shot (with Precise Shots) are unavailable.
+</div>
+
+<div class="action-item">
+  <strong>4. Use Rapid Fire on cooldown more aggressively.</strong> Rapid Fire CPM is <strong>3.18 vs 3.83</strong> (&minus;17%). Over the active play time, this translates to roughly <strong>2&ndash;3 missed Rapid Fire casts</strong>. Rapid Fire is a high-priority ability that generates Precise Shots, maintains Bulletstorm stacks, and deals strong damage (10.6% of Smokinthisza's total). It should be pressed on cooldown unless doing so would overwrite existing Bulletstorm stacks. Each missed Rapid Fire also means one fewer Precise Shots proc, cascading into slightly fewer buffed Arcane Shots.
+</div>
+
+<div class="action-item">
+  <strong>5. Use trinket (Algeth'ar Puzzle) on cooldown.</strong> Smokinthisza used the trinket <strong>1 time</strong> vs the reference's <strong>4 times</strong>. On-use trinkets should be used on cooldown, ideally aligned with Trueshot windows. The reference used it 4 times in an 8:37 fight; Smokinthisza's single use in 4:53 suggests it was forgotten after the battle-rez. Stack trinket + Trueshot for maximum burst value.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Opener execution:</strong> Pre-cast Aimed Shot into Trueshot + Rapid Fire is textbook. The first 15 seconds show tight GCD usage with proper Precise Shots consumption (Arcane Shot after every Aimed Shot).<br><br>
+    <strong>Aimed Shot and Arcane Shot CPM:</strong> When alive, Aimed Shot at 9.28 CPM is 95% of the reference rate (9.76), and Arcane Shot at 11.67 CPM slightly exceeds the reference (11.50). These are the two highest-damage abilities and they are being used at near-optimal rates.<br><br>
+    <strong>Active CPM is strong:</strong> 33.9 total CPM when alive vs 34.8 for the reference &mdash; only a 2.6% gap. There is very little true dead time (idle GCDs) in the rotation.<br><br>
+    <strong>Post-rez response:</strong> Trueshot was used immediately after being battle-rezzed at 3:01, stacking with Heroism at 2:59. This is the correct play to maximize damage contribution after a rez.<br><br>
+    <strong>Best-pull DPS is excellent:</strong> 335K DPS on Fight 8 and 319K DPS on Fight 17 (both near-kills) show strong burst and add-phase execution when alive for the full pull. At 269 ilvl, this is competitive performance relative to the kill requirements.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">Smokinthisza's primary progression bottleneck is <strong>survivability</strong>, not rotation. When alive, CPM and ability priority are within 3&ndash;5% of the reference despite a 21-ilvl gear gap and 6 talent differences. The two actionable changes with the highest DPS impact are: (1) <strong>not dying to Silverstrike Barrage</strong> (saves 67s of damage time, ~23% effective DPS increase), and (2) <strong>swapping Explosive Shot for Kill Shot + Deathblow</strong> (+4&ndash;5% DPS from talent change alone). Secondary improvements include weaving more Steady Shot for Focus management and using Rapid Fire on cooldown more consistently. As gear upgrades close the 21-ilvl gap, raw damage output will scale naturally. <em>This analysis uses progression wipe data (pull 23, 4:53) compared against full-fight kill references (8:20&ndash;9:03). The rotation comparisons are normalized for active time, but DPS totals are not directly comparable.</em></p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (Wipe, 4:53). Primary reference: &#19968;&#23545;&#23567;&#29482;&#20180; (#3 ranked MM Hunter, report <code>ZFTQdYjXRMatvphg</code>, Fight 98, 8:37 kill, 106K DPS). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 6 differences. Item level: 269.3 vs 290.6 (&minus;21.3). External buffs: Smokinthisza received PI + Heroism + Ebon Might. Smokinthisza died at 2:31 (Silverstrike Barrage), rezzed at 2:57, died at 4:12. Active time: 226s of 293s.</p>
+  <p style="margin-top: 4px;">Spec guide sources: Icy Veins, Method, Maxroll (Patch 12.0.7, The War Within Season 2). Generated June 2026.</p>
+</div>
+
+</body>
+</html>

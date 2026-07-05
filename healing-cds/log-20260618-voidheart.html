@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voidheart (Disc Priest) — Crown of the Cosmos Prog Analysis — June 18, 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1400px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.header .prog-tag { display: inline-block; background: rgba(210, 153, 34, 0.15); color: var(--yellow); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 12px; margin-left: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.header .spec-tag { display: inline-block; background: rgba(255,255,255,0.08); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 12px; margin-left: 6px; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 28px; font-weight: 700; }
+.card .note { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+.verdict { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 32px; border-left: 4px solid var(--red); }
+.verdict.warn { border-left-color: var(--yellow); }
+.verdict.good { border-left-color: var(--green); }
+.verdict h3 { font-size: 16px; margin-bottom: 8px; }
+.verdict p { font-size: 14px; color: var(--dim); line-height: 1.7; }
+
+.section { margin-bottom: 40px; }
+.section h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--dim); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+tr:hover { background: rgba(255,255,255,0.02); }
+.highlight-row { background: rgba(88, 166, 255, 0.06) !important; }
+.highlight-row td { font-weight: 600; }
+
+.bar-chart { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+.bar-row { display: flex; align-items: center; gap: 8px; }
+.bar-label { font-size: 11px; color: var(--dim); min-width: 32px; text-align: right; }
+.bar-container { flex: 1; height: 28px; background: rgba(255,255,255,0.03); border-radius: 4px; position: relative; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; min-width: fit-content; }
+.bar-fill.died { background: linear-gradient(90deg, rgba(248,81,73,0.3), rgba(248,81,73,0.15)); color: var(--red); }
+.bar-fill.alive { background: linear-gradient(90deg, rgba(63,185,80,0.3), rgba(63,185,80,0.15)); color: var(--green); }
+.bar-fill.accent { background: linear-gradient(90deg, rgba(88,166,255,0.3), rgba(88,166,255,0.15)); color: var(--accent); }
+
+.avg-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--yellow); z-index: 2; }
+.avg-label { position: absolute; top: -18px; font-size: 10px; color: var(--yellow); white-space: nowrap; transform: translateX(-50%); }
+
+.phase-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
+.phase-p1 { background: rgba(63,185,80,0.15); color: var(--green); }
+.phase-inter { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.phase-p2 { background: rgba(88,166,255,0.15); color: var(--accent); }
+.phase-p3 { background: rgba(248,81,73,0.15); color: var(--red); }
+
+.cd-pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin: 2px; white-space: nowrap; }
+.cd-disc { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+.cd-hpal { background: rgba(244,140,186,0.15); color: #f48cba; }
+.cd-monk { background: rgba(0,255,150,0.15); color: #00ff96; }
+.cd-druid { background: rgba(255,125,10,0.15); color: #ff7d0a; }
+.cd-sham { background: rgba(0,112,222,0.15); color: #0070de; }
+.cd-dead { background: rgba(248,81,73,0.15); color: var(--red); font-style: italic; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+.insight-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.insight-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.insight-card p { font-size: 13px; color: var(--dim); line-height: 1.6; }
+
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.action-item.critical { border-left: 4px solid var(--red); }
+.action-item.important { border-left: 4px solid var(--accent); }
+.action-item.positive { border-left: 4px solid var(--green); }
+.action-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.action-item p { font-size: 13px; color: var(--dim); line-height: 1.6; }
+
+.death-timeline { font-family: 'Consolas', 'Monaco', monospace; font-size: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; overflow-x: auto; }
+.death-timeline .dmg { color: var(--red); }
+.death-timeline .heal { color: var(--green); }
+.death-timeline .absorb { color: var(--cyan); }
+.death-timeline .kill { color: var(--red); font-weight: 700; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.phase-timeline { position: relative; height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 24px; overflow: hidden; display: flex; }
+.phase-seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+.phase-seg.p1 { background: rgba(63,185,80,0.1); color: var(--green); }
+.phase-seg.inter { background: rgba(210,153,34,0.1); color: var(--yellow); }
+.phase-seg.p2 { background: rgba(88,166,255,0.1); color: var(--accent); }
+.phase-seg.p3 { background: rgba(248,81,73,0.1); color: var(--red); }
+
+.stat-inline { display: inline-block; font-weight: 600; }
+.red { color: var(--red); }
+.green { color: var(--green); }
+.yellow { color: var(--yellow); }
+.accent { color: var(--accent); }
+.dim { color: var(--dim); }
+
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18 Log Analysis</a>
+
+<div class="header">
+  <h1 style="color: #fff;">Voidheart <span class="spec-tag">Discipline Priest</span> <span class="prog-tag">Progression</span></h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &mdash; June 18, 2026 &mdash; 27 pulls, no kill &mdash; Best: 0.01% (F5, F10)
+    <br>Report: <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">jqFfXprk4hcaWx3C</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg HPS</div>
+    <div class="value" style="color: var(--red);">44.8K</div>
+    <div class="note">26 qualifying pulls (&gt;60s)</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">285</div>
+    <div class="note">16 slots, 5pc tier set</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color: var(--red);">0 / 27</div>
+    <div class="note">Died in every pull</div>
+  </div>
+  <div class="card">
+    <div class="label">Avg Overheal</div>
+    <div class="value" style="color: var(--red);">50%</div>
+    <div class="note">Target: &lt;35%</div>
+  </div>
+</div>
+
+<!-- Bottom Line Verdict -->
+<div class="verdict">
+  <h3>Bottom Line</h3>
+  <p>
+    Voidheart died in <strong class="red">all 27 pulls</strong> and averaged <strong class="red">44.8K HPS</strong> vs the other healers' 135-150K average.
+    The primary problem is survival: 14 of 27 deaths occurred in Phase 1, before the fight's hardest healing even begins.
+    Top killers are <strong>Void Remnants</strong> and <strong>Bursting Emptiness</strong> (4 deaths each) and <strong>Silverstrike Barrage</strong> (3 deaths in Intermission).
+    However, there is a clear improvement arc: first-half average HPS was 20.9K vs 68.6K in the second half (<strong class="green">+228%</strong>), and the two longest-survival pulls (F23 at 5:13, F27 at 5:40) showed competitive HPS of 103-119K.
+    The Evangelism ramp sequence on the best pulls looks mechanically correct. Survival is the bottleneck, not rotation.
+  </p>
+</div>
+
+<!-- Phase Timeline -->
+<div class="section">
+  <h2>Boss Phase Timeline</h2>
+  <div class="phase-timeline">
+    <div class="phase-seg p1" style="width: 36.8%;">P1 (0:00 - 2:14)</div>
+    <div class="phase-seg inter" style="width: 10.7%;">Int (2:14 - 2:53)</div>
+    <div class="phase-seg p2" style="width: 37.3%;">P2 (2:53 - 5:09)</div>
+    <div class="phase-seg p3" style="width: 15.2%;">P3 (5:09+)</div>
+  </div>
+  <div class="grid-2">
+    <div class="insight-card">
+      <h4>Phase Reach Rate (Raid)</h4>
+      <table>
+        <tr><td><span class="phase-badge phase-p1">P1</span></td><td>27 / 27 (100%)</td></tr>
+        <tr><td><span class="phase-badge phase-inter">Intermission</span></td><td>19 / 27 (70%)</td></tr>
+        <tr><td><span class="phase-badge phase-p2">P2</span></td><td>16 / 27 (59%)</td></tr>
+        <tr><td><span class="phase-badge phase-p3">P3</span></td><td>6 / 27 (22%)</td></tr>
+      </table>
+    </div>
+    <div class="insight-card">
+      <h4>Voidheart Alive Through Phase</h4>
+      <table>
+        <tr><td><span class="phase-badge phase-p1">P1</span></td><td>27 / 27 alive at start</td><td class="red">13 survived P1</td></tr>
+        <tr><td><span class="phase-badge phase-inter">Intermission</span></td><td>13 / 19 entered</td><td class="red">9 survived Int</td></tr>
+        <tr><td><span class="phase-badge phase-p2">P2</span></td><td>9 / 16 entered</td><td class="red">2 survived P2</td></tr>
+        <tr><td><span class="phase-badge phase-p3">P3</span></td><td>2 / 6 entered</td><td class="red">0 survived P3</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Per-Phase Performance -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Alive</th>
+        <th>VH Avg HPS</th>
+        <th>VH Avg OH%</th>
+        <th>Deaths in Phase</th>
+        <th>Top Death Cause</th>
+        <th>CDs Used</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge phase-p1">P1</span> Sentinels</td>
+        <td>27 / 27</td>
+        <td class="yellow">~35K</td>
+        <td class="red">55%+</td>
+        <td class="red">14</td>
+        <td>Bursting Emptiness (4), Void Remnants (2)</td>
+        <td>Evangelism x20, PI x42</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-inter">Intermission</span></td>
+        <td>13 / 19</td>
+        <td class="yellow">~26K</td>
+        <td>33%</td>
+        <td class="red">4</td>
+        <td>Silverstrike Barrage (3)</td>
+        <td>--</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-p2">P2</span> Rift</td>
+        <td>9 / 16</td>
+        <td class="green">~99K</td>
+        <td class="green">30%</td>
+        <td class="yellow">7</td>
+        <td>Void Expulsion (2), Void Remnants (2)</td>
+        <td>Evangelism x10, PI x12</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-p3">P3</span> Devouring Cosmos</td>
+        <td>2 / 6</td>
+        <td class="green">~69K</td>
+        <td>34%</td>
+        <td>2</td>
+        <td>Bursting Emptiness (1), Unknown (1)</td>
+        <td>Evangelism x2</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2" style="margin-top: 16px;">
+    <div class="insight-card">
+      <h4>Phase 1 Is the Primary Problem</h4>
+      <p>14 of 27 deaths (52%) occur in Phase 1, where damage is lowest and most predictable. Voidheart should survive P1 in every pull. The 55%+ overheal indicates healing into full-health targets while personal defensives and positioning are being neglected. Key P1 killers: Bursting Emptiness requires movement away from void zones, Void Remnants requires dodging swirlies.</p>
+    </div>
+    <div class="insight-card">
+      <h4>P2 Performance Is Strong When Reached</h4>
+      <p>When Voidheart reaches P2, HPS jumps to ~99K with 30% overheal -- a massive improvement showing proper ramp usage with Evangelism at 3:20 and PI at 2:55. The P2 Evangelism ramp at 3:20 consistently includes 3x PWR into burst damage. The problem is getting there alive.</p>
+    </div>
+  </div>
+</div>
+
+<!-- HPS Across All Pulls -->
+<div class="section">
+  <h2>HPS Across All Pulls</h2>
+  <div style="position: relative; margin-bottom: 24px;">
+    <div class="bar-chart">
+      <div class="bar-row">
+        <div class="bar-label">F1</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 13%;">16.9K <span class="dim" style="margin-left:6px;">(1:03, 87%)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F2</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 17%;">21.6K <span class="dim" style="margin-left:6px;">(1:07, 81%)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F3</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 5%;">6.4K <span class="dim" style="margin-left:6px;">(3:47, died 0:44)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F4</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 18%;">22.8K <span class="dim" style="margin-left:6px;">(1:08, 80%)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F5</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 25%;">32.3K <span class="dim" style="margin-left:6px;">(2:17, 0.01%)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F6</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 15%;">19.6K <span class="dim" style="margin-left:6px;">(0:47, died 0:35)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F7</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 19%;">25.0K <span class="dim" style="margin-left:6px;">(2:34, died 2:09)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F8</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 16%;">20.8K <span class="dim" style="margin-left:6px;">(3:59, died 3:28)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F9</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 16%;">20.5K <span class="dim" style="margin-left:6px;">(2:59, died 2:32)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F10</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 19%;">24.3K <span class="dim" style="margin-left:6px;">(2:18, 0.01%)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F11</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 11%;">13.9K <span class="dim" style="margin-left:6px;">(4:05, died 2:30)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F12</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 18%;">24.0K <span class="dim" style="margin-left:6px;">(1:03, 87%)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F13</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 17%;">22.4K <span class="dim" style="margin-left:6px;">(1:04, died 0:38)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F14</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 16%;">20.8K <span class="dim" style="margin-left:6px;">(4:02, died 3:44)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F15</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 17%;">22.2K <span class="dim" style="margin-left:6px;">(4:52, died 4:47)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F16</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 8%;">10.2K <span class="dim" style="margin-left:6px;">(5:03, died 1:33)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F17</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 2%;">2.6K <span class="dim" style="margin-left:6px;">(1:01, died 0:11)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F18</div>
+        <div class="bar-container">
+          <div class="bar-fill accent" style="width: 43%;">56.5K <span class="dim" style="margin-left:6px;">(5:56, died 1:41)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F19</div>
+        <div class="bar-container">
+          <div class="bar-fill accent" style="width: 46%;">60.2K <span class="dim" style="margin-left:6px;">(5:16, died 2:42)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F20</div>
+        <div class="bar-container">
+          <div class="bar-fill alive" style="width: 80%;">104.2K <span class="dim" style="margin-left:6px;">(5:23, died 4:35)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F21</div>
+        <div class="bar-container">
+          <div class="bar-fill alive" style="width: 72%;">93.1K <span class="dim" style="margin-left:6px;">(4:49, died 4:05)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F22</div>
+        <div class="bar-container">
+          <div class="bar-fill accent" style="width: 54%;">69.8K <span class="dim" style="margin-left:6px;">(4:13, died 2:42)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F23</div>
+        <div class="bar-container">
+          <div class="bar-fill alive" style="width: 80%;">103.5K <span class="dim" style="margin-left:6px;">(6:06, died 5:13)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F24</div>
+        <div class="bar-container">
+          <div class="bar-fill alive" style="width: 95%;">123.5K <span class="dim" style="margin-left:6px;">(4:44, died 4:20) BEST</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F25</div>
+        <div class="bar-container">
+          <div class="bar-fill alive" style="width: 84%;">108.8K <span class="dim" style="margin-left:6px;">(1:01, died 0:52)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F27</div>
+        <div class="bar-container">
+          <div class="bar-fill alive" style="width: 91%;">118.9K <span class="dim" style="margin-left:6px;">(6:01, died 5:40)</span></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">F28</div>
+        <div class="bar-container">
+          <div class="bar-fill died" style="width: 14%;">18.1K <span class="dim" style="margin-left:6px;">(5:43, died 4:55)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="insight-card">
+      <h4>Session Trend: +228% Improvement</h4>
+      <p>First half avg: <strong class="red">20.9K</strong> HPS. Second half avg: <strong class="green">68.6K</strong> HPS. Massive improvement through the session. The last 8 pulls (F20-F28) averaged <strong class="green">92.3K</strong> HPS, approaching competitive output. The learning curve is clear and positive.</p>
+    </div>
+    <div class="insight-card">
+      <h4>Best Pull: F24 at 123.5K HPS</h4>
+      <p>Died at 4:20 (P2) to Void Expulsion. 33% overheal. This was the most efficient performance of the night -- strong Evangelism timing, good ramp into P2, low overheal showing proper healing target selection. If survived through P2, would have been competitive with other healers.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+  <div class="grid-2" style="margin-bottom: 20px;">
+    <div class="insight-card">
+      <h4>Deaths by Phase</h4>
+      <table>
+        <tr><td><span class="phase-badge phase-p1">P1</span></td><td class="red"><strong>14 deaths</strong> (52%)</td><td>Avg death time: 1:05</td></tr>
+        <tr><td><span class="phase-badge phase-inter">Intermission</span></td><td class="yellow"><strong>4 deaths</strong> (15%)</td><td>Avg death time: 2:37</td></tr>
+        <tr><td><span class="phase-badge phase-p2">P2</span></td><td class="yellow"><strong>7 deaths</strong> (26%)</td><td>Avg death time: 4:16</td></tr>
+        <tr><td><span class="phase-badge phase-p3">P3</span></td><td><strong>2 deaths</strong> (7%)</td><td>Avg death time: 5:27</td></tr>
+      </table>
+    </div>
+    <div class="insight-card">
+      <h4>Top Killing Abilities</h4>
+      <table>
+        <tr><td class="red">Void Remnants</td><td><strong>4 deaths</strong></td><td>Dodgeable swirlies (P1/P2)</td></tr>
+        <tr><td class="red">Bursting Emptiness</td><td><strong>4 deaths</strong></td><td>Void zone detonation (P1/P3)</td></tr>
+        <tr><td class="yellow">Silverstrike Barrage</td><td><strong>3 deaths</strong></td><td>Intermission sustained damage</td></tr>
+        <tr><td>Void Expulsion</td><td><strong>2 deaths</strong></td><td>Knockback + damage (P2)</td></tr>
+        <tr><td>Other (5 abilities)</td><td><strong>5 deaths</strong></td><td>Varied mechanics</td></tr>
+        <tr><td class="dim">Unknown</td><td><strong>9 deaths</strong></td><td>Short pulls, multiple sources</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>Death Forensics: F27 (Best Long Pull, Died 5:40 in P3)</h3>
+  <div class="death-timeline">
+<span class="dmg">5:31  Grasp of Emptiness       50K</span><br>
+<span class="dmg">5:32  Grasp of Emptiness       55K</span><br>
+<span class="dmg">5:32  Cosmic Barrier            26K</span><br>
+<span class="dmg">5:33  Grasp of Emptiness       55K  + Cosmic Barrier 26K</span><br>
+<span class="dmg">5:34  Grasp of Emptiness       55K  + Cosmic Barrier 26K</span><br>
+<span class="dmg">5:35  Grasp of Emptiness       55K  + Cosmic Barrier 26K</span><br>
+<span class="dmg">5:36  Gravity Collapse         168K  &lt;&lt; BIG HIT</span><br>
+<span class="dmg">5:36  Grasp of Emptiness       55K  + Cosmic Barrier 26K</span><br>
+<span class="dmg">5:37  Voidstalker Sting        27K  + Grasp 55K + Barrier 26K</span><br>
+<span class="dmg">5:38  Voidstalker Sting        27K  + Grasp 55K + Barrier 26K</span><br>
+<span class="dmg">5:39  Voidstalker Sting        27K  + Grasp 55K + Barrier 26K</span><br>
+<span class="absorb">5:39  Cosmic Barrier           26K absorbed</span><br>
+<span class="absorb">5:40  Voidstalker Sting        27K absorbed</span><br>
+<span class="absorb">5:40  Grasp of Emptiness       55K absorbed</span><br>
+<span class="kill">5:40  Bursting Emptiness       331K (282K absorbed) + 125K OVERKILL = DEAD</span>
+  </div>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+    P3 overlap damage: Grasp of Emptiness (55K/s) + Cosmic Barrier (26K/s) + Voidstalker Sting (27K/3s) running simultaneously for 9 seconds, culminating in a 168K Gravity Collapse followed by a 456K Bursting Emptiness. No Desperate Prayer or Dispersion used. Pain Suppression was used earlier at 1:30 and was available again. This is a survivable death with a personal defensive.
+  </p>
+
+  <h3 style="margin-top: 24px;">Death Forensics: F20 (Died 4:35 in P2)</h3>
+  <div class="death-timeline">
+<span class="dmg">4:21  Voidstalker Sting        24K  + Simulacrum Backlash 30K</span><br>
+<span class="dmg">4:22  Voidstalker Sting        24K  + Simulacrum Backlash 30K</span><br>
+<span class="dmg">4:23  Grasp of Emptiness       50K  + Simulacrum Backlash 30K</span><br>
+<span class="dmg">4:24  Grasp 50K + Backlash 30K x2 = 110K tick</span><br>
+<span class="dmg">4:25  Grasp 50K + Backlash 30K = constant 80K/s</span><br>
+<span class="dmg">4:26-4:32  Sustained Grasp + Backlash ~80K/s for 7 seconds</span><br>
+<span class="dmg">4:34  Simulacrum Backlash 30K</span><br>
+<span class="kill">4:34  Void Remnants            183K</span><br>
+<span class="kill">4:35  Void Remnants             91K OVERKILL = DEAD</span>
+  </div>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+    Extended period of ~80K/s sustained damage from overlapping Grasp of Emptiness + Simulacrum Backlash, finished by Void Remnants swirl. The Void Remnants was a dodgeable swirl, but health was already critically low from the sustained overlap. Dispersion would have bought time.
+  </p>
+</div>
+
+<!-- CD Discipline Analysis -->
+<div class="section">
+  <h2>CD Discipline Analysis</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Cooldown</th>
+        <th>Used in</th>
+        <th>Avg Timing</th>
+        <th>Primary Phase</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Evangelism</strong> (2m CD)</td>
+        <td>20 uses / 11 fights</td>
+        <td>0:10, 3:20, 4:52</td>
+        <td><span class="phase-badge phase-p1">P1</span> + <span class="phase-badge phase-p2">P2</span></td>
+        <td class="green">Consistent 3-use pattern on long pulls. Good timing.</td>
+      </tr>
+      <tr>
+        <td><strong>Power Infusion</strong> (2m CD)</td>
+        <td>42 uses / 11 fights</td>
+        <td>0:15, 2:55, 4:58</td>
+        <td><span class="phase-badge phase-p1">P1</span> + <span class="phase-badge phase-p2">P2</span></td>
+        <td class="yellow">Double-counted (self + target). Consistent timing.</td>
+      </tr>
+      <tr>
+        <td><strong>Ultimate Penitence</strong> (4m CD)</td>
+        <td>8 uses / 8 fights</td>
+        <td>Varied</td>
+        <td>Mixed</td>
+        <td>Used once per pull when available.</td>
+      </tr>
+      <tr>
+        <td><strong>Pain Suppression</strong> (3m CD)</td>
+        <td class="red">1 use / 1 fight</td>
+        <td>F27 @ 1:30</td>
+        <td><span class="phase-badge phase-p1">P1</span></td>
+        <td class="red">Severely underused. Available in almost every pull, used once total.</td>
+      </tr>
+      <tr>
+        <td><strong>Desperate Prayer</strong> (1.5m CD)</td>
+        <td class="red">3 uses / 3 fights</td>
+        <td>Varied</td>
+        <td>Mixed</td>
+        <td class="red">Critically underused personal defensive. Should fire every 90s.</td>
+      </tr>
+      <tr>
+        <td><strong>Dispersion</strong> (2m CD)</td>
+        <td class="red">0 uses</td>
+        <td>Never</td>
+        <td>--</td>
+        <td class="red">Never pressed once in 27 pulls. 90% DR for 6 seconds.</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="verdict warn">
+    <h3>Critical: Defensive CDs Are Not Being Used</h3>
+    <p>
+      Across 27 pulls, Voidheart used Pain Suppression <strong>once</strong>, Desperate Prayer <strong>three times</strong>, and Dispersion <strong>zero times</strong>.
+      These are the tools that prevent the 14 P1 deaths and the 4 Intermission deaths. Dispersion alone (90% DR for 6s, 2m CD) would survive every Bursting Emptiness, every Silverstrike Barrage overlap, and every Void Remnants hit. This is the single highest-impact change available.
+    </p>
+  </div>
+</div>
+
+<!-- Evangelism Ramp Analysis -->
+<div class="section">
+  <h2>Evangelism Ramp Analysis (Fight 27)</h2>
+  <p style="color: var(--dim); font-size: 13px; margin-bottom: 16px;">
+    Disc Priest healing revolves around the Evangelism ramp: apply Atonements via PWR, extend with Evangelism, then deal damage to heal all atoned targets. Quality of the ramp determines healing throughput for the next 15-20 seconds.
+  </p>
+  <div class="grid-3">
+    <div class="insight-card">
+      <h4>Ramp #1 @ 0:08 <span class="phase-badge phase-p1">P1</span></h4>
+      <div class="death-timeline" style="font-size: 11px;">
+<span class="dim">-8.1s  Penance</span><br>
+<span class="dim">-6.1s  PW: Shield</span><br>
+<span class="dim">-4.4s  Penance</span><br>
+<span class="dim">-2.8s  SW: Pain</span><br>
+<span class="dim">-0.6s  Smite</span><br>
+<span class="heal">+0.0s  PWR + Evangelism</span><br>
+<span class="heal">+1.3s  PWR</span><br>
+<span class="heal">+3.3s  PWR</span><br>
+<span class="green">+4.5s  Penance (burst)</span><br>
+<span class="green">+6.9s  Void Shield</span><br>
+<span class="green">+9.7s  Power Infusion</span><br>
+<span class="green">+11.1s Mind Blast</span>
+      </div>
+      <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+        <strong class="green">Good ramp.</strong> 3x PWR after Evangelism. Pre-loaded with Penance + SWP. PI at +9.7s is slightly late (should be before damage burst).
+      </p>
+    </div>
+    <div class="insight-card">
+      <h4>Ramp #2 @ 3:20 <span class="phase-badge phase-p2">P2</span></h4>
+      <div class="death-timeline" style="font-size: 11px;">
+<span class="dim">-8.0s  Penance</span><br>
+<span class="dim">-6.7s  Penance</span><br>
+<span class="dim">-5.0s  Flash Heal</span><br>
+<span class="dim">-2.7s  Flash Heal</span><br>
+<span class="heal">+0.0s  PWR + Evangelism</span><br>
+<span class="heal">+0.9s  PWR</span><br>
+<span class="heal">+2.1s  PWR</span><br>
+<span class="green">+5.0s  SW: Pain</span><br>
+<span class="green">+7.0s  Mind Blast</span><br>
+<span class="green">+7.8s  Smite</span><br>
+<span class="green">+9.3s  SW: Death</span>
+      </div>
+      <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+        <strong class="green">Clean ramp.</strong> 3x PWR after Evangelism into damage. Pre-ramp uses Flash Heal for spot healing (triage before committing to ramp). Good damage sequence post-Evangelism.
+      </p>
+    </div>
+    <div class="insight-card">
+      <h4>Ramp #3 @ 4:52 <span class="phase-badge phase-p2">P2</span></h4>
+      <div class="death-timeline" style="font-size: 11px;">
+<span class="dim">-9.0s  Mind Blast</span><br>
+<span class="dim">-7.7s  PWR</span><br>
+<span class="dim">-7.5s  Penance</span><br>
+<span class="dim">-5.6s  Void Shield</span><br>
+<span class="dim">-4.6s  Penance</span><br>
+<span class="dim">-1.8s  PWR</span><br>
+<span class="heal">+0.0s  PWR + Evangelism</span><br>
+<span class="green">+1.8s  SW: Pain</span><br>
+<span class="green">+4.2s  Smite + SW:Death</span><br>
+<span class="green">+5.7s  Penance</span><br>
+<span class="green">+7.4s  Power Infusion</span>
+      </div>
+      <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+        <strong class="green">Pre-loaded ramp.</strong> 2x PWR before Evangelism + 1 with it. This is actually a good variation: spread Atonements early, extend with Evangelism, then burst damage. PI at +7.4s.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Team CD Coordination -->
+<div class="section">
+  <h2>Team CD Coordination (Fight 27)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Phase</th>
+        <th>Dueche (HPal)</th>
+        <th>Senssay (MW)</th>
+        <th>Silencio (RDruid)</th>
+        <th>Brewtote (RSham)</th>
+        <th>Voidheart (Disc)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0:00-0:30</td>
+        <td><span class="phase-badge phase-p1">P1</span></td>
+        <td><span class="cd-pill cd-hpal">AW 0:04</span></td>
+        <td>--</td>
+        <td><span class="cd-pill cd-druid">Convoke 0:10</span><br><span class="cd-pill cd-druid">Tranq 0:13</span></td>
+        <td><span class="cd-pill cd-sham">Asc 0:05</span><br><span class="cd-pill cd-sham">SLT 0:28</span></td>
+        <td><span class="cd-pill cd-disc">Evang 0:08</span><br><span class="cd-pill cd-disc">PI 0:18</span></td>
+      </tr>
+      <tr>
+        <td>0:30-1:45</td>
+        <td><span class="phase-badge phase-p1">P1</span></td>
+        <td><span class="cd-pill cd-hpal">AM 1:35</span></td>
+        <td><span class="cd-pill cd-monk">CC 1:02</span><br><span class="cd-pill cd-monk">Revival 1:43</span></td>
+        <td><span class="cd-pill cd-druid">Convoke 1:16</span></td>
+        <td>--</td>
+        <td><span class="cd-pill cd-disc">PS 1:30</span></td>
+      </tr>
+      <tr style="background: rgba(210,153,34,0.05);">
+        <td>2:14-2:53</td>
+        <td><span class="phase-badge phase-inter">Int</span></td>
+        <td>--</td>
+        <td>--</td>
+        <td><span class="cd-pill cd-druid">Convoke 2:27</span></td>
+        <td>--</td>
+        <td>--</td>
+      </tr>
+      <tr>
+        <td>2:53-3:45</td>
+        <td><span class="phase-badge phase-p2">P2</span></td>
+        <td>--</td>
+        <td><span class="cd-pill cd-monk">Yu'lon 3:42</span></td>
+        <td><span class="cd-pill cd-druid">Convoke 3:35</span><br><span class="cd-pill cd-druid">Tranq 3:39</span></td>
+        <td><span class="cd-pill cd-sham">Asc 3:13</span></td>
+        <td><span class="cd-pill cd-disc">PI 2:55</span><br><span class="cd-pill cd-disc">Evang 3:20</span></td>
+      </tr>
+      <tr>
+        <td>3:45-5:00</td>
+        <td><span class="phase-badge phase-p2">P2</span></td>
+        <td><span class="cd-pill cd-hpal">AW 4:00</span><br><span class="cd-pill cd-hpal">AM 4:36</span></td>
+        <td><span class="cd-pill cd-monk">CC 4:36</span><br><span class="cd-pill cd-monk">Revival 4:45</span></td>
+        <td><span class="cd-pill cd-druid">Convoke 4:47</span></td>
+        <td><span class="cd-pill cd-sham">SLT 4:08</span></td>
+        <td><span class="cd-pill cd-disc">Evang 4:52</span><br><span class="cd-pill cd-disc">PI 4:59</span></td>
+      </tr>
+      <tr style="background: rgba(248,81,73,0.05);">
+        <td>5:00+</td>
+        <td><span class="phase-badge phase-p3">P3</span></td>
+        <td colspan="5" style="color: var(--dim); text-align: center;">Raid wiped at 6:01 -- VH died at 5:40</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="insight-card" style="margin-top: 12px;">
+    <h4>Coordination Notes</h4>
+    <p>
+      The healing team has reasonable CD spread. Notable: the <strong>Intermission</strong> (Stellar Emission sustained AoE from 2:22-2:52) only gets Silencio's Convoke at 2:27. This is the window where Voidheart dies to Silverstrike Barrage in 3 pulls -- a personal defensive (Dispersion or Desperate Prayer) here would close that gap.
+      In P2, Voidheart's Evangelism at 3:20 and 4:52 aligns well with the team's CD pattern, providing Atonement healing during windows where other healers are also ramping.
+    </p>
+  </div>
+</div>
+
+<!-- Cast Profile -->
+<div class="section">
+  <h2>Cast Profile (Fight 27 -- 6:01, Best Long Pull)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Casts</th>
+        <th>CPM</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Penance</strong></td>
+        <td>46</td>
+        <td style="color: var(--green);">7.6</td>
+        <td class="green">Strong. Core rotational ability, near CD usage.</td>
+      </tr>
+      <tr>
+        <td><strong>Smite</strong></td>
+        <td>41</td>
+        <td style="color: var(--green);">6.8</td>
+        <td class="green">Good DPS filler. Drives Atonement healing.</td>
+      </tr>
+      <tr>
+        <td><strong>Flash Heal</strong></td>
+        <td>18</td>
+        <td>3.0</td>
+        <td class="yellow">Moderate. Used for triage. Check if replacing low-value FH with Smite would improve throughput.</td>
+      </tr>
+      <tr>
+        <td><strong>Void Shield</strong></td>
+        <td>16</td>
+        <td>2.7</td>
+        <td class="green">Voidweaver proc. Passive shield generation.</td>
+      </tr>
+      <tr>
+        <td><strong>Shadow Word: Pain</strong></td>
+        <td>15</td>
+        <td>2.5</td>
+        <td class="green">Maintenance DoT. Good uptime.</td>
+      </tr>
+      <tr>
+        <td><strong>Power Word: Radiance</strong></td>
+        <td>13</td>
+        <td>2.2</td>
+        <td class="green">Ramp ability. 3 per Evangelism is correct.</td>
+      </tr>
+      <tr>
+        <td><strong>Mind Blast</strong></td>
+        <td>10</td>
+        <td>1.7</td>
+        <td class="green">On-CD damage for Atonement + Entropic Rift (Voidweaver).</td>
+      </tr>
+      <tr>
+        <td><strong>Shadow Word: Death</strong></td>
+        <td>6</td>
+        <td>1.0</td>
+        <td>Execute damage for Atonement burst.</td>
+      </tr>
+      <tr>
+        <td><strong>Power Infusion</strong></td>
+        <td>6</td>
+        <td>1.0</td>
+        <td class="dim">3 casts (self+target counted double).</td>
+      </tr>
+      <tr>
+        <td><strong>Evangelism</strong></td>
+        <td>3</td>
+        <td>0.5</td>
+        <td class="green">3 uses in a 6-minute pull. Correct usage rate.</td>
+      </tr>
+      <tr>
+        <td><strong>Ultimate Penitence</strong></td>
+        <td>1</td>
+        <td>0.2</td>
+        <td>4m CD, 1 use expected.</td>
+      </tr>
+      <tr>
+        <td><strong>Pain Suppression</strong></td>
+        <td>1</td>
+        <td>0.2</td>
+        <td class="yellow">Could use 2x in a 6-minute fight (3m CD).</td>
+      </tr>
+      <tr>
+        <td><strong>Desperate Prayer</strong></td>
+        <td>0</td>
+        <td class="red">0.0</td>
+        <td class="red">Not pressed. Available every 90s. 4 uses possible.</td>
+      </tr>
+      <tr>
+        <td><strong>Dispersion</strong></td>
+        <td>0</td>
+        <td class="red">0.0</td>
+        <td class="red">Never pressed. 90% DR for 6s on 2m CD. 3 uses possible.</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="grid-2">
+    <div class="insight-card">
+      <h4 class="green">Rotation Is Correct</h4>
+      <p>Penance at 7.6 CPM, Smite at 6.8 CPM, and 3x PWR per Evangelism ramp. The core Disc healing rotation is being executed properly. Smite is the #2 most-cast ability, confirming Atonement-driven healing is the primary playstyle. This is not a rotation problem.</p>
+    </div>
+    <div class="insight-card">
+      <h4 class="red">Defensive Abilities Are Missing</h4>
+      <p>Zero Desperate Prayer and zero Dispersion across this fight. These are panic buttons that prevent death at critical health. On a fight where Voidheart dies to sustained damage + burst spike (Bursting Emptiness, Void Remnants), a single Dispersion press would survive the lethal window every time.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Healing Breakdown -->
+<div class="section">
+  <h2>Healing Breakdown (Fight 27)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Effective</th>
+        <th>Overheal %</th>
+        <th style="width: 200px;">OH Bar</th>
+        <th>Events</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Atonement</strong></td>
+        <td>14,859K</td>
+        <td>37%</td>
+        <td><div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 14px; width: 100%;"><div style="background: var(--red); border-radius: 4px; height: 100%; width: 37%; opacity: 0.6;"></div></div></td>
+        <td>9,357</td>
+      </tr>
+      <tr>
+        <td><strong>Penance</strong></td>
+        <td>3,504K</td>
+        <td>44%</td>
+        <td><div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 14px; width: 100%;"><div style="background: var(--red); border-radius: 4px; height: 100%; width: 44%; opacity: 0.6;"></div></div></td>
+        <td>183</td>
+      </tr>
+      <tr>
+        <td><strong>Power Word: Radiance</strong></td>
+        <td>1,996K</td>
+        <td style="color: var(--green);">29%</td>
+        <td><div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 14px; width: 100%;"><div style="background: var(--green); border-radius: 4px; height: 100%; width: 29%; opacity: 0.6;"></div></div></td>
+        <td>65</td>
+      </tr>
+      <tr>
+        <td><strong>Piety</strong></td>
+        <td>1,757K</td>
+        <td style="color: var(--green);">2%</td>
+        <td><div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 14px; width: 100%;"><div style="background: var(--green); border-radius: 4px; height: 100%; width: 2%; opacity: 0.6;"></div></div></td>
+        <td>1,362</td>
+      </tr>
+      <tr>
+        <td><strong>Leech</strong></td>
+        <td>1,382K</td>
+        <td style="color: var(--green);">2%</td>
+        <td><div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 14px; width: 100%;"><div style="background: var(--green); border-radius: 4px; height: 100%; width: 2%; opacity: 0.6;"></div></div></td>
+        <td>171</td>
+      </tr>
+      <tr>
+        <td><strong>Penance (Contrition)</strong></td>
+        <td>1,471K</td>
+        <td>40%</td>
+        <td><div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 14px; width: 100%;"><div style="background: var(--yellow); border-radius: 4px; height: 100%; width: 40%; opacity: 0.6;"></div></div></td>
+        <td>1,767</td>
+      </tr>
+      <tr>
+        <td><strong>Flash Heal</strong></td>
+        <td>585K</td>
+        <td class="red">61%</td>
+        <td><div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 14px; width: 100%;"><div style="background: var(--red); border-radius: 4px; height: 100%; width: 61%; opacity: 0.6;"></div></div></td>
+        <td>18</td>
+      </tr>
+      <tr>
+        <td><strong>Prayer of Mending</strong></td>
+        <td>182K</td>
+        <td style="color: var(--green);">5%</td>
+        <td><div style="background: rgba(255,255,255,0.05); border-radius: 4px; height: 14px; width: 100%;"><div style="background: var(--green); border-radius: 4px; height: 100%; width: 5%; opacity: 0.6;"></div></div></td>
+        <td>64</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+    Total effective: <strong>26,016K</strong> &mdash; Overall overheal: <strong>36%</strong> (in P1 this was 43%, in P2 it dropped to 30%).
+    Flash Heal at 61% overheal suggests triage casts on targets that are already being healed by other healers. Atonement at 37% overheal is within acceptable range for P1 padding but should trend lower as the fight gets harder.
+  </p>
+</div>
+
+<!-- Per-Phase Healing -->
+<div class="section">
+  <h2>Per-Phase Healing (Fight 27)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Duration Alive</th>
+        <th>Effective Healing</th>
+        <th>HPS</th>
+        <th>Overheal %</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge phase-p1">P1</span> Sentinels</td>
+        <td>2:14 (full phase)</td>
+        <td>9,417K</td>
+        <td>70K</td>
+        <td class="yellow">43%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-inter">Intermission</span></td>
+        <td>0:39 (full phase)</td>
+        <td>1,007K</td>
+        <td>26K</td>
+        <td>33%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-p2">P2</span> Rift</td>
+        <td>2:16 (full phase)</td>
+        <td>13,460K</td>
+        <td style="color: var(--green);">99K</td>
+        <td style="color: var(--green);">30%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-p3">P3</span> Devouring Cosmos</td>
+        <td>0:31 (partial)</td>
+        <td>2,133K</td>
+        <td>69K</td>
+        <td>34%</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="insight-card" style="margin-top: 12px;">
+    <h4>P1 Overheal Is Costing Mana for P2/P3</h4>
+    <p>
+      43% overheal in P1 means nearly half the healing output is wasted. P1 has the lowest incoming damage -- Atonement should be doing most of the work through DPS filler (Smite/Penance), not active healing. The 70K HPS in P1 drops to 26K in Intermission (reduced casting during Stellar Emission movement), then jumps to 99K in P2 where it matters. The contrast shows the player <em>can</em> heal efficiently when damage demands it, but over-heals during low-damage windows.
+    </p>
+  </div>
+</div>
+
+<!-- Healer Team Ranking -->
+<div class="section">
+  <h2>Healer Team Ranking</h2>
+  <h3>Fight 27 (6:01 -- Best Team Pull)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Spec</th>
+        <th>Total Healing</th>
+        <th>HPS</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td style="color: #f48cba;">Dueche</td>
+        <td>Holy Paladin</td>
+        <td>56,045K</td>
+        <td>155,320</td>
+        <td><span style="color: var(--dim);">Survived to wipe</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td style="color: #00ff98;">Senssay</td>
+        <td>Mistweaver Monk</td>
+        <td>47,832K</td>
+        <td>132,560</td>
+        <td><span style="color: var(--dim);">Survived to wipe</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td style="color: #0070dd;">Brewtote</td>
+        <td>Resto Shaman</td>
+        <td>47,455K</td>
+        <td>131,513</td>
+        <td><span style="color: var(--dim);">Survived to wipe</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td style="color: #ff7c0a;">Silencio</td>
+        <td>Resto Druid</td>
+        <td>45,518K</td>
+        <td>126,146</td>
+        <td><span style="color: var(--dim);">Survived to wipe</span></td>
+      </tr>
+      <tr class="highlight-row">
+        <td>5</td>
+        <td style="color: #fff;">Voidheart</td>
+        <td>Disc Priest</td>
+        <td>42,899K</td>
+        <td>118,887</td>
+        <td><span class="red">Died 5:40</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+    On the best long pull, Voidheart's 118.9K HPS is 76-91% of the other healers' output. Accounting for the 21 seconds dead, alive-time HPS would be ~126K -- right in line with the team.
+    The gap is entirely explained by death time: 21 seconds of zero contribution at end of fight.
+  </p>
+
+  <h3 style="margin-top: 24px;">Session Averages (All Qualifying Pulls)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Spec</th>
+        <th>Avg HPS</th>
+        <th>Ratio vs Team</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="color: #f48cba;">Dueche</td><td>Holy Paladin</td><td>149,966</td><td>--</td></tr>
+      <tr><td style="color: #00ff98;">Senssay</td><td>MW Monk</td><td>147,542</td><td>--</td></tr>
+      <tr><td style="color: #0070dd;">Brewtote</td><td>Resto Shaman</td><td>138,097</td><td>--</td></tr>
+      <tr><td style="color: #ff7c0a;">Silencio</td><td>Resto Druid</td><td>135,499</td><td>--</td></tr>
+      <tr class="highlight-row"><td style="color: #fff;">Voidheart</td><td>Disc Priest</td><td class="red">44,754</td><td class="red">31% of team avg</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+    The 31% ratio reflects early deaths dragging the average down drastically. On pulls where Voidheart survived past 4 minutes (F20, F21, F23, F24, F27), the average HPS was <strong class="green">108.7K</strong> -- 76% of the team average, which is competitive for a prog Disc Priest still learning the fight.
+  </p>
+</div>
+
+<!-- Reference Comparison -->
+<div class="section">
+  <h2>Reference: Top Disc Priests on Mythic Crown</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Server</th>
+        <th>HPS</th>
+        <th>Kill Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>丶能量灌注</td><td>燃烧之刃</td><td>230,681</td><td>8:28</td></tr>
+      <tr><td>2</td><td>Sadboyhorse</td><td>Twisting Nether</td><td>229,559</td><td>7:28</td></tr>
+      <tr><td>3</td><td>Binder</td><td>Tarren Mill</td><td>228,151</td><td>7:08</td></tr>
+      <tr><td>4</td><td>Convok</td><td>Kazzak</td><td>223,725</td><td>7:28</td></tr>
+      <tr><td>5</td><td>Ellupriest</td><td>Frostmourne</td><td>223,681</td><td>7:02</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+    Top Disc Priests on Mythic Crown average <strong>227K HPS</strong> on kills (7-8 minute fights). Voidheart's best pull was 123.5K over 4:20 alive -- these are kill logs with full P3, so direct comparison is limited. The reference establishes the ceiling: Disc Priest can do 225K+ HPS on this boss when the rotation is fully optimized over a full fight with no deaths. Voidheart's ramp mechanics are correct; the gap is primarily survival time + optimization over more phases.
+  </p>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Items</h2>
+
+  <div class="action-item critical">
+    <h4>1. Use Defensive Cooldowns -- This Is the #1 Problem</h4>
+    <p>
+      <strong>Dispersion</strong> was never pressed in 27 pulls. It provides 90% damage reduction for 6 seconds on a 2-minute cooldown. On a 6-minute fight, that is 3 available uses.
+      <strong>Desperate Prayer</strong> was used 3 times total (should be 1-2 per pull, ~40+ expected across 27 pulls).
+      <strong>Pain Suppression</strong> on self was used once.
+      Every single death to Bursting Emptiness (4 deaths), Void Remnants (4 deaths), and Silverstrike Barrage (3 deaths) is survivable with one of these buttons. These 11 deaths represent 41% of all deaths. This is the difference between the current 0% survival rate and a 50%+ survival rate.
+      <br><br>
+      <strong>Specific timing:</strong>
+      <br>- Dispersion at 2:22-2:28 during Stellar Emission (Intermission) to survive Silverstrike Barrage overlap
+      <br>- Desperate Prayer on any health drop below 50% (it is off the GCD)
+      <br>- Dispersion on Bursting Emptiness detonation if below 60% health
+      <br>- Fade or Dispersion during Void Remnants swirlies if caught
+    </p>
+  </div>
+
+  <div class="action-item critical">
+    <h4>2. Fix Phase 1 Survival -- 14 of 27 Deaths Happen Here</h4>
+    <p>
+      Phase 1 is the lowest-damage phase of the fight. Dying here 52% of the time means mechanical/positioning failures, not healing throughput issues.
+      <strong>Void Remnants</strong> and <strong>Bursting Emptiness</strong> are the primary P1 killers -- both are avoidable/mitigatable mechanics.
+      Void Remnants: watch for swirl indicators on the ground and move early. Bursting Emptiness: track Void Droplet positions and maintain distance.
+      <br><br>
+      The 43% overheal in P1 also suggests attention is focused on healing instead of positioning. In P1, Smite spam through Atonement should handle most healing passively -- spend awareness on mechanics, not healing targets.
+    </p>
+  </div>
+
+  <div class="action-item important">
+    <h4>3. Reduce P1 Overheal to Conserve Mana</h4>
+    <p>
+      55%+ average overheal in P1 means nearly half of mana spent in P1 is wasted. P1 damage is low enough that Atonement from DPS filler (Smite, Penance, Mind Blast) should cover most healing needs. Save Flash Heal (61% overheal on this fight) for genuine triage situations. More Smite, less Flash Heal in P1 = more mana for P2/P3 ramps and better throughput through Atonement.
+    </p>
+  </div>
+
+  <div class="action-item important">
+    <h4>4. Pre-Plan Intermission Survival</h4>
+    <p>
+      3 deaths to Silverstrike Barrage in Intermission (2:14-2:53). The Intermission is a known, scripted survival check. Pre-plan: at 2:14 when Silversunder Catastrophe fires, immediately position for Stellar Emission. Have Dispersion or Desperate Prayer ready for the overlap window at 2:22-2:35. The team only has Silencio's Convoke covering this window -- a Disc personal defensive fills the gap.
+    </p>
+  </div>
+
+  <div class="action-item positive">
+    <h4>5. Evangelism Ramp Timing Is Good -- Maintain This</h4>
+    <p>
+      The 3-ramp pattern (0:08, 3:20, 4:52) with 3x PWR per Evangelism is mechanically correct. The post-Evangelism damage sequence (SW:Pain, Mind Blast, Smite, SW:Death, Penance) is proper priority. P2 HPS of 99K with 30% overheal shows the rotation works when Voidheart is alive. Keep this pattern and extend it into P3 as survival improves.
+    </p>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>
+    Data source: <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">jqFfXprk4hcaWx3C</a>
+    &mdash; 27 pulls on Mythic Crown of the Cosmos &mdash; Analysis: Voidheart (Disc Priest, ilvl 285, specID 256)
+    <br>
+    Reference: Top 5 Disc Priests on Mythic Crown (avg 227K HPS on kills). Direct comparison limited due to prog vs kill context.
+    <br>
+    Phase timings: P1 0:00-2:14, Intermission 2:14-2:53, P2 2:53-5:09, P3 5:09+
+    <br>
+    Generated June 20, 2026 &mdash; Prog Night 2
+  </p>
+</div>
+
+</body>
+</html>

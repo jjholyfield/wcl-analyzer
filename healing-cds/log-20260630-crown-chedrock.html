@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chedrock - Ele Shaman - Crown of the Cosmos Prog Night 5</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --shaman: #0070dd;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 16px; font-weight: 600; margin: 20px 0 10px; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.back-link:hover { color: var(--accent); }
+
+.header-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.prog-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+  background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.night-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+  background: rgba(88, 166, 255, 0.15); color: var(--accent); border: 1px solid rgba(88, 166, 255, 0.3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+.subtitle span { margin-right: 16px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px;
+  text-align: center;
+}
+.card-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+.card-value.green { color: var(--green); }
+.card-value.yellow { color: var(--yellow); }
+.card-value.red { color: var(--red); }
+.card-value.shaman { color: var(--shaman); }
+
+table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); font-weight: 600; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 8px 12px; border: 1px solid var(--border); }
+tr:nth-child(even) td { background: rgba(22, 27, 34, 0.5); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; margin: 16px 0; padding: 0 4px; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.bar {
+  width: 100%; min-width: 18px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s;
+}
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-rl; text-orientation: mixed; height: 40px; overflow: hidden; }
+.bar-value { font-size: 9px; color: var(--text); margin-bottom: 2px; font-weight: 600; }
+.bar.survived { background: var(--green); }
+.bar.died { background: var(--red); }
+.bar.died-cascade { background: var(--orange); }
+.bar.short { background: var(--border); }
+
+.avg-line { position: relative; width: 100%; margin-top: -1px; }
+.avg-line::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0;
+  border-top: 2px dashed var(--accent); opacity: 0.5;
+}
+.avg-line-label { position: absolute; right: 0; top: -14px; font-size: 10px; color: var(--accent); }
+
+.callout {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin: 16px 0;
+}
+.callout.green { border-left: 3px solid var(--green); }
+.callout.red { border-left: 3px solid var(--red); }
+.callout.yellow { border-left: 3px solid var(--yellow); }
+.callout.blue { border-left: 3px solid var(--accent); }
+.callout.purple { border-left: 3px solid var(--purple); }
+.callout-title { font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+.callout-body { font-size: 13px; color: var(--dim); }
+.callout-body strong { color: var(--text); }
+
+.phase-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin: 12px 0; border: 1px solid var(--border); }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text); }
+.phase-segment.p1 { background: rgba(63, 185, 80, 0.25); }
+.phase-segment.inter { background: rgba(210, 153, 34, 0.25); }
+.phase-segment.p2 { background: rgba(88, 166, 255, 0.25); }
+.phase-segment.p3 { background: rgba(248, 81, 73, 0.25); }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge.green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge.red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge.yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge.blue { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+.badge.purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+.improvement-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin: 10px 0;
+}
+.improvement-item .number {
+  display: inline-block; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); color: var(--bg); font-size: 13px; font-weight: 700;
+  text-align: center; line-height: 24px; margin-right: 8px;
+}
+.improvement-item .title { font-weight: 600; font-size: 15px; display: inline; }
+.improvement-item .detail { font-size: 13px; color: var(--dim); margin-top: 8px; }
+.improvement-item .detail strong { color: var(--text); }
+
+.ref-note { font-size: 12px; color: var(--dim); font-style: italic; margin: 8px 0; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.stat-comparison { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; }
+.stat-pair { text-align: center; }
+.stat-pair .label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-pair .value { font-size: 16px; font-weight: 600; }
+.stat-pair .ref { font-size: 12px; color: var(--purple); }
+
+.trend-arrow { font-size: 14px; margin-left: 4px; }
+.trend-arrow.up { color: var(--green); }
+.trend-arrow.down { color: var(--red); }
+
+.dps-inline { font-variant-numeric: tabular-nums; }
+
+.pct-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 4px; }
+.pct-fill { height: 100%; border-radius: 3px; }
+
+.phase-reach { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.phase-reach-item { flex: 1; min-width: 120px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
+.phase-reach-item .phase-name { font-size: 11px; color: var(--dim); text-transform: uppercase; margin-bottom: 4px; }
+.phase-reach-item .phase-value { font-size: 18px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260630-crown" class="back-link">&larr; June 30, 2026 Log Analysis</a>
+
+<div class="header-row">
+  <h1 style="color: var(--shaman);">Chedrock</h1>
+  <span class="prog-tag">Progression</span>
+  <span class="night-tag">Night 5</span>
+</div>
+<p style="font-size: 16px; color: var(--dim); margin-bottom: 4px;">Elemental Shaman &middot; Stormbringer</p>
+<div class="subtitle">
+  <span>Mythic Crown of the Cosmos</span>
+  <span>June 30, 2026</span>
+  <span>11 pulls (pulls 10-25)</span>
+  <span>Report: qDfTzvAyV3pRb6rG</span>
+</div>
+
+<div class="callout blue" style="margin-bottom: 20px;">
+  <div class="callout-body">
+    <strong>Note:</strong> Chedrock joined for pulls 10-25 (replacing Cybrosaen). 11 pulls total, 8 qualifying (&gt;60s). Night 5 deepest pull was 7:56 (fight 25), 44 seconds deeper into P3 than night 4.
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg Active DPS</div>
+    <div class="card-value shaman">153.3K</div>
+    <div class="card-sub">8 pulls &gt;60s, while alive</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">288</div>
+    <div class="card-sub">Ref avg: 291</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value green">100%</div>
+    <div class="card-sub">0 actionable deaths in 11 pulls</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value">7:49</div>
+    <div class="card-sub">Fight 17 &middot; Deep P3</div>
+  </div>
+  <div class="card">
+    <div class="card-label">P1 Avg DPS</div>
+    <div class="card-value shaman">219.1K</div>
+    <div class="card-sub">11/11 pulls, consistent</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Deepest Phase</div>
+    <div class="card-value">P3</div>
+    <div class="card-sub">Reached in 7/11 pulls</div>
+  </div>
+</div>
+
+<!-- Phase Timeline Visual -->
+<h2>Fight Phase Structure</h2>
+<div class="phase-bar">
+  <div class="phase-segment p1" style="width:28%;">P1: Sentinels (0:00-2:14)</div>
+  <div class="phase-segment inter" style="width:8%;">Inter</div>
+  <div class="phase-segment p2" style="width:29%;">P2: Rift (2:53-5:09)</div>
+  <div class="phase-segment p3" style="width:35%;">P3: Cosmos (5:09+)</div>
+</div>
+<p style="font-size: 12px; color: var(--dim); margin-top: 4px;">
+  P1 ends with Silversunder Catastrophe. P2 begins with Empowering Darkness. P3 begins with Cosmic Radiation. Intermission is a pure survival check (Stellar Emission channel + Silverstrike Barrage).
+</p>
+
+<!-- Phase Reach Rate -->
+<h2>Phase Reach Rate</h2>
+<div class="phase-reach">
+  <div class="phase-reach-item">
+    <div class="phase-name">P1: Sentinels</div>
+    <div class="phase-value" style="color: var(--green);">11/11</div>
+    <div class="pct-bar"><div class="pct-fill" style="width:100%; background: var(--green);"></div></div>
+  </div>
+  <div class="phase-reach-item">
+    <div class="phase-name">Intermission</div>
+    <div class="phase-value" style="color: var(--green);">8/11</div>
+    <div class="pct-bar"><div class="pct-fill" style="width:73%; background: var(--yellow);"></div></div>
+  </div>
+  <div class="phase-reach-item">
+    <div class="phase-name">P2: Rift</div>
+    <div class="phase-value" style="color: var(--yellow);">7/11</div>
+    <div class="pct-bar"><div class="pct-fill" style="width:64%; background: var(--yellow);"></div></div>
+  </div>
+  <div class="phase-reach-item">
+    <div class="phase-name">P3: Cosmos</div>
+    <div class="phase-value" style="color: var(--yellow);">5/11</div>
+    <div class="pct-bar"><div class="pct-fill" style="width:45%; background: var(--orange);"></div></div>
+  </div>
+</div>
+<p class="ref-note">3 of 11 pulls were sub-2:14 wipes (entire raid collapsed in P1). Chedrock survived past the raid's 2-death threshold in every pull.</p>
+
+<!-- Performance Across All Pulls -->
+<h2>Performance Across All Pulls</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 8px;">
+  Active DPS (while alive, player-only damage excluding pets). Bars colored by death context: <span style="color: var(--green);">survived to wipe</span> vs <span style="color: var(--orange);">cascade death (after 2 players already dead)</span> vs <span style="color: var(--border);">sub-60s pull</span>.
+</p>
+
+<div class="bar-chart" style="height: 200px;">
+  <!-- F10: 94K active, 377s, died cascade @352s -->
+  <div class="bar-wrapper">
+    <div class="bar-value">94K</div>
+    <div class="bar died-cascade" style="height: 35%;" title="F10: 94.3K active DPS, 6:17, died @5:52 (cascade)"></div>
+    <div class="bar-label">F10 6:17</div>
+  </div>
+  <!-- F11: 115K active, 465s, died cascade @367s -->
+  <div class="bar-wrapper">
+    <div class="bar-value">115K</div>
+    <div class="bar died-cascade" style="height: 43%;" title="F11: 114.8K active DPS, 7:45, died @6:07 (cascade)"></div>
+    <div class="bar-label">F11 7:45</div>
+  </div>
+  <!-- F12: 117K active, 454s, died cascade @421s -->
+  <div class="bar-wrapper">
+    <div class="bar-value">117K</div>
+    <div class="bar died-cascade" style="height: 44%;" title="F12: 117.3K active DPS, 7:34, died @7:01 (cascade)"></div>
+    <div class="bar-label">F12 7:34</div>
+  </div>
+  <!-- F15: 161K active, 458s, died cascade @164s (inter death) -->
+  <div class="bar-wrapper">
+    <div class="bar-value">161K</div>
+    <div class="bar died-cascade" style="height: 61%;" title="F15: 161.3K active DPS, 7:38, died @2:44 (cascade, Orbiting Matter in intermission)"></div>
+    <div class="bar-label">F15 7:38</div>
+  </div>
+  <!-- F16: 250K active, 62s, died cascade @51s (short) -->
+  <div class="bar-wrapper">
+    <div class="bar-value">250K</div>
+    <div class="bar short" style="height: 94%;" title="F16: 249.7K active DPS, 1:02 (P1 wipe, burst phase)"></div>
+    <div class="bar-label">F16 1:02</div>
+  </div>
+  <!-- F17: 114K active, 469s, died cascade @451s -->
+  <div class="bar-wrapper">
+    <div class="bar-value">114K</div>
+    <div class="bar died-cascade" style="height: 43%;" title="F17: 114.5K active DPS, 7:49, died @7:31 (cascade)"></div>
+    <div class="bar-label">F17 7:49</div>
+  </div>
+  <!-- F18: 266K active, 61s, died cascade @56s (short) -->
+  <div class="bar-wrapper">
+    <div class="bar-value">266K</div>
+    <div class="bar short" style="height: 100%;" title="F18: 265.6K active DPS, 1:01 (P1 wipe, burst phase)"></div>
+    <div class="bar-label">F18 1:01</div>
+  </div>
+  <!-- F22: 244K active, 139s, died cascade @136s -->
+  <div class="bar-wrapper">
+    <div class="bar-value">244K</div>
+    <div class="bar died-cascade" style="height: 92%;" title="F22: 244.0K active DPS, 2:19, P1 wipe (died @2:16 cascade)"></div>
+    <div class="bar-label">F22 2:19</div>
+  </div>
+  <!-- F23: 122K active, 352s, died cascade @336s -->
+  <div class="bar-wrapper">
+    <div class="bar-value">122K</div>
+    <div class="bar died-cascade" style="height: 46%;" title="F23: 122.3K active DPS, 5:52, died @5:36 (cascade)"></div>
+    <div class="bar-label">F23 5:52</div>
+  </div>
+  <!-- F24: 172K active, 239s, died cascade @227s -->
+  <div class="bar-wrapper">
+    <div class="bar-value">172K</div>
+    <div class="bar died-cascade" style="height: 65%;" title="F24: 172.5K active DPS, 3:59, died @3:47 (cascade)"></div>
+    <div class="bar-label">F24 3:59</div>
+  </div>
+  <!-- F25: 149K active, 476s, died cascade @273s -->
+  <div class="bar-wrapper">
+    <div class="bar-value">149K</div>
+    <div class="bar died-cascade" style="height: 56%;" title="F25: 149.0K active DPS, 7:56, died @4:33 (cascade)"></div>
+    <div class="bar-label">F25 7:56</div>
+  </div>
+</div>
+
+<div class="callout green">
+  <div class="callout-title">Zero Actionable Deaths</div>
+  <div class="callout-body">
+    Chedrock died in 10 of 11 pulls, but <strong>every single death was a cascade death</strong> (after 2+ players had already died). Under the 2-death threshold rule, Chedrock has <strong>0 actionable deaths</strong> across the entire night. Excellent survival discipline.
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<h2>Per-Phase Performance Breakdown</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+  Player-only DPS (excluding Fire/Storm Elemental pet damage) while Chedrock was alive. This is the core analysis section -- overall DPS blends P1 burst (219K) with P3 sustained (53K), which is misleading. Phase breakdown shows where performance changes and why.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Phase</th>
+      <th>Pulls Seen</th>
+      <th class="num">Avg DPS</th>
+      <th class="num">Best DPS</th>
+      <th class="num">Worst DPS</th>
+      <th>Deaths in Phase</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge green">P1: Sentinels</span></td>
+      <td>11/11</td>
+      <td class="num" style="color: var(--green);"><strong>219.1K</strong></td>
+      <td class="num">265.6K</td>
+      <td class="num">165.3K</td>
+      <td>2 (both cascade)</td>
+      <td>Consistent burst. Low variance.</td>
+    </tr>
+    <tr>
+      <td><span class="badge yellow">Intermission</span></td>
+      <td>8/11</td>
+      <td class="num" style="color: var(--dim);">~0K</td>
+      <td class="num">0K</td>
+      <td class="num">0K</td>
+      <td>1 (cascade, Orbiting Matter)</td>
+      <td>Expected -- Stellar Emission is pure survival. No DPS targets.</td>
+    </tr>
+    <tr>
+      <td><span class="badge blue">P2: Rift</span></td>
+      <td>7/11</td>
+      <td class="num" style="color: var(--accent);"><strong>91.9K</strong></td>
+      <td class="num">130.8K</td>
+      <td class="num">75.0K</td>
+      <td>2 (both cascade)</td>
+      <td>Substantial DPS drop from P1. Movement-heavy phase.</td>
+    </tr>
+    <tr>
+      <td><span class="badge red">P3: Cosmos</span></td>
+      <td>5/11</td>
+      <td class="num" style="color: var(--yellow);"><strong>52.9K</strong></td>
+      <td class="num">69.8K</td>
+      <td class="num">20.2K</td>
+      <td>5 (all cascade)</td>
+      <td>DPS drops further. High variance. Raid-wide pressure increasing.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="two-col">
+  <div class="callout yellow">
+    <div class="callout-title">P1 to P2 Drop: -58%</div>
+    <div class="callout-body">
+      DPS falls from <strong>219K in P1</strong> to <strong>92K in P2</strong>. This is partly expected -- P1 includes opener burst (Fire Elemental, Stormkeeper, Ascendance, lust/potions), while P2 introduces movement from Rift Simulacrum and Undying Voidspawn mechanics. However, a 58% drop is steep and suggests uptime loss during P2 movement beyond what is necessary.
+    </div>
+  </div>
+  <div class="callout yellow">
+    <div class="callout-title">P2 to P3 Drop: -42%</div>
+    <div class="callout-body">
+      DPS falls again from <strong>92K in P2</strong> to <strong>53K in P3</strong>. P3 data comes from only 5 pulls and is heavily affected by the raid being in a degraded state (cascade deaths). The 20.2K DPS pull (fight 10) was Chedrock staying alive in a collapsing raid. Real P3 performance is closer to the best pull at <strong>69.8K</strong>.
+    </div>
+  </div>
+</div>
+
+<h3>Per-Pull Phase DPS Detail</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Pull</th>
+      <th>Duration</th>
+      <th>Phase Reached</th>
+      <th class="num">P1 DPS</th>
+      <th class="num">P2 DPS</th>
+      <th class="num">P3 DPS</th>
+      <th>Chedrock Death</th>
+      <th>Context</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>F10</td>
+      <td>6:17</td>
+      <td><span class="badge red">P3</span></td>
+      <td class="num">165.3K</td>
+      <td class="num">75.0K</td>
+      <td class="num">20.2K</td>
+      <td>5:52 (cascade)</td>
+      <td>Lowest P1 DPS. Raid collapsed in P3.</td>
+    </tr>
+    <tr>
+      <td>F11</td>
+      <td>7:45</td>
+      <td><span class="badge red">P3</span></td>
+      <td class="num">215.0K</td>
+      <td class="num">87.9K</td>
+      <td class="num">24.2K</td>
+      <td>6:07 (cascade)</td>
+      <td>Deep pull. P3 DPS low due to compromised raid.</td>
+    </tr>
+    <tr>
+      <td>F12</td>
+      <td>7:34</td>
+      <td><span class="badge red">P3</span></td>
+      <td class="num">228.1K</td>
+      <td class="num">80.7K</td>
+      <td class="num">69.8K</td>
+      <td>7:01 (cascade)</td>
+      <td>Best P3 DPS. Raid held longer before cascade.</td>
+    </tr>
+    <tr>
+      <td>F15</td>
+      <td>7:38</td>
+      <td><span class="badge red">P3</span></td>
+      <td class="num">197.6K</td>
+      <td class="num">--</td>
+      <td class="num">--</td>
+      <td>2:44 (cascade)</td>
+      <td>Died in intermission to Orbiting Matter. Raid continued without.</td>
+    </tr>
+    <tr>
+      <td>F16</td>
+      <td>1:02</td>
+      <td><span class="badge green">P1</span></td>
+      <td class="num">249.7K</td>
+      <td class="num">--</td>
+      <td class="num">--</td>
+      <td>0:51 (cascade)</td>
+      <td>Short P1 wipe. Burst-inflated.</td>
+    </tr>
+    <tr>
+      <td>F17</td>
+      <td>7:49</td>
+      <td><span class="badge red">P3</span></td>
+      <td class="num">204.7K</td>
+      <td class="num">114.3K</td>
+      <td class="num">61.0K</td>
+      <td>7:31 (cascade)</td>
+      <td>Best overall pull. Strong P2 + P3.</td>
+    </tr>
+    <tr>
+      <td>F18</td>
+      <td>1:01</td>
+      <td><span class="badge green">P1</span></td>
+      <td class="num">265.6K</td>
+      <td class="num">--</td>
+      <td class="num">--</td>
+      <td>0:56 (cascade)</td>
+      <td>Short P1 wipe. Highest burst.</td>
+    </tr>
+    <tr>
+      <td>F22</td>
+      <td>2:19</td>
+      <td><span class="badge yellow">Intermission</span></td>
+      <td class="num">248.0K</td>
+      <td class="num">--</td>
+      <td class="num">--</td>
+      <td>2:16 (cascade)</td>
+      <td>P1 wipe (sentinel at 0.01%, not a near-kill).</td>
+    </tr>
+    <tr>
+      <td>F23</td>
+      <td>5:52</td>
+      <td><span class="badge red">P3</span></td>
+      <td class="num">200.1K</td>
+      <td class="num">94.0K</td>
+      <td class="num">54.6K</td>
+      <td>5:36 (cascade)</td>
+      <td>Solid pull. Dimensional Slash cascade in P3.</td>
+    </tr>
+    <tr>
+      <td>F24</td>
+      <td>3:59</td>
+      <td><span class="badge blue">P2</span></td>
+      <td class="num">239.3K</td>
+      <td class="num">130.8K</td>
+      <td class="num">--</td>
+      <td>3:47 (cascade)</td>
+      <td>Short P2 pull but best P2 DPS of the night.</td>
+    </tr>
+    <tr>
+      <td>F25</td>
+      <td>7:56</td>
+      <td><span class="badge red">P3</span></td>
+      <td class="num">242.6K</td>
+      <td class="num">81.8K</td>
+      <td class="num">--</td>
+      <td>4:33 (cascade)</td>
+      <td>Deepest pull of night. Died in P2 (Voidstalker Sting cascade).</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Death Pattern Analysis -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="callout green">
+  <div class="callout-title">Death Summary: 0 Actionable Deaths in 11 Pulls</div>
+  <div class="callout-body">
+    Chedrock physically died in 10 of 11 pulls, but was <strong>never one of the first 2 deaths</strong> in any pull. Every death occurred after the raid was already compromised. This is the best possible survival outcome during progression -- Chedrock is not dying to mechanics and is surviving as long as the raid state allows.
+  </div>
+</div>
+
+<h3>Death Log (All Cascade)</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Pull</th>
+      <th>Death Time</th>
+      <th>Phase</th>
+      <th>Killing Ability</th>
+      <th>Deaths Before Chedrock</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>F10</td><td>5:52</td><td>P3</td><td>Bursting Emptiness</td>
+      <td>2 (Senssay, Zinnks)</td><td><span class="badge green">Cascade (#9)</span></td>
+    </tr>
+    <tr>
+      <td>F11</td><td>6:07</td><td>P3</td><td>Unknown</td>
+      <td>3 (Dueche, Sonic, Blowe)</td><td><span class="badge green">Cascade (#4)</span></td>
+    </tr>
+    <tr>
+      <td>F12</td><td>7:01</td><td>P3</td><td>Voidstalker Sting</td>
+      <td>3 (Dueche, Invincibale, Nurnyx)</td><td><span class="badge green">Cascade (#11)</span></td>
+    </tr>
+    <tr>
+      <td>F15</td><td>2:44</td><td>Intermission</td><td>Orbiting Matter</td>
+      <td>2 (Baodabao, Sonic)</td><td><span class="badge green">Cascade (#3)</span></td>
+    </tr>
+    <tr>
+      <td>F16</td><td>0:51</td><td>P1</td><td>Interrupting Tremor</td>
+      <td>2 (Moistbear, Bebeshakur)</td><td><span class="badge green">Cascade (#9)</span></td>
+    </tr>
+    <tr>
+      <td>F17</td><td>7:31</td><td>P3</td><td>Cosmic Barrier</td>
+      <td>4 (Unholyftw, Bebeshakur, Baodabao x2)</td><td><span class="badge green">Cascade (#10)</span></td>
+    </tr>
+    <tr>
+      <td>F18</td><td>0:56</td><td>P1</td><td>Unknown</td>
+      <td>2 (Dueche, Unholyftw)</td><td><span class="badge green">Cascade (#16)</span></td>
+    </tr>
+    <tr>
+      <td>F22</td><td>2:16</td><td>Intermission</td><td>Unknown</td>
+      <td>2 (Sonic, Invincibale)</td><td><span class="badge green">Cascade (#16)</span></td>
+    </tr>
+    <tr>
+      <td>F23</td><td>5:36</td><td>P3</td><td>Dimensional Slash</td>
+      <td>2 (Senssay, Zinnks)</td><td><span class="badge green">Cascade (#7)</span></td>
+    </tr>
+    <tr>
+      <td>F24</td><td>3:47</td><td>P2</td><td>Void Remnants</td>
+      <td>2 (Darthurg, Nurnyx)</td><td><span class="badge green">Cascade (#9)</span></td>
+    </tr>
+    <tr>
+      <td>F25</td><td>4:33</td><td>P2</td><td>Voidstalker Sting</td>
+      <td>2 (Nurnyx, Sonic)</td><td><span class="badge green">Cascade (#3)</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Ability Damage Breakdown -->
+<h2>Ability Damage Breakdown</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 8px;">
+  Player-only damage across all 11 pulls. Pet damage (Fire Elemental, Storm Elemental) is excluded.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th class="num">Total Damage</th>
+      <th class="num">% of Total</th>
+      <th>Visual</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Lightning Bolt Overload</td>
+      <td class="num">78.9M</td>
+      <td class="num">19.7%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:100%; background: var(--shaman);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Lightning Bolt</td>
+      <td class="num">74.0M</td>
+      <td class="num">18.4%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:94%; background: var(--shaman);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Elemental Blast</td>
+      <td class="num">52.7M</td>
+      <td class="num">13.1%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:67%; background: var(--accent);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Tempest Overload</td>
+      <td class="num">41.5M</td>
+      <td class="num">10.4%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:53%; background: var(--cyan);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Lava Burst</td>
+      <td class="num">38.3M</td>
+      <td class="num">9.6%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:49%; background: var(--orange);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Tempest</td>
+      <td class="num">37.7M</td>
+      <td class="num">9.4%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:48%; background: var(--cyan);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Lava Burst Overload</td>
+      <td class="num">25.4M</td>
+      <td class="num">6.3%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:32%; background: var(--orange);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Elemental Blast Overload</td>
+      <td class="num">18.5M</td>
+      <td class="num">4.6%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:23%; background: var(--accent);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Lightning Rod</td>
+      <td class="num">12.6M</td>
+      <td class="num">3.1%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:16%; background: var(--dim);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Flame Shock</td>
+      <td class="num">9.2M</td>
+      <td class="num">2.3%</td>
+      <td><div class="pct-bar" style="width: 200px;"><div class="pct-fill" style="width:12%; background: var(--red);"></div></div></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout blue">
+  <div class="callout-body">
+    <strong>Rotation Profile:</strong> Lightning Bolt (incl. Overloads) accounts for 38.1% of total damage -- this is the primary filler and Overload generator. Tempest (incl. Overloads) at 19.8% and Elemental Blast at 17.7% are both healthy. Lava Burst at 15.9% (incl. Overloads) is used exclusively on Lava Surge procs as expected for Stormbringer builds. The profile looks standard for Stormbringer Ele Shaman.
+  </div>
+</div>
+
+<!-- Cast Profile -->
+<h2>Cast Profile</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th class="num">Total Casts</th>
+      <th class="num">Fights Used</th>
+      <th>Category</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Lightning Bolt</td><td class="num">535</td><td class="num">11/11</td><td>Primary filler</td></tr>
+    <tr><td>Lava Burst</td><td class="num">410</td><td class="num">11/11</td><td>Lava Surge procs</td></tr>
+    <tr><td>Flame Shock</td><td class="num">274</td><td class="num">11/11</td><td>DoT maintenance</td></tr>
+    <tr><td>Elemental Blast</td><td class="num">163</td><td class="num">11/11</td><td>Maelstrom spender</td></tr>
+    <tr><td>Tempest</td><td class="num">106</td><td class="num">11/11</td><td>Stormbringer proc</td></tr>
+    <tr><td style="color: var(--dim);">Ghost Wolf</td><td class="num" style="color: var(--dim);">85</td><td class="num">11/11</td><td style="color: var(--dim);">Movement</td></tr>
+    <tr><td>Stormkeeper</td><td class="num">44</td><td class="num">11/11</td><td>Cooldown</td></tr>
+    <tr><td style="color: var(--dim);">Nature's Swiftness</td><td class="num" style="color: var(--dim);">38</td><td class="num">11/11</td><td style="color: var(--dim);">Utility</td></tr>
+    <tr><td style="color: var(--dim);">Spiritwalker's Grace</td><td class="num" style="color: var(--dim);">37</td><td class="num">10/11</td><td style="color: var(--dim);">Movement casting</td></tr>
+    <tr><td>Ascendance</td><td class="num">22</td><td class="num">11/11</td><td>Major CD (pulled in every fight)</td></tr>
+    <tr><td style="color: var(--dim);">Astral Shift</td><td class="num" style="color: var(--dim);">7</td><td class="num">5/11</td><td style="color: var(--dim);">Defensive</td></tr>
+    <tr><td>Chain Lightning</td><td class="num">5</td><td class="num">2/11</td><td>AoE (minimal use)</td></tr>
+    <tr><td style="color: var(--dim);">Wind Shear</td><td class="num" style="color: var(--dim);">2</td><td class="num">2/11</td><td style="color: var(--dim);">Interrupt</td></tr>
+  </tbody>
+</table>
+
+<div class="callout yellow">
+  <div class="callout-title">Ghost Wolf: 85 Casts</div>
+  <div class="callout-body">
+    High Ghost Wolf usage (85 casts across 11 pulls) suggests heavy movement periods. Every Ghost Wolf is a GCD not spent on damage. <strong>Spiritwalker's Grace</strong> was used 37 times across 10 fights, which is solid -- this allows casting while moving. Consider whether some Ghost Wolf casts could be replaced with Gust of Wind (only 8 casts total) for faster repositioning with fewer wasted GCDs.
+  </div>
+</div>
+
+<!-- Damage Taken -->
+<h2>Damage Taken Analysis</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th class="num">Total Damage</th>
+      <th class="num">Hits</th>
+      <th>Category</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Echoing Darkness</td><td class="num">22.7M</td><td class="num">1,207</td>
+      <td><span class="badge blue">Unavoidable</span> Passive raid aura damage</td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td><td class="num">12.5M</td><td class="num">637</td>
+      <td><span class="badge blue">Unavoidable</span> Periodic raid damage</td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td><td class="num">11.2M</td><td class="num">324</td>
+      <td><span class="badge blue">Unavoidable</span> Raid-wide burst</td>
+    </tr>
+    <tr>
+      <td>Simulacrum Backlash</td><td class="num">9.1M</td><td class="num">359</td>
+      <td><span class="badge blue">Unavoidable</span> P2 mechanic</td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td><td class="num">5.3M</td><td class="num">279</td>
+      <td><span class="badge blue">Unavoidable</span> Raid-wide P3</td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td><td class="num">4.3M</td><td class="num">26</td>
+      <td><span class="badge yellow">Partially Avoidable</span> Ground soak/dodge</td>
+    </tr>
+    <tr>
+      <td>Gravity Collapse</td><td class="num">4.2M</td><td class="num">38</td>
+      <td><span class="badge blue">Unavoidable</span> P3 raid damage</td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td><td class="num">3.2M</td><td class="num">14</td>
+      <td><span class="badge blue">Unavoidable</span> Intermission targeted</td>
+    </tr>
+    <tr>
+      <td>Falling</td><td class="num">3.1M</td><td class="num">15</td>
+      <td><span class="badge yellow">Partially Avoidable</span> Fall damage from knockback/displacement</td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td><td class="num">2.6M</td><td class="num">42</td>
+      <td><span class="badge blue">Unavoidable</span> P1 damage</td>
+    </tr>
+    <tr>
+      <td>Interrupting Tremor</td><td class="num">2.6M</td><td class="num">28</td>
+      <td><span class="badge blue">Unavoidable</span> Raid-wide</td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td><td class="num">2.2M</td><td class="num">57</td>
+      <td><span class="badge yellow">Partially Avoidable</span> Positioning check</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout blue">
+  <div class="callout-body">
+    <strong>Damage taken profile is clean.</strong> The top sources (Echoing Darkness, Voidstalker Sting, Void Expulsion, Cosmic Barrier) are all unavoidable raid-wide damage. <strong>Void Remnants</strong> (4.3M, 26 hits) and <strong>Falling</strong> (3.1M, 15 hits) are the main partially-avoidable sources. Falling damage suggests getting knocked back or displaced during mechanics -- Gust of Wind or better positioning could reduce this.
+  </div>
+</div>
+
+<!-- Reference Comparison -->
+<h2>Reference Comparison (De-emphasized)</h2>
+<p class="ref-note">
+  Reference data is from KILL logs (comp-matched, 4-heal, US/EU only). These players completed the full fight. Direct DPS comparison to a prog night is inherently unfair -- reference context is provided as a ceiling target, not a gap to close.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th class="num">DPS (Kill)</th>
+      <th class="num">Kill Time</th>
+      <th class="num">iLvl</th>
+      <th class="num">Talent Diffs</th>
+      <th>Region</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(188, 140, 255, 0.08);">
+      <td><strong style="color: var(--purple);">Ghostsham</strong></td>
+      <td class="num"><strong>97,945</strong></td>
+      <td class="num">6:50</td>
+      <td class="num">291</td>
+      <td class="num"><span class="badge green">5</span></td>
+      <td>EU (Lothar)</td>
+    </tr>
+    <tr>
+      <td>Solarisam</td>
+      <td class="num">98,623</td>
+      <td class="num">8:03</td>
+      <td class="num">291</td>
+      <td class="num"><span class="badge yellow">8</span></td>
+      <td>EU (Kazzak)</td>
+    </tr>
+    <tr>
+      <td>Damastius</td>
+      <td class="num">98,536</td>
+      <td class="num">7:01</td>
+      <td class="num">290</td>
+      <td class="num"><span class="badge yellow">10</span></td>
+      <td>US (Frostmourne)</td>
+    </tr>
+    <tr>
+      <td>Synovino</td>
+      <td class="num">99,272</td>
+      <td class="num">8:18</td>
+      <td class="num">291</td>
+      <td class="num"><span class="badge red">41</span></td>
+      <td>EU (Blackrock)</td>
+    </tr>
+    <tr>
+      <td>Kaellach</td>
+      <td class="num">98,290</td>
+      <td class="num">8:23</td>
+      <td class="num">291</td>
+      <td class="num"><span class="badge red">43</span></td>
+      <td>EU (Draenor)</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="two-col">
+  <div class="callout purple">
+    <div class="callout-title">Primary Reference: Ghostsham (5 talent diffs)</div>
+    <div class="callout-body">
+      Closest talent match at 5 differences. <strong>97,945 DPS</strong> on a 6:50 kill at ilvl 291 (Chedrock is 288). The 3-ilvl gap is worth roughly 2-4% DPS. Kill DPS includes the full fight cycle (no death, full P3 with execute mechanics), so comparing directly to Chedrock's per-phase prog numbers is not meaningful -- but the reference establishes the performance ceiling for this build.
+    </div>
+  </div>
+  <div class="callout blue">
+    <div class="callout-title">What the References Show</div>
+    <div class="callout-body">
+      Top Ele Shamans on Crown kills are doing <strong>97-99K DPS</strong> across the full fight at ilvl 290-291. On a 7-8 minute kill, that includes P1 burst phases, intermission downtime, and full P2/P3 sustained DPS. Chedrock's P1 DPS (219K avg) is strong. The key development area is sustaining DPS in P2/P3 as the raid gets deeper into the fight.
+    </div>
+  </div>
+</div>
+
+<!-- Defensive Usage -->
+<h2>Defensive & Utility Usage</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th class="num">Total Casts</th>
+      <th class="num">Fights Used</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Astral Shift</td>
+      <td class="num">7</td>
+      <td class="num">5/11</td>
+      <td>1.5 min CD personal DR. Could use more consistently -- only in 5 of 11 pulls.</td>
+    </tr>
+    <tr>
+      <td>Spiritwalker's Grace</td>
+      <td class="num">37</td>
+      <td class="num">10/11</td>
+      <td>Cast-while-moving. Good usage across nearly every pull.</td>
+    </tr>
+    <tr>
+      <td>Gust of Wind</td>
+      <td class="num">8</td>
+      <td class="num">6/11</td>
+      <td>Movement ability. Could use more during repositioning phases.</td>
+    </tr>
+    <tr>
+      <td>Nature's Swiftness</td>
+      <td class="num">38</td>
+      <td class="num">11/11</td>
+      <td>Instant-cast utility. Used every pull.</td>
+    </tr>
+    <tr>
+      <td>Wind Shear</td>
+      <td class="num">2</td>
+      <td class="num">2/11</td>
+      <td>Interrupt. Low usage -- depends on assigned interrupt responsibilities.</td>
+    </tr>
+    <tr>
+      <td>Healthstone</td>
+      <td class="num">2</td>
+      <td class="num">2/11</td>
+      <td>Emergency healing. Low usage.</td>
+    </tr>
+    <tr>
+      <td>Silvermoon Health Potion</td>
+      <td class="num">3</td>
+      <td class="num">3/11</td>
+      <td>Health pot. Could use more aggressively in P3.</td>
+    </tr>
+    <tr>
+      <td>Reincarnation</td>
+      <td class="num">2</td>
+      <td class="num">2/11</td>
+      <td>Self-rez. Used when died to cascade and pull was still going.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Consistency Analysis -->
+<h2>Consistency Analysis</h2>
+
+<div class="two-col">
+  <div>
+    <h3>Session Trend</h3>
+    <p style="font-size: 13px; color: var(--dim);">
+      Comparing first half (F10-F15, 3 qualifying pulls) vs second half (F17-F25, 5 qualifying pulls):
+    </p>
+    <table>
+      <thead>
+        <tr><th></th><th class="num">First Half</th><th class="num">Second Half</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Avg P1 DPS</td><td class="num">218.8K</td><td class="num">219.3K</td></tr>
+        <tr><td>Avg Active DPS</td><td class="num">124.4K</td><td class="num">160.5K</td></tr>
+        <tr><td>Avg Survival Time</td><td class="num">4:29</td><td class="num">4:30</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+      P1 DPS is remarkably consistent across the entire session (less than 1% variance between halves). Active DPS improved in the second half due to longer survival in later pulls.
+    </p>
+  </div>
+  <div>
+    <h3>P1 DPS Variance</h3>
+    <p style="font-size: 13px; color: var(--dim);">
+      P1 DPS across 11 pulls (full P1 only, 9 qualifying pulls with P1 &gt;60s):
+    </p>
+    <div style="margin: 12px 0;">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+        <span>Range: <strong>165K - 266K</strong></span>
+        <span>Spread: <strong>101K (46%)</strong></span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 13px;">
+        <span>Avg: <strong>219.1K</strong></span>
+        <span>Median: <strong>228.1K</strong></span>
+      </div>
+    </div>
+    <p style="font-size: 12px; color: var(--dim);">
+      The 46% spread is moderate. The low outlier (F10 at 165K) was the first pull Chedrock participated in on the night. After that, P1 DPS stabilized in the 197-266K range (29% spread), which is normal variance for an opener burst phase.
+    </p>
+  </div>
+</div>
+
+<!-- Actionable Improvements -->
+<h2>Actionable Improvements</h2>
+
+<div class="improvement-item">
+  <span class="number">1</span>
+  <div class="title">Sustain DPS Through P2 Movement</div>
+  <div class="detail">
+    <strong>Issue:</strong> P1 to P2 DPS drops 58% (219K to 92K). While some drop is expected due to P1 burst cooldowns expiring and P2 movement mechanics, 58% is steep. The best P2 pull (F24: 130.8K) shows the ceiling is higher.<br><br>
+    <strong>Fix:</strong> Use <strong>Spiritwalker's Grace</strong> proactively at the start of P2 movement sequences (Rift Simulacrum spawns, Undying Voidspawn positioning). Pre-position for P2 mechanics during the tail end of intermission to minimize Ghost Wolf usage. When forced to move without Spiritwalker's Grace, prioritize instant casts: Lava Surge procs, Tempest (if available), and Flame Shock refreshes.<br><br>
+    <strong>Impact:</strong> Closing even half the gap between average P2 DPS (92K) and best P2 DPS (131K) would add ~19K effective DPS during the P2 window (2:16 duration), representing roughly 2.6M additional damage per pull.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">2</span>
+  <div class="title">Astral Shift Usage Consistency</div>
+  <div class="detail">
+    <strong>Issue:</strong> Astral Shift (1.5min CD, 40% DR) was only used in <strong>5 of 11 pulls</strong> with just 7 total casts. On a 7-8 minute fight, this should be used 4-5 times per pull.<br><br>
+    <strong>Fix:</strong> Plan Astral Shift for predictable high-damage moments: Silverstrike Barrage during intermission, Void Expulsion in P2, Cosmic Barrier overlaps in P3. Pre-plan usage at specific boss timers rather than reacting to low HP.<br><br>
+    <strong>Impact:</strong> While this won't directly increase DPS, consistent defensive usage is critical in P3 where raid-wide damage ramps. Dying to cascade less often means more uptime in the phases that matter. The 0% actionable death rate is already excellent -- Astral Shift will help maintain that as the raid pushes deeper into P3 where survival pressure increases.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">3</span>
+  <div class="title">Reduce Ghost Wolf GCDs</div>
+  <div class="detail">
+    <strong>Issue:</strong> 85 Ghost Wolf casts across 11 pulls (~7.7 per pull). Each Ghost Wolf is a GCD not spent on damage. While movement is necessary, the <strong>Gust of Wind</strong> talent (only 8 casts total) provides instant repositioning without consuming multiple GCDs for running in Wolf form.<br><br>
+    <strong>Fix:</strong> Map out the movement patterns for each phase. In P2 specifically, where DPS drops the most, replace Ghost Wolf repositioning with <strong>Gust of Wind</strong> for quick jumps and <strong>Spiritwalker's Grace</strong> for sustained movement casting. Save Ghost Wolf for longer cross-arena repositioning (intermission) where casting is not possible anyway.<br><br>
+    <strong>Impact:</strong> Reducing Ghost Wolf by 2-3 casts per pull during P2/P3 recovers 2-3 GCDs worth of damage (roughly 150-200K additional damage per pull).
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">4</span>
+  <div class="title">Health Pot and Healthstone Usage in P3</div>
+  <div class="detail">
+    <strong>Issue:</strong> Only 3 health potion uses and 2 Healthstone uses across 11 pulls. In P3 where raid damage ramps exponentially, these emergency tools should be used proactively.<br><br>
+    <strong>Fix:</strong> Use <strong>Silvermoon Health Potion</strong> and <strong>Healthstone</strong> during the first Cosmic Radiation overlap in P3 (~5:30 mark) when healing pressure is highest. This reduces the burden on healers and keeps Chedrock alive longer during cascade-risk moments.<br><br>
+    <strong>Impact:</strong> Indirect DPS gain through additional survival time. Even 5-10 extra seconds alive in late P3 translates to meaningful damage on the boss.
+  </div>
+</div>
+
+<!-- Context Footer -->
+<h2>Summary</h2>
+
+<div class="callout green">
+  <div class="callout-title">What Chedrock Is Doing Well</div>
+  <div class="callout-body">
+    <strong>Zero actionable deaths</strong> across 11 pulls is the standout finding. In a progression environment where other players are dying to mechanics, Chedrock is never the cause of a wipe. P1 execution is solid and consistent (219K avg, used in every pull). Spiritwalker's Grace usage is good (37 casts across 10 pulls). The rotation profile (Lightning Bolt filler, Lava Burst on Surge procs, Elemental Blast as spender, Tempest as priority) is correct for Stormbringer Ele Shaman. Stormkeeper and Ascendance are being used consistently in every pull.
+  </div>
+</div>
+
+<div class="callout blue">
+  <div class="callout-title">Context</div>
+  <div class="callout-body">
+    Chedrock joined the raid at pull 10 (replacing Cybrosaen) and immediately performed at a level consistent with the rest of the session. The 3-ilvl gap vs references (288 vs 291) accounts for roughly 2-4% of the DPS difference. The primary development area is <strong>P2/P3 sustained DPS</strong>, which is a function of movement optimization (fewer Ghost Wolf GCDs, more Spiritwalker's Grace, better pre-positioning). This is a normal progression pattern -- P1 gets consistent first, then later phases improve as the fight becomes more familiar.
+  </div>
+</div>
+
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG" target="_blank">Warcraft Logs Report qDfTzvAyV3pRb6rG</a></p>
+  <p>Primary reference: Ghostsham-Lothar (EU) &middot; 97,945 DPS kill &middot; 5 talent differences &middot; ilvl 291</p>
+  <p>Analysis mode: PROG (no kill in log) &middot; Phase boundaries: P1 0:00-2:14, Inter 2:14-2:53, P2 2:53-5:09, P3 5:09+ &middot; 2-death threshold rule applied</p>
+</div>
+
+</body>
+</html>

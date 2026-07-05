@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zinnks - Augmentation Evoker - Crown of the Cosmos (Prog Night 4)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --evoker: #33937f;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+
+.header { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+.header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+.player-name { font-size: 28px; font-weight: 700; color: var(--evoker); }
+.spec-badge { background: rgba(51,147,127,0.15); color: var(--evoker); padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+.prog-badge { background: rgba(219,109,40,0.2); color: var(--orange); padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+.header-meta { font-size: 13px; color: var(--dim); }
+.header-meta span { margin-right: 16px; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+.card-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
+
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+.section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover { background: rgba(88,166,255,0.04); }
+
+.bar-container { width: 100%; height: 24px; background: var(--bg); border-radius: 4px; overflow: hidden; position: relative; }
+.bar { height: 100%; border-radius: 4px; transition: width 0.3s; min-width: 2px; }
+.bar-label { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 11px; font-weight: 600; color: var(--text); }
+
+.chart-container { display: flex; align-items: flex-end; gap: 3px; height: 200px; padding: 0 4px; position: relative; }
+.chart-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; transition: opacity 0.2s; }
+.chart-bar:hover { opacity: 0.85; }
+.chart-bar .tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #1c2128; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 11px; white-space: nowrap; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.chart-bar:hover .tooltip { display: block; }
+.chart-labels { display: flex; gap: 3px; padding: 4px 4px 0; }
+.chart-label { flex: 1; text-align: center; font-size: 9px; color: var(--dim); min-width: 20px; }
+
+.avg-line { position: absolute; width: 100%; border-top: 2px dashed var(--yellow); z-index: 5; pointer-events: none; }
+.avg-line-label { position: absolute; right: 0; top: -16px; font-size: 10px; color: var(--yellow); font-weight: 600; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+.badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
+.badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+.badge-cyan { background: rgba(57,210,192,0.15); color: var(--cyan); }
+
+.callout { border-radius: 8px; padding: 16px; margin: 12px 0; }
+.callout-green { background: rgba(63,185,80,0.08); border: 1px solid rgba(63,185,80,0.3); }
+.callout-yellow { background: rgba(210,153,34,0.08); border: 1px solid rgba(210,153,34,0.3); }
+.callout-red { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.3); }
+.callout-blue { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.3); }
+.callout-title { font-weight: 700; margin-bottom: 4px; font-size: 14px; }
+.callout-text { font-size: 13px; color: var(--dim); line-height: 1.5; }
+
+.phase-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.phase-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.phase-card-name { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.phase-card-value { font-size: 20px; font-weight: 700; }
+.phase-card-sub { font-size: 11px; color: var(--dim); }
+
+.legend { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--dim); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+.footer { text-align: center; padding: 24px; font-size: 12px; color: var(--dim); border-top: 1px solid var(--border); margin-top: 32px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .phase-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+
+.phase-timeline { display: flex; height: 40px; border-radius: 6px; overflow: hidden; margin: 12px 0; border: 1px solid var(--border); }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text); }
+
+.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(48,54,61,0.5); font-size: 13px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--dim); }
+.stat-value { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25, 2026 Log Analysis</a>
+
+<div class="header">
+  <div class="header-top">
+    <span class="player-name">Zinnks</span>
+    <span class="spec-badge">Augmentation Evoker</span>
+    <span class="prog-badge">PROGRESSION NIGHT 4</span>
+  </div>
+  <div class="header-meta">
+    <span>Mythic Crown of the Cosmos</span>
+    <span>19 pulls analyzed</span>
+    <span>Deepest: Fight 14 (7:12)</span>
+    <span>June 25, 2026</span>
+    <span>Report: <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">XYtJ3R1qjdFpM4cT</a></span>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS</div>
+    <div class="card-value" style="color: var(--evoker);">203.9K</div>
+    <div class="card-sub">across 19 pulls</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">291</div>
+    <div class="card-sub">15 gear slots</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value" style="color: var(--green);">18/19</div>
+    <div class="card-sub">actionable deaths (2-death rule)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value" style="color: var(--accent);">7:12</div>
+    <div class="card-sub">Fight 14 -- deep P3</div>
+  </div>
+</div>
+
+<!-- Key Insight Callout -->
+<div class="callout callout-green">
+  <div class="callout-title" style="color: var(--green);">Survivability: Excellent Under the 2-Death Threshold</div>
+  <div class="callout-text">
+    Zinnks died in all 19 pulls, but <strong>only 1 of those 19 deaths was an individual failure</strong> (fight 22, Echoing Darkness at 0:53 in P1). The other 18 deaths occurred after 2+ players had already died -- these are cascade deaths caused by the raid falling apart, not personal mistakes. Under the 2-death threshold rule, Zinnks has an effective survival rate of <strong>18/19 pulls (95%)</strong>.
+  </div>
+</div>
+
+<!-- Augmentation Context Callout -->
+<div class="callout callout-blue">
+  <div class="callout-title" style="color: var(--accent);">Augmentation Evoker DPS Context</div>
+  <div class="callout-text">
+    Augmentation Evoker is a <strong>support DPS spec</strong>. Its primary value comes from buffing allies with Ebon Might (+8% primary stat to all DPS) and Prescience (crit buff on 2 targets), not from personal damage. Raw DPS numbers will always appear lower than pure DPS specs. The real contribution is the damage amplification provided to the entire raid. Top-ranked Mythic Crown kills show Aug Evokers at 96-103K DPS on full-length kills. During prog, where pulls end at varying points in the fight cycle, per-pull DPS varies significantly based on where cooldowns land relative to the wipe.
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <div class="section-title">Performance Across All Pulls</div>
+
+  <div style="position: relative; margin-bottom: 24px;">
+    <div class="chart-container" id="dps-chart"></div>
+    <div class="chart-labels" id="dps-labels"></div>
+  </div>
+
+  <script>
+    const pullData = [
+      { fight: 1, dps: 200096, dur: 300, actionable: false },
+      { fight: 2, dps: 153682, dur: 414, actionable: false },
+      { fight: 3, dps: 274847, dur: 111, actionable: false },
+      { fight: 5, dps: 246292, dur: 111, actionable: false },
+      { fight: 6, dps: 163144, dur: 423, actionable: false },
+      { fight: 8, dps: 221127, dur: 72, actionable: false },
+      { fight: 12, dps: 326866, dur: 130, actionable: false },
+      { fight: 13, dps: 248918, dur: 82, actionable: false },
+      { fight: 14, dps: 169325, dur: 433, actionable: false },
+      { fight: 17, dps: 150548, dur: 418, actionable: false },
+      { fight: 18, dps: 197259, dur: 306, actionable: false },
+      { fight: 19, dps: 204903, dur: 79, actionable: false },
+      { fight: 21, dps: 270085, dur: 91, actionable: false },
+      { fight: 22, dps: 181587, dur: 78, actionable: true },
+      { fight: 23, dps: 195287, dur: 314, actionable: false },
+      { fight: 24, dps: 189995, dur: 337, actionable: false },
+      { fight: 26, dps: 161173, dur: 418, actionable: false },
+      { fight: 27, dps: 169687, dur: 336, actionable: false },
+      { fight: 28, dps: 149776, dur: 419, actionable: false }
+    ];
+
+    const maxDps = Math.max(...pullData.map(p => p.dps));
+    const avgDps = 203926;
+    const chart = document.getElementById('dps-chart');
+    const labels = document.getElementById('dps-labels');
+
+    const avgPct = (avgDps / maxDps) * 100;
+    const avgLine = document.createElement('div');
+    avgLine.className = 'avg-line';
+    avgLine.style.bottom = avgPct + '%';
+    avgLine.innerHTML = '<span class="avg-line-label">Avg: 204K</span>';
+    chart.appendChild(avgLine);
+
+    pullData.forEach(p => {
+      const pct = (p.dps / maxDps) * 100;
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.style.height = pct + '%';
+
+      if (p.actionable) {
+        bar.style.background = 'var(--red)';
+      } else if (p.dur > 300) {
+        bar.style.background = 'var(--accent)';
+      } else if (p.dur > 120) {
+        bar.style.background = 'var(--evoker)';
+      } else {
+        bar.style.background = 'var(--dim)';
+      }
+
+      const durMin = Math.floor(p.dur / 60);
+      const durSec = String(p.dur % 60).padStart(2, '0');
+      bar.innerHTML = '<div class="tooltip">Fight ' + p.fight + '<br>' +
+        (p.dps/1000).toFixed(1) + 'K DPS<br>' + durMin + ':' + durSec +
+        (p.actionable ? '<br><span style="color:var(--red)">Actionable death</span>' : '') + '</div>';
+      chart.appendChild(bar);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'chart-label';
+      lbl.textContent = p.fight;
+      labels.appendChild(lbl);
+    });
+  </script>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div> Long pull (5+ min)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--evoker);"></div> Medium pull (2-5 min)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--dim);"></div> Short pull (&lt;2 min)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--red);"></div> Actionable death</div>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <table>
+      <tr><th>Metric</th><th>Value</th><th>Context</th></tr>
+      <tr>
+        <td>Average DPS</td>
+        <td style="font-weight:700;">203,926</td>
+        <td style="color:var(--dim);">Across all 19 qualifying pulls</td>
+      </tr>
+      <tr>
+        <td>Median DPS</td>
+        <td style="font-weight:700;">195,287</td>
+        <td style="color:var(--dim);">Less skewed by short-pull burst inflation</td>
+      </tr>
+      <tr>
+        <td>Best Pull DPS</td>
+        <td style="font-weight:700; color:var(--green);">326,866</td>
+        <td style="color:var(--dim);">Fight 12 (2:10) -- P1 burst window</td>
+      </tr>
+      <tr>
+        <td>Worst Pull DPS</td>
+        <td style="font-weight:700; color:var(--red);">149,776</td>
+        <td style="color:var(--dim);">Fight 28 (6:59) -- long pull, P3 drag</td>
+      </tr>
+      <tr>
+        <td>Standard Deviation</td>
+        <td style="font-weight:700;">47,920</td>
+        <td style="color:var(--dim);">High variance -- expected for Aug across varying pull lengths</td>
+      </tr>
+      <tr>
+        <td>Long Pull Avg (5+ min)</td>
+        <td style="font-weight:700;">169,988</td>
+        <td style="color:var(--dim);">10 pulls reaching deep P2/P3</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <div class="section-title">Per-Phase Performance Breakdown</div>
+
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    This is the most important section for prog analysis. Overall DPS is misleading because it blends high P1 burst with much lower P2/P3 sustained damage. The phase breakdown reveals exactly where performance stands and where the raid is progressing.
+  </p>
+
+  <!-- Phase Reach Rate -->
+  <div class="phase-grid">
+    <div class="phase-card">
+      <div class="phase-card-name">P1: Sentinels</div>
+      <div class="phase-card-value" style="color: var(--green);">19/19</div>
+      <div class="phase-card-sub">100% reach rate</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-card-name">Intermission</div>
+      <div class="phase-card-value" style="color: var(--yellow);">11/19</div>
+      <div class="phase-card-sub">58% reach rate</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-card-name">P2: Rift</div>
+      <div class="phase-card-value" style="color: var(--yellow);">11/19</div>
+      <div class="phase-card-sub">58% reach rate</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-card-name">P3: Cosmos</div>
+      <div class="phase-card-value" style="color: var(--red);">6/19</div>
+      <div class="phase-card-sub">32% reach rate</div>
+    </div>
+  </div>
+
+  <!-- Phase Timeline Visual -->
+  <div class="phase-timeline">
+    <div class="phase-segment" style="flex: 134; background: rgba(51,147,127,0.3); border-right: 2px dashed var(--border);">P1 (0:00-2:14)</div>
+    <div class="phase-segment" style="flex: 39; background: rgba(210,153,34,0.2); border-right: 2px dashed var(--border);">Inter</div>
+    <div class="phase-segment" style="flex: 136; background: rgba(88,166,255,0.2); border-right: 2px dashed var(--border);">P2 (2:53-5:04)</div>
+    <div class="phase-segment" style="flex: 120; background: rgba(188,140,255,0.2);">P3 (5:04+)</div>
+  </div>
+
+  <!-- Per-Phase DPS Table -->
+  <table style="margin-top: 16px;">
+    <tr>
+      <th>Phase</th>
+      <th>Pulls Seen</th>
+      <th>Avg DPS</th>
+      <th>Best DPS</th>
+      <th>Worst DPS</th>
+      <th>Deaths in Phase</th>
+      <th>Top Death Cause</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-green">P1: Sentinels</span></td>
+      <td>19/19</td>
+      <td style="font-weight: 700;">308.8K</td>
+      <td style="color: var(--green);">367.0K</td>
+      <td style="color: var(--dim);">224.7K</td>
+      <td>8 <span style="color:var(--dim);">(0 actionable)</span></td>
+      <td style="color: var(--dim);">All cascade</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-yellow">Intermission</span></td>
+      <td>11/19</td>
+      <td style="font-weight: 700;">~0K</td>
+      <td style="color: var(--dim);">182</td>
+      <td style="color: var(--dim);">0</td>
+      <td>0</td>
+      <td style="color: var(--dim);">N/A</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-cyan">P2: Rift</span></td>
+      <td>11/19</td>
+      <td style="font-weight: 700;">126.4K</td>
+      <td style="color: var(--green);">131.1K</td>
+      <td style="color: var(--dim);">110.5K</td>
+      <td>5 <span style="color:var(--dim);">(0 actionable)</span></td>
+      <td style="color: var(--dim);">Simulacrum Backlash (2)</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-purple">P3: Cosmos</span></td>
+      <td>6/19</td>
+      <td style="font-weight: 700;">80.0K</td>
+      <td style="color: var(--green);">104.9K</td>
+      <td style="color: var(--dim);">56.9K</td>
+      <td>6 <span style="color:var(--dim);">(0 actionable)</span></td>
+      <td style="color: var(--dim);">Burst. Empty (2), Cosm. Barrier (2), Grav. Collapse (2)</td>
+    </tr>
+  </table>
+
+  <!-- Phase Insights -->
+  <div class="callout callout-blue" style="margin-top: 16px;">
+    <div class="callout-title" style="color: var(--accent);">Phase Performance Insights</div>
+    <div class="callout-text">
+      <strong>P1 DPS (308.8K avg) is strong and consistent.</strong> Full-length P1 averages 334.6K with a best of 367.0K. Lower P1 numbers come from sub-2-minute wipes cutting into the burst window.<br><br>
+      <strong>Intermission DPS is essentially zero</strong> -- this is correct. The Intermission is a survival phase (Stellar Emission + Silverstrike Barrage) where enemies are not targetable for meaningful DPS.<br><br>
+      <strong>P2 DPS (126.4K avg) is remarkably consistent</strong> -- only a 20.7K spread between best (131.1K) and worst (110.5K). Zinnks has a solid handle on P2 mechanics.<br><br>
+      <strong>P3 DPS (80.0K avg) has the highest variance</strong> -- ranging from 56.9K to 104.9K. Expected for a phase the raid is still learning. P3 has maximal mechanic overlap (Cosmic Radiation, Gravity Collapse, Bursting Emptiness simultaneously). The best P3 pull (fight 17, 104.9K) shows what is achievable when the raid survives cleanly.
+    </div>
+  </div>
+
+  <!-- DPS Dropoff Visualization -->
+  <div style="margin-top: 16px;">
+    <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">DPS Dropoff Across Phases</div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="flex: 1;">
+        <div style="font-size: 11px; color: var(--dim); margin-bottom: 4px;">P1: 308.8K</div>
+        <div class="bar-container"><div class="bar" style="width: 100%; background: var(--evoker);"></div></div>
+      </div>
+      <div style="font-size: 18px; color: var(--dim);">&#8594;</div>
+      <div style="flex: 1;">
+        <div style="font-size: 11px; color: var(--dim); margin-bottom: 4px;">P2: 126.4K <span style="color:var(--yellow);">(-59%)</span></div>
+        <div class="bar-container"><div class="bar" style="width: 40.9%; background: var(--accent);"></div></div>
+      </div>
+      <div style="font-size: 18px; color: var(--dim);">&#8594;</div>
+      <div style="flex: 1;">
+        <div style="font-size: 11px; color: var(--dim); margin-bottom: 4px;">P3: 80.0K <span style="color:var(--orange);">(-74%)</span></div>
+        <div class="bar-container"><div class="bar" style="width: 25.9%; background: var(--purple);"></div></div>
+      </div>
+    </div>
+    <div style="font-size: 11px; color: var(--dim); margin-top: 8px;">
+      This dropoff is largely inherent to Augmentation Evoker. P1 has burst cooldowns (Breath of Eons) and full Ebon Might uptime. P2/P3 have higher movement demands and fewer burst windows. Reference Aug kills show similar phase-to-phase dropoff patterns.
+    </div>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <div class="section-title">Death Pattern Analysis</div>
+
+  <div class="callout callout-green" style="margin-bottom: 16px;">
+    <div class="callout-title" style="color: var(--green);">1 Actionable Death in 19 Pulls</div>
+    <div class="callout-text">
+      Under the 2-death threshold rule, Zinnks was responsible for exactly <strong>1 individual death</strong> across the entire night. In fight 22, Zinnks was the <strong>first player to die</strong> in the raid (0:53 into P1) to <strong>Echoing Darkness</strong>. Every other death occurred well after the raid was already compromised (2+ dead), making them cascade/cleanup deaths, not personal failures.
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>Fight</th>
+      <th>Death Time</th>
+      <th>Phase</th>
+      <th>Killing Ability</th>
+      <th>Death # in Raid</th>
+      <th>Status</th>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td style="font-weight: 700;">22</td>
+      <td>0:53</td>
+      <td><span class="badge badge-green">P1</span></td>
+      <td style="color: var(--red);">Echoing Darkness</td>
+      <td>1st</td>
+      <td><span class="badge badge-red">ACTIONABLE</span></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>0:59</td>
+      <td><span class="badge badge-green">P1</span></td>
+      <td style="color: var(--dim);">Bursting Emptiness</td>
+      <td>4th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>1:41</td>
+      <td><span class="badge badge-green">P1</span></td>
+      <td style="color: var(--dim);">Unknown</td>
+      <td>9th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>1:12</td>
+      <td><span class="badge badge-green">P1</span></td>
+      <td style="color: var(--dim);">Unknown</td>
+      <td>17th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td>1:18</td>
+      <td><span class="badge badge-green">P1</span></td>
+      <td style="color: var(--dim);">Unknown</td>
+      <td>7th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>1:22</td>
+      <td><span class="badge badge-green">P1</span></td>
+      <td style="color: var(--dim);">Silverstrike Arrow</td>
+      <td>20th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>1:49</td>
+      <td><span class="badge badge-green">P1</span></td>
+      <td style="color: var(--dim);">Unknown</td>
+      <td>19th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>2:05</td>
+      <td><span class="badge badge-green">P1</span></td>
+      <td style="color: var(--dim);">Unknown</td>
+      <td>13th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>4:44</td>
+      <td><span class="badge badge-cyan">P2</span></td>
+      <td style="color: var(--dim);">Unknown</td>
+      <td>9th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>4:56</td>
+      <td><span class="badge badge-cyan">P2</span></td>
+      <td style="color: var(--dim);">Simulacrum Backlash</td>
+      <td>18th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>23</td>
+      <td>5:06</td>
+      <td><span class="badge badge-cyan">P2</span></td>
+      <td style="color: var(--dim);">Simulacrum Backlash</td>
+      <td>12th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>27</td>
+      <td>5:12</td>
+      <td><span class="badge badge-cyan">P2</span></td>
+      <td style="color: var(--dim);">Void Expulsion</td>
+      <td>9th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>24</td>
+      <td>5:16</td>
+      <td><span class="badge badge-cyan">P2</span></td>
+      <td style="color: var(--dim);">Grasp of Emptiness</td>
+      <td>6th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>26</td>
+      <td>6:19</td>
+      <td><span class="badge badge-purple">P3</span></td>
+      <td style="color: var(--dim);">Gravity Collapse</td>
+      <td>10th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>6:32</td>
+      <td><span class="badge badge-purple">P3</span></td>
+      <td style="color: var(--dim);">Bursting Emptiness</td>
+      <td>13th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>6:38</td>
+      <td><span class="badge badge-purple">P3</span></td>
+      <td style="color: var(--dim);">Gravity Collapse</td>
+      <td>11th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>28</td>
+      <td>6:38</td>
+      <td><span class="badge badge-purple">P3</span></td>
+      <td style="color: var(--dim);">Bursting Emptiness</td>
+      <td>11th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>6:40</td>
+      <td><span class="badge badge-purple">P3</span></td>
+      <td style="color: var(--dim);">Cosmic Barrier</td>
+      <td>15th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>7:03</td>
+      <td><span class="badge badge-purple">P3</span></td>
+      <td style="color: var(--dim);">Cosmic Barrier</td>
+      <td>18th</td>
+      <td><span class="badge badge-green">Cascade</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- Cast Profile -->
+<div class="section">
+  <div class="section-title">Cast Profile -- Fight 14 (Best Pull, 7:12)</div>
+
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Cast breakdown from the longest pull of the night. Total 301 casts in 7:12 = 41.8 CPM. For Augmentation Evoker, the rotational core is Eruption (Essence Burst procs), empowered spells (Fire Breath, Upheaval) to extend Ebon Might, Living Flame as filler, and Prescience management on high-damage targets.
+  </p>
+
+  <table>
+    <tr>
+      <th>Ability</th>
+      <th>Casts</th>
+      <th>CPM</th>
+      <th>Role</th>
+      <th style="width: 35%;">Usage</th>
+    </tr>
+    <tr>
+      <td style="font-weight: 600; color: var(--evoker);">Eruption</td>
+      <td>110</td>
+      <td>15.3</td>
+      <td><span class="badge badge-green">Core DPS</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 100%; background: var(--evoker);"></div><div class="bar-label">110</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Living Flame</td>
+      <td>51</td>
+      <td>7.1</td>
+      <td><span class="badge badge-yellow">Filler</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 46.4%; background: var(--yellow);"></div><div class="bar-label">51</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600; color: var(--accent);">Prescience</td>
+      <td>36</td>
+      <td>5.0</td>
+      <td><span class="badge badge-cyan">Buff</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 32.7%; background: var(--cyan);"></div><div class="bar-label">36</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Hover</td>
+      <td>23</td>
+      <td>3.2</td>
+      <td><span class="badge badge-purple">Mobility</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 20.9%; background: var(--purple);"></div><div class="bar-label">23</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Upheaval</td>
+      <td>16</td>
+      <td>2.2</td>
+      <td><span class="badge badge-green">Empower</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 14.5%; background: var(--evoker);"></div><div class="bar-label">16</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Fire Breath</td>
+      <td>15</td>
+      <td>2.1</td>
+      <td><span class="badge badge-green">Empower</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 13.6%; background: var(--evoker);"></div><div class="bar-label">15</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600; color: var(--accent);">Ebon Might</td>
+      <td>12</td>
+      <td>1.7</td>
+      <td><span class="badge badge-cyan">Buff</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 10.9%; background: var(--cyan);"></div><div class="bar-label">12</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Azure Strike</td>
+      <td>6</td>
+      <td>0.8</td>
+      <td><span class="badge badge-yellow">Filler</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 5.5%; background: var(--yellow);"></div><div class="bar-label">6</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600; color: var(--purple);">Breath of Eons</td>
+      <td>5</td>
+      <td>0.7</td>
+      <td><span class="badge badge-purple">Major CD</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 4.5%; background: var(--purple);"></div><div class="bar-label">5</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Obsidian Scales</td>
+      <td>6</td>
+      <td>0.8</td>
+      <td><span class="badge badge-red">Defensive</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 5.5%; background: var(--orange);"></div><div class="bar-label">6</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Zephyr</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td><span class="badge badge-red">Raid Utility</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 2.7%; background: var(--orange);"></div><div class="bar-label">3</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Tip the Scales</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td><span class="badge badge-purple">CD</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 2.7%; background: var(--purple);"></div><div class="bar-label">3</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Time Spiral</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td><span class="badge badge-cyan">Utility</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 2.7%; background: var(--cyan);"></div><div class="bar-label">3</div></div></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Rescue</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td><span class="badge badge-cyan">Utility</span></td>
+      <td><div class="bar-container"><div class="bar" style="width: 1.8%; background: var(--cyan);"></div><div class="bar-label">2</div></div></td>
+    </tr>
+  </table>
+
+  <div class="callout callout-blue" style="margin-top: 16px;">
+    <div class="callout-title" style="color: var(--accent);">Cast Profile Assessment</div>
+    <div class="callout-text">
+      <strong>Eruption at 15.3 CPM</strong> is the primary damage ability and Ebon Might extender via Essence Burst procs. Solid usage.<br>
+      <strong>Fire Breath (15) + Upheaval (16) = 31 empowered casts</strong> across 7:12. These extend Ebon Might and are the spec's core mechanic. 4.3 combined CPM is reasonable for a fight with this much movement.<br>
+      <strong>Prescience (36 casts, 5.0 CPM)</strong> -- active buff management on top DPS targets.<br>
+      <strong>Ebon Might (12 casts)</strong> -- roughly one re-application every 36s, maintaining the raid-wide buff.<br>
+      <strong>Hover (23 casts, 3.2 CPM)</strong> -- strong mobility usage, critical for casting while handling Crown mechanics.<br>
+      <strong>Obsidian Scales (6) + Zephyr (3)</strong> -- active defensive usage contributing to the strong survival record.<br>
+      <strong>Healthstone + Health Potion</strong> both used -- good consumable discipline.
+    </div>
+  </div>
+</div>
+
+<!-- Damage Taken -->
+<div class="section">
+  <div class="section-title">Damage Taken Profile -- Fight 14</div>
+
+  <table>
+    <tr>
+      <th>Ability</th>
+      <th>Total Damage</th>
+      <th>Hits</th>
+      <th>Absorbed</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Voidstalker Sting</td>
+      <td>3.58M</td>
+      <td>183</td>
+      <td style="color: var(--green);">1.11M (31%)</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Echoing Darkness</td>
+      <td>2.34M</td>
+      <td>117</td>
+      <td style="color: var(--green);">624K (27%)</td>
+      <td><span class="badge badge-yellow">Partially Avoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Void Expulsion</td>
+      <td>1.47M</td>
+      <td>38</td>
+      <td style="color: var(--green);">113K (8%)</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Simulacrum Backlash</td>
+      <td>1.19M</td>
+      <td>47</td>
+      <td style="color: var(--green);">286K (24%)</td>
+      <td><span class="badge badge-red">Avoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Gravity Collapse</td>
+      <td>1.02M</td>
+      <td>9</td>
+      <td style="color: var(--green);">356K (35%)</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Cosmic Barrier</td>
+      <td>865K</td>
+      <td>66</td>
+      <td style="color: var(--green);">570K (66%)</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Grasp of Emptiness</td>
+      <td>633K</td>
+      <td>20</td>
+      <td style="color: var(--green);">171K (27%)</td>
+      <td><span class="badge badge-red">Avoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Stretch Time</td>
+      <td>558K</td>
+      <td>53</td>
+      <td style="color: var(--green);">120K (21%)</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Stellar Emission</td>
+      <td>478K</td>
+      <td>15</td>
+      <td style="color: var(--green);">85K (18%)</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Void Barrage</td>
+      <td>404K</td>
+      <td>7</td>
+      <td style="color: var(--green);">152K (38%)</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Cosmic Radiation</td>
+      <td>400K</td>
+      <td>15</td>
+      <td>0</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Silverstrike Ricochet</td>
+      <td>285K</td>
+      <td>3</td>
+      <td style="color: var(--green);">18K</td>
+      <td><span class="badge badge-yellow">Unavoidable</span></td>
+    </tr>
+  </table>
+
+  <div style="font-size: 12px; color: var(--dim); margin-top: 12px;">
+    <strong>Simulacrum Backlash (47 hits, 1.19M)</strong> and <strong>Grasp of Emptiness (20 hits, 633K)</strong> are the two avoidable damage sources. Some Backlash hits during P2 Simulacrum phases are expected from proximity, but minimizing these through better positioning would reduce healing pressure. Obsidian Scales and Zephyr usage shows active mitigation throughout.
+  </div>
+</div>
+
+<!-- Consistency Analysis -->
+<div class="section">
+  <div class="section-title">Consistency Analysis</div>
+
+  <div class="two-col">
+    <div>
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Session Trend</div>
+      <div class="stat-row">
+        <span class="stat-label">Early pulls (1-10) avg DPS</span>
+        <span class="stat-value">215,485</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Late pulls (11-19) avg DPS</span>
+        <span class="stat-value">191,084</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Change</span>
+        <span class="stat-value" style="color: var(--yellow);">-11.3%</span>
+      </div>
+      <div style="font-size: 11px; color: var(--dim); margin-top: 8px;">
+        The late-session dropoff is misleading. Early pulls include more short wipes (P1 burst inflation), while late pulls tend to be longer (reaching P2/P3 where DPS is naturally lower). This is a pull-duration artifact, not fatigue.
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">By Pull Length</div>
+      <div class="stat-row">
+        <span class="stat-label">Short pulls (&lt;2 min)</span>
+        <span class="stat-value">246,775 avg</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Medium pulls (2-5 min)</span>
+        <span class="stat-value">~197K avg</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Long pulls (5+ min)</span>
+        <span class="stat-value">~164K avg</span>
+      </div>
+      <div style="font-size: 11px; color: var(--dim); margin-top: 8px;">
+        DPS naturally decreases with pull length for Augmentation Evoker. P1 burst cooldowns inflate short pulls. Long pulls include low-damage P2/P3 phases where the spec contributes more through buffing than direct damage.
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Best 5 vs Worst 5 Pulls</div>
+    <div class="two-col">
+      <div>
+        <table>
+          <tr><th colspan="3" style="color: var(--green);">Best 5 Pulls</th></tr>
+          <tr>
+            <td>Fight 12</td>
+            <td style="font-weight: 700; color: var(--green);">326,866</td>
+            <td style="color: var(--dim);">2:10 -- P1 only</td>
+          </tr>
+          <tr>
+            <td>Fight 3</td>
+            <td style="font-weight: 700; color: var(--green);">274,847</td>
+            <td style="color: var(--dim);">1:51 -- P1 only</td>
+          </tr>
+          <tr>
+            <td>Fight 21</td>
+            <td style="font-weight: 700; color: var(--green);">270,085</td>
+            <td style="color: var(--dim);">1:31 -- P1 only</td>
+          </tr>
+          <tr>
+            <td>Fight 13</td>
+            <td style="font-weight: 700; color: var(--green);">248,918</td>
+            <td style="color: var(--dim);">1:22 -- P1 only</td>
+          </tr>
+          <tr>
+            <td>Fight 5</td>
+            <td style="font-weight: 700; color: var(--green);">246,292</td>
+            <td style="color: var(--dim);">1:51 -- P1 only</td>
+          </tr>
+        </table>
+      </div>
+      <div>
+        <table>
+          <tr><th colspan="3" style="color: var(--red);">Worst 5 Pulls</th></tr>
+          <tr>
+            <td>Fight 6</td>
+            <td style="font-weight: 700; color: var(--red);">163,144</td>
+            <td style="color: var(--dim);">7:03 -- deep P3</td>
+          </tr>
+          <tr>
+            <td>Fight 26</td>
+            <td style="font-weight: 700; color: var(--red);">161,173</td>
+            <td style="color: var(--dim);">6:58 -- deep P3</td>
+          </tr>
+          <tr>
+            <td>Fight 2</td>
+            <td style="font-weight: 700; color: var(--red);">153,682</td>
+            <td style="color: var(--dim);">6:54 -- deep P3</td>
+          </tr>
+          <tr>
+            <td>Fight 17</td>
+            <td style="font-weight: 700; color: var(--red);">150,548</td>
+            <td style="color: var(--dim);">6:58 -- deep P3</td>
+          </tr>
+          <tr>
+            <td>Fight 28</td>
+            <td style="font-weight: 700; color: var(--red);">149,776</td>
+            <td style="color: var(--dim);">6:59 -- deep P3</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+      The pattern is clear: best pulls are short (P1 burst only), worst pulls are deep into P3. This is not a performance issue -- it is the natural Aug Evoker damage profile. The "worst" pulls are actually the team's best pulls by progression metric (pull duration).
+    </div>
+  </div>
+</div>
+
+<!-- Consumables & Buffs -->
+<div class="section">
+  <div class="section-title">Consumables &amp; Buffs</div>
+
+  <div class="two-col">
+    <div>
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Consumables (Fight 14)</div>
+      <div class="stat-row">
+        <span class="stat-label">Flask</span>
+        <span class="stat-value" style="color: var(--green);">Flask of the Blood Knights</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Food</span>
+        <span class="stat-value" style="color: var(--green);">Hearty Well Fed</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Vantus Rune</span>
+        <span class="stat-value" style="color: var(--green);">Crown of the Cosmos</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Healthstone</span>
+        <span class="stat-value" style="color: var(--green);">Used (1)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Health Potion</span>
+        <span class="stat-value" style="color: var(--green);">Used (1)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Weapon Enchant</span>
+        <span class="stat-value" style="color: var(--green);">Applied</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Raid Buffs Active</div>
+      <div class="stat-row">
+        <span class="stat-label">Battle Shout</span>
+        <span class="stat-value" style="color: var(--green);">Active</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Power Word: Fortitude</span>
+        <span class="stat-value" style="color: var(--green);">Active</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Arcane Intellect</span>
+        <span class="stat-value" style="color: var(--green);">Active</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Mark of the Wild</span>
+        <span class="stat-value" style="color: var(--green);">Active</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Skyfury</span>
+        <span class="stat-value" style="color: var(--green);">Active</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Devotion Aura</span>
+        <span class="stat-value" style="color: var(--green);">Active (x2)</span>
+      </div>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Full consumable and buff discipline. Flask, food, vantus rune, weapon enchant all present. Both survival consumables (healthstone + health potion) used during the fight.
+  </div>
+</div>
+
+<!-- Reference Context -->
+<div class="section">
+  <div class="section-title">Reference Context <span style="font-size: 12px; color: var(--dim); font-weight: 400;">(de-emphasized for prog)</span></div>
+
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Top 5 comp-matched (4-heal) Mythic Crown kills for Augmentation Evoker. These are completed kills -- reference numbers represent what is achievable after the boss is learned and the raid executes cleanly. During prog, comparison should focus on phases the player has seen, not overall DPS.
+  </p>
+
+  <table>
+    <tr>
+      <th>Rank</th>
+      <th>Player</th>
+      <th>Guild</th>
+      <th>DPS</th>
+      <th>Kill Time</th>
+      <th>ilvl</th>
+      <th>Comp</th>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">1</td>
+      <td style="color: var(--purple); font-weight: 600;">Nerfs</td>
+      <td style="color: var(--dim);">Gnyev Anarkhii (EU)</td>
+      <td style="color: var(--purple); font-weight: 700;">103,213</td>
+      <td>8:11</td>
+      <td>291</td>
+      <td>4H / 14D / 2T</td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">2</td>
+      <td style="color: var(--purple); font-weight: 600;">Dlkeyvoker</td>
+      <td style="color: var(--dim);">CyaThursday (EU)</td>
+      <td style="color: var(--purple); font-weight: 700;">101,251</td>
+      <td>7:42</td>
+      <td>291</td>
+      <td>4H / 13D / 2T</td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">3</td>
+      <td style="color: var(--purple); font-weight: 600;">FP</td>
+      <td style="color: var(--dim);">Gnyev Anarkhii (EU)</td>
+      <td style="color: var(--purple); font-weight: 700;">100,738</td>
+      <td>7:25</td>
+      <td>290</td>
+      <td>4H / 14D / 2T</td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">4</td>
+      <td style="color: var(--purple); font-weight: 600;">Jeffdragon</td>
+      <td style="color: var(--dim);">Vibrant (US)</td>
+      <td style="color: var(--purple); font-weight: 700;">100,536</td>
+      <td>7:09</td>
+      <td>292</td>
+      <td>4H / 14D / 2T</td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">5</td>
+      <td style="color: var(--purple); font-weight: 600;">Sandragorik</td>
+      <td style="color: var(--dim);">Gnyev Anarkhii (EU)</td>
+      <td style="color: var(--purple); font-weight: 700;">99,550</td>
+      <td>7:04</td>
+      <td>291</td>
+      <td>4H / 14D / 2T</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-yellow" style="margin-top: 16px;">
+    <div class="callout-title" style="color: var(--yellow);">Reference Comparison Note</div>
+    <div class="callout-text">
+      Top-ranked kills average <strong>101K DPS</strong> over full 7-8 minute fights. Zinnks' longest pulls (7+ minutes) average <strong>~160K DPS</strong> overall, which is actually higher than these reference kills. This seems counterintuitive but makes sense: reference kills are completed fights where the boss is pushed through to execution, while prog wipes often end during active damage phases rather than clean execution windows.
+      <br><br>
+      <strong>What matters during prog is not matching reference overall DPS -- it is surviving mechanics, maintaining buff uptime, and supporting the raid through difficult transitions.</strong> On all three metrics, Zinnks is performing well. The item level (291) matches the reference bracket (290-292), so there is no gear disadvantage.
+    </div>
+  </div>
+</div>
+
+<!-- Defensive Usage -->
+<div class="section">
+  <div class="section-title">Defensive &amp; Utility Usage (Fight 14)</div>
+
+  <table>
+    <tr>
+      <th>Ability</th>
+      <th>Uses</th>
+      <th>Cooldown</th>
+      <th>Assessment</th>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Obsidian Scales</td>
+      <td>6</td>
+      <td>~1.5 min</td>
+      <td><span class="badge badge-green">Good</span> -- 6 uses in 7:12 = near-maximum usage</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Zephyr</td>
+      <td>3</td>
+      <td>2 min</td>
+      <td><span class="badge badge-green">Good</span> -- maximum possible uses, contributing raid-wide DR</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Time Spiral</td>
+      <td>3</td>
+      <td>2 min</td>
+      <td><span class="badge badge-green">Good</span> -- giving raid members extra mobility CDs</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Rescue</td>
+      <td>2</td>
+      <td>1 min</td>
+      <td><span class="badge badge-green">Good</span> -- saving teammates from mechanics</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Hover</td>
+      <td>23</td>
+      <td>~25s (2 charges)</td>
+      <td><span class="badge badge-green">Excellent</span> -- heavy use for casting while moving</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Emerald Blossom</td>
+      <td>1</td>
+      <td>N/A</td>
+      <td><span class="badge badge-yellow">Situational</span> -- emergency self-heal</td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Healthstone</td>
+      <td>1</td>
+      <td>N/A</td>
+      <td><span class="badge badge-green">Used</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Silvermoon Health Potion</td>
+      <td>1</td>
+      <td>N/A</td>
+      <td><span class="badge badge-green">Used</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight: 600;">Quell (Interrupt)</td>
+      <td>1</td>
+      <td>40s</td>
+      <td><span class="badge badge-yellow">Low usage</span> -- could be higher depending on interrupt assignments</td>
+    </tr>
+  </table>
+</div>
+
+<!-- Gear & Stats -->
+<div class="section">
+  <div class="section-title">Gear &amp; Stats</div>
+
+  <div class="two-col">
+    <div>
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Secondary Stats</div>
+      <div class="stat-row">
+        <span class="stat-label">Intellect</span>
+        <span class="stat-value">2,729</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Critical Strike</span>
+        <span class="stat-value">1,014</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Haste</span>
+        <span class="stat-value" style="color: var(--green);">1,193</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Mastery</span>
+        <span class="stat-value">362</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Versatility</span>
+        <span class="stat-value" style="color: var(--dim);">40</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Gear Notes</div>
+      <div class="stat-row">
+        <span class="stat-label">Set Pieces</span>
+        <span class="stat-value" style="color: var(--green);">4-piece (Helm/Chest/Legs/Gloves)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Highest ilvl Slots</span>
+        <span class="stat-value">298 (Boots, Ring, Trinkets, Staff)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Lowest ilvl Slots</span>
+        <span class="stat-value" style="color: var(--yellow);">276 (Shoulders)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Weapon ilvl</span>
+        <span class="stat-value">298</span>
+      </div>
+      <div style="font-size: 11px; color: var(--dim); margin-top: 8px;">
+        Stat distribution favors Haste > Crit, which aligns with current Aug Evoker priority. Versatility is notably low (40), typical for the tier. The 276 shoulders are the biggest upgrade opportunity -- 15 ilvl below average.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <div class="section-title">Actionable Items</div>
+
+  <div class="callout callout-green" style="margin-bottom: 16px;">
+    <div class="callout-title" style="color: var(--green);">1. Survival: Outstanding -- No Patterns to Fix</div>
+    <div class="callout-text">
+      18/19 pulls with no actionable deaths. The single actionable death (fight 22, Echoing Darkness at 0:53 in P1) is a one-off, not a pattern. Continue using Obsidian Scales and Zephyr proactively. Defensive usage profile is strong -- 6 Obsidian Scales and 3 Zephyr in the best pull shows active mitigation awareness.
+    </div>
+  </div>
+
+  <div class="callout callout-yellow" style="margin-bottom: 16px;">
+    <div class="callout-title" style="color: var(--yellow);">2. Reduce Simulacrum Backlash Damage (P2)</div>
+    <div class="callout-text">
+      1.19M damage from Simulacrum Backlash across 47 hits in fight 14. This is the most avoidable damage source. When Rift Simulacrums die in P2, they explode for proximity damage. Better positioning during Simulacrum kills -- backing away before the kill goes through or using Hover to reposition quickly -- would reduce total damage intake and lessen healing pressure during an already demanding phase.
+    </div>
+  </div>
+
+  <div class="callout callout-blue" style="margin-bottom: 16px;">
+    <div class="callout-title" style="color: var(--accent);">3. P3 Experience -- More Reps Needed</div>
+    <div class="callout-text">
+      Only 6/19 pulls reached P3. The P3 DPS variance is high (56.9K to 104.9K), which is expected when the raid is still learning the phase. The 104.9K pull (fight 17) shows the ceiling. More P3 reps will naturally stabilize this. Focus on understanding Cosmic Radiation positioning and Gravity Collapse timing to extend survival in P3.
+    </div>
+  </div>
+
+  <div class="callout callout-yellow" style="margin-bottom: 16px;">
+    <div class="callout-title" style="color: var(--yellow);">4. Shoulder Upgrade Priority</div>
+    <div class="callout-text">
+      The 276 shoulders are 15 ilvl below the overall average of 291. Upgrading this slot would provide a meaningful stat increase. All other gear slots are 285-298. This is the single largest gear improvement available.
+    </div>
+  </div>
+
+  <div class="callout callout-blue">
+    <div class="callout-title" style="color: var(--accent);">5. Continue Strong Utility Play</div>
+    <div class="callout-text">
+      Zephyr (3), Time Spiral (3), and Rescue (2) in the best pull show excellent support play. This is Aug Evoker's core value -- buffing the raid with Ebon Might and Prescience while providing defensive utility. Prescience at 5.0 CPM and Ebon Might at 1.7 CPM show active buff management. Continue prioritizing Prescience on the top 2 DPS in each phase.
+    </div>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div class="section">
+  <div class="section-title">Verdict</div>
+
+  <div style="font-size: 14px; line-height: 1.7;">
+    <p>
+      <strong style="color: var(--green);">Zinnks is performing well on Mythic Crown of the Cosmos.</strong> The headline stat -- dying in all 19 pulls -- is entirely misleading without the 2-death threshold context. Under that lens, Zinnks has an effective 95% survival rate with only 1 actionable death across the entire night.
+    </p>
+    <br>
+    <p>
+      The cast profile is clean: Eruption at 15.3 CPM, empowered spells used consistently to extend Ebon Might, Prescience actively managed, and Hover used aggressively for casting through mechanics. Defensive and utility usage (Obsidian Scales, Zephyr, Time Spiral, Rescue) are at or near maximum for the fight length.
+    </p>
+    <br>
+    <p>
+      The DPS numbers look lower than pure DPS specs because Augmentation Evoker's primary contribution is the +8% primary stat buff to all DPS via Ebon Might. This damage shows up on <em>other players' meters</em>, not on Zinnks'. The raw DPS comparison to reference kills is not concerning -- prog wipe DPS is not comparable to kill DPS.
+    </p>
+    <br>
+    <p>
+      <strong>Primary focus areas:</strong> Reducing Simulacrum Backlash damage through P2 positioning, getting more P3 reps to stabilize that phase, and upgrading the 276 shoulders. No rotation or survival issues to address.
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  Generated by WCL DPS Analyzer -- Data from <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">Warcraft Logs</a><br>
+  Augmentation Evoker guide reference: <a href="https://www.icy-veins.com/wow/augmentation-evoker-pve-dps-guide" target="_blank">Icy Veins</a> |
+  <a href="https://www.wowhead.com/guide/classes/evoker/augmentation/rotation-cooldowns-pve-dps" target="_blank">Wowhead</a><br>
+  Reference players: Nerfs, Dlkeyvoker, FP, Jeffdragon, Sandragorik (comp-matched 4-heal Mythic Crown kills, US/EU)<br>
+  Phase boundaries: P1 0:00-2:14, Intermission 2:14-2:53, P2 2:53-5:04, P3 5:04+
+</div>
+
+</body>
+</html>

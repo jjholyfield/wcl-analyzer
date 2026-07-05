@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dueche — Holy Paladin — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin: 2px; }
+  .cd-hpal { background: rgba(244,140,186,0.15); color: #f48cba; }
+  .cd-rsham { background: rgba(0,112,222,0.15); color: #0070de; }
+  .cd-rdruid { background: rgba(255,125,10,0.15); color: #ff7d0a; }
+  .cd-mw { background: rgba(0,255,150,0.15); color: #00ff96; }
+  .cd-dead { background: rgba(248,81,73,0.15); color: var(--red); }
+  .cd-none { background: rgba(139,148,158,0.08); color: var(--dim); }
+  .oh-bar { display: inline-block; height: 14px; border-radius: 3px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Dueche <span class="dim">&mdash; Holy Paladin</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; PROG (26 wipes, no kill) &middot; Best Pull: 0.01% &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">180.3K</div>
+    <div class="stat-label">HPS (Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">290.6</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">0.01%</div>
+    <div class="stat-label">Best Pull (Boss %)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">25.7%</div>
+    <div class="stat-label">Overheal</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 16px;">
+  <div class="card-header red">Bottom Line — Progression Context</div>
+  <p style="font-size: 15px;">Dueche is progging Crown of the Cosmos with the raid at <strong class="yellow">0.01% best boss pull</strong> across 26 attempts. On the longest pull (Fight 23, 4:52), Dueche <strong class="red">died at 4:23</strong> — dead for 10% of the pull. HPS was <strong class="yellow">180.3K</strong> over 4:23 alive. The #2 ranked Nexxey (closest talent match, 4 diffs) did <strong class="green">197.1K</strong> HPS on a 7:01 kill — a gap of <strong class="red">8.5%</strong>. However, this comparison is between a <strong>wipe pull</strong> (less total damage taken = less healing needed) and a <strong>full kill</strong> (more phases, more damage events, more healing output). Overheal is <strong class="green">25.7%</strong> (reference: 34.1%). Low overheal is expected on early prog where the raid takes heavy damage.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Holy Paladins on Mythic Crown of the Cosmos (KILLS). Primary reference: <strong>Nexxey</strong> (closest talent match at 4 diffs, 214.4K HPS, 7:01 kill). Note: references are from KILL fights — Dueche's data is from a wipe pull.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>HPS</th><th>Fight Time</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(244,140,186,0.06);">
+      <td><strong>Dueche</strong></td>
+      <td>180.3K</td>
+      <td>4:23 (wipe)</td>
+      <td>290.6</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Prog pull</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td>Palëarya <span class="ref-badge">#1</span></td>
+      <td class="green">226.7K</td>
+      <td>7:44</td>
+      <td>291.9</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Nexxey <span class="ref-badge">PRIMARY</span></td>
+      <td class="green">214.4K</td>
+      <td>7:01</td>
+      <td>291.2</td>
+      <td><span class="tag tag-same">4 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td>Nostpala <span class="ref-badge">#3</span></td>
+      <td class="green">209.9K</td>
+      <td>7:18</td>
+      <td>274.5</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td>Kthanid <span class="ref-badge">#4</span></td>
+      <td class="green">208.1K</td>
+      <td>7:22</td>
+      <td>274.5</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td>Holypros <span class="ref-badge">#5</span></td>
+      <td class="green">204.7K</td>
+      <td>7:08</td>
+      <td>291.9</td>
+      <td><span class="tag tag-same">4 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- CAST PROFILE -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Dueche (4:23 alive) vs Nexxey (7:01 kill). Sorted by Holy Paladin priority.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: transparent;">
+      <td><strong>Holy Shock</strong></td>
+      <td>71</td>
+      <td>16.1</td>
+      <td>89</td>
+      <td>12.7</td>
+      <td class="yellow">+27%</td>
+      <td><span class="tag tag-info">High</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Divine Toll</strong></td>
+      <td>7</td>
+      <td>1.6</td>
+      <td>12</td>
+      <td>1.7</td>
+      <td class="green">-7%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Light of Dawn</strong></td>
+      <td>40</td>
+      <td>9.1</td>
+      <td>88</td>
+      <td>12.5</td>
+      <td class="red">-27%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Eternal Flame</strong></td>
+      <td>24</td>
+      <td>5.5</td>
+      <td>17</td>
+      <td>2.4</td>
+      <td class="yellow">+126%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Flash of Light</strong></td>
+      <td>20</td>
+      <td>4.5</td>
+      <td>65</td>
+      <td>9.3</td>
+      <td class="red">-51%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Holy Light</strong></td>
+      <td>7</td>
+      <td>1.6</td>
+      <td>35</td>
+      <td>5.0</td>
+      <td class="red">-68%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Judgment</strong></td>
+      <td>16</td>
+      <td>3.6</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="yellow">+100%</td>
+      <td><span class="tag tag-info">Extra</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Avenging Wrath</strong></td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td>0.6</td>
+      <td class="red">-20%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Aura Mastery</strong></td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="yellow">+60%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Hammer of Wrath</strong></td>
+      <td>4</td>
+      <td>0.9</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="yellow">+100%</td>
+      <td><span class="tag tag-info">Extra</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Divine Shield</strong></td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="yellow">+60%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Blessing of Sacrifice</strong></td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="yellow">+220%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Lay on Hands</strong></td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="yellow">+100%</td>
+      <td><span class="tag tag-info">Extra</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Divine Protection</strong></td>
+      <td>4</td>
+      <td>0.9</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td class="yellow">+220%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Blessing of Freedom</strong></td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="yellow">+100%</td>
+      <td><span class="tag tag-info">Extra</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Reclamation</strong></td>
+      <td>178</td>
+      <td>40.5</td>
+      <td>245</td>
+      <td>34.9</td>
+      <td class="yellow">+16%</td>
+      <td><span class="tag tag-info">High</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Divine Steed</strong></td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td class="yellow">+60%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Beacon of Lightblind Wrath</strong></td>
+      <td>3</td>
+      <td>0.7</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="yellow">+100%</td>
+      <td><span class="tag tag-info">Extra</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Cleanse</strong></td>
+      <td>3</td>
+      <td>0.7</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="yellow">+100%</td>
+      <td><span class="tag tag-info">Extra</span></td>
+    </tr>
+    <tr style="background: transparent;">
+      <td><strong>Devotion Aura</strong></td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="red">-100%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- HEALING BREAKDOWN -->
+<h2>Healing Breakdown</h2>
+<p class="section-intro">Top healing sources by total raw output. Total effective: 47.6M (180.3K HPS). Total overheal: 25.7%.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Effective</th><th>Overheal %</th><th>Visual</th><th>Hits</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Beacon of Light</strong></td>
+      <td>8.1M</td>
+      <td class="green">33.9%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:100px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:33.91571201472435px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">1780</td>
+    </tr>
+    <tr>
+      <td><strong>Light of Dawn</strong></td>
+      <td>9.1M</td>
+      <td class="green">24.6%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:100px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:24.62177058112786px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">370</td>
+    </tr>
+    <tr>
+      <td><strong>Holy Shock</strong></td>
+      <td>8.2M</td>
+      <td class="green">28.9%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:100px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:28.938204740015625px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">176</td>
+    </tr>
+    <tr>
+      <td><strong>Litany of Lightblind Wrath</strong></td>
+      <td>4.9M</td>
+      <td class="green">0.0%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:60.03056387148924px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:1px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">389</td>
+    </tr>
+    <tr>
+      <td><strong>Eternal Flame</strong></td>
+      <td>3.2M</td>
+      <td class="green">21.8%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:39.047495617499536px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:8.512425497521468px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">225</td>
+    </tr>
+    <tr>
+      <td><strong>Flash of Light</strong></td>
+      <td>1.9M</td>
+      <td class="green">24.3%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:23.422219983710736px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:5.680562040083837px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">20</td>
+    </tr>
+    <tr>
+      <td><strong>Brought to Light</strong></td>
+      <td>1.8M</td>
+      <td class="green">22.1%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:21.768048715469764px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:4.805842454913573px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">309</td>
+    </tr>
+    <tr>
+      <td><strong>Dawnlight</strong></td>
+      <td>1.0M</td>
+      <td class="red">53.0%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:12.576013503138078px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:6.669834964157848px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">1386</td>
+    </tr>
+    <tr>
+      <td><strong>Beacon of the Savior</strong></td>
+      <td>1.7M</td>
+      <td class="green">0.0%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:20.796712172602337px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:1px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">230</td>
+    </tr>
+    <tr>
+      <td><strong>Holy Light</strong></td>
+      <td>642.0K</td>
+      <td class="red">55.2%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:7.886903847878403px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:4.3497294739839445px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">7</td>
+    </tr>
+    <tr>
+      <td><strong>Leech</strong></td>
+      <td>1.3M</td>
+      <td class="green">3.1%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:15.83418608336517px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:1px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">148</td>
+    </tr>
+    <tr>
+      <td><strong>Light of the Martyr</strong></td>
+      <td>1.3M</td>
+      <td class="green">0.0%</td>
+      <td>
+        <div style="display:flex;gap:2px;align-items:center;">
+          <span class="oh-bar" style="width:16.22920692404362px;background:var(--green);"></span>
+          <span class="oh-bar" style="width:1px;background:var(--red);opacity:0.6;"></span>
+        </div>
+      </td>
+      <td class="dim">281</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- DPS CONTRIBUTION -->
+<h2>DPS Contribution</h2>
+<p class="section-intro">Healer DPS during downtime. Holy Paladins contribute damage via Judgment, Crusader Strike, Holy Shock (on enemies), Consecration, and Hammer of Wrath.</p>
+
+<div class="grid-3">
+  <div class="card stat">
+    <div class="stat-value">9.5K</div>
+    <div class="stat-label">Player DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">536</div>
+    <div class="stat-label">Reference DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">2.5M</div>
+    <div class="stat-label">Total Damage</div>
+  </div>
+</div>
+<div class="card" style="margin-top: 12px;">
+<table>
+  <thead><tr><th>Ability</th><th>Damage</th><th>% of Total</th></tr></thead>
+  <tbody><tr><td>Judgment</td><td>951.4K</td><td>37.9%</td></tr><tr><td>Beacon of Lightblind Wrath</td><td>900.3K</td><td>35.9%</td></tr><tr><td>Hammer of Wrath</td><td>443.7K</td><td>17.7%</td></tr><tr><td>Sun's Avatar</td><td>174.0K</td><td>6.9%</td></tr><tr><td>Holy Shock</td><td>24.3K</td><td>1.0%</td></tr><tr><td>Melee</td><td>17.6K</td><td>0.7%</td></tr></tbody></table></div>
+<h2>Team CD Coordination</h2>
+<p class="section-intro">Major healing cooldowns used by each healer during Fight 23. Shows what CDs were available and when they were deployed.</p>
+
+<div class="card">
+<table>
+  <thead><tr><th>Healer</th><th>CDs Used</th></tr></thead>
+  <tbody>
+    <tr style="background: rgba(244,140,186,0.06);">
+      <td><strong>Dueche (HPal)</strong></td>
+      <td><span class="cd-pill cd-hpal">Avenging Wrath 0:03</span> <span class="cd-pill cd-hpal">Aura Mastery 1:09</span> <span class="cd-pill cd-hpal">Avenging Wrath 2:57</span></td>
+    </tr>
+    <tr style="">
+      <td><strong>Brewtote (RSham)</strong></td>
+      <td><span class="cd-pill cd-rsham">Ascendance 0:06</span> <span class="cd-pill cd-rsham">Spirit Link Totem 0:27</span> <span class="cd-pill cd-rsham">Ascendance 3:56</span></td>
+    </tr>
+    <tr style="">
+      <td><strong>Senssay (MW)</strong></td>
+      <td><span class="cd-pill cd-mw">Celestial Conduit 0:31</span> <span class="cd-pill cd-mw">Invoke Yu'lon, the Jade Serpent 1:04</span> <span class="cd-pill cd-mw">Revival 1:44</span> <span class="cd-pill cd-mw">Celestial Conduit 3:13</span> <span class="cd-pill cd-mw">Invoke Yu'lon, the Jade Serpent 3:30</span></td>
+    </tr>
+    <tr style="">
+      <td><strong>Sìlencio (RDrui)</strong></td>
+      <td><span class="cd-pill cd-rdruid">Convoke the Spirits 0:11</span> <span class="cd-pill cd-rdruid">Tranquility 0:14</span> <span class="cd-pill cd-rdruid">Convoke the Spirits 1:37</span> <span class="cd-pill cd-rdruid">Convoke the Spirits 3:01</span> <span class="cd-pill cd-rdruid">Convoke the Spirits 4:16</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Major boss abilities during Fight 23. Healing CDs should align with these damage events.</p>
+
+<div class="card">
+<table>
+  <thead><tr><th>Mechanic</th><th>Count</th><th>Timestamps</th></tr></thead>
+  <tbody><tr><td><strong>Corrupting Essence</strong></td><td>56</td><td class="dim">0:09, 0:09, 0:15, 0:16, 0:20, 0:22, 0:29, 0:30, 0:30, 0:36 (+46 more)</td></tr><tr><td><strong>Void Barrage</strong></td><td>43</td><td class="dim">3:08, 3:09, 3:11, 3:15, 3:16, 3:17, 3:20, 3:20, 3:21, 3:23 (+33 more)</td></tr><tr><td><strong>Anti-Magic Zone</strong></td><td>31</td><td class="dim">1:13, 1:13, 1:13, 1:13, 1:13, 1:13, 1:13, 1:13, 1:13, 1:13 (+21 more)</td></tr><tr><td><strong>Echoing Darkness</strong></td><td>17</td><td class="dim">0:07, 0:11, 0:13, 0:17, 0:19, 0:22, 0:24, 0:26, 0:28, 0:30 (+7 more)</td></tr><tr><td><strong>Grasp of Emptiness</strong></td><td>10</td><td class="dim">0:04, 0:28, 0:54, 1:21, 1:44, 3:04, 3:29, 3:56, 4:21, 4:48</td></tr><tr><td><strong>Voidstalker Sting</strong></td><td>10</td><td class="dim">3:03, 3:05, 3:28, 3:30, 3:55, 3:57, 4:20, 4:22, 4:47, 4:49</td></tr><tr><td><strong>Rift Slash</strong></td><td>9</td><td class="dim">2:57, 3:09, 3:21, 3:33, 3:49, 4:01, 4:13, 4:25, 4:41</td></tr><tr><td><strong>Umbral Tether</strong></td><td>9</td><td class="dim">3:02, 3:02, 3:02, 3:53, 3:54, 3:54, 4:46, 4:46, 4:46</td></tr>
+  </tbody>
+</table>
+</div>
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Dueche during Fight 23. Check for avoidable mechanics.</p>
+
+<div class="card">
+<table>
+  <thead><tr><th>Source</th><th>Total</th><th>Hits</th><th>Absorbed</th></tr></thead>
+  <tbody><tr><td>Echoing Darkness</td><td>2.9M</td><td>118</td><td>519.2K</td></tr><tr><td>Simulacrum Backlash</td><td>2.5M</td><td>83</td><td>205.9K</td></tr><tr><td>Voidstalker Sting</td><td>2.0M</td><td>75</td><td>258.8K</td></tr><tr><td>Void Remnants</td><td>1.2M</td><td>6</td><td>81.2K</td></tr><tr><td>Void Expulsion</td><td>1.1M</td><td>30</td><td>68.8K</td></tr><tr><td>Grasp of Emptiness</td><td>749.9K</td><td>14</td><td>139.5K</td></tr><tr><td>Cosmic Barrier</td><td>553.7K</td><td>21</td><td>15.5K</td></tr><tr><td>Stellar Emission</td><td>534.9K</td><td>15</td><td>40.3K</td></tr><tr><td>Blessing of Sacrifice</td><td>458.5K</td><td>30</td><td>96.6K</td></tr><tr><td>Falling</td><td>386.6K</td><td>2</td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+</div>
+<h2>Death Forensics</h2>
+<div class="card" style="border-left: 3px solid var(--red);">
+  <div class="card-header red">Died at 4:23 — Bursting Emptiness</div>
+  <p style="font-size: 14px; margin-bottom: 12px;">Dead for <strong>0:29</strong> (10% of the fight). </p>
+  <div style="font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8;">    <div><span class="dim">4:21</span> <span style="color: var(--red);">Simulacrum Backlash</span> — <strong>26.7K</strong></div>
+    <div><span class="dim">4:21</span> <span style="color: var(--red);">Simulacrum Backlash</span> — <strong>26.7K</strong></div>
+    <div><span class="dim">4:22</span> <span style="color: var(--red);">Simulacrum Backlash</span> — <strong>26.7K</strong></div>
+    <div><span class="dim">4:22</span> <span style="color: var(--red);">Voidstalker Sting</span> — <strong>46.1K</strong></div>
+    <div><span class="dim">4:22</span> <span style="color: var(--red);">Simulacrum Backlash</span> — <strong>26.7K</strong></div>
+    <div><span class="dim">4:22</span> <span style="color: var(--red);">Simulacrum Backlash</span> — <strong>26.7K</strong></div>
+    <div><span class="dim">4:23</span> <span style="color: var(--red);">Voidstalker Sting</span> — <strong>53.1K</strong></div>
+    <div><span class="dim">4:23</span> <span style="color: var(--red);">Simulacrum Backlash</span> — <strong>30.7K</strong></div>
+    <div><span class="dim">4:23</span> <span style="color: var(--red);">Simulacrum Backlash</span> — <strong>30.7K</strong></div>
+    <div><span class="dim">4:23</span> <span style="color: var(--red);">Bursting Emptiness</span> — <strong>168.6K</strong></div>
+    <div style="color: var(--red); font-weight: 700; margin-top: 4px;">&#x2620; DEAD — Bursting Emptiness</div>
+  </div>
+</div>
+<h2>Wipe Progression</h2>
+<p class="section-intro">Dueche's HPS across all 26 Crown of the Cosmos pulls. Bars colored by boss % reached: <span class="green">green</span> (&lt;10%), <span class="cyan">cyan</span> (10-30%), <span class="yellow">yellow</span> (30-50%), <span class="orange">orange</span> (50-75%), <span class="red">red</span> (&gt;75%). Labels show boss % remaining.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 10%; background: var(--red);" data-tooltip="F1: 10.9K HPS (0:27) — 99.5% boss [WIPE]">
+      <span class="prog-label">99%</span>
+    </div>
+    <div class="prog-bar" style="height: 10%; background: var(--orange);" data-tooltip="F2: 13.3K HPS (1:03) — 52.0% boss [EARLY DEATH]">
+      <span class="prog-label">52%</span>
+    </div>
+    <div class="prog-bar" style="height: 55.29135761510936%; background: var(--orange);" data-tooltip="F3: 116.7K HPS (1:57) — 54.8% boss [EARLY DEATH]">
+      <span class="prog-label">55%</span>
+    </div>
+    <div class="prog-bar" style="height: 67.64473091779426%; background: var(--orange);" data-tooltip="F4: 142.7K HPS (1:15) — 54.6% boss [EARLY DEATH]">
+      <span class="prog-label">55%</span>
+    </div>
+    <div class="prog-bar" style="height: 87.83667859427948%; background: var(--orange);" data-tooltip="F5: 185.3K HPS (0:59) — 74.0% boss [WIPE]">
+      <span class="prog-label">74%</span>
+    </div>
+    <div class="prog-bar" style="height: 72.8988838598071%; background: var(--cyan);" data-tooltip="F6: 153.8K HPS (2:23) — 19.5% boss [EARLY DEATH]">
+      <span class="prog-label">19%</span>
+    </div>
+    <div class="prog-bar" style="height: 75.22595322164032%; background: var(--yellow);" data-tooltip="F7: 158.7K HPS (1:29) — 41.7% boss [EARLY DEATH]">
+      <span class="prog-label">42%</span>
+    </div>
+    <div class="prog-bar" style="height: 57.87767482641769%; background: var(--green);" data-tooltip="F8: 122.1K HPS (2:22) — 0.0% boss [EARLY DEATH]">
+      <span class="prog-label">0.0%</span>
+    </div>
+    <div class="prog-bar" style="height: 46.36413185146567%; background: var(--green);" data-tooltip="F9: 97.8K HPS (2:32) — 7.3% boss [EARLY DEATH]">
+      <span class="prog-label">7.3%</span>
+    </div>
+    <div class="prog-bar" style="height: 86.65323822839403%; background: var(--red);" data-tooltip="F10: 182.8K HPS (3:39) — 98.4% boss [WIPE]">
+      <span class="prog-label">98%</span>
+    </div>
+    <div class="prog-bar" style="height: 96.59044053176615%; background: var(--yellow);" data-tooltip="F11: 203.8K HPS (2:02) — 30.3% boss [WIPE]">
+      <span class="prog-label">30%</span>
+    </div>
+    <div class="prog-bar" style="height: 67.98739306618641%; background: var(--red);" data-tooltip="F12: 143.4K HPS (3:53) — 92.1% boss [WIPE]">
+      <span class="prog-label">92%</span>
+    </div>
+    <div class="prog-bar" style="height: 94.07853266665087%; background: var(--orange);" data-tooltip="F13: 198.5K HPS (1:15) — 60.8% boss [EARLY DEATH]">
+      <span class="prog-label">61%</span>
+    </div>
+    <div class="prog-bar" style="height: 47.377899950235786%; background: var(--red);" data-tooltip="F14: 100.0K HPS (3:51) — 95.3% boss [EARLY DEATH]">
+      <span class="prog-label">95%</span>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F15: 211.0K HPS (2:29) — 9.1% boss [WIPE]">
+      <span class="prog-label">9.1%</span>
+    </div>
+    <div class="prog-bar" style="height: 71.25239934595606%; background: var(--cyan);" data-tooltip="F16: 150.3K HPS (2:09) — 21.2% boss [EARLY DEATH]">
+      <span class="prog-label">21%</span>
+    </div>
+    <div class="prog-bar" style="height: 94.48565131875164%; background: var(--green);" data-tooltip="F17: 199.4K HPS (2:24) — 0.0% boss [EARLY DEATH]">
+      <span class="prog-label">0.0%</span>
+    </div>
+    <div class="prog-bar" style="height: 85.27026706794%; background: var(--red);" data-tooltip="F18: 179.9K HPS (3:55) — 95.7% boss [EARLY DEATH]">
+      <span class="prog-label">96%</span>
+    </div>
+    <div class="prog-bar" style="height: 81.20050238157303%; background: var(--yellow);" data-tooltip="F19: 171.3K HPS (1:53) — 34.5% boss [WIPE]">
+      <span class="prog-label">35%</span>
+    </div>
+    <div class="prog-bar" style="height: 84.09061826109624%; background: var(--yellow);" data-tooltip="F20: 177.4K HPS (2:00) — 35.4% boss [EARLY DEATH]">
+      <span class="prog-label">35%</span>
+    </div>
+    <div class="prog-bar" style="height: 67.84047015332116%; background: var(--green);" data-tooltip="F21: 143.1K HPS (2:26) — 0.2% boss [EARLY DEATH]">
+      <span class="prog-label">0.2%</span>
+    </div>
+    <div class="prog-bar" style="height: 10%; background: var(--red);" data-tooltip="F22: 11.4K HPS (0:25) — 99.7% boss [EARLY DEATH]">
+      <span class="prog-label">100%</span>
+    </div>
+    <div class="prog-bar" style="height: 82.92850541482025%; background: var(--red);" data-tooltip="F23: 175.0K HPS (4:52) — 77.3% boss [WIPE]">
+      <span class="prog-label">77%</span>
+    </div>
+    <div class="prog-bar" style="height: 64.52096021232731%; background: var(--red);" data-tooltip="F24: 136.1K HPS (3:49) — 92.9% boss [EARLY DEATH]">
+      <span class="prog-label">93%</span>
+    </div>
+    <div class="prog-bar" style="height: 67.6376217445911%; background: var(--red);" data-tooltip="F25: 142.7K HPS (3:07) — 99.9% boss [EARLY DEATH]">
+      <span class="prog-label">100%</span>
+    </div>
+    <div class="prog-bar" style="height: 68.11488423896301%; background: var(--red);" data-tooltip="F26: 143.7K HPS (3:40) — 96.9% boss [EARLY DEATH]">
+      <span class="prog-label">97%</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 20px 4px 0;">
+    <span>Fight 1</span>
+    <span><span class="green">Near-kill</span> &bull; <span class="cyan">Deep prog</span> &bull; <span class="yellow">Mid prog</span> &bull; <span class="orange">Early wipe</span> &bull; <span class="red">Quick wipe</span></span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Filtering to pulls longer than 2 minutes (17 meaningful pulls): average HPS is <strong>156.6K</strong>. Early pulls averaged <strong>124.6K</strong>, later pulls averaged <strong>140.9K</strong> — the trend is <strong class="green">improving</strong>. The raid reached sub-10% boss HP on <strong>5 pulls</strong> (F8: 0.0%, F9: 7.3%, F15: 9.1%, F17: 0.0%, F21: 0.2%). Kill is close.</p>
+</div>
+<h2>Healer Team Ranking (Fight 23)</h2>
+<p class="section-intro">All healers on the longest pull (4:52). This is a wipe pull — raw HPS numbers are lower than a full kill due to fewer damage events.</p>
+
+<div class="card">
+<table>
+  <thead><tr><th>#</th><th>Name</th><th>Spec</th><th>Total Healing</th><th>HPS</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr style="background: rgba(244,140,186,0.06);">
+      <td>1</td>
+      <td><strong>Dueche</strong></td>
+      <td>Paladin Holy</td>
+      <td>51.3M</td>
+      <td>175.0K</td>
+      <td><span class="tag tag-diff">Died</span></td>
+    </tr>
+    <tr style="">
+      <td>2</td>
+      <td><strong>Senssay</strong></td>
+      <td>Monk Mistweaver</td>
+      <td>47.1M</td>
+      <td>160.8K</td>
+      <td><span class="tag tag-diff">Died</span></td>
+    </tr>
+    <tr style="">
+      <td>3</td>
+      <td><strong>Brewtote</strong></td>
+      <td>Shaman Restoration</td>
+      <td>41.0M</td>
+      <td>139.9K</td>
+      <td><span class="tag tag-diff">Died</span></td>
+    </tr>
+    <tr style="">
+      <td>4</td>
+      <td><strong>Sìlencio</strong></td>
+      <td>Druid Restoration</td>
+      <td>37.4M</td>
+      <td>127.5K</td>
+      <td><span class="tag tag-diff">Died</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2>Stats Comparison</h2>
+<div class="card">
+<table>
+  <thead><tr><th>Stat</th><th>Dueche</th><th>Nexxey</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Item Level</strong></td><td>290.6</td><td>291.2</td><td><span class="tag tag-same">-0.6 diff</span></td></tr>
+    <tr><td>Intellect</td><td>2688</td><td>2556</td><td><span class="green">Higher</span></td></tr>
+    <tr><td>Crit</td><td>508</td><td>809</td><td>Player lower</td></tr>
+    <tr><td>Haste</td><td>799</td><td>699</td><td><span class="green">Player higher</span></td></tr>
+    <tr><td>Mastery</td><td>1258</td><td>1355</td><td>Similar</td></tr>
+    <tr><td>Versatility</td><td>101</td><td>55</td><td class="dim">Both low</td></tr>
+    <tr><td>Leech</td><td>302</td><td>373</td><td class="dim">Self-sustain</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Dueche has <strong>more Haste</strong> (799 vs 699) and <strong>less Mastery</strong> (1258 vs 1355). For Holy Paladin, Haste affects GCD speed and Holy Shock cooldown reduction (via Crusader's Might), while Mastery (Mastery: Lightbringer) increases healing to targets near the Paladin. Higher Haste should translate to more casts per minute — look at CPM deltas to see if that advantage is being realized.</p>
+<h2>Actionable Items</h2>
+<div class="action-item ">
+  <strong>1. Light of Dawn — Holy Power Spending</strong>
+  <p style="font-size: 14px; margin-top: 4px;">Light of Dawn at <strong>40 casts (9.1 CPM)</strong> vs reference <strong>88 casts (12.5 CPM)</strong>. This is the primary Holy Power spender for raid healing. Lower Light of Dawn means either wasted Holy Power (capping at 5) or spending on Word of Glory for single-target. In raid, Light of Dawn should be the default spend unless a specific target needs emergency healing.</p>
+</div>
+<div class="action-item ">
+  <strong>2. Flash of Light — Infusion of Light Procs</strong>
+  <p style="font-size: 14px; margin-top: 4px;">Flash of Light at <strong>20 casts (4.5 CPM)</strong> vs reference <strong>65 casts (9.3 CPM)</strong>. Infusion of Light procs from Holy Shock make Flash of Light instant cast. If Flash of Light is low while Holy Shock is on pace, Infusion procs may be expiring unused. These are free throughput windows — use every IoL proc for an instant Flash of Light or Holy Light.</p>
+</div>
+<div class="action-item critical">
+  <strong>3. Survivability — Dying Early in 18/26 Pulls</strong>
+  <p style="font-size: 14px; margin-top: 4px;">On Fight 23, Dueche died at <strong class="red">4:23</strong> to <strong>Bursting Emptiness</strong>, missing the last <strong>0:29</strong>. Across all 26 pulls, Dueche died <strong>before the wipe</strong> in <strong class="red">18 of 26 fights</strong> (69%). As a healer, early deaths cost the raid disproportionately — the remaining healers must cover throughput while handling escalating damage. Map personal defensives (Divine Shield, Blessing of Protection, Divine Protection) to known lethal mechanics. This is the single biggest area for improvement — surviving longer means more healing output, which gets the raid closer to the kill.</p>
+</div>
+<div class="action-item">
+  <strong>4. Prog Context — Kill Is Close</strong>
+  <p style="font-size: 14px; margin-top: 4px;">The raid has reached <strong class="cyan">0.01% boss</strong> on their best pulls. Crown of the Cosmos is a 3-phase fight (Sentinels, Rift Simulacrum, Devouring Cosmos) — the team is seeing all phases. HPS comparisons to ranked kills should be viewed with context: kills involve more total damage events across the full fight, naturally inflating HPS numbers. As the raid cleans up mechanics and survives deeper into the fight, Dueche's HPS will naturally increase. Focus on rotation fundamentals (Holy Shock on CD, Divine Toll on CD, never cap Holy Power) and the kill will come.</p>
+</div>
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Gearing:</strong> Item level 290.6 is competitive with the top-ranked players (291.9, 291.2, 274.5, 274.5, 291.9). Gear is not a limiting factor.<br><br>
+    <strong>Consumables:</strong> Flask of the Blood Knights, Vantus Rune, Hearty Well Fed, and Devotion Aura all active. Properly prepared for prog.<br><br>
+    <strong>Tier Set:</strong> 4/5 tier pieces equipped (set ID 1985). Has 4-piece bonus active.<br><br>
+    <strong>Trinkets:</strong> Running raid trinkets at ilvl 298. Proper best-in-slot choices for Holy Paladin.
+  </p>
+</div>
+
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (longest pull, 4:52, 77.31% boss). Best pull: Fight 8 (0.01% boss). This is PROGRESSION data — 26 wipes, no kill. Reference: Nexxey (#2 ranked Holy Paladin, report <code>pRtrJnv4bQP6Z7mc</code>, Fight 46, 7:01 KILL, 4 talent diffs).</p>
+  <p style="margin-top: 4px;">HPS comparisons between wipe pulls and kills are inherently skewed — kills have more total damage events and thus more healing throughput. The analysis focuses on rotation execution (CPM deltas) and ability usage patterns rather than raw HPS comparison.</p>
+  <p style="margin-top: 8px; color: var(--dim);">Generated by WCL Analyzer &middot; 2026-06-19</p>
+</div>
+
+</body>
+</html>

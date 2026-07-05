@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orichamaru (Demonology Warlock) - Mythic Rotmire - June 23, 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --warlock: #8788ee;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+
+/* Header */
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--warlock); }
+.header .subtitle { font-size: 14px; color: var(--dim); }
+.header .kill-badge { display: inline-block; background: var(--green); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+
+/* Cards */
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.card .label { font-size: 11px; text-transform: uppercase; color: var(--dim); letter-spacing: 1px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* Sections */
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88, 166, 255, 0.04); }
+.highlight-row { background: rgba(88, 166, 255, 0.06); }
+.primary-ref { background: rgba(188, 140, 255, 0.08); }
+
+/* Badges */
+.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 3px; }
+.badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge-purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+.badge-blue { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+.badge-dim { background: rgba(139, 148, 158, 0.15); color: var(--dim); }
+
+/* CPS Bar */
+.cps-bar-container { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.cps-bar { height: 8px; border-radius: 4px; min-width: 2px; }
+.cps-bar.player { background: var(--warlock); }
+.cps-bar.ref { background: var(--purple); opacity: 0.5; }
+.cps-label { font-size: 11px; color: var(--dim); min-width: 50px; }
+
+/* Timeline */
+.timeline-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; overflow-x: auto; margin-bottom: 16px; }
+.timeline-row { display: flex; align-items: center; margin-bottom: 8px; min-height: 28px; }
+.timeline-label { width: 140px; flex-shrink: 0; font-size: 12px; color: var(--dim); font-weight: 500; }
+.timeline-track { flex: 1; position: relative; height: 24px; background: rgba(48, 54, 61, 0.3); border-radius: 4px; }
+.timeline-marker { position: absolute; width: 4px; height: 20px; top: 2px; border-radius: 2px; cursor: default; }
+.timeline-marker.bloom { background: var(--red); }
+.timeline-marker.vines { background: var(--yellow); }
+.timeline-marker.adds { background: var(--cyan); }
+.timeline-marker.pustules { background: var(--orange); }
+.timeline-marker.tyrant { background: var(--warlock); width: 3px; }
+.timeline-marker.tyrant-ref { background: var(--purple); width: 3px; opacity: 0.6; }
+.timeline-time-labels { display: flex; justify-content: space-between; margin-top: 4px; padding-left: 140px; }
+.timeline-time-labels span { font-size: 10px; color: var(--dim); }
+
+/* Callout */
+.callout { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.callout.warning { border-left: 3px solid var(--yellow); }
+.callout.danger { border-left: 3px solid var(--red); }
+.callout.success { border-left: 3px solid var(--green); }
+.callout.info { border-left: 3px solid var(--accent); }
+.callout .callout-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.callout p { font-size: 13px; color: var(--dim); }
+
+/* Action Items */
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.action-item .action-num { display: inline-block; width: 24px; height: 24px; background: var(--accent); color: #000; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700; margin-right: 8px; vertical-align: top; }
+.action-item .action-title { font-weight: 600; font-size: 14px; display: inline; }
+.action-item .action-body { margin-top: 8px; font-size: 13px; color: var(--dim); padding-left: 32px; }
+.action-item .action-impact { font-size: 12px; color: var(--yellow); margin-top: 4px; padding-left: 32px; }
+
+/* Wipe Chart */
+.wipe-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.wipe-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.wipe-bar .bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; position: relative; }
+.wipe-bar .bar-label { font-size: 10px; color: var(--dim); margin-top: 4px; text-align: center; }
+.wipe-bar .bar-value { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+
+/* Footer */
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+  .timeline-label { width: 100px; font-size: 10px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23, 2026 Rotmire Log Analysis</a>
+
+<!-- Header -->
+<div class="header">
+  <h1><span class="player-name">Orichamaru</span> <span style="font-size:16px;color:var(--dim);font-weight:400;">Demonology Warlock</span></h1>
+  <div class="subtitle">
+    Mythic Rotmire <span class="kill-badge">KILL</span> &mdash; 8:09 &mdash; June 23, 2026 &mdash;
+    Report <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+  <div class="card">
+    <div class="label">DPS</div>
+    <div class="value" style="color:var(--warlock)">136.2K</div>
+    <div class="sub">68.6% of reference</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="sub">Same as reference</div>
+  </div>
+  <div class="card">
+    <div class="label">Kill Status</div>
+    <div class="value" style="color:var(--green)">Survived</div>
+    <div class="sub">0 deaths on kill</div>
+  </div>
+  <div class="card">
+    <div class="label">Rotational CPM</div>
+    <div class="value">44.2</div>
+    <div class="sub">Ref: 46.7 CPM (-5.4%)</div>
+  </div>
+</div>
+
+<!-- Reference Comparison -->
+<div class="section">
+  <h2>Reference Comparison</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Top 5 ranked Demonology Warlocks on Mythic Rotmire. Primary reference highlighted in purple (fewest talent differences at matching item level).</p>
+  <table>
+    <thead>
+      <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>iLvl</th><th>Talent Delta</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td style="color:var(--warlock);font-weight:600;">Orichamaru</td>
+        <td>136,171</td>
+        <td>8:09</td>
+        <td>291</td>
+        <td>&mdash;</td>
+        <td><span class="badge badge-blue">Analyzed</span></td>
+      </tr>
+      <tr>
+        <td>&#x5929;&#x624D;&#x5C0F;&#x6D77;&#x736D; <span style="font-size:11px;color:var(--dim)">(&#x51B0;&#x98CE;&#x5C97;)</span></td>
+        <td style="color:var(--green)">203,926</td>
+        <td>7:06</td>
+        <td>291</td>
+        <td><span class="badge badge-red">21 diffs</span></td>
+        <td>#1 ranked</td>
+      </tr>
+      <tr>
+        <td>Bssi <span style="font-size:11px;color:var(--dim)">(Tarren Mill)</span></td>
+        <td style="color:var(--green)">202,199</td>
+        <td>7:32</td>
+        <td>291</td>
+        <td><span class="badge badge-red">21 diffs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Cuhz <span style="font-size:11px;color:var(--dim)">(Kazzak)</span></td>
+        <td style="color:var(--green)">200,423</td>
+        <td>6:43</td>
+        <td>293</td>
+        <td><span class="badge badge-yellow">10 diffs</span></td>
+        <td></td>
+      </tr>
+      <tr class="primary-ref">
+        <td style="color:var(--purple);font-weight:600;">&#x7EFF;&#x8272;&#x5927;&#x5149;&#x5934; <span style="font-size:11px;color:var(--dim)">(&#x5965;&#x7279;&#x5170;&#x514B;)</span></td>
+        <td style="color:var(--green)">198,446</td>
+        <td>7:53</td>
+        <td>291</td>
+        <td><span class="badge badge-green">4 diffs</span></td>
+        <td><span class="badge badge-purple">Primary Ref</span></td>
+      </tr>
+      <tr>
+        <td>&#x95FB;&#x4EBA;&#x7267;&#x6708; <span style="font-size:11px;color:var(--dim)">(&#x8346;&#x68D8;&#x8C37;)</span></td>
+        <td style="color:var(--green)">198,034</td>
+        <td>8:31</td>
+        <td>274</td>
+        <td><span class="badge badge-green">3 diffs</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout info" style="margin-top:12px;">
+    <p>Primary reference uses near-identical talents (only 4 differences) at the same item level (291). The 31.4% DPS gap is primarily <strong>execution-based</strong>, not gear or talent. The key difference is <strong>Hand of Gul'dan CPM</strong> (13.3 vs 15.0) and <strong>Demonbolt CPM</strong> (10.6 vs 11.9), indicating slower shard generation and spending.</p>
+  </div>
+</div>
+
+<!-- Boss Mechanic Timeline -->
+<div class="section">
+  <h2>Boss Mechanic Timeline</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Rotmire is a single-phase boss with repeating cycles. Timings verified identical between player and reference kills.</p>
+
+  <div class="timeline-container">
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--red)">Fungal Bloom</div>
+      <div class="timeline-track">
+        <div class="timeline-marker bloom" style="left:24.5%" title="Bloom #1 at 2:00"></div>
+        <div class="timeline-marker bloom" style="left:52.4%" title="Bloom #2 at 4:16"></div>
+        <div class="timeline-marker bloom" style="left:80.2%" title="Bloom #3 at 6:32"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--yellow)">Festering Vines</div>
+      <div class="timeline-track">
+        <div class="timeline-marker vines" style="left:8.8%" title="Vines #1 at 0:43"></div>
+        <div class="timeline-marker vines" style="left:18.8%" title="Vines #2 at 1:32"></div>
+        <div class="timeline-marker vines" style="left:36.6%" title="Vines #3 at 2:59"></div>
+        <div class="timeline-marker vines" style="left:46.6%" title="Vines #4 at 3:48"></div>
+        <div class="timeline-marker vines" style="left:64.4%" title="Vines #5 at 5:15"></div>
+        <div class="timeline-marker vines" style="left:74.4%" title="Vines #6 at 6:04"></div>
+        <div class="timeline-marker vines" style="left:92.2%" title="Vines #7 at 7:31"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--cyan)">Awaken Fungi</div>
+      <div class="timeline-track">
+        <div class="timeline-marker adds" style="left:3.1%" title="Adds #1 at 0:15"></div>
+        <div class="timeline-marker adds" style="left:13.1%" title="Adds #2 at 1:04"></div>
+        <div class="timeline-marker adds" style="left:30.9%" title="Adds #3 at 2:31"></div>
+        <div class="timeline-marker adds" style="left:40.9%" title="Adds #4 at 3:20"></div>
+        <div class="timeline-marker adds" style="left:58.7%" title="Adds #5 at 4:47"></div>
+        <div class="timeline-marker adds" style="left:68.7%" title="Adds #6 at 5:36"></div>
+        <div class="timeline-marker adds" style="left:86.5%" title="Adds #7 at 7:03"></div>
+        <div class="timeline-marker adds" style="left:96.5%" title="Adds #8 at 7:52"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--orange)">Bursting Pustules</div>
+      <div class="timeline-track">
+        <div class="timeline-marker pustules" style="left:2.0%" title="Pustules at 0:10"></div>
+        <div class="timeline-marker pustules" style="left:6.3%" title="Pustules at 0:31"></div>
+        <div class="timeline-marker pustules" style="left:16.4%" title="Pustules at 1:20"></div>
+        <div class="timeline-marker pustules" style="left:29.9%" title="Pustules at 2:26"></div>
+        <div class="timeline-marker pustules" style="left:34.2%" title="Pustules at 2:47"></div>
+        <div class="timeline-marker pustules" style="left:44.2%" title="Pustules at 3:36"></div>
+        <div class="timeline-marker pustules" style="left:57.7%" title="Pustules at 4:42"></div>
+        <div class="timeline-marker pustules" style="left:62.0%" title="Pustules at 5:03"></div>
+        <div class="timeline-marker pustules" style="left:72.0%" title="Pustules at 5:52"></div>
+        <div class="timeline-marker pustules" style="left:85.5%" title="Pustules at 6:58"></div>
+        <div class="timeline-marker pustules" style="left:89.8%" title="Pustules at 7:19"></div>
+        <div class="timeline-marker pustules" style="left:99.8%" title="Pustules at 8:08"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--warlock)">Tyrant (Player)</div>
+      <div class="timeline-track">
+        <div class="timeline-marker tyrant" style="left:0.6%" title="Tyrant #1 at 0:03"></div>
+        <div class="timeline-marker tyrant" style="left:13.7%" title="Tyrant #2 at 1:07"></div>
+        <div class="timeline-marker tyrant" style="left:26.8%" title="Tyrant #3 at 2:11"></div>
+        <div class="timeline-marker tyrant" style="left:40.1%" title="Tyrant #4 at 3:16"></div>
+        <div class="timeline-marker tyrant" style="left:53.4%" title="Tyrant #5 at 4:21"></div>
+        <div class="timeline-marker tyrant" style="left:66.7%" title="Tyrant #6 at 5:26"></div>
+        <div class="timeline-marker tyrant" style="left:79.6%" title="Tyrant #7 at 6:29"></div>
+        <div class="timeline-marker tyrant" style="left:92.2%" title="Tyrant #8 at 7:33"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--purple)">Tyrant (Ref)</div>
+      <div class="timeline-track">
+        <div class="timeline-marker tyrant-ref" style="left:3.1%" title="Ref Tyrant #1 at 0:15"></div>
+        <div class="timeline-marker tyrant-ref" style="left:16.0%" title="Ref Tyrant #2 at 1:18"></div>
+        <div class="timeline-marker tyrant-ref" style="left:31.1%" title="Ref Tyrant #3 at 2:32"></div>
+        <div class="timeline-marker tyrant-ref" style="left:41.1%" title="Ref Tyrant #4 at 3:33"></div>
+        <div class="timeline-marker tyrant-ref" style="left:57.1%" title="Ref Tyrant #5 at 4:39"></div>
+        <div class="timeline-marker tyrant-ref" style="left:70.6%" title="Ref Tyrant #6 at 5:44"></div>
+        <div class="timeline-marker tyrant-ref" style="left:87.1%" title="Ref Tyrant #7 at 7:07"></div>
+      </div>
+    </div>
+  </div>
+  <div class="timeline-time-labels">
+    <span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span><span>5:00</span><span>6:00</span><span>7:00</span><span>8:09</span>
+  </div>
+
+  <div style="margin-top:12px;">
+    <div class="callout success">
+      <div class="callout-title">Raid State: 21/21 survived the kill</div>
+      <p>Zero deaths across the entire fight. Clean execution from the whole raid.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Tyrant Window Analysis -->
+<div class="section">
+  <h2>Demonic Tyrant Window Analysis</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Tyrant windows are where Demonology Warlocks do the majority of their damage. During the 20-second Tyrant window, the goal is to cast as many Hand of Gul'dan as possible to maximize imp generation and Tyrant scaling. Reference averaged 7.3 HoG per window vs Orichamaru's 5.6.</p>
+
+  <table>
+    <thead>
+      <tr><th>Tyrant</th><th>Time</th><th>HoG Casts</th><th>Ref HoG</th><th>Demonbolt</th><th>Ref DB</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>T1 (Opener)</td>
+        <td>0:03</td>
+        <td style="font-weight:600">7</td>
+        <td style="color:var(--purple)">8</td>
+        <td>0</td>
+        <td style="color:var(--purple)">2</td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>T2</td>
+        <td>1:07</td>
+        <td style="font-weight:600">6</td>
+        <td style="color:var(--purple)">6</td>
+        <td>2</td>
+        <td style="color:var(--purple)">2</td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>T3</td>
+        <td>2:11</td>
+        <td style="font-weight:600">6</td>
+        <td style="color:var(--purple)">7</td>
+        <td>4</td>
+        <td style="color:var(--purple)">4</td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>T4</td>
+        <td>3:16</td>
+        <td style="font-weight:600;color:var(--red)">4</td>
+        <td style="color:var(--purple)">6</td>
+        <td>1</td>
+        <td style="color:var(--purple)">4</td>
+        <td><span class="badge badge-red">Low</span> &mdash; 33% fewer HoG</td>
+      </tr>
+      <tr>
+        <td>T5</td>
+        <td>4:21</td>
+        <td style="font-weight:600">6</td>
+        <td style="color:var(--purple)">9</td>
+        <td>4</td>
+        <td style="color:var(--purple)">5</td>
+        <td><span class="badge badge-yellow">Below Ref</span></td>
+      </tr>
+      <tr>
+        <td>T6</td>
+        <td>5:26</td>
+        <td style="font-weight:600">6</td>
+        <td style="color:var(--purple)">7</td>
+        <td>2</td>
+        <td style="color:var(--purple)">3</td>
+        <td><span class="badge badge-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>T7</td>
+        <td>6:29</td>
+        <td style="font-weight:600;color:var(--red)">3</td>
+        <td style="color:var(--purple)">8</td>
+        <td>2</td>
+        <td style="color:var(--purple)">5</td>
+        <td><span class="badge badge-red">Low</span> &mdash; 62% fewer HoG</td>
+      </tr>
+      <tr>
+        <td>T8</td>
+        <td>7:33</td>
+        <td style="font-weight:600">7</td>
+        <td style="color:var(--dim)">N/A</td>
+        <td>4</td>
+        <td style="color:var(--dim)">N/A</td>
+        <td><span class="badge badge-green">Good</span> (past ref kill)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning" style="margin-top:12px;">
+    <div class="callout-title">Tyrant T4 (3:16) and T7 (6:29) are significant DPS loss windows</div>
+    <p>T4 had only 4 HoG casts (ref had 6) and T7 had only 3 HoG casts (ref had 8). Both coincide with Awaken Fungi add spawns (3:20 and 7:03). The 6.4-second gap at 2:59 (before T4 setup) and the 5.0-second gap at 6:39 (during T7) suggest movement for mechanics disrupted Tyrant windows. The reference player generated 7.3 HoG per Tyrant window on average vs Orichamaru's 5.6 -- this is the single largest source of the DPS gap.</p>
+  </div>
+</div>
+
+<!-- Per-Mechanic Analysis -->
+<div class="section">
+  <h2>Per-Mechanic Window Analysis</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">CPS (casts per second) of rotational abilities during each mechanic window. Windows flagged <span class="badge badge-red">LOW</span> have CPS below 85% of reference.</p>
+
+  <h3>Awaken Fungi (Add Spawns)</h3>
+  <table>
+    <thead>
+      <tr><th>Instance</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Player Casts</th><th>Ref Casts</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Adds #1</td><td>0:15</td><td>0.95</td><td style="color:var(--purple)">1.10</td><td>-14%</td><td>19</td><td>22</td></tr>
+      <tr><td>Adds #2</td><td>1:04</td><td>0.70</td><td style="color:var(--purple)">0.75</td><td>-7%</td><td>14</td><td>15</td></tr>
+      <tr><td>Adds #3</td><td>2:31</td><td style="color:var(--red)">0.60</td><td style="color:var(--purple)">0.85</td><td style="color:var(--red)">-29%</td><td>12</td><td>17</td></tr>
+      <tr><td>Adds #4</td><td>3:20</td><td style="color:var(--red)">0.65</td><td style="color:var(--purple)">0.80</td><td style="color:var(--red)">-19%</td><td>13</td><td>16</td></tr>
+      <tr><td>Adds #5</td><td>4:47</td><td>0.80</td><td style="color:var(--purple)">0.75</td><td style="color:var(--green)">+7%</td><td>16</td><td>15</td></tr>
+      <tr><td>Adds #6</td><td>5:36</td><td>0.80</td><td style="color:var(--purple)">0.75</td><td style="color:var(--green)">+7%</td><td>16</td><td>15</td></tr>
+      <tr><td>Adds #7</td><td>7:03</td><td>0.75</td><td style="color:var(--purple)">0.85</td><td>-12%</td><td>15</td><td>17</td></tr>
+      <tr><td>Adds #8</td><td>7:52</td><td>0.71</td><td style="color:var(--dim)">N/A</td><td>&mdash;</td><td>12</td><td>&mdash;</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top:20px;">Festering Vines (Movement)</h3>
+  <table>
+    <thead>
+      <tr><th>Instance</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Player Casts</th><th>Ref Casts</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Vines #1</td><td>0:43</td><td>0.75</td><td style="color:var(--purple)">0.75</td><td>0%</td><td>9</td><td>9</td></tr>
+      <tr><td>Vines #2</td><td>1:32</td><td style="color:var(--red)">0.67</td><td style="color:var(--purple)">0.83</td><td style="color:var(--red)">-20%</td><td>8</td><td>10</td></tr>
+      <tr><td>Vines #3</td><td>2:59</td><td style="color:var(--red);font-weight:600">0.33</td><td style="color:var(--purple)">0.92</td><td style="color:var(--red);font-weight:600">-64%</td><td style="color:var(--red)">4</td><td>11</td></tr>
+      <tr><td>Vines #4</td><td>3:48</td><td>0.67</td><td style="color:var(--purple)">0.67</td><td>0%</td><td>8</td><td>8</td></tr>
+      <tr><td>Vines #5</td><td>5:15</td><td>0.83</td><td style="color:var(--purple)">0.67</td><td style="color:var(--green)">+25%</td><td>10</td><td>8</td></tr>
+      <tr><td>Vines #6</td><td>6:04</td><td>0.75</td><td style="color:var(--purple)">0.75</td><td>0%</td><td>9</td><td>9</td></tr>
+      <tr><td>Vines #7</td><td>7:31</td><td>0.75</td><td style="color:var(--purple)">0.83</td><td>-10%</td><td>9</td><td>10</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout danger" style="margin-top:12px;">
+    <div class="callout-title">Vines #3 at 2:59 -- Critical Uptime Loss</div>
+    <p>Only 4 rotational casts in this 12-second window vs reference's 11. This is a 64% CPS drop and the worst single mechanic window in the fight. A 6.4-second dead zone follows at 2:59, likely due to being rooted or repositioning. This directly feeds into the weak Tyrant T4 window at 3:16 (only 4 HoG casts).</p>
+  </div>
+
+  <h3 style="margin-top:20px;">Fungal Bloom (Raid-Wide)</h3>
+  <table>
+    <thead>
+      <tr><th>Instance</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Player Casts</th><th>Ref Casts</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Bloom #1</td><td>2:00</td><td>0.67</td><td style="color:var(--purple)">0.73</td><td>-9%</td><td>10</td><td>11</td></tr>
+      <tr><td>Bloom #2</td><td>4:16</td><td style="color:var(--green)">0.87</td><td style="color:var(--purple)">0.67</td><td style="color:var(--green)">+30%</td><td>13</td><td>10</td></tr>
+      <tr><td>Bloom #3</td><td>6:32</td><td style="color:var(--red)">0.53</td><td style="color:var(--purple)">0.73</td><td style="color:var(--red)">-27%</td><td>8</td><td>11</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Target Split -->
+<div class="section">
+  <h2>Boss vs Add Damage Split</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="card" style="text-align:left;">
+      <div class="label" style="margin-bottom:8px;">Orichamaru</div>
+      <div style="display:flex;height:24px;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+        <div style="width:49.2%;background:var(--warlock);"></div>
+        <div style="width:50.8%;background:var(--cyan);opacity:0.6;"></div>
+      </div>
+      <div style="font-size:12px;color:var(--dim);">
+        <span style="color:var(--warlock)">Boss: 49.2%</span> &nbsp;|&nbsp;
+        <span style="color:var(--cyan)">Adds: 50.8%</span>
+      </div>
+    </div>
+    <div class="card" style="text-align:left;">
+      <div class="label" style="margin-bottom:8px;color:var(--purple);">Reference</div>
+      <div style="display:flex;height:24px;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+        <div style="width:50.3%;background:var(--purple);"></div>
+        <div style="width:49.7%;background:var(--cyan);opacity:0.6;"></div>
+      </div>
+      <div style="font-size:12px;color:var(--dim);">
+        <span style="color:var(--purple)">Boss: 50.3%</span> &nbsp;|&nbsp;
+        <span style="color:var(--cyan)">Adds: 49.7%</span>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">Target split is nearly identical. The DPS gap is not caused by prioritizing wrong targets.</p>
+</div>
+
+<!-- Cast Gap Analysis -->
+<div class="section">
+  <h2>Cast Gap Analysis</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div class="card">
+      <div class="label">Player Gaps (&gt;2.5s)</div>
+      <div class="value">47</div>
+      <div class="sub">60.9s total dead time</div>
+    </div>
+    <div class="card">
+      <div class="label">Reference Gaps (&gt;2.5s)</div>
+      <div class="value" style="color:var(--purple)">50</div>
+      <div class="sub">58.5s total dead time</div>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Both players have similar gap counts. The player's gap total is only ~2.4s more than reference -- <strong>dead time is not the primary issue</strong>. The real gap is in cast efficiency: fewer Demonbolt and Hand of Gul'dan casts per minute, meaning each GCD is less productive.</p>
+
+  <h3>Gaps by Preceding Ability</h3>
+  <table>
+    <thead>
+      <tr><th>Ability Before Gap</th><th>Count</th><th>Pattern</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Demonbolt</td><td style="font-weight:600">27</td><td>57% of all gaps. The 1.0-1.2s Demonbolt cast time means the next GCD can feel delayed if queuing is imprecise.</td></tr>
+      <tr><td>Call Dreadstalkers</td><td>8</td><td>Often followed by Tyrant cast, which has a cast time.</td></tr>
+      <tr><td>Implosion</td><td>5</td><td>Implosion is instant; delay may indicate target-switching hesitation.</td></tr>
+      <tr><td>Shadow Bolt</td><td>5</td><td>Standard filler gaps.</td></tr>
+      <tr><td>Hand of Gul'dan</td><td>1</td><td>Minimal.</td></tr>
+      <tr><td>Ruination</td><td>1</td><td>Minimal.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top:16px;">Worst Individual Gaps</h3>
+  <table>
+    <thead>
+      <tr><th>Time</th><th>Duration</th><th>Before</th><th>After</th><th>Context</th></tr>
+    </thead>
+    <tbody>
+      <tr style="color:var(--red)"><td>2:59</td><td style="font-weight:600">6.4s</td><td>Demonbolt</td><td>Shadow Bolt</td><td>Coincides with Festering Vines #3. Likely repositioning while rooted.</td></tr>
+      <tr style="color:var(--red)"><td>6:39</td><td style="font-weight:600">5.0s</td><td>Ruination</td><td>Hand of Gul'dan</td><td>During Tyrant T7 window. Major DPS loss.</td></tr>
+      <tr><td>3:07</td><td>3.5s</td><td>Shadow Bolt</td><td>Hand of Gul'dan</td><td>After the Vines #3 recovery, setting up T4.</td></tr>
+      <tr><td>5:11</td><td>3.5s</td><td>Implosion</td><td>Shadow Bolt</td><td>Post-add Implosion, target switch back to boss.</td></tr>
+      <tr><td>2:41</td><td>3.3s</td><td>Demonbolt</td><td>Hand of Gul'dan</td><td>Near Awaken Fungi #5 spawn.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Ability Usage Comparison -->
+<div class="section">
+  <h2>Ability Usage Comparison</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Player CPM</th><th>Ref CPM</th><th>Delta</th><th>Comparison</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600">Hand of Gul'dan</td>
+        <td>13.3</td>
+        <td style="color:var(--purple)">15.0</td>
+        <td style="color:var(--red)">-11.3%</td>
+        <td>
+          <div class="cps-bar-container">
+            <div class="cps-bar player" style="width:calc(13.3/15.0 * 100px)"></div>
+            <div class="cps-bar ref" style="width:100px"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="font-weight:600">Demonbolt</td>
+        <td>10.6</td>
+        <td style="color:var(--purple)">11.9</td>
+        <td style="color:var(--red)">-10.9%</td>
+        <td>
+          <div class="cps-bar-container">
+            <div class="cps-bar player" style="width:calc(10.6/11.9 * 100px)"></div>
+            <div class="cps-bar ref" style="width:100px"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Shadow Bolt</td>
+        <td>9.2</td>
+        <td style="color:var(--purple)">8.0</td>
+        <td style="color:var(--green)">+15.0%</td>
+        <td>
+          <div class="cps-bar-container">
+            <div class="cps-bar player" style="width:calc(9.2/9.2 * 100px)"></div>
+            <div class="cps-bar ref" style="width:calc(8.0/9.2 * 100px)"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Implosion</td>
+        <td>3.4</td>
+        <td style="color:var(--purple)">3.5</td>
+        <td>-2.9%</td>
+        <td><span class="badge badge-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Call Dreadstalkers</td>
+        <td>2.8</td>
+        <td style="color:var(--purple)">2.9</td>
+        <td>-3.4%</td>
+        <td><span class="badge badge-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Infernal Bolt</td>
+        <td>1.5</td>
+        <td style="color:var(--purple)">1.6</td>
+        <td>-6.3%</td>
+        <td><span class="badge badge-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Ruination</td>
+        <td>1.5</td>
+        <td style="color:var(--purple)">1.5</td>
+        <td>0%</td>
+        <td><span class="badge badge-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Summon Demonic Tyrant</td>
+        <td>1.0</td>
+        <td style="color:var(--purple)">0.9</td>
+        <td style="color:var(--green)">+11%</td>
+        <td><span class="badge badge-green">Good</span> (8 vs 7 casts)</td>
+      </tr>
+      <tr>
+        <td>Grimoire: Imp Lord</td>
+        <td>0.5</td>
+        <td style="color:var(--purple)">0.5</td>
+        <td>0%</td>
+        <td><span class="badge badge-green">Match</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info" style="margin-top:12px;">
+    <div class="callout-title">Key Insight: Higher Shadow Bolt, Lower Demonbolt & HoG</div>
+    <p>Orichamaru casts more Shadow Bolt (+15%) but fewer Demonbolt (-11%) and Hand of Gul'dan (-11%) than the reference. This indicates <strong>Demonic Core procs are not being consumed fast enough</strong> -- the player is hard-casting Shadow Bolt when they should be using instant Demonbolts to generate Soul Shards more quickly for Hand of Gul'dan dumps. Reference converts Demonic Core procs into Demonbolt casts at a faster rate, enabling more frequent HoG casts and more imp generation.</p>
+  </div>
+</div>
+
+<!-- Damage Breakdown -->
+<div class="section">
+  <h2>Damage Breakdown Comparison</h2>
+  <table>
+    <thead>
+      <tr><th>Source</th><th>Player Dmg%</th><th>Ref Dmg%</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Fel Firebolt (Imps)</td><td style="font-weight:600">23.7%</td><td style="color:var(--purple)">18.6%</td><td>Higher relative share due to lower personal damage</td></tr>
+      <tr><td>Mind Sear</td><td style="color:var(--red)">3.3%</td><td style="color:var(--purple);font-weight:600">15.4%</td><td style="color:var(--red)">Massive gap -- ref does 6.3x more Mind Sear damage</td></tr>
+      <tr><td>Burning Cleave</td><td>9.4%</td><td style="color:var(--purple)">6.7%</td><td></td></tr>
+      <tr><td>Hand of Gul'dan</td><td>5.1%</td><td style="color:var(--purple)">5.9%</td><td></td></tr>
+      <tr><td>Ruination</td><td>4.5%</td><td style="color:var(--purple)">4.8%</td><td></td></tr>
+      <tr><td>Chaos Salvo</td><td>3.2%</td><td style="color:var(--purple)">4.3%</td><td></td></tr>
+      <tr><td>Soul Barrage</td><td style="color:var(--red)">0%</td><td style="color:var(--purple)">3.3%</td><td style="color:var(--red)">Reference has this damage source; player does not (talent diff)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning" style="margin-top:12px;">
+    <div class="callout-title">Mind Sear: The Largest Single Damage Gap</div>
+    <p>The reference player deals 14.7M damage from Mind Sear vs Orichamaru's 2.3M -- a 6.3x difference. Mind Sear is a passive proc from Demonic Tyrant that scales with imp count. More imps during Tyrant = more Mind Sear procs = significantly more damage. This directly ties to the lower Hand of Gul'dan count during Tyrant windows -- fewer HoG casts means fewer imps active when Tyrant fires Mind Sear.</p>
+  </div>
+</div>
+
+<!-- Damage Taken -->
+<div class="section">
+  <h2>Damage Taken</h2>
+  <table>
+    <thead>
+      <tr><th>Source</th><th>Total</th><th>Hits</th><th>Avoidable</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Rotting Pustules</td><td>12.3M</td><td>478</td><td><span class="badge badge-dim">Unavoidable</span> -- passive raid-wide ticking</td></tr>
+      <tr><td>Fungal Bloom</td><td>3.1M</td><td>51</td><td><span class="badge badge-dim">Unavoidable</span> -- raid-wide AoE at 100 energy</td></tr>
+      <tr><td>Bursting Pustules</td><td>2.8M</td><td>46</td><td><span class="badge badge-dim">Unavoidable</span> -- soft enrage stacking damage</td></tr>
+      <tr><td>Melee</td><td>1.2M</td><td>52</td><td><span class="badge badge-yellow">Partial</span> -- 52 melee hits on a ranged DPS is notable</td></tr>
+      <tr><td>Bursting Shroom</td><td>720K</td><td>3</td><td><span class="badge badge-yellow">Avoidable</span> -- proximity damage from add death</td></tr>
+      <tr><td>Festering Vines</td><td>484K</td><td>9</td><td><span class="badge badge-yellow">Partial</span> -- root damage; can be mitigated with positioning</td></tr>
+      <tr><td>Poison Burst</td><td>337K</td><td>3</td><td><span class="badge badge-yellow">Partial</span> -- Sporecap cast, should be interrupted</td></tr>
+      <tr><td>Writhing Vines</td><td>81K</td><td>1</td><td><span class="badge badge-dim">Minor</span></td></tr>
+      <tr><td>Fel Armor</td><td>63K</td><td>955</td><td><span class="badge badge-dim">Self</span> -- Warlock passive (negligible)</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">Damage taken is reasonable. The 52 melee hits suggest the player was in melee range of adds/boss at times, which is acceptable for Demo Lock (pet management positioning).</p>
+</div>
+
+<!-- External Buffs -->
+<div class="section">
+  <h2>External Buffs</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="card" style="text-align:left;">
+      <div class="label" style="margin-bottom:8px;">Orichamaru</div>
+      <table style="font-size:12px;">
+        <tr><td>Time Warp</td><td>0:02</td><td><span class="badge badge-green">On Pull</span></td></tr>
+        <tr><td>Ebon Might</td><td>10 applications</td><td><span class="badge badge-green">Aug Evoker</span></td></tr>
+        <tr><td>Prescience</td><td>5 applications</td><td><span class="badge badge-green">Aug Evoker</span></td></tr>
+        <tr><td>Power Infusion</td><td colspan="2"><span class="badge badge-dim">None received</span></td></tr>
+      </table>
+    </div>
+    <div class="card" style="text-align:left;">
+      <div class="label" style="margin-bottom:8px;color:var(--purple);">Reference</div>
+      <table style="font-size:12px;">
+        <tr><td>Fury of the Aspects</td><td>0:05</td><td><span class="badge badge-green">On Pull</span></td></tr>
+        <tr><td>Ebon Might</td><td>15 applications</td><td><span class="badge badge-purple">Aug Evoker</span></td></tr>
+        <tr><td>Prescience</td><td>1 application</td><td></td></tr>
+        <tr><td>Power Infusion</td><td colspan="2"><span class="badge badge-dim">None received</span></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="callout info" style="margin-top:12px;">
+    <p>Both players had Bloodlust on pull and Aug Evoker support. The reference received more Ebon Might applications (15 vs 10), which inflates their damage by an estimated 3-5%. Even accounting for this, the DPS gap remains largely execution-based.</p>
+  </div>
+</div>
+
+<!-- Defensive Usage -->
+<div class="section">
+  <h2>Defensive & Utility Usage</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Uses</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Dark Pact</td><td>5</td><td>Good usage of absorb shield throughout the fight</td></tr>
+      <tr><td>Unending Resolve</td><td>1</td><td>Major defensive used once -- could use more liberally on Bloom windows</td></tr>
+      <tr><td>Mortal Coil</td><td>3</td><td>Self-heal/horror -- decent emergency usage</td></tr>
+      <tr><td>Demonic Circle: Teleport</td><td>1</td><td>Movement utility, used once</td></tr>
+      <tr><td>Glide</td><td>6</td><td>Movement optimization (DH-style if using Diabolist)</td></tr>
+      <tr><td>Health Potion</td><td>1</td><td>Used Silvermoon Health Potion -- note: no DPS potion (Potion of Recklessness) detected</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warning" style="margin-top:12px;">
+    <div class="callout-title">No Potion of Recklessness Used</div>
+    <p>The reference player used Potion of Recklessness twice (pre-pot + second pot). Orichamaru used a Silvermoon Health Potion instead of a DPS potion. This represents a flat DPS loss -- Potion of Recklessness should be pre-potted 2 seconds before pull and used again during a Tyrant window.</p>
+  </div>
+</div>
+
+<!-- Wipe Progression -->
+<div class="section">
+  <h2>Wipe Progression</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">DPS across all 3 Rotmire pulls. Improvement visible from pull 1 to pull 2 (+10.2%).</p>
+
+  <div class="wipe-chart">
+    <div class="wipe-bar">
+      <div class="bar-value" style="color:var(--yellow)">127.5K</div>
+      <div class="bar" style="height:64%;background:var(--yellow);" title="Fight 1: 127,491 DPS (6:54 wipe, 22.45%)"></div>
+      <div class="bar-label">Pull 1<br><span style="font-size:9px">6:54 / 22%</span></div>
+    </div>
+    <div class="wipe-bar">
+      <div class="bar-value" style="color:var(--orange)">140.5K</div>
+      <div class="bar" style="height:71%;background:var(--orange);" title="Fight 2: 140,489 DPS (8:25 wipe, 11.61%)"></div>
+      <div class="bar-label">Pull 2<br><span style="font-size:9px">8:25 / 12%</span></div>
+    </div>
+    <div class="wipe-bar">
+      <div class="bar-value" style="color:var(--green)">136.2K</div>
+      <div class="bar" style="height:68%;background:var(--green);" title="Fight 3: 136,171 DPS (8:09 KILL)"></div>
+      <div class="bar-label">Pull 3<br><span style="font-size:9px">8:09 / KILL</span></div>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;font-size:13px;color:var(--dim);">
+    <p><strong>Pull 1 (6:54, 22.45%):</strong> 127.5K DPS. Shortest pull, lowest DPS. Learning mechanics.</p>
+    <p><strong>Pull 2 (8:25, 11.61%):</strong> 140.5K DPS. Best personal DPS but the raid wiped at 11.6%. Orichamaru was performing well in the longer fight.</p>
+    <p><strong>Pull 3 (8:09, KILL):</strong> 136.2K DPS. Slightly below pull 2, likely due to more conservative play ensuring survival. The kill fight is typically lower DPS than the best prog pull because players prioritize mechanics over greeding casts.</p>
+  </div>
+</div>
+
+<!-- Actionable Improvements -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="action-item">
+    <span class="action-num">1</span>
+    <span class="action-title">Maximize Hand of Gul'dan during Tyrant Windows</span>
+    <div class="action-body">
+      Average 5.6 HoG per Tyrant window vs reference's 7.3. Two windows were critically low: T4 at 3:16 (4 HoG, ref had 6) and T7 at 6:29 (3 HoG, ref had 8). Pool Soul Shards to 4-5 before Tyrant. During the 20-second Tyrant window, prioritize Demonbolt (instant, generates shards fast) into HoG dumps. The goal is 7+ HoG per Tyrant.
+    </div>
+    <div class="action-impact">Impact: This single change addresses the Mind Sear gap (6.3x less damage) and is the largest DPS lever. More imps during Tyrant = exponentially more Mind Sear procs.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">2</span>
+    <span class="action-title">Consume Demonic Core Procs Faster</span>
+    <div class="action-body">
+      Demonbolt CPM is 10.6 vs reference's 11.9 (-11%), while Shadow Bolt is 9.2 vs 8.0 (+15%). This means Demonic Core stacks are sitting unclaimed while Shadow Bolt is being hard-cast. Demonbolt is instant and generates shards faster than Shadow Bolt. Always check for Demonic Core stacks before starting a Shadow Bolt cast. Consume Demonbolt procs at 2+ stacks, and always before Tyrant windows.
+    </div>
+    <div class="action-impact">Impact: ~14 additional Demonbolt casts over the fight, converting ~14 Shadow Bolts. Each Demonbolt generates shards faster, enabling more HoG casts.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">3</span>
+    <span class="action-title">Use Potion of Recklessness (DPS Potion)</span>
+    <div class="action-body">
+      No DPS potion was used -- only a Silvermoon Health Potion. The reference player used Potion of Recklessness twice (pre-pot at -2s and second pot during a later Tyrant window). Pre-pot 2 seconds before the pull timer hits 0, and use the second charge during a Tyrant window in the second half of the fight.
+    </div>
+    <div class="action-impact">Impact: Two pots during Tyrant windows = ~3-5% overall DPS increase for free.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">4</span>
+    <span class="action-title">Maintain Uptime During Festering Vines #3 (2:59)</span>
+    <div class="action-body">
+      The 2:59 Vines window had only 4 casts (ref had 11) with a 6.4-second dead zone. This was the worst single window in the fight. Pre-position before Vines to minimize movement. Use Demonic Circle placement before Vines if available, or use instant casts (Demonbolt with Demonic Core, Implosion) during forced movement. The cascade effect is significant: poor Vines #3 handling led directly to a weak Tyrant T4 at 3:16.
+    </div>
+    <div class="action-impact">Impact: Recovering 7 casts in this window and a stronger T4 Tyrant could recover ~1-2% total DPS.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">5</span>
+    <span class="action-title">Align Tyrant with Mechanic Gaps</span>
+    <div class="action-body">
+      Orichamaru used Tyrant nearly on cooldown (64s intervals), which is good for total Tyrant count (8 vs ref's 7). However, some Tyrant windows overlapped with add spawns and Vines, causing forced movement mid-burst. The reference player sometimes holds Tyrant an extra 5-10 seconds to land it in a clean window. On this fight, Tyrant T4 (3:16) overlapped with Awaken Fungi at 3:20 -- a 4-second delay to 3:21 would have allowed a clean window.
+    </div>
+    <div class="action-impact">Impact: Cleaner Tyrant windows = more casts during the burst = more Mind Sear procs. Quality over quantity.</div>
+  </div>
+</div>
+
+<!-- Context Footer -->
+<div class="section">
+  <h2>Summary</h2>
+  <div class="callout info">
+    <div class="callout-title">The 31% DPS gap is execution-based, not gear or talent</div>
+    <p>At identical item level (291) and nearly identical talents (4 differences), the gap is driven by three factors:</p>
+    <p style="margin-top:8px;"><strong>1. Tyrant window efficiency (primary):</strong> 5.6 HoG per Tyrant vs 7.3, causing 6.3x less Mind Sear damage (the single largest delta).</p>
+    <p><strong>2. Demonic Core management:</strong> More Shadow Bolts, fewer Demonbolts means slower shard generation and fewer HoG opportunities.</p>
+    <p><strong>3. No DPS potion:</strong> Missing ~3-5% from two Potion of Recklessness uses.</p>
+    <p style="margin-top:8px;">The reference also received 50% more Ebon Might applications (15 vs 10), which accounts for ~3-5% of the gap.</p>
+  </div>
+
+  <div class="callout success" style="margin-top:12px;">
+    <div class="callout-title">What Orichamaru Does Well</div>
+    <p><strong>Survived a clean kill</strong> with zero deaths. <strong>Target split is identical</strong> to reference (49/51 vs 50/50) -- no wasted damage on wrong targets. <strong>Cooldown usage is on-point:</strong> 8 Tyrant casts vs ref's 7, Grimoire: Imp Lord and Ruination CPM match exactly, Call Dreadstalkers and Implosion match reference. <strong>Defensive usage is solid</strong> -- 5 Dark Pact uses, Mortal Coil for emergency healing. The foundation is there; the gains come from Tyrant window optimization and Demonic Core management.</p>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Warcraft Logs</a></p>
+  <p>Primary reference: &#x7EFF;&#x8272;&#x5927;&#x5149;&#x5934; (&#x5965;&#x7279;&#x5170;&#x514B;) &mdash; 198,446 DPS &mdash; <a href="https://www.warcraftlogs.com/reports/CymnXrq9c6j2kHY8#fight=7" target="_blank">Report</a></p>
+  <p>Analysis date: June 25, 2026</p>
+</div>
+
+</body>
+</html>

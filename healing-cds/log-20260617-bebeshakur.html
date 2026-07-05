@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bebeshakur &mdash; Unholy Death Knight &mdash; Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.adds { border-left: 3px solid var(--orange); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Bebeshakur <span class="dim">&mdash; Unholy Death Knight</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:57) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- ═══ SUMMARY ═══ -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">129.0K</div>
+    <div class="stat-label">DPS (Kill Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">286</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">50.1</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- ═══ VERDICT ═══ -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Bebeshakur survived the kill and dealt <strong class="yellow">129.0K DPS</strong>, <strong class="red">24% below</strong> the primary reference Tranqx (176.8K). The gap breaks down into two main issues: <strong class="red">70 seconds of total dead time</strong> across 12 cast gaps (reference had zero gaps &gt; 2.5s), and <strong class="red">Death and Decay usage at 0.1 CPM vs reference's 2.1 CPM</strong> &mdash; a core AoE ability cast only once all fight. At 286 ilvl vs Tranqx's 257, gear is not the issue &mdash; Bebeshakur has a <strong class="green">30+ ilvl advantage</strong>. The performance gap is <strong class="red">pure execution</strong>: ABC (Always Be Casting) discipline and rotational ability usage.</p>
+</div>
+
+<!-- ═══ REFERENCE COMPARISON ═══ -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Unholy Death Knights on Mythic Rotmire. Primary reference: <strong>Tranqx</strong> (closest talent match at 5 diffs, 172K DPS, 8:13 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Bebeshakur</strong></td>
+      <td class="red">129.0K</td>
+      <td>7:57</td>
+      <td>286</td>
+      <td>&mdash;</td>
+      <td>50.1</td>
+    </tr>
+    <tr>
+      <td>Silènt <span class="ref-badge">#1</span></td>
+      <td class="green">173.8K</td>
+      <td>7:23</td>
+      <td>291.5</td>
+      <td><span class="tag tag-diff">12 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Tranqx <span class="ref-badge">#2 PRIMARY</span></td>
+      <td class="green">172.4K</td>
+      <td>8:13</td>
+      <td>256.8</td>
+      <td><span class="tag tag-same">5 diff</span></td>
+      <td>55.2</td>
+    </tr>
+    <tr>
+      <td>Angxl <span class="ref-badge">#3</span></td>
+      <td class="green">169.0K</td>
+      <td>6:52</td>
+      <td>272.5</td>
+      <td><span class="tag tag-diff">9 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Ronsensei <span class="ref-badge">#4</span></td>
+      <td class="green">165.5K</td>
+      <td>7:21</td>
+      <td>289.7</td>
+      <td><span class="tag tag-same">5 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Kardoroth <span class="ref-badge">#5</span></td>
+      <td class="green">164.7K</td>
+      <td>8:27</td>
+      <td>255.8</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Bebeshakur has a competitive item level (286) but the lowest DPS in this comparison. Tranqx achieves 172K DPS at only 257 ilvl. The 5 talent differences are minor &mdash; this performance gap is execution-driven, not build-dependent.</p>
+
+<!-- ═══ BOSS TIMELINE ═══ -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major events. Blooms fire on a fixed ~136s cycle. Bebeshakur survived the full fight. Deaths start at 3:07 (Tiareynna).</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <div class="timeline-marker" style="left: 39.3%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim); font-size: 9px;">&#x2620; Tiareynna (3:07)</span>
+  </div>
+  <div class="timeline-marker" style="left: 76.9%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim); font-size: 9px;">&#x2620; Nurnyx (6:07)</span>
+  </div>
+  <div class="timeline-marker" style="left: 76.9%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim); font-size: 9px;">&#x2620; Snackznchill (6:07)</span>
+  </div>
+  <div class="timeline-marker" style="left: 76.9%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim); font-size: 9px;">&#x2620; Sonìc (6:07)</span>
+  </div>
+  <div class="timeline-marker" style="left: 83.8%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim); font-size: 9px;">&#x2620; Zinnks (6:40)</span>
+  </div>
+  <div class="timeline-marker" style="left: 95.9%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim); font-size: 9px;">&#x2620; Invincibale (7:38)</span>
+  </div>
+  <div class="timeline-marker" style="left: 96.1%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim); font-size: 9px;">&#x2620; Unholyftw (7:39)</span>
+  </div>
+  <div class="timeline-marker" style="left: 96.4%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim); font-size: 9px;">&#x2620; Nucke (7:40)</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:57</span>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header">Raid State Timeline</div>
+  <p style="font-size: 13px; font-family: 'SF Mono', Consolas, monospace;">0:00&ndash;3:07 = 19/19 alive<br>3:07&ndash;6:07 = 18/19 alive<br>6:07&ndash;6:07 = 17/19 alive<br>6:07&ndash;6:07 = 16/19 alive<br>6:07&ndash;6:40 = 15/19 alive<br>6:40&ndash;7:38 = 14/19 alive<br>7:38&ndash;7:39 = 13/19 alive<br>7:39&ndash;7:40 = 12/19 alive<br>7:40&ndash;7:57 = 11/19 alive (kill)</p>
+</div>
+
+<!-- ═══ CAST PROFILE ═══ -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Bebeshakur (7:57 fight) vs Tranqx (8:13 fight). Sorted by impact on Unholy DK performance.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Bebe CPM</th>
+      <th>Bebe Casts</th>
+      <th>Tranqx CPM</th>
+      <th>Tranqx Casts</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Death and Decay</strong></td>
+      <td class="red">0.1</td>
+      <td>1</td>
+      <td>2.1</td>
+      <td>17</td>
+      <td class="red">-94%</td>
+      <td><span class="tag tag-crit">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.04);">
+      <td><strong>Death Grip</strong></td>
+      <td class="">1.9</td>
+      <td>15</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td class="yellow">+288%</td>
+      <td><span class="tag tag-warn">High</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.04);">
+      <td><strong>Outbreak</strong></td>
+      <td class="">0.4</td>
+      <td>3</td>
+      <td>0.1</td>
+      <td>1</td>
+      <td class="yellow">+210%</td>
+      <td><span class="tag tag-warn">High</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Epidemic</strong></td>
+      <td class="red">2.6</td>
+      <td>21</td>
+      <td>5.1</td>
+      <td>42</td>
+      <td class="red">-48%</td>
+      <td><span class="tag tag-diff">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Soul Reaper</strong></td>
+      <td class="">2.3</td>
+      <td>18</td>
+      <td>1.6</td>
+      <td>13</td>
+      <td class="yellow">+43%</td>
+      <td><span class="tag tag-info">Above</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Putrefy</strong></td>
+      <td class="red">1.4</td>
+      <td>11</td>
+      <td>2.2</td>
+      <td>18</td>
+      <td class="red">-37%</td>
+      <td><span class="tag tag-diff">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Festering Scythe</strong></td>
+      <td class="">2.9</td>
+      <td>23</td>
+      <td>2.3</td>
+      <td>19</td>
+      <td class="yellow">+25%</td>
+      <td><span class="tag tag-info">Above</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.04);">
+      <td><strong>Scourge Strike</strong></td>
+      <td class="yellow">16.7</td>
+      <td>133</td>
+      <td>21.3</td>
+      <td>175</td>
+      <td class="dim">-21%</td>
+      <td><span class="tag tag-warn">Below</span></td>
+    </tr>
+    <tr>
+      <td><strong>Festering Strike</strong></td>
+      <td class="">2.9</td>
+      <td>23</td>
+      <td>2.4</td>
+      <td>20</td>
+      <td class="green">+19%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Graveyard</strong></td>
+      <td class="">2.5</td>
+      <td>20</td>
+      <td>2.3</td>
+      <td>19</td>
+      <td class="dim">+9%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Army of the Dead</strong></td>
+      <td class="">0.6</td>
+      <td>5</td>
+      <td>0.6</td>
+      <td>5</td>
+      <td class="dim">+3%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Dark Transformation</strong></td>
+      <td class="">1.1</td>
+      <td>9</td>
+      <td>1.1</td>
+      <td>9</td>
+      <td class="dim">+3%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Necrotic Coil</strong></td>
+      <td class="">4.3</td>
+      <td>34</td>
+      <td>4.3</td>
+      <td>35</td>
+      <td class="dim">+0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Death Coil</strong></td>
+      <td class="">7.0</td>
+      <td>56</td>
+      <td>7.0</td>
+      <td>58</td>
+      <td class="dim">-0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Death and Decay: 1 Cast vs 17</div>
+    <p style="font-size: 14px;">Death and Decay (DnD) is a core Unholy DK ability that amplifies Scourge Strike into Clawing Shadows, provides AoE damage, and procs talents while standing in it. Bebeshakur cast DnD <strong>once</strong> the entire fight (0.1 CPM) while Tranqx cast it <strong>17 times</strong> (2.1 CPM). This is the single largest rotational gap and likely accounts for significant damage loss on its own &mdash; every Scourge Strike inside DnD hits harder and cleaves.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Scourge Strike: 21% Below Reference</div>
+    <p style="font-size: 14px;">Scourge Strike is the #1 button by cast count for Unholy, and Bebeshakur is using it at <strong>16.7 CPM vs 21.3 CPM</strong> &mdash; that is 4.6 fewer Scourge Strikes per minute. Over 7:58, that is roughly <strong>37 missing Scourge Strikes</strong>. Combined with the missing DnD uptime (which buffs each SS), this compounds into massive damage loss.</p>
+  </div>
+</div>
+<div class="grid-2">
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Epidemic: Half of Reference</div>
+    <p style="font-size: 14px;">Epidemic is the primary Runic Power spender for AoE situations. Bebeshakur cast it <strong>21 times (2.6 CPM)</strong> vs Tranqx's <strong>42 times (5.1 CPM)</strong>. Rotmire has frequent add spawns where Epidemic should be the go-to RP dump instead of Death Coil. Bebeshakur's Death Coil usage is on-par (7.0 CPM both), suggesting RP is being spent on single-target when AoE would be more valuable.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Putrefy: 36% Below Reference</div>
+    <p style="font-size: 14px;">Putrefy is a passive proc that triggers from festering wound consumption. Bebeshakur had <strong>11 procs (1.4 CPM)</strong> vs Tranqx's <strong>18 procs (2.2 CPM)</strong>. This is a downstream effect &mdash; fewer Scourge Strikes = fewer wounds consumed = fewer Putrefy procs. Fixing the Scourge Strike gap will automatically improve this.</p>
+  </div>
+</div>
+
+<!-- ═══ DAMAGE BREAKDOWN ═══ -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Top damage sources ranked by total damage. Bebeshakur total: 64.6M (135.2K DPS). Tranqx total: 87.3M (176.8K DPS).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Bebeshakur</th><th></th><th>Tranqx</th><th></th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Graveyard</td>
+      <td>4.0M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 42%; background: var(--accent);"></div></div></td>
+      <td class="purple">9.5M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Putrefy</td>
+      <td>6.5M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 70%; background: var(--accent);"></div></div></td>
+      <td class="purple">9.3M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Shadow Bolt</td>
+      <td>5.1M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 70%; background: var(--accent);"></div></div></td>
+      <td class="purple">7.3M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>6.8M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 97%; background: var(--accent);"></div></div></td>
+      <td class="purple">7.0M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Sweeping Claws</td>
+      <td>4.8M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 69%; background: var(--accent);"></div></div></td>
+      <td class="purple">6.9M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Epidemic</td>
+      <td>3.4M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 53%; background: var(--accent);"></div></div></td>
+      <td class="purple">6.4M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Scourge Strike</td>
+      <td>4.1M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 71%; background: var(--accent);"></div></div></td>
+      <td class="purple">5.8M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Dread Plague</td>
+      <td>2.9M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 74%; background: var(--accent);"></div></div></td>
+      <td class="purple">3.9M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Virulent Plague</td>
+      <td>2.8M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 75%; background: var(--accent);"></div></div></td>
+      <td class="purple">3.7M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Pestilence</td>
+      <td>3.0M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 83%; background: var(--accent);"></div></div></td>
+      <td class="purple">3.6M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Death Coil</td>
+      <td>2.8M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 97%; background: var(--accent);"></div></div></td>
+      <td class="purple">2.8M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Ruptured Viscera</td>
+      <td>2.7M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 99%; background: var(--accent);"></div></div></td>
+      <td class="purple">2.7M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Necrotic Coil</td>
+      <td>2.6M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 95%; background: var(--accent);"></div></div></td>
+      <td class="purple">2.7M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Undeath</td>
+      <td>1.5M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 62%; background: var(--accent);"></div></div></td>
+      <td class="purple">2.4M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+    <tr>
+      <td>Disease Cloud</td>
+      <td>1.8M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 85%; background: var(--accent);"></div></div></td>
+      <td class="purple">2.1M</td>
+      <td><div class="bar-container" style="width: 100px;"><div class="bar" style="width: 100%; background: var(--purple);"></div></div></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═══ CAST GAP ANALYSIS ═══ -->
+<h2>Cast Gap Analysis</h2>
+<p class="section-intro">Gaps &gt; 2.5 seconds where no rotational ability was pressed. Bebeshakur had <strong class="red">12 gaps</strong> totaling <strong class="red">70 seconds</strong> of dead time. Tranqx had <strong class="green">zero gaps &gt; 2.5s</strong>.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Time</th><th>Duration</th><th>Before Gap</th><th>After Gap</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>5:46</td>
+      <td class="red"><strong>12.5s</strong></td>
+      <td>Death Coil</td>
+      <td>Festering Strike</td>
+    </tr>
+    <tr>
+      <td>7:14</td>
+      <td class="red"><strong>10.8s</strong></td>
+      <td>Scourge Strike</td>
+      <td>Festering Strike</td>
+    </tr>
+    <tr>
+      <td>3:31</td>
+      <td class="orange"><strong>7.1s</strong></td>
+      <td>Scourge Strike</td>
+      <td>Scourge Strike</td>
+    </tr>
+    <tr>
+      <td>2:42</td>
+      <td class="orange"><strong>6.6s</strong></td>
+      <td>Death Coil</td>
+      <td>Scourge Strike</td>
+    </tr>
+    <tr>
+      <td>7:25</td>
+      <td class="orange"><strong>6.0s</strong></td>
+      <td>Festering Scythe</td>
+      <td>Scourge Strike</td>
+    </tr>
+    <tr>
+      <td>5:02</td>
+      <td class="orange"><strong>5.6s</strong></td>
+      <td>Death Coil</td>
+      <td>Charge!</td>
+    </tr>
+    <tr>
+      <td>1:18</td>
+      <td class="yellow"><strong>4.5s</strong></td>
+      <td>Death and Decay</td>
+      <td>Scourge Strike</td>
+    </tr>
+    <tr>
+      <td>0:30</td>
+      <td class="yellow"><strong>3.8s</strong></td>
+      <td>Necrotic Coil</td>
+      <td>Scourge Strike</td>
+    </tr>
+    <tr>
+      <td>7:46</td>
+      <td class="yellow"><strong>3.7s</strong></td>
+      <td>Death Coil</td>
+      <td>Death Coil</td>
+    </tr>
+    <tr>
+      <td>6:26</td>
+      <td class="yellow"><strong>3.4s</strong></td>
+      <td>Death Coil</td>
+      <td>Scourge Strike</td>
+    </tr>
+    <tr>
+      <td>1:14</td>
+      <td class="yellow"><strong>3.0s</strong></td>
+      <td>Death Coil</td>
+      <td>Scourge Strike</td>
+    </tr>
+    <tr>
+      <td>4:55</td>
+      <td class="yellow"><strong>2.8s</strong></td>
+      <td>Death Coil</td>
+      <td>Outbreak</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 8px;">
+  <div class="card-header red">Gap Pattern: 7 of 12 Gaps Follow Death Coil</div>
+  <p style="font-size: 14px;">58% of all cast gaps happen <strong>after Death Coil</strong>. This suggests a pattern where Bebeshakur dumps Runic Power with Death Coil and then stalls &mdash; either waiting for runes to regenerate or losing track of the rotation. The fix: after a Death Coil, immediately check for Festering Strike (if &lt; 4 wounds on target), Scourge Strike (if wounds available), or refresh Death and Decay. There should never be a moment with zero buttons to press &mdash; Unholy always has something available between Rune and RP spending.</p>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header">Impact Estimate</div>
+  <p style="font-size: 14px;">70 seconds of dead time at Bebeshakur's average CPS of 0.77 casts/sec = approximately <strong class="red">54 lost casts</strong>. At the average damage per cast of 162K, that is an estimated <strong class="red">8.7M lost damage</strong> (13.5% of total).</p>
+</div>
+
+<!-- ═══ DAMAGE TAKEN ═══ -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by source, categorized by avoidability. Rotmire's Rotting Pustules is a stacking soft enrage &mdash; unavoidable background damage that escalates throughout the fight.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total</th><th>Hits</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td>13.4M</td>
+      <td>467</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2.7M</td>
+      <td>44</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>1.6M</td>
+      <td>19</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Festering Vines</td>
+      <td>1.3M</td>
+      <td>18</td>
+      <td><span class="tag tag-warn">Partially Avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>1.1M</td>
+      <td>48</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>263K</td>
+      <td>1</td>
+      <td><span class="tag tag-diff">Avoidable</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═══ WIPE PROGRESSION ═══ -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Bebeshakur was subbed in starting pull 13 (of 20). 10 pulls total. DPS shown per pull with fight duration as bar height. Short wipes (&lt; 90s) inflate DPS due to burst phase bias.</p>
+
+<div class="card">
+<div class="progression-chart">
+  <div class="prog-bar" style="height: 36%; background: var(--orange);" data-tooltip="Pull 13: 107K DPS, 2:51 (63% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">107K</span>
+  </div>
+  <div class="prog-bar" style="height: 16%; background: var(--red);" data-tooltip="Pull 14: 88K DPS, 1:15 (81% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">88K</span>
+  </div>
+  <div class="prog-bar" style="height: 64%; background: var(--yellow);" data-tooltip="Pull 15: 114K DPS, 5:04 (39% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">114K</span>
+  </div>
+  <div class="prog-bar" style="height: 11%; background: var(--red);" data-tooltip="Pull 16: 139K DPS, 0:53 (81% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">139K</span>
+  </div>
+  <div class="prog-bar" style="height: 72%; background: var(--yellow);" data-tooltip="Pull 17: 104K DPS, 5:45 (31% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">104K</span>
+  </div>
+  <div class="prog-bar" style="height: 86%; background: var(--accent);" data-tooltip="Pull 18: 138K DPS, 6:51 (18% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">138K</span>
+  </div>
+  <div class="prog-bar" style="height: 63%; background: var(--yellow);" data-tooltip="Pull 19: 126K DPS, 5:01 (35% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">126K</span>
+  </div>
+  <div class="prog-bar" style="height: 11%; background: var(--red);" data-tooltip="Pull 20: 170K DPS, 0:54 (82% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">170K</span>
+  </div>
+  <div class="prog-bar" style="height: 91%; background: var(--accent);" data-tooltip="Pull 21: 124K DPS, 7:14 (14% wipe)">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">124K</span>
+  </div>
+  <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="Pull 22: 129K DPS, 7:57 KILL">
+    <span style="position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap;">129K</span>
+  </div>
+</div>
+<div style="display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: var(--dim);">
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--red); border-radius: 2px; vertical-align: middle;"></span> Short wipe (&lt;90s)</span>
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--orange); border-radius: 2px; vertical-align: middle;"></span> Medium (90-200s)</span>
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--yellow); border-radius: 2px; vertical-align: middle;"></span> Long (200-350s)</span>
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--accent); border-radius: 2px; vertical-align: middle;"></span> Near-kill (&gt;350s)</span>
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--green); border-radius: 2px; vertical-align: middle;"></span> Kill</span>
+</div>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">On meaningful-length pulls (&gt; 3 min), DPS ranged from <strong>104K</strong> to <strong>138K</strong>. The kill pull at <strong>129K</strong> was mid-range compared to practice pulls. There is a positive learning trend &mdash; later pulls averaged 7% higher DPS than earlier ones.</p>
+</div>
+
+<!-- ═══ EXTERNAL BUFFS ═══ -->
+<h2>External Buffs Received</h2>
+<p class="section-intro">External buffs that affected Bebeshakur's DPS output. These buffs inflate individual DPS by 5-10% &mdash; context for the reference comparison.</p>
+
+<div class="card">
+<div class="grid-3">
+  <div>
+    <div class="card-header cyan">Time Warp</div>
+    <p style="font-size: 13px;">0:00</p>
+    <p class="dim" style="font-size: 12px;">Used on pull (standard)</p>
+  </div>
+  <div>
+    <div class="card-header purple">Ebon Might</div>
+    <p style="font-size: 13px;">11 applications</p>
+    <p class="dim" style="font-size: 12px;">Aug Evoker buff &mdash; consistent uptime from Zinnks</p>
+  </div>
+  <div>
+    <div class="card-header accent">Prescience</div>
+    <p style="font-size: 13px;">6 applications</p>
+    <p class="dim" style="font-size: 12px;">Aug Evoker crit buff</p>
+  </div>
+</div>
+</div>
+
+<!-- ═══ DEFENSIVE USAGE ═══ -->
+<h2>Defensive Usage</h2>
+<p class="section-intro">Defensive ability usage throughout the fight. Anti-Magic Shell and Anti-Magic Zone are both defensive and can contribute to damage via Runic Power generation.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Casts</th><th>CPM</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Anti-Magic Shell</td>
+      <td>6</td>
+      <td>0.8</td>
+      <td class="dim">Personal magic absorb + RP generation</td>
+    </tr>
+    <tr>
+      <td>Anti-Magic Zone</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="dim">Raid-wide magic DR (ref used 2)</td>
+    </tr>
+    <tr>
+      <td>Death Grip</td>
+      <td>15</td>
+      <td>1.9</td>
+      <td class="yellow">Used significantly more than reference (4)</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═══ ACTIONABLE IMPROVEMENTS ═══ -->
+<h2>Actionable Improvements</h2>
+<p class="section-intro">Specific, concrete improvement items ranked by estimated DPS impact. Fix these in order for maximum improvement.</p>
+
+<div class="action-item critical">
+  <strong>#1 &mdash; Eliminate Cast Gaps: 70 Seconds of Dead Time</strong><br>
+  Bebeshakur had 12 cast gaps &gt; 2.5 seconds totaling 70 seconds of zero activity. Tranqx had zero. This alone accounts for an estimated ~54 lost casts and ~8.7M lost damage. 7 of 12 gaps followed Death Coil, suggesting a pattern of dumping RP then stalling. <strong>Fix:</strong> After every Death Coil, immediately queue the next GCD &mdash; Scourge Strike if wounds are up, Festering Strike if wounds are low, or Outbreak/DnD refresh if needed. Practice on a target dummy until ABC (Always Be Casting) is muscle memory.
+</div>
+
+<div class="action-item critical">
+  <strong>#2 &mdash; Use Death and Decay on Cooldown: 1 Cast vs 17</strong><br>
+  Death and Decay was cast once the entire 7:58 fight. Tranqx cast it 17 times. DnD transforms Scourge Strike to cleave, provides AoE damage to adds standing in it, and is a core rotational ability for Unholy. <strong>Fix:</strong> Cast DnD on cooldown (45s CD). It should be up for every add wave and maintained during boss-only phases for the Scourge Strike enhancement. This is likely worth 10-15K DPS on its own given the fight's add density.
+</div>
+
+<div class="action-item">
+  <strong>#3 &mdash; Increase Scourge Strike CPM: 16.7 vs 21.3 Reference</strong><br>
+  37 fewer Scourge Strikes than reference across the fight. This is partially caused by the cast gaps (#1) and partially by lower overall cast speed. Scourge Strike should be the default button whenever runes are available and the target has Festering Wounds. With DnD active (#2), every SS also cleaves. <strong>Fix:</strong> Prioritize SS over Death Coil when runes are available. SS generates RP while consuming wounds &mdash; it feeds the rotation forward.
+</div>
+
+<div class="action-item">
+  <strong>#4 &mdash; Shift RP Spending to Epidemic During Add Phases</strong><br>
+  Death Coil CPM matches reference (7.0 both), but Epidemic is at 2.6 CPM vs 5.1 CPM. On Rotmire with frequent Shroomling/Fungling spawns, Epidemic should replace Death Coil as the primary RP spender whenever 2+ targets are active. <strong>Fix:</strong> During add phases (after Awaken Fungi), use Epidemic instead of Death Coil. Switch back to Death Coil only during single-target boss phases with no adds alive.
+</div>
+
+<div class="action-item">
+  <strong>#5 &mdash; Reduce Excess Death Grips: 15 vs 4 Reference</strong><br>
+  15 Death Grips is 3.75x more than the reference's 4. Each Death Grip costs a GCD that could be a damage ability. While some grips are necessary for add management, this many suggests using it reactively as filler or for positioning when it is not needed. <strong>Fix:</strong> Reserve Death Grip for specific add positioning calls from the raid leader. If an add is already in melee range, hit it with SS instead of gripping.
+</div>
+
+<!-- ═══ CONTEXT FOOTER ═══ -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--accent);">
+  <div class="card-header accent">Context &amp; What's Already Good</div>
+  <p style="font-size: 14px;">
+    The 24% DPS gap vs the top-ranked reference is <strong>execution-based</strong>, not gear or talent. Bebeshakur has a 30+ ilvl advantage over Tranqx and only 5 talent differences. The gap narrows to three fixable habits: ABC discipline (cast gaps), DnD uptime, and AoE RP spending.
+  </p>
+  <p style="font-size: 14px; margin-top: 8px;">
+    <strong class="green">Positives:</strong> Survived the kill (many DPS died). Death Coil CPM matches reference exactly. Dark Transformation and Army of the Dead usage are identical. Soul Reaper usage is actually higher than reference (2.3 CPM vs 1.6). Defensive usage (AMS) is reasonable. Consumables (Flask, Vantus Rune) were active. Performance improved over the session, with later long pulls averaging higher DPS than earlier ones.
+  </p>
+  <p style="font-size: 14px; margin-top: 8px; color: var(--dim);">
+    Raid context: The team lost 3 DPS at 6:07 and another healer at 3:07. By 7:38, 8 players were dead. Bebeshakur stayed alive through the chaos, which matters more than the DPS number on a first kill.
+  </p>
+</div>
+
+<footer>
+  <p>Generated 2026-06-18 by WCL Analyzer &middot; Data from Warcraft Logs report <a href="https://www.warcraftlogs.com/reports/1Mch2jqLWmAZ8r9a#fight=22" style="color: var(--accent);">1Mch2jqLWmAZ8r9a</a> &middot; Primary reference: Tranqx (Drak'thul) &mdash; #2 ranked Unholy DK on Mythic Rotmire (5 talent diffs)</p>
+</footer>
+
+</body>
+</html>

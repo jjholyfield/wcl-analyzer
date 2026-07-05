@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starfighter — Fury Warrior — Crown of the Cosmos Prog Night 3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --warrior: #c69b6d;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+
+/* Header */
+.header { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 24px; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+.header-left h1 { font-size: 28px; font-weight: 700; color: var(--warrior); margin-bottom: 4px; }
+.header-left .spec { font-size: 15px; color: var(--dim); }
+.header-right { text-align: right; }
+.header-right .boss { font-size: 18px; font-weight: 600; color: var(--text); }
+.header-right .meta { font-size: 13px; color: var(--dim); margin-top: 4px; }
+
+.tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-prog { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+.tag-night { background: rgba(88,166,255,0.1); color: var(--accent); border: 1px solid rgba(88,166,255,0.2); margin-left: 6px; }
+
+/* Summary Cards */
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); margin-bottom: 8px; }
+.card-value { font-size: 26px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
+.card-value.green { color: var(--green); }
+.card-value.red { color: var(--red); }
+.card-value.yellow { color: var(--yellow); }
+.card-value.orange { color: var(--orange); }
+.card-value.warrior { color: var(--warrior); }
+
+/* Sections */
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+.section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-title .icon { font-size: 20px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(88,166,255,0.03); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: 4px; }
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.bar-label { width: 36px; text-align: right; color: var(--dim); flex-shrink: 0; }
+.bar-container { flex: 1; height: 28px; background: rgba(255,255,255,0.03); border-radius: 4px; position: relative; overflow: hidden; }
+.bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; min-width: 2px; transition: width 0.3s; }
+.bar.survived { background: linear-gradient(90deg, rgba(63,185,80,0.6), rgba(63,185,80,0.3)); }
+.bar.died { background: linear-gradient(90deg, rgba(248,81,73,0.6), rgba(248,81,73,0.3)); }
+.bar.died-early { background: linear-gradient(90deg, rgba(139,148,158,0.5), rgba(139,148,158,0.2)); }
+.bar.no-data { background: linear-gradient(90deg, rgba(139,148,158,0.3), rgba(139,148,158,0.1)); }
+.bar-info { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--dim); }
+.avg-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--yellow); z-index: 2; }
+.avg-line::after { content: 'AVG'; position: absolute; top: -16px; left: -8px; font-size: 9px; color: var(--yellow); }
+
+/* Death callout */
+.callout { padding: 16px 20px; border-radius: 8px; margin-bottom: 16px; }
+.callout-red { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+.callout-yellow { background: rgba(210,153,34,0.08); border: 1px solid rgba(210,153,34,0.25); }
+.callout-green { background: rgba(63,185,80,0.08); border: 1px solid rgba(63,185,80,0.25); }
+.callout-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.callout-red .callout-title { color: var(--red); }
+.callout-yellow .callout-title { color: var(--yellow); }
+.callout-green .callout-title { color: var(--green); }
+.callout-body { font-size: 13px; color: var(--dim); line-height: 1.7; }
+
+/* Phase bars */
+.phase-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin: 12px 0; border: 1px solid var(--border); }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9); }
+
+/* Ability table */
+.ability-bar { height: 6px; border-radius: 3px; background: var(--accent); display: inline-block; vertical-align: middle; }
+.ability-bar.ref { background: var(--purple); }
+
+/* Actionable items */
+.action-item { padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; }
+.action-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--bg); font-size: 12px; font-weight: 700; margin-right: 10px; flex-shrink: 0; }
+.action-title { font-weight: 600; font-size: 14px; display: inline; }
+.action-body { margin-top: 8px; font-size: 13px; color: var(--dim); line-height: 1.7; margin-left: 34px; }
+
+/* Footer */
+.footer { text-align: center; padding: 24px; font-size: 12px; color: var(--dim); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .header-top { flex-direction: column; }
+  .header-right { text-align: left; }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23 Crown of the Cosmos Log Analysis</a>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-left">
+      <h1>Starfighter</h1>
+      <div class="spec">Fury Warrior &middot; Mountain Thane &middot; 291 ilvl</div>
+    </div>
+    <div class="header-right">
+      <div class="boss">
+        <span class="tag tag-prog">PROGRESSION</span>
+        <span class="tag tag-night">Night 3</span>
+      </div>
+      <div class="boss" style="margin-top:8px;">Mythic Crown of the Cosmos</div>
+      <div class="meta">June 23, 2026 &middot; 20 pulls &middot; Best: 26.51% (F25, 6:44)</div>
+      <div class="meta">Report: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg Active DPS</div>
+    <div class="card-value warrior">90.6K</div>
+    <div class="card-sub">Across 10 qualifying pulls</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">291</div>
+    <div class="card-sub">Range: 285 - 298</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value red">0 / 20</div>
+    <div class="card-sub">Died every pull</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value yellow">26.51%</div>
+    <div class="card-sub">Fight 25, 6:44 &middot; 103K active DPS</div>
+  </div>
+</div>
+
+<!-- CRITICAL WARNING -->
+<div class="callout callout-red">
+  <div class="callout-title">Critical: 0% Survival Rate</div>
+  <div class="callout-body">
+    Starfighter died in all 20 pulls. Average survival time: <strong>3:18</strong> (median 3:19).
+    8 deaths occurred in Phase 1 (before 2:14), meaning 40% of pulls ended before even seeing the intermission.
+    Survival is the single highest-priority improvement area -- dead DPS is zero DPS, and the overall DPS
+    numbers (17-48K range) reflect how much fight time is lost to death. Active DPS while alive (77-108K)
+    shows the damage output is present when Starfighter is up.
+  </div>
+</div>
+
+<!-- PERFORMANCE ACROSS ALL PULLS -->
+<div class="section">
+  <div class="section-title">Performance Across All Pulls</div>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    DPS shown is <strong>overall DPS</strong> (total damage / fight duration) from WCL tables.
+    Pulls where Starfighter died before the table registered meaningful data show as gray.
+    Red bars = died before fight ended. All bars are red or gray since survival rate is 0%.
+  </p>
+
+  <div class="bar-chart">
+    <!-- Fight 5: 228s, DPS 17195, died 3:43, Cosmic Barrier -->
+    <div class="bar-row">
+      <div class="bar-label">F5</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:35.8%;">17.2K</div>
+        <span class="bar-info">3:48 | Died 3:43 | Cosmic Barrier</span>
+      </div>
+    </div>
+    <!-- Fight 6: 233s, DPS 21935, died 3:38, Cosmic Barrier -->
+    <div class="bar-row">
+      <div class="bar-label">F6</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:45.6%;">21.9K</div>
+        <span class="bar-info">3:53 | Died 3:38 | Cosmic Barrier</span>
+      </div>
+    </div>
+    <!-- Fight 7: 77s, died 1:02, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F7</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">1:17 | Died 1:02 | Dark Hand</span>
+      </div>
+    </div>
+    <!-- Fight 8: 81s, died 1:18, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F8</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">1:21 | Died 1:18 | Unknown</span>
+      </div>
+    </div>
+    <!-- Fight 9: 315s, DPS 40568, died 5:10, Simulacrum Backlash -->
+    <div class="bar-row">
+      <div class="bar-label">F9</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:84.4%;">40.6K</div>
+        <span class="bar-info">5:15 | Died 5:10 | Simulacrum Backlash</span>
+      </div>
+    </div>
+    <!-- Fight 10: 120s, died 1:44, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F10</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">2:00 | Died 1:44 | Ravenous Abyss</span>
+      </div>
+    </div>
+    <!-- Fight 11: 227s, died 1:33, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F11</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">3:47 | Died 1:33 | Bursting Emptiness</span>
+      </div>
+    </div>
+    <!-- Fight 12: 287s, died 1:50, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F12</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">4:47 | Died 1:50 | Echoing Darkness</span>
+      </div>
+    </div>
+    <!-- Fight 13: 361s, DPS 39984, died 5:36, Dimensional Slash -->
+    <div class="bar-row">
+      <div class="bar-label">F13</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:83.2%;">40.0K</div>
+        <span class="bar-info">6:01 | Died 5:36 | Dimensional Slash</span>
+      </div>
+    </div>
+    <!-- Fight 14: 86s, died 1:26, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F14</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">1:26 | Died 1:26 | Unknown</span>
+      </div>
+    </div>
+    <!-- Fight 15: 185s, died 2:43, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F15</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">3:05 | Died 2:43 | Silverstrike Barrage</span>
+      </div>
+    </div>
+    <!-- Fight 16: 185s, died 2:59, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F16</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">3:05 | Died 2:59 | Unknown</span>
+      </div>
+    </div>
+    <!-- Fight 17: 235s, DPS 18483, died 3:38, Cosmic Barrier -->
+    <div class="bar-row">
+      <div class="bar-label">F17</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:38.5%;">18.5K</div>
+        <span class="bar-info">3:55 | Died 3:38 | Cosmic Barrier</span>
+      </div>
+    </div>
+    <!-- Fight 18: 263s, DPS 27574, died 4:12, Void Remnants -->
+    <div class="bar-row">
+      <div class="bar-label">F18</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:57.4%;">27.6K</div>
+        <span class="bar-info">4:23 | Died 4:12 | Void Remnants</span>
+      </div>
+    </div>
+    <!-- Fight 19: 369s, DPS 45205, died 5:46, Melee -->
+    <div class="bar-row">
+      <div class="bar-label">F19</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:94.1%;">45.2K</div>
+        <span class="bar-info">6:09 | Died 5:46 | Melee</span>
+      </div>
+    </div>
+    <!-- Fight 20: 315s, DPS 48041, died 5:07, Voidstalker Sting -->
+    <div class="bar-row">
+      <div class="bar-label">F20</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:100%;">48.0K</div>
+        <span class="bar-info">5:15 | Died 5:07 | Voidstalker Sting</span>
+      </div>
+    </div>
+    <!-- Fight 21: 123s, died 1:55, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F21</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">2:03 | Died 1:55 | Bursting Emptiness</span>
+      </div>
+    </div>
+    <!-- Fight 22: 92s, died 1:31, no table data -->
+    <div class="bar-row">
+      <div class="bar-label">F22</div>
+      <div class="bar-container">
+        <div class="bar no-data" style="width:3%;">&nbsp;</div>
+        <span class="bar-info">1:32 | Died 1:31 | Melee</span>
+      </div>
+    </div>
+    <!-- Fight 23: 385s, DPS 46380, died 6:14, Voidstalker Sting -->
+    <div class="bar-row">
+      <div class="bar-label">F23</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:96.5%;">46.4K</div>
+        <span class="bar-info">6:25 | Died 6:14 | Voidstalker Sting</span>
+      </div>
+    </div>
+    <!-- Fight 25: 404s, DPS 35606, died 4:59, Voidstalker Sting -->
+    <div class="bar-row">
+      <div class="bar-label">F25</div>
+      <div class="bar-container">
+        <div class="bar died" style="width:74.1%;">35.6K</div>
+        <span class="bar-info">6:44 | Died 4:59 | Voidstalker Sting</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:16px;margin-top:12px;font-size:11px;color:var(--dim);">
+    <span><span style="display:inline-block;width:12px;height:12px;background:rgba(248,81,73,0.5);border-radius:2px;vertical-align:middle;margin-right:4px;"></span> Died (table data available)</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:rgba(139,148,158,0.4);border-radius:2px;vertical-align:middle;margin-right:4px;"></span> Died early (no table data)</span>
+  </div>
+</div>
+
+<!-- DEATH PATTERN ANALYSIS -->
+<div class="section">
+  <div class="section-title">Death Pattern Analysis</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+    <div class="card" style="text-align:left;">
+      <div class="card-label" style="text-align:left;">Deaths / Pulls</div>
+      <div class="card-value red" style="font-size:22px;">20 / 20 (100%)</div>
+    </div>
+    <div class="card" style="text-align:left;">
+      <div class="card-label" style="text-align:left;">Average Survival Time</div>
+      <div class="card-value orange" style="font-size:22px;">3:18</div>
+      <div class="card-sub" style="text-align:left;">Median: 3:19</div>
+    </div>
+  </div>
+
+  <div class="callout callout-red" style="margin-bottom:20px;">
+    <div class="callout-title">Top Killers</div>
+    <div class="callout-body">
+      <strong style="color:var(--red);">Voidstalker Sting</strong> (3 deaths) and <strong style="color:var(--red);">Cosmic Barrier</strong> (3 deaths) are the most frequent killing abilities,
+      both in Phase 2. <strong>Bursting Emptiness</strong> (2 deaths) is the top P1 killer, followed by various P1 sentinel mechanics
+      (Dark Hand, Ravenous Abyss, Echoing Darkness) claiming one each. The 8 Phase 1 deaths before 2:14 represent the most urgent pattern to fix.
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Killing Ability</th>
+        <th class="num">Deaths</th>
+        <th>Phase</th>
+        <th>Avg Time</th>
+        <th>Fights</th>
+        <th>Avoidable?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--red);">Voidstalker Sting</strong></td>
+        <td class="num">3</td>
+        <td>P2 / P3</td>
+        <td>5:27</td>
+        <td>F20, F23, F25</td>
+        <td><span style="color:var(--yellow);">Partially</span> &mdash; DoT requires healing/defensive</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--red);">Cosmic Barrier</strong></td>
+        <td class="num">3</td>
+        <td>P2</td>
+        <td>3:40</td>
+        <td>F5, F6, F17</td>
+        <td><span style="color:var(--yellow);">Partially</span> &mdash; raid-wide, needs defensive CD</td>
+      </tr>
+      <tr>
+        <td><strong>Bursting Emptiness</strong></td>
+        <td class="num">2</td>
+        <td>P1</td>
+        <td>1:44</td>
+        <td>F11, F21</td>
+        <td><span style="color:var(--green);">Yes</span> &mdash; dodge void zones</td>
+      </tr>
+      <tr>
+        <td><strong>Melee</strong></td>
+        <td class="num">2</td>
+        <td>P1 / P3</td>
+        <td>3:39</td>
+        <td>F19, F22</td>
+        <td><span style="color:var(--dim);">No</span> &mdash; indicates low HP from other damage</td>
+      </tr>
+      <tr>
+        <td><strong>Unknown / Other</strong></td>
+        <td class="num">3</td>
+        <td>P1</td>
+        <td>1:54</td>
+        <td>F8, F14, F16</td>
+        <td><span style="color:var(--dim);">Unclear</span></td>
+      </tr>
+      <tr>
+        <td>Dark Hand</td>
+        <td class="num">1</td>
+        <td>P1</td>
+        <td>1:02</td>
+        <td>F7</td>
+        <td><span style="color:var(--green);">Yes</span> &mdash; frontal from Morium</td>
+      </tr>
+      <tr>
+        <td>Ravenous Abyss</td>
+        <td class="num">1</td>
+        <td>P1</td>
+        <td>1:44</td>
+        <td>F10</td>
+        <td><span style="color:var(--green);">Yes</span> &mdash; don't stand in the zone</td>
+      </tr>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td class="num">1</td>
+        <td>P1</td>
+        <td>1:50</td>
+        <td>F12</td>
+        <td><span style="color:var(--yellow);">Partially</span> &mdash; persistent damage from Vorelus</td>
+      </tr>
+      <tr>
+        <td>Silverstrike Barrage</td>
+        <td class="num">1</td>
+        <td>Intermission</td>
+        <td>2:43</td>
+        <td>F15</td>
+        <td><span style="color:var(--yellow);">Partially</span> &mdash; use defensive during channel</td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td class="num">1</td>
+        <td>P3</td>
+        <td>5:10</td>
+        <td>F9</td>
+        <td><span style="color:var(--green);">Yes</span> &mdash; avoid proximity damage</td>
+      </tr>
+      <tr>
+        <td>Dimensional Slash</td>
+        <td class="num">1</td>
+        <td>P3</td>
+        <td>5:36</td>
+        <td>F13</td>
+        <td><span style="color:var(--green);">Yes</span> &mdash; dodge the slash</td>
+      </tr>
+      <tr>
+        <td>Void Remnants</td>
+        <td class="num">1</td>
+        <td>P2</td>
+        <td>4:12</td>
+        <td>F18</td>
+        <td><span style="color:var(--green);">Yes</span> &mdash; clear the debuff zones</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PER-PHASE PERFORMANCE BREAKDOWN -->
+<div class="section">
+  <div class="section-title">Per-Phase Performance Breakdown</div>
+
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    This is the most important section of the analysis. Overall DPS is misleading because it blends
+    a strong P1 with degraded P2/P3 performance (and death downtime). The phase breakdown shows exactly
+    where performance falls off and why.
+  </p>
+
+  <!-- Phase reach visual -->
+  <div style="margin-bottom:20px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Phase Reach Rate</div>
+    <div class="phase-bar">
+      <div class="phase-segment" style="flex:134;background:rgba(63,185,80,0.35);">P1: 20/20</div>
+      <div class="phase-segment" style="flex:39;background:rgba(210,153,34,0.35);">Int: 12/20</div>
+      <div class="phase-segment" style="flex:136;background:rgba(248,81,73,0.25);">P2: 11/20</div>
+      <div class="phase-segment" style="flex:91;background:rgba(248,81,73,0.15);">P3: 4/20</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:4px;">
+      <span>0:00</span><span>2:14</span><span>2:53</span><span>5:09</span><span>7:00+</span>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th class="num">Pulls Seen</th>
+        <th class="num">Avg DPS</th>
+        <th class="num">Best DPS</th>
+        <th class="num">Deaths</th>
+        <th>Top Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>P1: Sentinels</strong> (0:00 - 2:14)</td>
+        <td class="num"><span style="color:var(--green);">20/20</span></td>
+        <td class="num" style="color:var(--warrior);">281.2K</td>
+        <td class="num">371.6K</td>
+        <td class="num"><span style="color:var(--red);">8</span></td>
+        <td>Bursting Emptiness (2), Dark Hand, Ravenous Abyss, Echoing Darkness, Melee, Unknown (2)</td>
+      </tr>
+      <tr>
+        <td><strong>Intermission</strong> (2:14 - 2:53)</td>
+        <td class="num"><span style="color:var(--yellow);">12/20</span></td>
+        <td class="num" style="color:var(--dim);">0</td>
+        <td class="num" style="color:var(--dim);">0</td>
+        <td class="num"><span style="color:var(--yellow);">1</span></td>
+        <td>Silverstrike Barrage (no targets to hit during intermission)</td>
+      </tr>
+      <tr>
+        <td><strong>P2: Rift</strong> (2:53 - 5:09)</td>
+        <td class="num"><span style="color:var(--red);">11/20</span></td>
+        <td class="num" style="color:var(--warrior);">95.8K</td>
+        <td class="num">118.9K</td>
+        <td class="num"><span style="color:var(--red);">7</span></td>
+        <td>Cosmic Barrier (3), Voidstalker Sting (2), Void Remnants, Unknown</td>
+      </tr>
+      <tr>
+        <td><strong>P3: Devouring Cosmos</strong> (5:09+)</td>
+        <td class="num"><span style="color:var(--red);">4/20</span></td>
+        <td class="num" style="color:var(--warrior);">71.2K</td>
+        <td class="num">134.6K</td>
+        <td class="num"><span style="color:var(--red);">4</span></td>
+        <td>Simulacrum Backlash, Dimensional Slash, Melee, Voidstalker Sting</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:20px;">
+    <div class="callout callout-yellow">
+      <div class="callout-title">Phase Insights</div>
+      <div class="callout-body">
+        <strong>P1 is the wall.</strong> 8 of 20 deaths (40%) happen before the intermission at 2:14. These are to varied mechanics
+        (Bursting Emptiness, Dark Hand, Ravenous Abyss, Echoing Darkness), which suggests a general survivability issue during the sentinel
+        phase rather than one specific mechanic failure. Fury Warriors are inherently squishy melee -- Spell Reflection, Defensive Stance,
+        Enraged Regeneration, and Rallying Cry need to be used proactively on dangerous overlaps.<br><br>
+
+        <strong>P1 DPS (281K avg) is strong</strong> given the cleave-heavy sentinel phase with multiple adds active. This is where Mountain Thane
+        Fury excels with Thunder Clap cleave. The challenge is surviving long enough to apply it.<br><br>
+
+        <strong>P2 DPS drops to 96K avg</strong> -- a 66% reduction from P1. This is expected since P2 has fewer cleave targets and more
+        movement from Rift Slash and Cosmic Barrier. However, 7 deaths in P2 (across only 11 pulls that reached it) means 64% death rate
+        in P2. Cosmic Barrier (3 deaths) is the biggest single threat.<br><br>
+
+        <strong>P3 has been seen only 4 times.</strong> Not enough data to draw conclusions, but all 4 pulls ended in death.
+        The priority is getting there more consistently.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DAMAGE TAKEN ANALYSIS -->
+<div class="section">
+  <div class="section-title">Damage Taken Profile (All 20 Pulls)</div>
+
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    Total damage taken across all pulls, grouped by source. Echoing Darkness is the dominant source at 57.1M total,
+    which is a persistent AoE during Phase 1 from Vorelus -- unavoidable but requires healing/defensive awareness.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th class="num">Total Damage</th>
+        <th class="num">Hits</th>
+        <th class="num">Pulls Hit</th>
+        <th>Category</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Echoing Darkness</strong></td>
+        <td class="num">57.1M</td>
+        <td class="num">2,240</td>
+        <td class="num">20/20</td>
+        <td><span style="color:var(--dim);">Unavoidable</span> &mdash; persistent P1 AoE from Vorelus</td>
+      </tr>
+      <tr>
+        <td><strong>Grasp of Emptiness</strong></td>
+        <td class="num">18.6M</td>
+        <td class="num">356</td>
+        <td class="num">17/20</td>
+        <td><span style="color:var(--dim);">Unavoidable</span> &mdash; periodic raid damage</td>
+      </tr>
+      <tr>
+        <td><strong>Void Expulsion</strong></td>
+        <td class="num">17.1M</td>
+        <td class="num">419</td>
+        <td class="num">20/20</td>
+        <td><span style="color:var(--dim);">Unavoidable</span> &mdash; periodic raid AoE</td>
+      </tr>
+      <tr>
+        <td><strong>Simulacrum Backlash</strong></td>
+        <td class="num">14.3M</td>
+        <td class="num">528</td>
+        <td class="num">10/20</td>
+        <td><span style="color:var(--yellow);">Partially avoidable</span> &mdash; proximity damage</td>
+      </tr>
+      <tr>
+        <td><strong>Voidstalker Sting</strong></td>
+        <td class="num">10.8M</td>
+        <td class="num">455</td>
+        <td class="num">10/20</td>
+        <td><span style="color:var(--yellow);">Partially avoidable</span> &mdash; DoT, needs defensive/healing</td>
+      </tr>
+      <tr>
+        <td><strong>Cosmic Barrier</strong></td>
+        <td class="num">10.1M</td>
+        <td class="num">361</td>
+        <td class="num">11/20</td>
+        <td><span style="color:var(--yellow);">Partially avoidable</span> &mdash; use defensive for overlap</td>
+      </tr>
+      <tr>
+        <td><strong>Interrupting Tremor</strong></td>
+        <td class="num">5.2M</td>
+        <td class="num">44</td>
+        <td class="num">20/20</td>
+        <td><span style="color:var(--dim);">Unavoidable</span> &mdash; periodic knockback damage</td>
+      </tr>
+      <tr>
+        <td><strong>Stellar Emission</strong></td>
+        <td class="num">4.8M</td>
+        <td class="num">166</td>
+        <td class="num">12/20</td>
+        <td><span style="color:var(--dim);">Unavoidable</span> &mdash; intermission channel</td>
+      </tr>
+      <tr>
+        <td><strong>Void Barrage</strong></td>
+        <td class="num">4.8M</td>
+        <td class="num">70</td>
+        <td class="num">10/20</td>
+        <td><span style="color:var(--yellow);">Partially avoidable</span></td>
+      </tr>
+      <tr>
+        <td><strong>Falling</strong></td>
+        <td class="num">3.9M</td>
+        <td class="num">19</td>
+        <td class="num">12/20</td>
+        <td><span style="color:var(--red);">Avoidable</span> &mdash; positioning issue, knocked off platform?</td>
+      </tr>
+      <tr>
+        <td><strong>Bursting Emptiness</strong></td>
+        <td class="num">2.3M</td>
+        <td class="num">9</td>
+        <td class="num">6/20</td>
+        <td><span style="color:var(--green);">Avoidable</span> &mdash; void zones to dodge</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow" style="margin-top:16px;">
+    <div class="callout-title">Falling Damage: 3.9M across 12 pulls</div>
+    <div class="callout-body">
+      Starfighter took fall damage in 12 of 20 pulls (19 hits, 3.9M total). This is unusual and suggests
+      getting knocked off the platform or failing to position for knockback mechanics. Consider using
+      <strong>Heroic Leap</strong> as a recovery tool when knocked back, and ensure positioning keeps
+      distance from platform edges during Grasp of Emptiness and Interrupting Tremor.
+    </div>
+  </div>
+</div>
+
+<!-- CAST PROFILE -->
+<div class="section">
+  <div class="section-title">Cast Profile &mdash; Best Qualifying Pull (Fight 23, 6:14 alive)</div>
+
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    Ability breakdown from Starfighter's longest survival pull. Mountain Thane hero talents are active --
+    Thunder Clap replaces Whirlwind as the primary filler and is empowered during Avatar.
+    Active time was ~206 seconds out of 374 seconds alive.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th class="num">Casts</th>
+        <th class="num">Damage</th>
+        <th class="num">% Total</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--warrior);">Thunder Clap</strong></td>
+        <td class="num">59</td>
+        <td class="num">4.14M</td>
+        <td class="num">23.2%</td>
+        <td>Primary filler (Mountain Thane) -- 34 Thunder Blasts also fired</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--warrior);">Rampage</strong></td>
+        <td class="num">71</td>
+        <td class="num">3.51M</td>
+        <td class="num">19.7%</td>
+        <td>Rage spender, Enrage trigger -- good usage rate</td>
+      </tr>
+      <tr>
+        <td><strong>Bloodthirst</strong></td>
+        <td class="num">36</td>
+        <td class="num">1.61M</td>
+        <td class="num">9.0%</td>
+        <td>Core rotational, generates Rage</td>
+      </tr>
+      <tr>
+        <td><strong>Bloodbath</strong></td>
+        <td class="num">16</td>
+        <td class="num">1.59M</td>
+        <td class="num">8.9%</td>
+        <td>Reckless Abandon proc during Recklessness</td>
+      </tr>
+      <tr>
+        <td><strong>Melee</strong></td>
+        <td class="num">--</td>
+        <td class="num">1.51M</td>
+        <td class="num">8.5%</td>
+        <td>Auto-attacks</td>
+      </tr>
+      <tr>
+        <td><strong>Raging Blow</strong></td>
+        <td class="num">34</td>
+        <td class="num">--</td>
+        <td class="num">--</td>
+        <td>Standard rotational filler</td>
+      </tr>
+      <tr>
+        <td><strong>Execute</strong></td>
+        <td class="num">16</td>
+        <td class="num">--</td>
+        <td class="num">--</td>
+        <td>Sudden Death procs</td>
+      </tr>
+      <tr>
+        <td><strong>Odyn's Fury</strong></td>
+        <td class="num">7</td>
+        <td class="num">--</td>
+        <td class="num">--</td>
+        <td>Major AoE cooldown, used on CD (good)</td>
+      </tr>
+      <tr style="background:rgba(88,166,255,0.03);">
+        <td><strong style="color:var(--accent);">Recklessness</strong></td>
+        <td class="num">6</td>
+        <td class="num">--</td>
+        <td class="num">--</td>
+        <td>~1 per minute via Anger Management -- good CD usage</td>
+      </tr>
+      <tr style="background:rgba(88,166,255,0.03);">
+        <td><strong style="color:var(--accent);">Avatar</strong></td>
+        <td class="num">6</td>
+        <td class="num">--</td>
+        <td class="num">--</td>
+        <td>Paired with Recklessness -- correct</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:16px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Cooldown Usage (Fight 23)</div>
+    <div style="font-size:12px;color:var(--dim);line-height:1.8;">
+      Recklessness + Avatar paired at: <strong>0:07</strong>, <strong>1:09</strong>, <strong>2:00</strong>, <strong>3:10</strong>, <strong>4:02</strong>, <strong>4:53</strong>, <strong>5:44</strong><br>
+      Average gap: ~56 seconds -- consistent with Anger Management reducing Recklessness cooldown.<br>
+      Spell Reflection used at: <strong>1:43</strong>, <strong>5:04</strong> (only 2 uses in 6:14 -- could use more proactively)<br>
+      Defensive Stance used at: <strong>2:16</strong> (intermission -- correct timing)<br>
+      Healthstone: 1 use &middot; Silvermoon Health Potion: 1 use
+    </div>
+  </div>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<div class="section">
+  <div class="section-title">External Buffs Received (Fight 23)</div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+    <div class="card" style="text-align:left;">
+      <div class="card-label" style="text-align:left;">Bloodlust / Heroism</div>
+      <div style="font-size:14px;color:var(--dim);">Not detected in this pull</div>
+    </div>
+    <div class="card" style="text-align:left;">
+      <div class="card-label" style="text-align:left;">Power Infusion</div>
+      <div style="font-size:14px;color:var(--dim);">Not received</div>
+    </div>
+    <div class="card" style="text-align:left;">
+      <div class="card-label" style="text-align:left;">Augmentation Evoker</div>
+      <div style="font-size:14px;">
+        Ebon Might: 6 applications<br>
+        Prescience: 2 applications
+      </div>
+      <div class="card-sub" style="text-align:left;">+345K RDPS received</div>
+    </div>
+  </div>
+</div>
+
+<!-- RAID RANK CONTEXT -->
+<div class="section">
+  <div class="section-title">Raid Rank Context (Qualifying Pulls)</div>
+
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    On pulls where table data is available (survived long enough for WCL to register),
+    Starfighter's rank within the raid. Dead time heavily penalizes overall DPS ranking.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Fight</th>
+        <th class="num">Duration</th>
+        <th class="num">Overall DPS</th>
+        <th class="num">Active DPS</th>
+        <th class="num">Raid Rank</th>
+        <th>Died At</th>
+        <th>Killed By</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>F20</td>
+        <td class="num">5:15</td>
+        <td class="num" style="color:var(--green);">48,041</td>
+        <td class="num" style="color:var(--warrior);">108,391</td>
+        <td class="num">5 / 20</td>
+        <td>5:07</td>
+        <td>Voidstalker Sting</td>
+      </tr>
+      <tr>
+        <td>F23</td>
+        <td class="num">6:25</td>
+        <td class="num" style="color:var(--green);">46,380</td>
+        <td class="num" style="color:var(--warrior);">86,730</td>
+        <td class="num">7 / 19</td>
+        <td>6:14</td>
+        <td>Voidstalker Sting</td>
+      </tr>
+      <tr>
+        <td>F19</td>
+        <td class="num">6:09</td>
+        <td class="num">45,205</td>
+        <td class="num" style="color:var(--warrior);">95,809</td>
+        <td class="num">5 / 17</td>
+        <td>5:46</td>
+        <td>Melee</td>
+      </tr>
+      <tr>
+        <td>F9</td>
+        <td class="num">5:15</td>
+        <td class="num">40,568</td>
+        <td class="num" style="color:var(--warrior);">92,307</td>
+        <td class="num">11 / 19</td>
+        <td>5:10</td>
+        <td>Simulacrum Backlash</td>
+      </tr>
+      <tr>
+        <td>F13</td>
+        <td class="num">6:01</td>
+        <td class="num">39,984</td>
+        <td class="num" style="color:var(--warrior);">89,071</td>
+        <td class="num">11 / 18</td>
+        <td>5:36</td>
+        <td>Dimensional Slash</td>
+      </tr>
+      <tr>
+        <td>F25</td>
+        <td class="num">6:44</td>
+        <td class="num">35,606</td>
+        <td class="num" style="color:var(--warrior);">103,236</td>
+        <td class="num">11 / 18</td>
+        <td>4:59</td>
+        <td>Voidstalker Sting</td>
+      </tr>
+      <tr>
+        <td>F18</td>
+        <td class="num">4:23</td>
+        <td class="num">27,574</td>
+        <td class="num" style="color:var(--warrior);">84,031</td>
+        <td class="num">13 / 17</td>
+        <td>4:12</td>
+        <td>Void Remnants</td>
+      </tr>
+      <tr>
+        <td>F6</td>
+        <td class="num">3:53</td>
+        <td class="num">21,935</td>
+        <td class="num" style="color:var(--warrior);">89,608</td>
+        <td class="num">13 / 18</td>
+        <td>3:38</td>
+        <td>Cosmic Barrier</td>
+      </tr>
+      <tr>
+        <td>F17</td>
+        <td class="num">3:55</td>
+        <td class="num">18,483</td>
+        <td class="num" style="color:var(--warrior);">79,173</td>
+        <td class="num">13 / 19</td>
+        <td>3:38</td>
+        <td>Cosmic Barrier</td>
+      </tr>
+      <tr>
+        <td>F5</td>
+        <td class="num">3:48</td>
+        <td class="num">17,195</td>
+        <td class="num" style="color:var(--warrior);">77,829</td>
+        <td class="num">12 / 18</td>
+        <td>3:43</td>
+        <td>Cosmic Barrier</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px;font-size:12px;color:var(--dim);">
+    Active DPS while alive ranges from 77.8K to 108.4K. The variance comes from fight length -- longer pulls
+    include more P2/P3 time where DPS naturally drops from reduced cleave. The 10 pulls not shown here are
+    where Starfighter died in P1 (before ~2:00) and didn't register in the DPS table.
+  </div>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<div class="section">
+  <div class="section-title">Reference Context (De-emphasized)</div>
+
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    Top-ranked Fury Warriors on Mythic Crown of the Cosmos. These are full kill performances --
+    direct comparison to prog pulls is not meaningful. Shown for ceiling context only.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Player</th>
+        <th>Server</th>
+        <th class="num">DPS</th>
+        <th class="num">Kill Time</th>
+        <th class="num">ilvl</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--purple);">1</td>
+        <td style="color:var(--purple);">&#38684;&#26023;</td>
+        <td>&#29123;&#28903;&#20043;&#21049;</td>
+        <td class="num" style="color:var(--purple);">245,011</td>
+        <td class="num">8:45</td>
+        <td class="num">293</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Garyh</td>
+        <td>Earthen Ring</td>
+        <td class="num">234,143</td>
+        <td class="num">8:13</td>
+        <td class="num">290</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>&#20806;&#38125;</td>
+        <td>&#26080;&#23613;&#20043;&#28023;</td>
+        <td class="num">233,809</td>
+        <td class="num">7:00</td>
+        <td class="num">291</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>&#32701;&#21733;</td>
+        <td>&#29123;&#28903;&#20043;&#21049;</td>
+        <td class="num">233,386</td>
+        <td class="num">6:46</td>
+        <td class="num">290</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>&#28145;&#36466;&#20061;&#20061;</td>
+        <td>&#29123;&#28903;&#20043;&#21049;</td>
+        <td class="num">231,787</td>
+        <td class="num">7:58</td>
+        <td class="num">291</td>
+      </tr>
+      <tr style="background:rgba(198,155,109,0.08);">
+        <td></td>
+        <td style="color:var(--warrior);"><strong>Starfighter</strong></td>
+        <td></td>
+        <td class="num" style="color:var(--warrior);"><strong>90,619 avg active</strong></td>
+        <td class="num">--</td>
+        <td class="num"><strong>291</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px;font-size:12px;color:var(--dim);">
+    At 291 ilvl, Starfighter matches the gear level of the top-ranked players (290-293 range).
+    Reference kills show 231-245K DPS over full 7-9 minute kills. Starfighter's 90.6K avg active DPS is
+    roughly 37-39% of reference -- but this comparison is misleading. Reference players are alive for the
+    full fight with consistent Bloodlust/PI/Aug timing, while Starfighter's active DPS samples only partial
+    fight windows. The real comparison will become meaningful when survival improves enough to see full fights.
+  </div>
+</div>
+
+<!-- SESSION TREND -->
+<div class="section">
+  <div class="section-title">Session Trend</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div class="card" style="text-align:left;">
+      <div class="card-label" style="text-align:left;">First 10 Pulls (F5-F14)</div>
+      <div style="font-size:14px;">
+        Avg death time: <strong>2:44</strong><br>
+        Pulls reaching P2+: <strong>4 / 10</strong><br>
+        Pulls with table DPS: <strong>4 / 10</strong>
+      </div>
+    </div>
+    <div class="card" style="text-align:left;">
+      <div class="card-label" style="text-align:left;">Last 10 Pulls (F15-F25)</div>
+      <div style="font-size:14px;">
+        Avg death time: <strong>3:52</strong><br>
+        Pulls reaching P2+: <strong>7 / 10</strong><br>
+        Pulls with table DPS: <strong>6 / 10</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Positive Trend: Survival Improved in Second Half</div>
+    <div class="callout-body">
+      Average survival time increased from <strong>2:44</strong> (first 10 pulls) to <strong>3:52</strong> (last 10 pulls),
+      a 41% improvement. P2+ reach rate jumped from 40% to 70%. The second half of the session shows
+      meaningful learning on P1 mechanics. 4 of the last 6 pulls had table-registered DPS (compared to 4 of the first 10),
+      and the best overall DPS pulls (F19: 45.2K, F20: 48.0K, F23: 46.4K) all came in the second half.
+    </div>
+  </div>
+</div>
+
+<!-- GEAR CHECK -->
+<div class="section">
+  <div class="section-title">Gear Summary</div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+    <div class="card">
+      <div class="card-label">Avg ilvl</div>
+      <div class="card-value">291</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Haste</div>
+      <div class="card-value">1,129</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Mastery</div>
+      <div class="card-value">1,141</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Versatility</div>
+      <div class="card-value red">36</div>
+      <div class="card-sub">Extremely low</div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;font-size:13px;color:var(--dim);">
+    <strong>Set bonus:</strong> Night Ender 5pc (Head/Shoulders/Chest/Legs + 1 more based on set ID 1990).<br>
+    <strong>Trinkets:</strong> Heart of Ancient Hunger (298) + Gaze of the Alnseer (285).<br>
+    <strong>Weapons:</strong> Garfrost's Two-Ton Hammer (298 MH) + Blood Knight's Warblade (295 OH), both with
+    Thalassian Phoenix Oil and weapon enchants.<br>
+    <strong>Enchants:</strong> All slots enchanted. Helm has Empowered Hex of Leeching (self-healing),
+    Boots have Lynx's Dexterity (movement speed).<br>
+    <strong>Note:</strong> Versatility at 36 is essentially zero. While Fury Warriors prioritize Haste > Mastery,
+    having some Versatility provides both damage AND damage reduction. The near-zero Vers contributes to squishiness.
+  </div>
+</div>
+
+<!-- ACTIONABLE IMPROVEMENTS -->
+<div class="section">
+  <div class="section-title">Actionable Improvements</div>
+
+  <div class="action-item">
+    <span class="action-num">1</span>
+    <span class="action-title">Use Defensives Proactively in P1 -- 8 Deaths Before 2:14</span>
+    <div class="action-body">
+      40% of all deaths happen in P1. The causes are varied (Bursting Emptiness, Dark Hand, Ravenous Abyss, Echoing Darkness, Melee),
+      which points to a general survivability deficit rather than one specific mechanic. Fury Warriors have limited defensives, but they
+      need to be used preemptively:<br>
+      <strong>Spell Reflection</strong> -- only used 2 times in 6:14 on fight 23. This should be used on every Void Expulsion and
+      Grasp of Emptiness cast (every ~25s). That's 12+ potential uses per fight, not 2.<br>
+      <strong>Enraged Regeneration</strong> -- not observed in cast data. This is a key survivability button.<br>
+      <strong>Defensive Stance</strong> -- swap into it briefly during heavy damage windows (Grasp + Void Expulsion overlap),
+      then swap back. Used correctly once (intermission) in fight 23.<br>
+      <strong>Rallying Cry</strong> -- coordinate with healers for the most dangerous P1 overlaps.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">2</span>
+    <span class="action-title">Learn Cosmic Barrier and Voidstalker Sting Timing in P2</span>
+    <div class="action-body">
+      These two abilities account for 6 of 20 deaths combined. <strong>Cosmic Barrier</strong> (3 deaths at 3:38-3:43)
+      is a raid-wide damage event in P2 -- Spell Reflection and Defensive Stance should be pre-cast for every Cosmic Barrier.
+      <strong>Voidstalker Sting</strong> (3 deaths at 5:07-6:14) is a DoT that requires active healing or personal defensives.
+      When Voidstalker Sting is applied, immediately use Enraged Regeneration or Impending Victory to sustain through the DoT.
+      Call out for externals (BoSac, Ironbark) when both debuff and raid damage overlap.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">3</span>
+    <span class="action-title">Fix Fall Damage -- 3.9M Across 12 Pulls</span>
+    <div class="action-body">
+      Taking fall damage in 12 of 20 pulls (19 hits, 3.9M total) is a significant contributor to death. This likely comes from
+      knockback mechanics (Interrupting Tremor, Grasp of Emptiness) pushing Starfighter off the platform or into dangerous positions.
+      <strong>Fix:</strong> Position with your back to the center of the platform, not toward edges. Use Heroic Leap as a recovery
+      tool immediately when knocked. Charge back to the boss to prevent falling off.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">4</span>
+    <span class="action-title">Dodge Bursting Emptiness Zones -- 2 P1 Deaths</span>
+    <div class="action-body">
+      Bursting Emptiness killed Starfighter at 1:33 (F11) and 1:55 (F21). This is a void zone that must be dodged.
+      As a melee, Fury Warrior needs to be especially careful about void zone placement near the boss hitbox.
+      When Bursting Emptiness is cast, move out immediately -- your uptime loss from dodging is far less than the DPS loss from dying
+      2+ minutes early. Bladestorm provides root/slow immunity if needed during the dodge.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">5</span>
+    <span class="action-title">Rotation is Functional -- Prioritize Survival Over Optimization</span>
+    <div class="action-body">
+      The cast profile shows correct Mountain Thane rotation: Thunder Clap as primary filler, Rampage at high frequency (71 casts in 6:14),
+      Recklessness+Avatar paired and used on CD (~56s average gap via Anger Management), Odyn's Fury on cooldown (7 uses).
+      The rotation is not the problem -- the 0% survival rate is. Every minute of additional survival time is worth more than any
+      rotational optimization. Focus on the defensive usage items above before tuning DPS.
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="section">
+  <div class="section-title">Summary</div>
+
+  <div style="font-size:13px;line-height:1.8;">
+    <strong style="color:var(--green);">What's working:</strong><br>
+    &bull; Rotation execution is correct -- Mountain Thane priority list is followed properly<br>
+    &bull; Cooldown pairing (Recklessness + Avatar) is consistent with ~56s cycles<br>
+    &bull; P1 cleave DPS (281K avg) shows strong output during the sentinel phase<br>
+    &bull; Clear improvement trend: survival time increased 41% from first to second half of session<br>
+    &bull; Gear is at parity with top-ranked players (291 ilvl vs 290-293 reference)<br>
+    <br>
+    <strong style="color:var(--red);">What needs work:</strong><br>
+    &bull; 0% survival rate is the critical issue -- every other improvement is secondary<br>
+    &bull; Defensive cooldown usage is far too low (2 Spell Reflections in 6+ minutes)<br>
+    &bull; Fall damage in 12/20 pulls indicates positioning problems near platform edges<br>
+    &bull; P1 deaths (40% of all deaths) need to be eliminated to see more P2/P3<br>
+    &bull; Versatility at 36 provides essentially zero damage reduction passive benefit<br>
+    <br>
+    <strong style="color:var(--accent);">The gap is survival, not execution.</strong>
+    Active DPS while alive (77-108K) shows the damage output is there. The problem is that Starfighter
+    dies in every single pull, averaging only 3:18 of a 7-8 minute fight. Fixing the defensive usage
+    and positioning issues identified above could double effective DPS contribution simply by being
+    alive longer. On the positive side, the second half of the session showed clear mechanical learning,
+    so the trajectory is pointing the right direction.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a></p>
+  <p>Reference data: Top 5 Fury Warriors on Mythic Crown of the Cosmos (encounterID 3181, difficulty 5)</p>
+  <p>Fury Warrior guide reference: <a href="https://www.icy-veins.com/wow/fury-warrior-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins 12.0.7</a></p>
+</div>
+
+</body>
+</html>

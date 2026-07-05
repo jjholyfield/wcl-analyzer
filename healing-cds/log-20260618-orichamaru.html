@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orichamaru (Demo Warlock) - Crown of the Cosmos Prog - June 18, 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --warlock: #8788ee;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 16px; font-weight: 600; margin: 24px 0 12px; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 8px; vertical-align: middle; }
+.tag-prog { background: var(--orange); color: #fff; }
+.tag-dead { background: var(--red); color: #fff; }
+.header-meta { color: var(--dim); font-size: 14px; margin-top: 4px; }
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 20px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.card-value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+th { color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+tr:hover { background: rgba(88, 166, 255, 0.04); }
+.bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; }
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+.pull-chart { display: flex; align-items: flex-end; gap: 3px; height: 200px; padding: 0 4px; }
+.pull-bar-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.pull-bar { width: 100%; min-width: 8px; border-radius: 3px 3px 0 0; transition: opacity 0.2s; cursor: default; position: relative; }
+.pull-bar:hover { opacity: 0.8; }
+.pull-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-rl; transform: rotate(180deg); max-height: 40px; overflow: hidden; }
+.legend { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--dim); }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.callout { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--red); border-radius: 8px; padding: 16px; margin: 16px 0; }
+.callout-warn { border-left-color: var(--yellow); }
+.callout-info { border-left-color: var(--accent); }
+.callout-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.callout-body { font-size: 13px; color: var(--dim); }
+.phase-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.phase-p1 { background: #1a3a2a; color: var(--green); }
+.phase-inter { background: #3a2a1a; color: var(--yellow); }
+.phase-p2 { background: #1a2a3a; color: var(--accent); }
+.phase-p3 { background: #3a1a2a; color: var(--red); }
+.phase-early { background: #2a2a2a; color: var(--dim); }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+.avg-line { border-top: 2px dashed var(--yellow); position: relative; margin: 0 4px; }
+.tooltip { position: absolute; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 12px; pointer-events: none; z-index: 100; white-space: nowrap; display: none; }
+.death-icon { color: var(--red); font-size: 12px; }
+.section { margin-bottom: 32px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.stat-label { color: var(--dim); }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18, 2026 Log Analysis</a>
+
+<h1>
+  <span style="color: var(--warlock);">Orichamaru</span>
+  <span class="tag tag-prog">PROGRESSION</span>
+  <span class="tag tag-dead">DIED 27/27</span>
+</h1>
+<div class="header-meta">
+  Demonology Warlock (Diabolist) &middot; Mythic Crown of the Cosmos &middot; 27 pulls &middot; Best: 31.27% boss HP
+</div>
+<div class="header-meta">
+  June 18, 2026 &middot; Report: <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">jqFfXprk4hcaWx3C</a>
+</div>
+
+<!-- ============================================ -->
+<!-- SUMMARY CARDS -->
+<!-- ============================================ -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS</div>
+    <div class="card-value">35,849</div>
+    <div class="card-sub">Across 14 qualifying pulls (&gt;120s)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">290.8</div>
+    <div class="card-sub">Ref top rank: 291.5 ilvl</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value" style="color: var(--red);">0 / 27</div>
+    <div class="card-sub">Died in every single pull</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value" style="color: var(--green);">55,087</div>
+    <div class="card-sub">F28 (5:43) &middot; 36.59% boss HP</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PERFORMANCE ACROSS ALL PULLS -->
+<!-- ============================================ -->
+<h2>Performance Across All Pulls</h2>
+
+<div class="chart-container">
+  <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+    <span style="font-size:14px; font-weight:600;">DPS Per Pull</span>
+    <span style="font-size:12px; color:var(--dim);">Avg: 35,849 DPS (qualifying pulls)</span>
+  </div>
+
+  <div class="pull-chart" id="dpsChart">
+    <!-- F1: 0 DPS, 63s, died@53s EARLY -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F1: no DPS data (53s death)"></div><div class="pull-label">F1</div></div>
+    <!-- F2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F2: no DPS data (59s death)"></div><div class="pull-label">F2</div></div>
+    <!-- F3: 0 DPS table, 227s, died@152s INTER -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F3: ~0 DPS (died@152s, logging issue)"></div><div class="pull-label">F3</div></div>
+    <!-- F4 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F4: no DPS data (61s death)"></div><div class="pull-label">F4</div></div>
+    <!-- F5 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F5: no DPS data (133s death)"></div><div class="pull-label">F5</div></div>
+    <!-- F6 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F6: no DPS data (38s death)"></div><div class="pull-label">F6</div></div>
+    <!-- F7 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F7: no DPS data (143s death)"></div><div class="pull-label">F7</div></div>
+    <!-- F8: 12618 DPS, 239s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:22.9%; background:var(--red);" title="F8: 12,618 DPS (3:59) died@3:28 P2"></div><div class="pull-label">F8</div></div>
+    <!-- F9 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F9: no DPS data (148s death)"></div><div class="pull-label">F9</div></div>
+    <!-- F10 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F10: no DPS data (115s death)"></div><div class="pull-label">F10</div></div>
+    <!-- F11: 21392, 245s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:38.8%; background:var(--red);" title="F11: 21,392 DPS (4:05) died@3:29 P2"></div><div class="pull-label">F11</div></div>
+    <!-- F12 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F12: no DPS data (60s death)"></div><div class="pull-label">F12</div></div>
+    <!-- F13 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F13: no DPS data (44s death)"></div><div class="pull-label">F13</div></div>
+    <!-- F14: 9013, 242s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:16.4%; background:var(--red);" title="F14: 9,013 DPS (4:02) died@3:14 P2"></div><div class="pull-label">F14</div></div>
+    <!-- F15: 40390, 292s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:73.3%; background:var(--red);" title="F15: 40,390 DPS (4:52) died@4:50 P2"></div><div class="pull-label">F15</div></div>
+    <!-- F16: 30374, 303s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:55.1%; background:var(--red);" title="F16: 30,374 DPS (5:03) died@4:27 P2"></div><div class="pull-label">F16</div></div>
+    <!-- F17 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F17: no DPS data (59s death)"></div><div class="pull-label">F17</div></div>
+    <!-- F18: 40437, 356s, P3 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:73.4%; background:var(--orange);" title="F18: 40,437 DPS (5:56) died@5:42 P3"></div><div class="pull-label">F18</div></div>
+    <!-- F19: 39276, 316s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:71.3%; background:var(--red);" title="F19: 39,276 DPS (5:16) died@4:58 P2"></div><div class="pull-label">F19</div></div>
+    <!-- F20: 37613, 323s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:68.3%; background:var(--red);" title="F20: 37,613 DPS (5:23) died@5:06 P2"></div><div class="pull-label">F20</div></div>
+    <!-- F21: 35989, 289s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:65.3%; background:var(--red);" title="F21: 35,989 DPS (4:49) died@4:38 P2"></div><div class="pull-label">F21</div></div>
+    <!-- F22: 26254, 253s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:47.7%; background:var(--red);" title="F22: 26,254 DPS (4:13) died@4:11 P2"></div><div class="pull-label">F22</div></div>
+    <!-- F23: 44436, 365s, P3 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:80.7%; background:var(--orange);" title="F23: 44,436 DPS (6:05) died@5:42 P3"></div><div class="pull-label">F23</div></div>
+    <!-- F24: 35930, 284s, P2 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:65.2%; background:var(--red);" title="F24: 35,930 DPS (4:44) died@4:42 P2"></div><div class="pull-label">F24</div></div>
+    <!-- F25 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:0%; background:var(--dim);" title="F25: no DPS data (61s death)"></div><div class="pull-label">F25</div></div>
+    <!-- F27: 48924, 361s, P3 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:88.8%; background:var(--orange);" title="F27: 48,924 DPS (6:01) died@5:17 P3"></div><div class="pull-label">F27</div></div>
+    <!-- F28: 55087, 343s, P3 -->
+    <div class="pull-bar-wrap"><div class="pull-bar" style="height:100%; background:var(--green);" title="F28: 55,087 DPS (5:43) died@5:41 P3 - BEST PULL"></div><div class="pull-label">F28</div></div>
+  </div>
+
+  <div class="legend">
+    <span><span class="legend-dot" style="background:var(--green);"></span> Best pull (P3 death)</span>
+    <span><span class="legend-dot" style="background:var(--orange);"></span> Reached P3</span>
+    <span><span class="legend-dot" style="background:var(--red);"></span> Died P1/P2</span>
+    <span><span class="legend-dot" style="background:var(--dim);"></span> No table data / early death</span>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Session Trend: <span class="trend-up">+47% improvement</span></div>
+  <div class="callout-body">
+    First half average: 27,643 DPS &rarr; Second half average: 40,605 DPS. Clear upward trajectory through the night. Best three pulls (F27: 48.9K, F28: 55.1K, F23: 44.4K) were all in the final third of the session.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- DEATH PATTERN ANALYSIS -->
+<!-- ============================================ -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="callout">
+  <div class="callout-title">Died in 27 of 27 pulls. Average survival time: 3:31</div>
+  <div class="callout-body">
+    Orichamaru did not survive a single pull. Death timing ranges from 38 seconds (F6) to 5:42 (F18/F23). Only 4 pulls reached Phase 3. The primary survival challenge is getting through Phase 2.
+  </div>
+</div>
+
+<h3>Death Cause Breakdown</h3>
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Deaths</th><th>Avg Time</th><th>Phase(s)</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Bursting Emptiness</strong></td>
+      <td style="color:var(--red); font-weight:600;">4</td>
+      <td>3:10 avg</td>
+      <td>
+        <span class="phase-badge phase-early">Early</span>
+        <span class="phase-badge phase-p1">P1</span>
+        <span class="phase-badge phase-p2">P2</span>
+        <span class="phase-badge phase-p3">P3</span>
+      </td>
+      <td style="color:var(--yellow);">Partially - proximity AoE from Void Droplets</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td style="color:var(--red); font-weight:600;">4</td>
+      <td>4:35 avg</td>
+      <td><span class="phase-badge phase-p2">P2 x4</span></td>
+      <td style="color:var(--red);">Yes - Rift Simulacrum AoE on death</td>
+    </tr>
+    <tr>
+      <td><strong>Grasp of Emptiness</strong></td>
+      <td style="color:var(--orange); font-weight:600;">3</td>
+      <td>3:18 avg</td>
+      <td>
+        <span class="phase-badge phase-early">Early</span>
+        <span class="phase-badge phase-p2">P2</span>
+        <span class="phase-badge phase-p3">P3</span>
+      </td>
+      <td style="color:var(--red);">Yes - dodge ground effect</td>
+    </tr>
+    <tr>
+      <td>Echoing Darkness</td>
+      <td>2</td>
+      <td>1:33 avg</td>
+      <td><span class="phase-badge phase-early">Early</span> <span class="phase-badge phase-p1">P1</span></td>
+      <td style="color:var(--yellow);">Partially - Vorelus DoT</td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td>
+      <td>2</td>
+      <td>1:00 avg</td>
+      <td><span class="phase-badge phase-early">Early</span> <span class="phase-badge phase-p1">P1</span></td>
+      <td style="color:var(--red);">Yes - soaking/positioning</td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>2</td>
+      <td>2:15 avg</td>
+      <td><span class="phase-badge phase-p1">P1</span> <span class="phase-badge phase-p2">P2</span></td>
+      <td style="color:var(--yellow);">Partially - raid-wide AoE</td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>2</td>
+      <td>4:13 avg</td>
+      <td><span class="phase-badge phase-p2">P2 x2</span></td>
+      <td style="color:var(--red);">Yes - dodge barrage lines</td>
+    </tr>
+    <tr>
+      <td>Orbiting Matter</td>
+      <td>1</td>
+      <td>2:32</td>
+      <td><span class="phase-badge phase-inter">Inter</span></td>
+      <td style="color:var(--red);">Yes - dodge orbs</td>
+    </tr>
+    <tr>
+      <td>Singularity Eruption</td>
+      <td>1</td>
+      <td>2:28</td>
+      <td><span class="phase-badge phase-inter">Inter</span></td>
+      <td style="color:var(--yellow);">Partially</td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>1</td>
+      <td>5:06</td>
+      <td><span class="phase-badge phase-p2">P2</span></td>
+      <td style="color:var(--yellow);">DoT pressure - use defensives</td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>1</td>
+      <td>5:42</td>
+      <td><span class="phase-badge phase-p3">P3</span></td>
+      <td style="color:var(--yellow);">Partially - barrier pulse</td>
+    </tr>
+    <tr>
+      <td>Cosmic Radiation</td>
+      <td>1</td>
+      <td>5:17</td>
+      <td><span class="phase-badge phase-p3">P3</span></td>
+      <td style="color:var(--yellow);">Partially - P3 constant damage</td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>1</td>
+      <td>0:44</td>
+      <td><span class="phase-badge phase-early">Early</span></td>
+      <td style="color:var(--red);">Yes - dodge arrow</td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>1</td>
+      <td>1:00</td>
+      <td><span class="phase-badge phase-early">Early</span></td>
+      <td style="color:var(--red);">Yes - positioning</td>
+    </tr>
+    <tr>
+      <td>Unknown</td>
+      <td>1</td>
+      <td>2:23</td>
+      <td><span class="phase-badge phase-inter">Inter</span></td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title" style="color:var(--red);">Repeated Mechanic Failures: Simulacrum Backlash (4 deaths, ALL in P2)</div>
+  <div class="callout-body">
+    Simulacrum Backlash killed Orichamaru 4 times, exclusively in Phase 2 (fights 15, 21, 22, 24), averaging at 4:35 into the fight. This is a Rift Simulacrum mechanic -- AoE damage when the Simulacrum dies or finishes its cast. <strong>Recommendation:</strong> Use Unending Resolve or Dark Pact when the Rift Simulacrum is about to die. Pre-position away from the Simulacrum during its final moments. Consider using Demonic Circle for emergency repositioning.
+  </div>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">Bursting Emptiness: 4 deaths across all phases</div>
+  <div class="callout-body">
+    Bursting Emptiness hits in F6 (38s), F10 (115s), F16 (267s), and F28 (341s). This is proximity AoE from Void Droplets -- they appear in P1 and return in later phases. The damage is partially avoidable through positioning. <strong>Recommendation:</strong> Stay at max range from Void Droplets. When they explode, have a defensive ready (Dark Pact is only 1 min CD).
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PER-PHASE PERFORMANCE BREAKDOWN -->
+<!-- ============================================ -->
+<h2>Per-Phase Performance Breakdown</h2>
+
+<h3>Phase Reach Rate</h3>
+<div class="cards" style="grid-template-columns: repeat(4, 1fr);">
+  <div class="card">
+    <div class="card-label">Phase 1: Sentinels</div>
+    <div class="card-value" style="color:var(--green);">27/27</div>
+    <div class="card-sub">0:00 - 2:14</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Intermission</div>
+    <div class="card-value" style="color:var(--yellow);">17/27</div>
+    <div class="card-sub">2:14 - 2:53 (63%)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Phase 2: Rift</div>
+    <div class="card-value" style="color:var(--yellow);">14/27</div>
+    <div class="card-sub">2:53 - ~5:09 (52%)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Phase 3: Cosmos</div>
+    <div class="card-value" style="color:var(--red);">4/27</div>
+    <div class="card-sub">~5:09+ (15%)</div>
+  </div>
+</div>
+
+<h3>Deaths by Phase</h3>
+<table>
+  <thead>
+    <tr><th>Phase</th><th>Deaths</th><th>% of Total Deaths</th><th>Primary Killers</th><th>Analysis</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="phase-badge phase-early">Early (&lt;60s)</span></td>
+      <td>6</td>
+      <td>
+        <div class="bar-container" style="width:120px; display:inline-block; vertical-align:middle;">
+          <div class="bar-fill" style="width:22.2%; background:var(--dim);"></div>
+        </div>
+        22%
+      </td>
+      <td>Echoing Darkness, Void Remnants, Bursting Emptiness, Melee, Silverstrike Arrow, Grasp of Emptiness</td>
+      <td style="color:var(--dim); font-size:13px;">Very short pulls -- likely raid wipes or early positioning errors</td>
+    </tr>
+    <tr>
+      <td><span class="phase-badge phase-p1">P1 (60-134s)</span></td>
+      <td>4</td>
+      <td>
+        <div class="bar-container" style="width:120px; display:inline-block; vertical-align:middle;">
+          <div class="bar-fill" style="width:14.8%; background:var(--green);"></div>
+        </div>
+        15%
+      </td>
+      <td>Echoing Darkness, Void Remnants, Bursting Emptiness, Void Expulsion</td>
+      <td style="color:var(--dim); font-size:13px;">Sentinel phase mechanics -- Vorelus + Void Droplets</td>
+    </tr>
+    <tr>
+      <td><span class="phase-badge phase-inter">Intermission (134-173s)</span></td>
+      <td>3</td>
+      <td>
+        <div class="bar-container" style="width:120px; display:inline-block; vertical-align:middle;">
+          <div class="bar-fill" style="width:11.1%; background:var(--yellow);"></div>
+        </div>
+        11%
+      </td>
+      <td>Orbiting Matter, Singularity Eruption, Unknown</td>
+      <td style="color:var(--dim); font-size:13px;">Pure survival phase -- need defensives for Stellar Emission</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><span class="phase-badge phase-p2">P2 (173-309s)</span></td>
+      <td style="color:var(--red); font-weight:700;">10</td>
+      <td>
+        <div class="bar-container" style="width:120px; display:inline-block; vertical-align:middle;">
+          <div class="bar-fill" style="width:37%; background:var(--red);"></div>
+        </div>
+        <strong>37%</strong>
+      </td>
+      <td><strong>Simulacrum Backlash (4), Void Barrage (2), Bursting Emptiness, Grasp of Emptiness, Void Expulsion, Voidstalker Sting</strong></td>
+      <td style="color:var(--red); font-size:13px; font-weight:500;">This is the wall. 10 of 27 deaths happen in P2.</td>
+    </tr>
+    <tr>
+      <td><span class="phase-badge phase-p3">P3 (309s+)</span></td>
+      <td>4</td>
+      <td>
+        <div class="bar-container" style="width:120px; display:inline-block; vertical-align:middle;">
+          <div class="bar-fill" style="width:14.8%; background:var(--orange);"></div>
+        </div>
+        15%
+      </td>
+      <td>Cosmic Barrier, Cosmic Radiation, Grasp of Emptiness, Bursting Emptiness</td>
+      <td style="color:var(--dim); font-size:13px;">Getting here is the priority -- P3 deaths are expected on prog night 2</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title" style="color:var(--red);">Phase 2 is the Wall</div>
+  <div class="callout-body">
+    37% of all deaths happen in Phase 2 (Rift phase, 2:53 - 5:09). The Rift Simulacrum mechanics (Simulacrum Backlash in particular) are the #1 killer. Of the 14 pulls that reached P2, Orichamaru died in P2 on 10 of them. Only 4 out of 14 P2 pulls resulted in reaching P3. <strong>Getting through P2 alive is the single biggest improvement opportunity.</strong>
+  </div>
+</div>
+
+<h3>Per-Phase DPS (Table-Based, Long Pulls Only)</h3>
+<p style="color:var(--dim); font-size:13px; margin-bottom:12px;">DPS values are from the WCL table API for pulls longer than 2 minutes with available data. Note: per-phase table data was limited due to API constraints; overall fight DPS is the primary metric.</p>
+
+<table>
+  <thead>
+    <tr><th>Phase</th><th>Pulls Seen</th><th>Avg Overall DPS</th><th>Best Pull DPS</th><th>Deaths in Phase</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="phase-badge phase-p1">P1: Sentinels</span></td>
+      <td>27/27</td>
+      <td>--</td>
+      <td>--</td>
+      <td>4 (+ 6 early)</td>
+    </tr>
+    <tr>
+      <td><span class="phase-badge phase-inter">Intermission</span></td>
+      <td>17/27</td>
+      <td>--</td>
+      <td>--</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td><span class="phase-badge phase-p2">P2: Rift</span></td>
+      <td>14/27</td>
+      <td>33,129</td>
+      <td>55,087 (F28)</td>
+      <td style="color:var(--red); font-weight:600;">10</td>
+    </tr>
+    <tr>
+      <td><span class="phase-badge phase-p3">P3: Cosmos</span></td>
+      <td>4/27</td>
+      <td>47,221</td>
+      <td>55,087 (F28)</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="color:var(--dim); font-size:13px; margin-top:8px;">
+  <strong>Note on DPS calculation:</strong> Overall fight DPS is affected by death timing. Pulls where Orichamaru dies early in P2 show lower overall DPS because the fight timer continues after death. The best pulls (F28: 55K, F27: 49K) are those where Orichamaru survived deep into P3.
+</p>
+
+<!-- ============================================ -->
+<!-- CONSISTENCY ANALYSIS -->
+<!-- ============================================ -->
+<h2>Consistency Analysis</h2>
+
+<div class="grid-2">
+  <div class="card">
+    <h3 style="margin-top:0;">DPS on Long Survival Pulls</h3>
+    <p style="font-size:13px; color:var(--dim); margin-bottom:12px;">Pulls where Orichamaru survived past 4:30 (270s+)</p>
+    <div class="stat-row">
+      <span class="stat-label">Average DPS</span>
+      <span style="color:var(--green); font-weight:600;">41,291</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Pulls</span>
+      <span>F15, F16, F18, F19, F20, F21, F23, F24, F27, F28</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Best</span>
+      <span>55,087 (F28)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Worst</span>
+      <span>26,254 (F22)</span>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">DPS on Short/Early Death Pulls</h3>
+    <p style="font-size:13px; color:var(--dim); margin-bottom:12px;">Pulls where Orichamaru died before 3:30 (210s)</p>
+    <div class="stat-row">
+      <span class="stat-label">Average DPS</span>
+      <span style="color:var(--red); font-weight:600;">14,341</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Pulls</span>
+      <span>F8, F11, F14</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Note</span>
+      <span style="color:var(--dim);">12 additional pulls have no table DPS data</span>
+    </div>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Session Progression: Clear Learning Curve</div>
+  <div class="callout-body">
+    <strong>First 13 pulls (F1-F13):</strong> No DPS data available in WCL tables for any pull. Deaths were all in P1 or earlier (6 early + 2 P1 + 3 intermission + 2 P2).<br>
+    <strong>Pulls 14-28 (F14-F28):</strong> DPS data available, averaging 35,849 across 14 pulls. Reached P3 in 4 of these pulls. Best three pulls all came in the final 6 pulls of the session.<br>
+    <strong>Trend:</strong> First half avg 27,643 DPS vs second half avg 40,605 DPS -- a <span class="trend-up">+47% improvement</span> through the night. Orichamaru is clearly learning the fight.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- CAST PROFILE -->
+<!-- ============================================ -->
+<h2>Cast Profile (Best Pulls)</h2>
+
+<p style="color:var(--dim); font-size:13px; margin-bottom:12px;">
+  Orichamaru is running the <strong>Diabolist</strong> hero talent tree, identified by Ruination, Infernal Bolt, and Grimoire: Imp Lord casts. Rotation data from the 5 longest pulls with DPS data.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th>F28 Casts (CPM)</th><th>F27 Casts (CPM)</th><th>F23 Casts (CPM)</th><th>F18 Casts (CPM)</th><th>F15 Casts (CPM)</th><th>Role</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Hand of Gul'dan</strong></td>
+      <td>57 (10.0)</td>
+      <td>55 (9.1)</td>
+      <td>57 (9.4)</td>
+      <td>52 (8.8)</td>
+      <td>49 (10.1)</td>
+      <td>Primary spender</td>
+    </tr>
+    <tr>
+      <td><strong>Demonbolt</strong></td>
+      <td>46 (8.0)</td>
+      <td>46 (7.6)</td>
+      <td>46 (7.6)</td>
+      <td>46 (7.8)</td>
+      <td>39 (8.0)</td>
+      <td>Demonic Core spender / movement</td>
+    </tr>
+    <tr>
+      <td><strong>Shadow Bolt</strong></td>
+      <td>36 (6.3)</td>
+      <td>31 (5.2)</td>
+      <td>34 (5.6)</td>
+      <td>38 (6.4)</td>
+      <td>34 (7.0)</td>
+      <td>Filler / shard generator</td>
+    </tr>
+    <tr>
+      <td><strong>Implosion</strong></td>
+      <td>15 (2.6)</td>
+      <td>14 (2.3)</td>
+      <td>15 (2.5)</td>
+      <td>14 (2.4)</td>
+      <td>13 (2.7)</td>
+      <td>Imp detonation</td>
+    </tr>
+    <tr>
+      <td><strong>Call Dreadstalkers</strong></td>
+      <td>14 (2.4)</td>
+      <td>12 (2.0)</td>
+      <td>14 (2.3)</td>
+      <td>13 (2.2)</td>
+      <td>11 (2.3)</td>
+      <td>Core CD (keep on cooldown)</td>
+    </tr>
+    <tr>
+      <td><strong>Infernal Bolt</strong></td>
+      <td>6 (1.0)</td>
+      <td>6 (1.0)</td>
+      <td>7 (1.1)</td>
+      <td>5 (0.8)</td>
+      <td>3 (0.6)</td>
+      <td>Diabolist shard gen (low shards)</td>
+    </tr>
+    <tr>
+      <td><strong>Ruination</strong></td>
+      <td>6 (1.0)</td>
+      <td>5 (0.8)</td>
+      <td>6 (1.0)</td>
+      <td>6 (1.0)</td>
+      <td>5 (1.0)</td>
+      <td>Diabolist burst</td>
+    </tr>
+    <tr>
+      <td><strong>Summon Demonic Tyrant</strong></td>
+      <td>5 (0.9)</td>
+      <td>4 (0.7)</td>
+      <td>5 (0.8)</td>
+      <td>4 (0.7)</td>
+      <td>4 (0.8)</td>
+      <td>Primary cooldown (90s)</td>
+    </tr>
+    <tr>
+      <td><strong>Grimoire: Imp Lord</strong></td>
+      <td>3 (0.5)</td>
+      <td>2 (0.3)</td>
+      <td>3 (0.5)</td>
+      <td>3 (0.5)</td>
+      <td>2 (0.4)</td>
+      <td>Diabolist demon summon</td>
+    </tr>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total Rotational</strong></td>
+      <td><strong>188 (32.8)</strong></td>
+      <td><strong>175 (29.1)</strong></td>
+      <td><strong>187 (30.7)</strong></td>
+      <td><strong>182 (30.7)</strong></td>
+      <td><strong>160 (32.8)</strong></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="grid-2" style="margin-top:16px;">
+  <div class="card">
+    <h3 style="margin-top:0;">Rotational CPM Analysis</h3>
+    <div class="stat-row">
+      <span class="stat-label">Avg Rotational CPM</span>
+      <span style="font-weight:600;">31.2</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Best CPM</span>
+      <span>32.8 (F28, F15)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Worst CPM</span>
+      <span>29.1 (F27)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Hand of Gul'dan CPM</span>
+      <span>9.5 avg (consistent)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Demonbolt CPM</span>
+      <span>7.8 avg (very consistent at 46 casts)</span>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">Defensive Usage</h3>
+    <div class="stat-row">
+      <span class="stat-label">Dark Pact (1 min CD)</span>
+      <span>1-3 uses per fight</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Unending Resolve (3 min CD)</span>
+      <span>0-1 uses per fight</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Mortal Coil (heal)</span>
+      <span>0-2 uses per fight</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Demonic Healthstone</span>
+      <span>0-1 uses per fight</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Health Potion</span>
+      <span>0-1 uses per fight</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- DAMAGE TAKEN -->
+<!-- ============================================ -->
+<h2>Damage Taken (Fight 28 - Best Pull)</h2>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg Per Hit</th><th>Category</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Echoing Darkness</td>
+      <td>2,502,784</td>
+      <td>117</td>
+      <td>21,391</td>
+      <td>Vorelus DoT - unavoidable when debuffed</td>
+    </tr>
+    <tr>
+      <td>Simulacrum Backlash</td>
+      <td>1,978,807</td>
+      <td>68</td>
+      <td>29,100</td>
+      <td style="color:var(--red);">Avoidable - position away from dying Simulacrum</td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>1,784,768</td>
+      <td>75</td>
+      <td>23,797</td>
+      <td>DoT - unavoidable when targeted</td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,405,438</td>
+      <td>34</td>
+      <td>41,337</td>
+      <td>Raid-wide AoE</td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>1,035,950</td>
+      <td>13</td>
+      <td>79,688</td>
+      <td style="color:var(--red);">Avoidable - dodge barrage lines</td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>739,265</td>
+      <td>32</td>
+      <td>23,102</td>
+      <td>P3 periodic damage</td>
+    </tr>
+    <tr>
+      <td>Bursting Emptiness</td>
+      <td>578,210</td>
+      <td>2</td>
+      <td>289,105</td>
+      <td style="color:var(--red);">Avoidable - Void Droplet proximity AoE (killed by this)</td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>504,515</td>
+      <td>2</td>
+      <td>252,258</td>
+      <td>Intermission mechanic</td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>446,730</td>
+      <td>2</td>
+      <td>223,365</td>
+      <td>Platform transition damage</td>
+    </tr>
+    <tr>
+      <td>Cosmic Radiation</td>
+      <td>358,993</td>
+      <td>15</td>
+      <td>23,933</td>
+      <td>P3 constant damage</td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>336,550</td>
+      <td>14</td>
+      <td>24,039</td>
+      <td>Intermission channel</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============================================ -->
+<!-- EXTERNAL BUFFS -->
+<!-- ============================================ -->
+<h2>External Buffs (Fight 28)</h2>
+
+<div class="grid-2">
+  <div class="card">
+    <h3 style="margin-top:0;">Heroism / Bloodlust</h3>
+    <div class="stat-row">
+      <span class="stat-label">Timing</span>
+      <span style="color:var(--accent);">2:54 (start of P2)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Context</span>
+      <span style="color:var(--dim);">Used at P2 entry, aligned with Rift Simulacrum spawn</span>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">Augmentation Evoker Buffs</h3>
+    <div class="stat-row">
+      <span class="stat-label">Ebon Might</span>
+      <span>6 applications (0:02, 1:04, 1:34, 2:54, 3:29, 3:57)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Prescience</span>
+      <span>1 application (1:08)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Note</span>
+      <span style="color:var(--dim);">Zinnks (Aug Evoker) providing consistent Ebon Might uptime</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- COMPARISON: ORICHAMARU vs SONIC -->
+<!-- ============================================ -->
+<h2>Comparison: Orichamaru vs Sonic (Demo Warlock)</h2>
+
+<p style="color:var(--dim); font-size:13px; margin-bottom:12px;">
+  Both Demo Warlocks in the raid, same spec. Direct comparison on long pulls where both have data.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Fight</th><th>Duration</th><th style="color:var(--warlock);">Orichamaru</th><th style="color:var(--warlock);">Sonic</th><th>Delta</th><th>Winner</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>F15</td><td>4:52</td>
+      <td>40,390</td><td>18,370</td>
+      <td style="color:var(--green);">+22,020</td>
+      <td style="color:var(--green);">Ori</td>
+    </tr>
+    <tr>
+      <td>F16</td><td>5:03</td>
+      <td>30,374</td><td>40,040</td>
+      <td style="color:var(--red);">-9,666</td>
+      <td style="color:var(--purple);">Sonic</td>
+    </tr>
+    <tr>
+      <td>F18</td><td>5:56</td>
+      <td>40,437</td><td>43,680</td>
+      <td style="color:var(--red);">-3,243</td>
+      <td style="color:var(--purple);">Sonic</td>
+    </tr>
+    <tr>
+      <td>F20</td><td>5:23</td>
+      <td>37,613</td><td>53,792</td>
+      <td style="color:var(--red);">-16,179</td>
+      <td style="color:var(--purple);">Sonic</td>
+    </tr>
+    <tr>
+      <td>F21</td><td>4:49</td>
+      <td>35,989</td><td>33,613</td>
+      <td style="color:var(--green);">+2,376</td>
+      <td style="color:var(--green);">Ori</td>
+    </tr>
+    <tr>
+      <td>F23</td><td>6:05</td>
+      <td>44,436</td><td>39,620</td>
+      <td style="color:var(--green);">+4,816</td>
+      <td style="color:var(--green);">Ori</td>
+    </tr>
+    <tr>
+      <td>F27</td><td>6:01</td>
+      <td>48,924</td><td>47,339</td>
+      <td style="color:var(--green);">+1,585</td>
+      <td style="color:var(--green);">Ori</td>
+    </tr>
+    <tr style="background: rgba(63,185,80,0.06);">
+      <td>F28</td><td>5:43</td>
+      <td style="font-weight:700;">55,087</td><td>46,774</td>
+      <td style="color:var(--green); font-weight:600;">+8,313</td>
+      <td style="color:var(--green);">Ori</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">Orichamaru won 5 of 8 head-to-head pulls</div>
+  <div class="callout-body">
+    Orichamaru outperformed Sonic on 5 of the 8 pulls where both had data. The last 3 pulls of the night (F23, F27, F28) were all Ori wins, showing stronger late-session execution. Sonic had a notable advantage on F20 (+16K), suggesting a pull where Ori died significantly earlier.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- REFERENCE CONTEXT -->
+<!-- ============================================ -->
+<h2>Reference Context (De-emphasized)</h2>
+
+<div class="card" style="border-left: 3px solid var(--purple);">
+  <h3 style="margin-top:0; color:var(--purple);">Top Ranked Demo Warlocks - Mythic Crown of the Cosmos</h3>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:12px;">
+    These are kill rankings. Orichamaru's raid has not killed the boss yet -- this is context for what the ceiling looks like on a full fight, not a gap to close right now.
+  </p>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td style="color:var(--purple);">Shoutfive</td>
+        <td style="color:var(--purple);">112,169</td>
+        <td>8:50</td>
+        <td>291.5</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td style="color:var(--purple);">&#24917;&#33465;&#33465;</td>
+        <td>110,657</td>
+        <td>8:35</td>
+        <td>--</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td style="color:var(--purple);">&#24917;&#23113;&#20799;</td>
+        <td>107,817</td>
+        <td>8:25</td>
+        <td>--</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td style="color:var(--purple);">&#24189;&#20848;&#40667;&#23572;</td>
+        <td>105,506</td>
+        <td>8:30</td>
+        <td>--</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td style="color:var(--purple);">&#38654;&#38145;&#29756;&#27004;</td>
+        <td>103,032</td>
+        <td>8:29</td>
+        <td>--</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--dim); margin-top:8px;">
+    <strong>Context:</strong> Top-ranked kills are 8:25-8:50 long (full fight). Orichamaru's best pull (F28) lasted 5:43 with 55,087 DPS. The reference kills include P3 damage and execute-phase bonus -- Orichamaru has barely seen P3 (4 pulls). Talent difference from #1 reference: 12 nodes. At similar ilvl (290.8 vs 291.5), the DPS gap is primarily fight experience and survival rather than gear.
+  </p>
+</div>
+
+<!-- ============================================ -->
+<!-- PLAYER STATS -->
+<!-- ============================================ -->
+<h2>Player Stats</h2>
+
+<div class="grid-2">
+  <div class="card">
+    <h3 style="margin-top:0;">Gear</h3>
+    <div class="stat-row">
+      <span class="stat-label">Item Level</span>
+      <span style="font-weight:600;">290.8</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Intellect</span>
+      <span>2,724</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Crit</span>
+      <span>1,353</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Haste</span>
+      <span>739</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Mastery</span>
+      <span>520</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Versatility</span>
+      <span>0</span>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">Spec &amp; Talents</h3>
+    <div class="stat-row">
+      <span class="stat-label">Spec</span>
+      <span>Demonology (ID: 266)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Hero Talents</span>
+      <span>Diabolist</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Talent Nodes</span>
+      <span>76</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">vs Ref (#1)</span>
+      <span>12 talent differences</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Versatility</span>
+      <span style="color:var(--red);">0 -- no vers at all</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PULL-BY-PULL DETAIL -->
+<!-- ============================================ -->
+<h2>Pull-by-Pull Detail</h2>
+
+<table style="font-size:13px;">
+  <thead>
+    <tr><th>Pull</th><th>Duration</th><th>DPS</th><th>Death Time</th><th>Death Phase</th><th>Killed By</th><th>Boss %</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>F1</td><td>1:03</td><td style="color:var(--dim);">--</td><td>0:53</td><td><span class="phase-badge phase-early">Early</span></td><td>Echoing Darkness</td><td>87.1%</td></tr>
+    <tr><td>F2</td><td>1:07</td><td style="color:var(--dim);">--</td><td>0:59</td><td><span class="phase-badge phase-early">Early</span></td><td>Void Remnants</td><td>81.1%</td></tr>
+    <tr><td>F3</td><td>3:47</td><td style="color:var(--dim);">~0</td><td>2:32</td><td><span class="phase-badge phase-inter">Inter</span></td><td>Orbiting Matter</td><td>57.8%</td></tr>
+    <tr><td>F4</td><td>1:08</td><td style="color:var(--dim);">--</td><td>1:01</td><td><span class="phase-badge phase-p1">P1</span></td><td>Void Remnants</td><td>80.2%</td></tr>
+    <tr><td>F5</td><td>2:17</td><td style="color:var(--dim);">--</td><td>2:13</td><td><span class="phase-badge phase-p1">P1</span></td><td>Echoing Darkness</td><td>62.0%</td></tr>
+    <tr><td>F6</td><td>0:47</td><td style="color:var(--dim);">--</td><td>0:38</td><td><span class="phase-badge phase-early">Early</span></td><td>Bursting Emptiness</td><td>85.6%</td></tr>
+    <tr><td>F7</td><td>2:34</td><td style="color:var(--dim);">--</td><td>2:23</td><td><span class="phase-badge phase-inter">Inter</span></td><td>Unknown</td><td>62.0%</td></tr>
+    <tr><td>F8</td><td>3:59</td><td>12,618</td><td>3:28</td><td><span class="phase-badge phase-p2">P2</span></td><td>Void Expulsion</td><td>54.7%</td></tr>
+    <tr><td>F9</td><td>2:59</td><td style="color:var(--dim);">--</td><td>2:28</td><td><span class="phase-badge phase-inter">Inter</span></td><td>Singularity Eruption</td><td>62.0%</td></tr>
+    <tr><td>F10</td><td>2:18</td><td style="color:var(--dim);">--</td><td>1:55</td><td><span class="phase-badge phase-p1">P1</span></td><td>Bursting Emptiness</td><td>62.0%</td></tr>
+    <tr><td>F11</td><td>4:05</td><td>21,392</td><td>3:29</td><td><span class="phase-badge phase-p2">P2</span></td><td>Void Barrage</td><td>55.5%</td></tr>
+    <tr><td>F12</td><td>1:03</td><td style="color:var(--dim);">--</td><td>1:00</td><td><span class="phase-badge phase-early">Early</span></td><td>Melee</td><td>86.8%</td></tr>
+    <tr><td>F13</td><td>1:04</td><td style="color:var(--dim);">--</td><td>0:44</td><td><span class="phase-badge phase-early">Early</span></td><td>Silverstrike Arrow</td><td>86.8%</td></tr>
+    <tr><td>F14</td><td>4:02</td><td>9,013</td><td>3:14</td><td><span class="phase-badge phase-p2">P2</span></td><td>Grasp of Emptiness</td><td>56.7%</td></tr>
+    <tr><td>F15</td><td>4:52</td><td style="color:var(--green);">40,390</td><td>4:50</td><td><span class="phase-badge phase-p2">P2</span></td><td>Simulacrum Backlash</td><td>45.7%</td></tr>
+    <tr><td>F16</td><td>5:03</td><td>30,374</td><td>4:27</td><td><span class="phase-badge phase-p2">P2</span></td><td>Bursting Emptiness</td><td>43.4%</td></tr>
+    <tr><td>F17</td><td>1:01</td><td style="color:var(--dim);">--</td><td>0:59</td><td><span class="phase-badge phase-early">Early</span></td><td>Grasp of Emptiness</td><td>87.8%</td></tr>
+    <tr style="background:rgba(219,109,40,0.06);"><td>F18</td><td>5:56</td><td style="color:var(--green);">40,437</td><td>5:42</td><td><span class="phase-badge phase-p3">P3</span></td><td>Grasp of Emptiness</td><td>38.5%</td></tr>
+    <tr><td>F19</td><td>5:16</td><td>39,276</td><td>4:58</td><td><span class="phase-badge phase-p2">P2</span></td><td>Void Barrage</td><td>43.5%</td></tr>
+    <tr><td>F20</td><td>5:23</td><td>37,613</td><td>5:06</td><td><span class="phase-badge phase-p2">P2</span></td><td>Voidstalker Sting</td><td>37.1%</td></tr>
+    <tr><td>F21</td><td>4:49</td><td>35,989</td><td>4:38</td><td><span class="phase-badge phase-p2">P2</span></td><td>Simulacrum Backlash</td><td>43.1%</td></tr>
+    <tr><td>F22</td><td>4:13</td><td>26,254</td><td>4:11</td><td><span class="phase-badge phase-p2">P2</span></td><td>Simulacrum Backlash</td><td>50.5%</td></tr>
+    <tr style="background:rgba(219,109,40,0.06);"><td>F23</td><td>6:05</td><td style="color:var(--green);">44,436</td><td>5:42</td><td><span class="phase-badge phase-p3">P3</span></td><td>Cosmic Barrier</td><td>37.0%</td></tr>
+    <tr><td>F24</td><td>4:44</td><td>35,930</td><td>4:42</td><td><span class="phase-badge phase-p2">P2</span></td><td>Simulacrum Backlash</td><td>41.6%</td></tr>
+    <tr><td>F25</td><td>1:01</td><td style="color:var(--dim);">--</td><td>1:01</td><td><span class="phase-badge phase-p1">P1</span></td><td>Void Expulsion</td><td>86.3%</td></tr>
+    <tr style="background:rgba(219,109,40,0.06);"><td>F27</td><td>6:01</td><td style="color:var(--green);">48,924</td><td>5:17</td><td><span class="phase-badge phase-p3">P3</span></td><td>Cosmic Radiation</td><td>31.3%</td></tr>
+    <tr style="background:rgba(63,185,80,0.08);"><td>F28</td><td>5:43</td><td style="color:var(--green); font-weight:700;">55,087</td><td>5:41</td><td><span class="phase-badge phase-p3">P3</span></td><td>Bursting Emptiness</td><td>36.6%</td></tr>
+  </tbody>
+</table>
+
+<!-- ============================================ -->
+<!-- ACTIONABLE IMPROVEMENTS -->
+<!-- ============================================ -->
+<h2>Actionable Improvements</h2>
+
+<div class="section">
+
+<div class="callout" style="border-left-color: var(--red);">
+  <div class="callout-title">1. Survive Simulacrum Backlash in P2 (4 deaths)</div>
+  <div class="callout-body">
+    <strong>Problem:</strong> Simulacrum Backlash killed Orichamaru 4 times, all in Phase 2 (F15 @4:50, F21 @4:38, F22 @4:11, F24 @4:42). This is the #1 co-killer alongside Bursting Emptiness.<br><br>
+    <strong>Fix:</strong> When Rift Simulacrum is low HP or finishing its cast, use <strong>Dark Pact</strong> (1 min CD) or <strong>Unending Resolve</strong> (3 min CD) proactively. Position away from the Simulacrum's death location. Use Demonic Circle pre-placed at a safe fallback position. Demo Warlock is a ranged spec -- there is no reason to be in melee range of the Simulacrum.<br><br>
+    <strong>Impact:</strong> Eliminating these 4 deaths could mean 4 more P3 entries. Currently only 4/27 pulls reach P3.
+  </div>
+</div>
+
+<div class="callout" style="border-left-color: var(--orange);">
+  <div class="callout-title">2. Pre-plan Defensive Usage for Each Phase</div>
+  <div class="callout-body">
+    <strong>Problem:</strong> Defensive usage is sporadic (Dark Pact: 1-3 uses, Unending Resolve: 0-1 uses per fight). On a 5-6 minute pull, Dark Pact (1 min CD) should be used 4-5 times. Unending Resolve should be used at least once, ideally timed for the intermission or a known damage spike in P2.<br><br>
+    <strong>Fix:</strong> Build a defensive plan per phase:
+    <ul style="margin-top:8px; padding-left:20px;">
+      <li><strong>P1 (0:00-2:14):</strong> Dark Pact for Void Expulsion or Bursting Emptiness</li>
+      <li><strong>Intermission (2:14-2:53):</strong> Unending Resolve for Stellar Emission (the big channel)</li>
+      <li><strong>P2 entry (2:53+):</strong> Dark Pact back up -- use for Simulacrum Backlash or Void Barrage</li>
+      <li><strong>P2 mid (~4:00):</strong> Dark Pact again for next Simulacrum wave</li>
+      <li><strong>P3 entry (~5:09):</strong> Unending Resolve back up -- use for Cosmic Radiation opener</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">3. Reduce Early Deaths (6 pulls lost before 60s)</div>
+  <div class="callout-body">
+    <strong>Problem:</strong> 6 of 27 pulls (22%) ended with Orichamaru dying before the 1-minute mark. Death causes include Melee (F12 -- too close to boss), Silverstrike Arrow (F13 -- positioning), Bursting Emptiness (F6), Void Remnants (F2, F4), Echoing Darkness (F1), and Grasp of Emptiness (F17).<br><br>
+    <strong>Fix:</strong> Ensure safe starting position -- max range from adds and Void Droplets. Use Demonic Circle at pull position as a safety net. On early pulls, prioritize survival over DPS to reach later phases and learn the fight.<br><br>
+    <strong>Impact:</strong> 6 pulls of learning time lost. Even reducing early deaths by half would mean 3 more pulls of P1/P2 practice.
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">4. Maintain Rotational Consistency (Already Decent)</div>
+  <div class="callout-body">
+    <strong>Context:</strong> Rotational CPM is fairly consistent across long pulls (29.1-32.8 CPM). Hand of Gul'dan and Demonbolt usage are stable. The main DPS variability comes from survival time, not rotation execution.<br><br>
+    <strong>Opportunity:</strong> F27 had the lowest CPM (29.1) despite being one of the longer pulls -- likely due to movement during P3 mechanics. Practice using Demonbolt (instant cast with Demonic Core procs) during movement-heavy phases. Glide usage was notably high (4-10 per fight), which is wasted GCDs if used unnecessarily.
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">5. 0 Versatility -- Consider Gear Adjustment</div>
+  <div class="callout-body">
+    <strong>Problem:</strong> Orichamaru has literally 0 Versatility rating. Versatility provides both damage increase AND damage reduction. On a fight where survival is the primary challenge, having some Versatility would help with both DPS and survivability.<br><br>
+    <strong>Note:</strong> This is a lower priority than mechanical improvements, but if there are gear options with Versatility that don't significantly reduce ilvl, they would provide a small but free survival boost.
+  </div>
+</div>
+
+</div>
+
+<!-- ============================================ -->
+<!-- WHAT'S GOING WELL -->
+<!-- ============================================ -->
+<h2>What's Going Well</h2>
+
+<div class="card" style="border-left: 3px solid var(--green);">
+  <ul style="padding-left: 20px; font-size: 14px; line-height: 2;">
+    <li><strong>Clear improvement trajectory:</strong> First half avg 27.6K DPS, second half 40.6K (+47%). The three best pulls all came in the final 6 attempts.</li>
+    <li><strong>Strong DPS when alive:</strong> Best pull (F28) at 55,087 DPS is competitive with Sonic's best and shows what Orichamaru can do when surviving deep into the fight.</li>
+    <li><strong>Consistent rotation:</strong> Cast counts are remarkably stable across pulls -- Hand of Gul'dan, Demonbolt, and Call Dreadstalkers all show consistent CPM values.</li>
+    <li><strong>Competitive with raid peer:</strong> Won 5 of 8 head-to-head pulls against the other Demo Warlock (Sonic), including the final 3 pulls of the night.</li>
+    <li><strong>Correct Diabolist rotation:</strong> Ruination, Infernal Bolt, and Grimoire: Imp Lord usage all present and consistent with the Diabolist hero talent build.</li>
+    <li><strong>Gear is not the issue:</strong> 290.8 ilvl is nearly identical to the top-ranked reference (291.5). The gap is fight knowledge and survival, not gear.</li>
+  </ul>
+</div>
+
+<!-- ============================================ -->
+<!-- FOOTER -->
+<!-- ============================================ -->
+<div class="footer">
+  <p>
+    Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs</a> &middot;
+    Reference: Top 5 Demonology Warlock rankings on Mythic Crown of the Cosmos
+  </p>
+  <p style="margin-top:4px;">
+    Analysis mode: PROG (27 pulls, no kill) &middot; Phase structure: P1 Sentinels (0:00-2:14) / Intermission (2:14-2:53) / P2 Rift (2:53-5:09) / P3 Cosmos (5:09+)
+  </p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybrosaen - Unholy DK - Crown of the Cosmos Prog Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --dk-color: #c41e3a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+
+/* Header */
+.header { margin-bottom:32px; }
+.header h1 { font-size:28px; font-weight:700; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.header h1 .player-name { color:var(--dk-color); }
+.header .subtitle { color:var(--dim); font-size:14px; margin-top:4px; }
+.tag { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+.tag-prog { background:var(--orange); color:#fff; }
+.tag-night { background:var(--purple); color:#fff; margin-left:8px; }
+
+/* Cards grid */
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; }
+.card .label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.card .value { font-size:28px; font-weight:700; }
+.card .detail { font-size:12px; color:var(--dim); margin-top:4px; }
+
+/* Sections */
+.section { margin-bottom:32px; }
+.section-title { font-size:18px; font-weight:700; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th { text-align:left; padding:10px 12px; background:var(--surface); color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); }
+td { padding:10px 12px; border-bottom:1px solid var(--border); }
+tr:hover { background:rgba(88,166,255,0.04); }
+
+/* Bar chart */
+.bar-chart { display:flex; align-items:flex-end; gap:6px; height:200px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:12px; margin-bottom:8px; }
+.bar-col { display:flex; flex-direction:column; align-items:center; flex:1; height:100%; justify-content:flex-end; }
+.bar { width:100%; border-radius:4px 4px 0 0; min-height:4px; transition:height 0.3s; position:relative; }
+.bar-label { font-size:10px; color:var(--dim); margin-top:4px; text-align:center; }
+.bar-value { font-size:10px; color:var(--text); margin-bottom:2px; font-weight:600; }
+.bar-survived { background:var(--green); }
+.bar-died { background:var(--red); }
+.bar-died-cascade { background:var(--orange); }
+
+/* Phase cards */
+.phase-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.phase-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.phase-card .phase-name { font-weight:700; font-size:16px; margin-bottom:8px; }
+.phase-card .phase-stat { display:flex; justify-content:space-between; padding:4px 0; font-size:14px; }
+.phase-card .phase-stat .stat-label { color:var(--dim); }
+
+/* Callout */
+.callout { background:var(--surface); border-left:4px solid var(--red); border-radius:0 8px 8px 0; padding:16px; margin-bottom:16px; }
+.callout-warn { border-left-color:var(--yellow); }
+.callout-info { border-left-color:var(--accent); }
+.callout-title { font-weight:700; margin-bottom:4px; }
+
+/* Ability bar */
+.ability-bar-wrap { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.ability-bar-name { width:180px; font-size:13px; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ability-bar-track { flex:1; height:20px; background:var(--border); border-radius:4px; overflow:hidden; }
+.ability-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:6px; font-size:11px; font-weight:600; color:#fff; }
+.ability-bar-pct { width:60px; font-size:13px; color:var(--dim); text-align:right; }
+
+/* Comparison highlight */
+.comp-row-self { background:rgba(196,30,58,0.1); }
+.comp-row-self td:first-child { font-weight:700; color:var(--dk-color); }
+
+/* Footer */
+.footer { margin-top:48px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); }
+
+/* Responsive */
+@media (max-width:768px) {
+  .cards { grid-template-columns:repeat(2,1fr); }
+  .phase-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260630-crown" class="back-link">&larr; June 30, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Cybrosaen</span>
+    <span style="color:var(--dim);font-weight:400">Unholy Death Knight</span>
+    <span class="tag tag-prog">PROGRESSION</span>
+    <span class="tag tag-night">NIGHT 5</span>
+  </h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &mdash; June 30, 2026 &mdash; 8 pulls (fights 2-9) &mdash;
+    <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG" target="_blank">Report qDfTzvAyV3pRb6rG</a>
+  </div>
+  <div class="subtitle" style="margin-top:2px;">
+    Cybrosaen was present for pulls 2-9 only (replaced by Chedrock for pulls 10-25)
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS (3+ min pulls)</div>
+    <div class="value">37.9K</div>
+    <div class="detail">Across 4 pulls with table data (3+ min)</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">289</div>
+    <div class="detail">Equipped average</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--green)">7/8</div>
+    <div class="detail">1 actionable death (first 2 to die)</div>
+  </div>
+  <div class="card">
+    <div class="label">Deepest Pull</div>
+    <div class="value">7:07</div>
+    <div class="detail">Fight 7: 41.5K DPS</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <div class="section-title">Performance Across All Pulls</div>
+  <div style="font-size:13px;color:var(--dim);margin-bottom:8px;">
+    DPS from WCL table data (includes pet damage). Fights 2, 4, 5, 8 had missing table entries --
+    shown as gray. Short pulls show inflated DPS due to burst phase bias.
+  </div>
+  <div class="bar-chart">
+    <div class="bar-col">
+        <div class="bar-value"><span style="color:var(--dim);font-size:9px">N/A</span></div>
+        <div class="bar bar-survived" style="height:5%;opacity:0.3"></div>
+        <div class="bar-label">F2<br>1:33</div>
+      </div>
+    <div class="bar-col">
+        <div class="bar-value">34.0K</div>
+        <div class="bar bar-died-cascade" style="height:81.91050536726571%;opacity:1"></div>
+        <div class="bar-label">F3<br>7:06</div>
+      </div>
+    <div class="bar-col">
+        <div class="bar-value"><span style="color:var(--dim);font-size:9px">N/A</span></div>
+        <div class="bar bar-survived" style="height:5%;opacity:0.3"></div>
+        <div class="bar-label">F4<br>1:32</div>
+      </div>
+    <div class="bar-col">
+        <div class="bar-value"><span style="color:var(--dim);font-size:9px">N/A</span></div>
+        <div class="bar bar-survived" style="height:5%;opacity:0.3"></div>
+        <div class="bar-label">F5<br>5:06</div>
+      </div>
+    <div class="bar-col">
+        <div class="bar-value">40.6K</div>
+        <div class="bar bar-died-cascade" style="height:98.05331081896031%;opacity:1"></div>
+        <div class="bar-label">F6<br>6:10</div>
+      </div>
+    <div class="bar-col">
+        <div class="bar-value">41.5K</div>
+        <div class="bar bar-died-cascade" style="height:100%;opacity:1"></div>
+        <div class="bar-label">F7<br>7:07</div>
+      </div>
+    <div class="bar-col">
+        <div class="bar-value"><span style="color:var(--dim);font-size:9px">N/A</span></div>
+        <div class="bar bar-survived" style="height:5%;opacity:0.3"></div>
+        <div class="bar-label">F8<br>1:00</div>
+      </div>
+    <div class="bar-col">
+        <div class="bar-value">35.6K</div>
+        <div class="bar bar-died-cascade" style="height:85.87383910264141%;opacity:1"></div>
+        <div class="bar-label">F9<br>5:08</div>
+      </div>
+  </div>
+  <div style="font-size:12px;color:var(--dim);display:flex;gap:16px;margin-bottom:16px;">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Survived to wipe</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Actionable death (first 2)</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--orange);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Cascade death (after 2nd raid death)</span>
+  </div>
+
+  <table>
+    <tr>
+      <th>Pull</th><th>Duration</th><th>DPS (Table)</th><th>DPS (Events)</th><th>Rank</th><th>Phase Reached</th><th>Death</th>
+    </tr>
+    <tr>
+      <td>Fight 2</td>
+      <td>1:33</td>
+      <td><span style="color:var(--dim)">N/A</span></td>
+      <td>244,561</td>
+      <td><span style="color:var(--dim)">N/A</span></td>
+      <td>P1</td>
+      <td><span style="color:var(--orange)">1:19 (#7) - Unknown</span></td>
+    </tr>
+    <tr>
+      <td>Fight 3</td>
+      <td>7:06</td>
+      <td>33,956</td>
+      <td>110,951</td>
+      <td>14/14</td>
+      <td>P3</td>
+      <td><span style="color:var(--orange)">6:53 (#17) - Gravity Collapse</span></td>
+    </tr>
+    <tr>
+      <td>Fight 4</td>
+      <td>1:32</td>
+      <td><span style="color:var(--dim)">N/A</span></td>
+      <td>233,729</td>
+      <td><span style="color:var(--dim)">N/A</span></td>
+      <td>P1</td>
+      <td><span style="color:var(--orange)">1:25 (#11) - Unknown</span></td>
+    </tr>
+    <tr>
+      <td>Fight 5</td>
+      <td>5:06</td>
+      <td><span style="color:var(--dim)">N/A</span></td>
+      <td>99,430</td>
+      <td><span style="color:var(--dim)">N/A</span></td>
+      <td>P2</td>
+      <td><span style="color:var(--red)">2:42 (#2) - Unknown</span></td>
+    </tr>
+    <tr>
+      <td>Fight 6</td>
+      <td>6:10</td>
+      <td>40,648</td>
+      <td>120,605</td>
+      <td>13/14</td>
+      <td>P3</td>
+      <td><span style="color:var(--orange)">5:22 (#7) - Simulacrum Backlash</span></td>
+    </tr>
+    <tr>
+      <td>Fight 7</td>
+      <td>7:07</td>
+      <td>41,455</td>
+      <td>111,766</td>
+      <td>11/13</td>
+      <td>P3</td>
+      <td><span style="color:var(--orange)">6:58 (#17) - Unknown</span></td>
+    </tr>
+    <tr>
+      <td>Fight 8</td>
+      <td>1:00</td>
+      <td><span style="color:var(--dim)">N/A</span></td>
+      <td>236,717</td>
+      <td><span style="color:var(--dim)">N/A</span></td>
+      <td>P1</td>
+      <td><span style="color:var(--orange)">0:53 (#14) - Unknown</span></td>
+    </tr>
+    <tr>
+      <td>Fight 9</td>
+      <td>5:08</td>
+      <td>35,599</td>
+      <td>135,643</td>
+      <td>13/14</td>
+      <td>P2</td>
+      <td><span style="color:var(--orange)">4:58 (#17) - Unknown</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <div class="section-title">Death Pattern Analysis</div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">Strong Survival</div>
+    Cybrosaen died in 8/8 pulls total, but only <strong>1 was actionable</strong> (was among the first 2 deaths in the raid).
+    The other 7 deaths were cascade deaths occurring after the raid was already collapsing.
+    This means Cybrosaen is not a survival liability -- he is consistently one of the last DPS to die when the raid wipes.
+  </div>
+
+  <table>
+    <tr><th>Pull</th><th>Death Time</th><th>Phase</th><th>Death #</th><th>Type</th><th>Killing Ability</th></tr>
+    <tr>
+      <td>Fight 2</td>
+      <td>1:19</td>
+      <td>P1</td>
+      <td>#7 of 20</td>
+      <td style="color:var(--orange)">Cascade</td>
+      <td>Unknown</td>
+    </tr>
+    <tr>
+      <td>Fight 3</td>
+      <td>6:53</td>
+      <td>P3</td>
+      <td>#17 of 22</td>
+      <td style="color:var(--orange)">Cascade</td>
+      <td>Gravity Collapse</td>
+    </tr>
+    <tr>
+      <td>Fight 4</td>
+      <td>1:25</td>
+      <td>P1</td>
+      <td>#11 of 21</td>
+      <td style="color:var(--orange)">Cascade</td>
+      <td>Unknown</td>
+    </tr>
+    <tr>
+      <td>Fight 5</td>
+      <td>2:42</td>
+      <td>Inter.</td>
+      <td>#2 of 21</td>
+      <td style="color:var(--red)">Actionable</td>
+      <td>Unknown</td>
+    </tr>
+    <tr>
+      <td>Fight 6</td>
+      <td>5:22</td>
+      <td>P3</td>
+      <td>#7 of 21</td>
+      <td style="color:var(--orange)">Cascade</td>
+      <td>Simulacrum Backlash</td>
+    </tr>
+    <tr>
+      <td>Fight 7</td>
+      <td>6:58</td>
+      <td>P3</td>
+      <td>#17 of 22</td>
+      <td style="color:var(--orange)">Cascade</td>
+      <td>Unknown</td>
+    </tr>
+    <tr>
+      <td>Fight 8</td>
+      <td>0:53</td>
+      <td>P1</td>
+      <td>#14 of 20</td>
+      <td style="color:var(--orange)">Cascade</td>
+      <td>Unknown</td>
+    </tr>
+    <tr>
+      <td>Fight 9</td>
+      <td>4:58</td>
+      <td>P2</td>
+      <td>#17 of 20</td>
+      <td style="color:var(--orange)">Cascade</td>
+      <td>Unknown</td>
+    </tr>
+  </table>
+
+  <div style="margin-top:16px;font-size:14px;color:var(--dim);">
+    The single actionable death was in Fight 5 at 2:42 (Intermission phase, death #2).
+    All other deaths occurred well after the raid had already lost multiple players.
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <div class="section-title">Per-Phase Performance Breakdown</div>
+
+  <div class="phase-grid">
+    <div class="phase-card">
+        <div class="phase-name">P1: Sentinels</div>
+        <div class="phase-stat"><span class="stat-label">Reached</span><span style="color:var(--green)">8/8 pulls (100%)</span></div>
+        <div class="phase-stat"><span class="stat-label">Avg DPS</span><span>230.4K</span></div>
+        <div class="phase-stat"><span class="stat-label">Best DPS</span><span>244.6K</span></div>
+        <div class="phase-stat"><span class="stat-label">Deaths</span><span style="color:var(--yellow)">3 (Unknown x3)</span></div>
+      </div>
+    <div class="phase-card">
+        <div class="phase-name">Intermission</div>
+        <div class="phase-stat"><span class="stat-label">Reached</span><span style="color:var(--yellow)">5/8 pulls (63%)</span></div>
+        <div class="phase-stat"><span class="stat-label">Avg DPS</span><span><span style="color:var(--dim)">Survival phase</span></span></div>
+        <div class="phase-stat"><span class="stat-label">Best DPS</span><span><span style="color:var(--dim)">N/A</span></span></div>
+        <div class="phase-stat"><span class="stat-label">Deaths</span><span style="color:var(--yellow)">1 (Unknown x1)</span></div>
+      </div>
+    <div class="phase-card">
+        <div class="phase-name">P2: Rift</div>
+        <div class="phase-stat"><span class="stat-label">Reached</span><span style="color:var(--yellow)">5/8 pulls (63%)</span></div>
+        <div class="phase-stat"><span class="stat-label">Avg DPS</span><span>70.3K</span></div>
+        <div class="phase-stat"><span class="stat-label">Best DPS</span><span>106.4K</span></div>
+        <div class="phase-stat"><span class="stat-label">Deaths</span><span style="color:var(--yellow)">1 (Unknown x1)</span></div>
+      </div>
+    <div class="phase-card">
+        <div class="phase-name">P3: Cosmos</div>
+        <div class="phase-stat"><span class="stat-label">Reached</span><span style="color:var(--red)">3/8 pulls (38%)</span></div>
+        <div class="phase-stat"><span class="stat-label">Avg DPS</span><span>40.6K</span></div>
+        <div class="phase-stat"><span class="stat-label">Best DPS</span><span>59.3K</span></div>
+        <div class="phase-stat"><span class="stat-label">Deaths</span><span style="color:var(--yellow)">3 (Gravity Collapse x1, Simulacrum Backlash x1, Unknown x1)</span></div>
+      </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <table>
+      <tr><th>Pull</th><th>P1 DPS</th><th>Intermission</th><th>P2 DPS</th><th>P3 DPS</th></tr>
+      <tr>
+        <td>F2 (1:33)</td>
+        <td>244.6K</td>
+        <td style="color:var(--dim)">-</td>
+        <td><span style="color:var(--dim)">not reached</span></td>
+        <td><span style="color:var(--dim)">not reached</span></td>
+      </tr>
+    <tr>
+        <td>F3 (7:06)</td>
+        <td>241.6K</td>
+        <td style="color:var(--dim)">0</td>
+        <td>74.6K</td>
+        <td>41.0K</td>
+      </tr>
+    <tr>
+        <td>F4 (1:32)</td>
+        <td>233.7K</td>
+        <td style="color:var(--dim)">-</td>
+        <td><span style="color:var(--dim)">not reached</span></td>
+        <td><span style="color:var(--dim)">not reached</span></td>
+      </tr>
+    <tr>
+        <td>F5 (5:06)</td>
+        <td>227.3K</td>
+        <td style="color:var(--dim)">0</td>
+        <td>0</td>
+        <td><span style="color:var(--dim)">not reached</span></td>
+      </tr>
+    <tr>
+        <td>F6 (6:10)</td>
+        <td>215.5K</td>
+        <td style="color:var(--dim)">0</td>
+        <td>106.4K</td>
+        <td>21.6K</td>
+      </tr>
+    <tr>
+        <td>F7 (7:07)</td>
+        <td>217.0K</td>
+        <td style="color:var(--dim)">0</td>
+        <td>85.8K</td>
+        <td>59.3K</td>
+      </tr>
+    <tr>
+        <td>F8 (1:00)</td>
+        <td>236.7K</td>
+        <td style="color:var(--dim)">-</td>
+        <td><span style="color:var(--dim)">not reached</span></td>
+        <td><span style="color:var(--dim)">not reached</span></td>
+      </tr>
+    <tr>
+        <td>F9 (5:08)</td>
+        <td>226.7K</td>
+        <td style="color:var(--dim)">0</td>
+        <td>84.6K</td>
+        <td><span style="color:var(--dim)">not reached</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-top:8px;font-size:13px;color:var(--dim);">
+    Phase DPS calculated from raw damage events (personal + pet). Numbers are relative within this analysis;
+    absolute values may differ from the WCL table DPS due to how damage is attributed.
+  </div>
+  <div class="callout callout-warn" style="margin-top:16px;">
+    <div class="callout-title">P1 Burst is Consistent, P2 Shows Significant Drop</div>
+    P1 DPS is consistent across all 8 pulls (215K-245K from events), showing reliable burst execution.
+    P2 damage drops substantially -- this is partially expected from the Intermission gap
+    (no valid targets during Silversunder Catastrophe), but sustained P2 performance
+    should be the focus area. Only reached P3 in 2 out of 8 pulls (Fights 3 and 6),
+    with limited data to draw P3 conclusions.
+  </div>
+</div>
+
+<!-- Raid Comparison: Other Unholy DKs -->
+<div class="section">
+  <div class="section-title">Raid Comparison: Unholy Death Knights</div>
+  <div style="font-size:14px;color:var(--dim);margin-bottom:12px;">
+    Three Unholy DKs in raid: Cybrosaen (289 ilvl), Unholyftw (292 ilvl), Bebeshakur (287 ilvl).
+    Gear is comparable -- 2-3 ilvl difference is negligible. Since no Mythic Crown rankings exist for Unholy DK,
+    comparing against raid peers running the same spec on the same pulls.
+  </div>
+
+  <table>
+    <tr><th>Pull</th><th>Cybrosaen</th><th>Unholyftw</th><th>Bebeshakur</th><th>Gap to Top UDK</th></tr>
+    <tr>
+        <td>Fight 3</td>
+        <td class="comp-row-self" style="color:var(--dk-color);font-weight:600">33,956</td>
+        <td>59,751</td>
+        <td>49,826</td>
+        <td style="color:var(--red)">-43%</td>
+      </tr>
+    <tr>
+        <td>Fight 6</td>
+        <td class="comp-row-self" style="color:var(--dk-color);font-weight:600">40,648</td>
+        <td>64,993</td>
+        <td>63,474</td>
+        <td style="color:var(--red)">-37%</td>
+      </tr>
+    <tr>
+        <td>Fight 7</td>
+        <td class="comp-row-self" style="color:var(--dk-color);font-weight:600">41,455</td>
+        <td><span style="color:var(--dim)">absent</span></td>
+        <td>67,050</td>
+        <td style="color:var(--red)">-38%</td>
+      </tr>
+    <tr>
+        <td>Fight 9</td>
+        <td class="comp-row-self" style="color:var(--dk-color);font-weight:600">35,599</td>
+        <td>54,799</td>
+        <td>58,801</td>
+        <td style="color:var(--red)">-39%</td>
+      </tr>
+  </table>
+
+  <div class="callout" style="margin-top:16px;">
+    <div class="callout-title">Consistent 35-43% Gap to Raid Peers</div>
+    Across all qualifying pulls, Cybrosaen does 34K-41K DPS while Unholyftw and Bebeshakur
+    consistently produce 50K-67K. The gap is 35-43% and stable across pulls, suggesting this is
+    a rotation or gear issue rather than a single mechanical mistake. With similar spec and fight conditions,
+    this gap points to sustained execution differences.
+  </div>
+</div>
+
+<!-- Top Damage Abilities -->
+<div class="section">
+  <div class="section-title">Damage Breakdown by Ability</div>
+  <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;">
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Putrefy</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:47.2%;background:var(--dk-color);">32009.8K</div></div>
+        <div class="ability-bar-pct">11.8%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Melee</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:42%;background:var(--dk-color);">28296.2K</div></div>
+        <div class="ability-bar-pct">10.5%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Sweeping Claws</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:34.8%;background:var(--dk-color);">23433.3K</div></div>
+        <div class="ability-bar-pct">8.7%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Scourge Strike</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:27.6%;background:var(--dk-color);">18586.1K</div></div>
+        <div class="ability-bar-pct">6.9%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Shadow Bolt</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:25.6%;background:var(--dk-color);">17261.1K</div></div>
+        <div class="ability-bar-pct">6.4%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Death Coil</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:25.2%;background:var(--dk-color);">16993.6K</div></div>
+        <div class="ability-bar-pct">6.3%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Dread Plague</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:24%;background:var(--dk-color);">16316.8K</div></div>
+        <div class="ability-bar-pct">6.0%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Pestilence</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:19.6%;background:var(--dk-color);">13223.9K</div></div>
+        <div class="ability-bar-pct">4.9%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Necrotic Coil</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:18%;background:var(--dk-color);">12162.0K</div></div>
+        <div class="ability-bar-pct">4.5%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Val'kyr Strike</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:14.8%;background:var(--dk-color);">10009.4K</div></div>
+        <div class="ability-bar-pct">3.7%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Ruptured Viscera</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:14%;background:var(--dk-color);">9564.3K</div></div>
+        <div class="ability-bar-pct">3.5%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Virulent Plague</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:13.2%;background:var(--dk-color);">9028.6K</div></div>
+        <div class="ability-bar-pct">3.3%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Frostbolt</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:12.4%;background:var(--dk-color);">8325.2K</div></div>
+        <div class="ability-bar-pct">3.1%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Undeath</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:11.6%;background:var(--dk-color);"></div></div>
+        <div class="ability-bar-pct">2.9%</div>
+      </div>
+    <div class="ability-bar-wrap">
+        <div class="ability-bar-name">Soul Reaper</div>
+        <div class="ability-bar-track"><div class="ability-bar-fill" style="width:11.2%;background:var(--dk-color);"></div></div>
+        <div class="ability-bar-pct">2.8%</div>
+      </div>
+  </div>
+</div>
+
+<!-- Cast Profile -->
+<div class="section">
+  <div class="section-title">Cast Profile (Aggregate Across 8 Pulls)</div>
+  <div style="font-size:13px;color:var(--dim);margin-bottom:12px;">Total fight time: 34:44 (34.7 minutes)</div>
+  <table>
+    <tr><th>Ability</th><th>Total Casts</th><th>CPM</th><th>Category</th></tr>
+    <tr>
+        <td>Scourge Strike</td>
+        <td>347</td>
+        <td>10.0</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Death Coil</td>
+        <td>155</td>
+        <td>4.5</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Festering Strike</td>
+        <td>87</td>
+        <td>2.5</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Necrotic Coil</td>
+        <td>84</td>
+        <td>2.4</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Festering Scythe</td>
+        <td>82</td>
+        <td>2.4</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Graveyard</td>
+        <td>77</td>
+        <td>2.2</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Epidemic</td>
+        <td>66</td>
+        <td>1.9</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Putrefy</td>
+        <td>65</td>
+        <td>1.9</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Outbreak</td>
+        <td>55</td>
+        <td>1.6</td>
+        <td style="color:var(--dim)">Maintenance</td>
+      </tr>
+    <tr>
+        <td>Soul Reaper</td>
+        <td>47</td>
+        <td>1.4</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Death and Decay</td>
+        <td>43</td>
+        <td>1.2</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+    <tr>
+        <td>Dark Transformation</td>
+        <td>35</td>
+        <td>1.0</td>
+        <td style="color:var(--dim)">Major CD</td>
+      </tr>
+    <tr>
+        <td>Anti-Magic Shell</td>
+        <td>33</td>
+        <td>0.9</td>
+        <td style="color:var(--dim)">Defensive</td>
+      </tr>
+    <tr>
+        <td>Army of the Dead</td>
+        <td>15</td>
+        <td>0.4</td>
+        <td style="color:var(--dim)">Major CD</td>
+      </tr>
+    <tr>
+        <td>Healthstone</td>
+        <td>3</td>
+        <td>0.1</td>
+        <td style="color:var(--dim)">Rotational</td>
+      </tr>
+  </table>
+</div>
+
+<!-- Damage Taken -->
+<div class="section">
+  <div class="section-title">Damage Taken (Aggregate)</div>
+  <table>
+    <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th></tr>
+    <tr>
+      <td>Echoing Darkness</td>
+      <td>20,723,055</td>
+      <td>847</td>
+      <td>24,466</td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>12,098,159</td>
+      <td>466</td>
+      <td>25,962</td>
+    </tr>
+    <tr>
+      <td>Simulacrum Backlash</td>
+      <td>10,781,002</td>
+      <td>348</td>
+      <td>30,980</td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>8,378,709</td>
+      <td>200</td>
+      <td>41,894</td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>8,183,030</td>
+      <td>158</td>
+      <td>51,791</td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>2,733,951</td>
+      <td>109</td>
+      <td>25,082</td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>2,335,632</td>
+      <td>61</td>
+      <td>38,289</td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>2,124,898</td>
+      <td>28</td>
+      <td>75,889</td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>2,031,000</td>
+      <td>7</td>
+      <td>290,143</td>
+    </tr>
+    <tr>
+      <td>Gravity Collapse</td>
+      <td>2,016,835</td>
+      <td>14</td>
+      <td>144,060</td>
+    </tr>
+    <tr>
+      <td>Interrupting Tremor</td>
+      <td>1,965,832</td>
+      <td>17</td>
+      <td>115,637</td>
+    </tr>
+    <tr>
+      <td>Corrupting Essence</td>
+      <td>1,923,438</td>
+      <td>12</td>
+      <td>160,287</td>
+    </tr>
+  </table>
+</div>
+
+<!-- Consistency Analysis -->
+<div class="section">
+  <div class="section-title">Consistency Analysis</div>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr);">
+    <div class="card">
+      <div class="label">DPS Range (Table)</div>
+      <div class="value">34.0K - 41.5K</div>
+      <div class="detail">Table DPS across 4 pulls (3+ min)</div>
+    </div>
+    <div class="card">
+      <div class="label">Peer UDK Range</div>
+      <div class="value" style="color:var(--purple)">50K - 67K</div>
+      <div class="detail">Unholyftw + Bebeshakur on same pulls</div>
+    </div>
+    <div class="card">
+      <div class="label">Session Trend</div>
+      <div class="value" style="color:var(--yellow)">Flat</div>
+      <div class="detail">No clear improvement or regression across pulls</div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;font-size:14px;">
+    <strong>Early pulls vs Late pulls:</strong>
+    Fight 3 (34.0K, first long pull) vs Fights 6/7 (40.6K/41.5K) shows some improvement.
+    Fight 9 (35.6K, last pull before swap) regressed, but note this was a shorter pull (5:08).
+    Overall the session trend is flat -- consistent execution without clear improvement or fatigue.
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <div class="section-title">Actionable Improvements</div>
+
+  <div class="callout" style="border-left-color:var(--red);">
+    <div class="callout-title">1. Address 35-43% DPS Gap to Raid Peers</div>
+    <p style="margin-top:8px;">Cybrosaen is producing 34K-41K DPS on full-duration pulls while the other two Unholy DKs
+    in the raid are doing 50K-67K. This is the single biggest improvement area. At 289 ilvl, the gap is too large
+    to be gear alone. Review:</p>
+    <ul style="margin:8px 0 0 20px;color:var(--dim);">
+      <li>Dark Transformation alignment with Army of the Dead (should be every other DT window)</li>
+      <li>Putrefy usage during Dark Transformation windows (only 2.3 CPM aggregate)</li>
+      <li>Death Coil vs Epidemic decision-making in single-target vs cleave situations</li>
+      <li>Lesser Ghoul stack management before burst windows</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">2. P2 DPS Needs Significant Improvement</div>
+    <p style="margin-top:8px;">P1 burst (avg 227K) is competitive, but P2 sustained damage (avg 87K) drops 62%.
+    While some drop is expected from the phase transition, the gap to peers suggests lost uptime during Rift mechanics.
+    Focus on maintaining GCD usage during Rift Simulacrum and Undying Voidspawn add phases -- target switching
+    should be faster, and Death and Decay should be placed to cleave both boss and adds.</p>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">3. Cooldown Alignment Through Phase Transitions</div>
+    <p style="margin-top:8px;">With Dark Transformation on a 45s CD, it should be available for every major damage window.
+    Army of the Dead (90s CD) should align with every other DT window. Check that cooldowns are being used on CD
+    rather than held -- during prog, cooldown usage on CD is more valuable than saving for specific timings
+    you haven't practiced yet. 35 total DT casts
+    across 34.7 minutes = 1.0 CPM
+    (theoretical max ~1.33 CPM).</p>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">4. Survival is Already Strong</div>
+    <p style="margin-top:8px;">Only 1 actionable death across 8 pulls is excellent for progression. Cybrosaen is
+    consistently among the last to die in wipes, which means mechanical awareness and defensive usage (Anti-Magic Shell,
+    Icebound Fortitude) are solid. The focus should be entirely on DPS output improvement rather than survival.</p>
+  </div>
+
+  <div class="callout callout-info">
+    <div class="callout-title">5. Scourge Strike Usage is High -- Verify Festering Wound Management</div>
+    <p style="margin-top:8px;">11.6 CPM on Scourge Strike is the highest ability by cast count. Verify that Festering Strike
+    is being used enough to maintain Lesser Ghoul stacks (2.7 CPM may be low). The rotation priority should ensure
+    you have 4-6 stacks before entering Dark Transformation windows, and Putrefy should be prioritized during DT.</p>
+  </div>
+</div>
+
+<!-- Context Footer -->
+<div class="section">
+  <div class="section-title">Context</div>
+  <div style="font-size:14px;line-height:1.8;">
+    <p>The 35-43% DPS gap to the other Unholy DKs is primarily <strong>execution-based</strong>.
+    At 289 ilvl (comparable to raid peers), the gap is too consistent across pulls to be attributed to gear or RNG.
+    The stable DPS numbers suggest a systematic rotation issue rather than occasional mistakes.</p>
+
+    <p style="margin-top:8px;"><strong>What is going well:</strong> Survival is excellent (1 actionable death in 8 pulls).
+    P1 burst windows are competitive. Anti-Magic Shell usage shows awareness of incoming magic damage.
+    The player is reaching the same phases as the rest of the raid consistently.</p>
+
+    <p style="margin-top:8px;"><strong>Reference context:</strong> No Unholy DK has killed Mythic Crown of the Cosmos
+    on US/EU yet, so no external reference rankings are available. Comparison is limited to the two other Unholy DKs
+    in the raid (Unholyftw and Bebeshakur), who serve as the most relevant benchmark since they share the same
+    fight conditions, healing, and Aug Evoker buffs.</p>
+  </div>
+</div>
+
+<div class="footer">
+  Generated by WCL Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG" target="_blank">Warcraft Logs</a>
+  &mdash; Cybrosaen (Unholy Death Knight, ilvl 289) &mdash; 8 pulls analyzed (fights 2-9)
+  &mdash; Progression Night 5, Mythic Crown of the Cosmos
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nurnyx - Shadow Priest | Crown of the Cosmos Prog Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.header { margin-bottom:32px; }
+.header h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+.header .meta { font-size:14px; color:var(--dim); }
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+.tag-prog { background:rgba(210,153,34,0.15); color:var(--yellow); border:1px solid rgba(210,153,34,0.3); }
+.tag-spec { background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); margin-left:8px; }
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; }
+.card-label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.card-value { font-size:28px; font-weight:700; }
+.card-sub { font-size:12px; color:var(--dim); margin-top:4px; }
+.section { margin-bottom:32px; }
+.section-title { font-size:18px; font-weight:700; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th { text-align:left; padding:8px 12px; background:var(--surface); border-bottom:2px solid var(--border); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--dim); }
+td { padding:8px 12px; border-bottom:1px solid var(--border); }
+tr:hover { background:rgba(88,166,255,0.04); }
+.bar-chart { display:flex; align-items:flex-end; gap:3px; height:200px; padding:16px 0; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:8px; }
+.bar { flex:1; min-width:12px; border-radius:3px 3px 0 0; position:relative; transition:opacity 0.2s; cursor:pointer; }
+.bar:hover { opacity:0.8; }
+.bar-label { position:absolute; bottom:-18px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--dim); white-space:nowrap; }
+.bar-tooltip { display:none; position:absolute; bottom:calc(100% + 4px); left:50%; transform:translateX(-50%); background:#1c2128; border:1px solid var(--border); border-radius:6px; padding:8px 12px; font-size:11px; white-space:nowrap; z-index:10; pointer-events:none; }
+.bar:hover .bar-tooltip { display:block; }
+.avg-line { position:relative; }
+.chart-legend { display:flex; gap:16px; font-size:12px; color:var(--dim); margin-bottom:16px; }
+.legend-dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:middle; }
+.callout { background:rgba(248,81,73,0.08); border:1px solid rgba(248,81,73,0.25); border-radius:8px; padding:16px; margin:16px 0; }
+.callout-title { font-weight:700; color:var(--red); margin-bottom:8px; font-size:14px; }
+.callout-green { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.25); }
+.callout-green .callout-title { color:var(--green); }
+.callout-yellow { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.25); }
+.callout-yellow .callout-title { color:var(--yellow); }
+.phase-bar { display:flex; height:32px; border-radius:6px; overflow:hidden; margin:12px 0; }
+.phase-segment { display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:rgba(0,0,0,0.8); }
+.death-indicator { color:var(--red); font-weight:700; }
+.survival-indicator { color:var(--green); font-weight:700; }
+.ref-badge { background:rgba(188,140,255,0.15); color:var(--purple); padding:2px 6px; border-radius:4px; font-size:11px; font-weight:600; }
+.improvement-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+.improvement-item h4 { font-size:14px; margin-bottom:8px; }
+.improvement-item p { font-size:13px; color:var(--dim); line-height:1.5; }
+.priority-badge { display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px; font-weight:700; margin-right:6px; }
+.priority-1 { background:rgba(248,81,73,0.2); color:var(--red); }
+.priority-2 { background:rgba(219,109,40,0.2); color:var(--orange); }
+.priority-3 { background:rgba(210,153,34,0.2); color:var(--yellow); }
+.priority-4 { background:rgba(63,185,80,0.2); color:var(--green); }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.stat-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.stat-label { color:var(--dim); }
+.footer { margin-top:48px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); }
+@media (max-width:768px) {
+  .cards { grid-template-columns:repeat(2,1fr); }
+  .two-col { grid-template-columns:1fr; }
+  body { padding:16px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1 style="color:#fff;">Nurnyx</h1>
+  <div style="margin:8px 0;">
+    <span class="tag tag-prog">PROGRESSION</span>
+    <span class="tag tag-spec">Shadow Priest</span>
+  </div>
+  <div class="meta">
+    Mythic Crown of the Cosmos &middot; 27 pulls &middot; Best: 31.27% &middot; June 18, 2026
+    &middot; <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">WCL Report</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS</div>
+    <div class="card-value">250.4K</div>
+    <div class="card-sub">Median: 250.5K &middot; StdDev: 55.5K</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">291</div>
+    <div class="card-sub">Haste: 844 &middot; Mastery: 1098 &middot; Crit: 747</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value" style="color:var(--red);">0/27</div>
+    <div class="card-sub">Died in 27 of 27 pulls (100% death rate)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value">31.27%</div>
+    <div class="card-sub">Fight 27 &middot; 202.5K DPS &middot; 5:14 alive</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <h2 class="section-title">Performance Across All Pulls</h2>
+  <div class="chart-legend">
+    <span><span class="legend-dot" style="background:var(--green);"></span>Survived to wipe</span>
+    <span><span class="legend-dot" style="background:var(--red);"></span>Died before wipe</span>
+    <span><span class="legend-dot" style="background:var(--border);"></span>Sub-60s (excluded)</span>
+  </div>
+  <div class="bar-chart" style="position:relative;">
+    <div class="bar" style="height:100.03623508861152px;background:var(--red);">
+        <div class="bar-tooltip">
+          <strong>Fight 1</strong><br>
+          212.9K DPS<br>
+          1:03 duration<br>
+          Died @ 0:44<br>
+          Boss: 87.12%
+          <br>Cause: Silverstrike Arrow
+        </div>
+        <span class="bar-label">1</span>
+      </div>
+    <div class="bar" style="height:125.13092724237433px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 2</strong><br>
+          266.3K DPS<br>
+          1:07 duration<br>
+          Died @ 1:00<br>
+          Boss: 81.09%
+          <br>Cause: Echoing Darkness
+        </div>
+        <span class="bar-label">2</span>
+      </div>
+    <div class="bar" style="height:103.32718820134659px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 3</strong><br>
+          219.9K DPS<br>
+          3:47 duration<br>
+          Died @ 3:35<br>
+          Boss: 57.83%
+          <br>Cause: Cosmic Barrier
+        </div>
+        <span class="bar-label">3</span>
+      </div>
+    <div class="bar" style="height:136.37627002465422px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 4</strong><br>
+          290.2K DPS<br>
+          1:08 duration<br>
+          Died @ 0:58<br>
+          Boss: 80.23%
+          <br>Cause: Unknown
+        </div>
+        <span class="bar-label">4</span>
+      </div>
+    <div class="bar" style="height:159.74748758996586px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 5</strong><br>
+          340.0K DPS<br>
+          2:17 duration<br>
+          Died @ 2:05<br>
+          Boss: 62%
+          <br>Cause: Echoing Darkness
+        </div>
+        <span class="bar-label">5</span>
+      </div>
+    <div class="bar" style="height:155.72542039336216px;background:var(--border);">
+        <div class="bar-tooltip">
+          <strong>Fight 6</strong><br>
+          331.4K DPS<br>
+          0:47 duration<br>
+          Died @ 0:39<br>
+          Boss: 85.57%
+          <br>Cause: Unknown
+        </div>
+        <span class="bar-label">6</span>
+      </div>
+    <div class="bar" style="height:153.76560237034417px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 7</strong><br>
+          327.3K DPS<br>
+          2:34 duration<br>
+          Died @ 2:11<br>
+          Boss: 62%
+          <br>Cause: Echoing Darkness
+        </div>
+        <span class="bar-label">7</span>
+      </div>
+    <div class="bar" style="height:105.76345203480338px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 8</strong><br>
+          225.1K DPS<br>
+          3:59 duration<br>
+          Died @ 3:55<br>
+          Boss: 54.68%
+          <br>Cause: Void Remnants
+        </div>
+        <span class="bar-label">8</span>
+      </div>
+    <div class="bar" style="height:126.9375684072039px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 9</strong><br>
+          270.2K DPS<br>
+          2:59 duration<br>
+          Died @ 2:30<br>
+          Boss: 61.99%
+          <br>Cause: Stellar Emission
+        </div>
+        <span class="bar-label">9</span>
+      </div>
+    <div class="bar" style="height:155.9871366817393px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 10</strong><br>
+          332.0K DPS<br>
+          2:18 duration<br>
+          Died @ 2:09<br>
+          Boss: 62%
+          <br>Cause: Void Remnants
+        </div>
+        <span class="bar-label">10</span>
+      </div>
+    <div class="bar" style="height:124.56614631126246px;background:var(--red);">
+        <div class="bar-tooltip">
+          <strong>Fight 11</strong><br>
+          265.1K DPS<br>
+          4:05 duration<br>
+          Died @ 2:37<br>
+          Boss: 55.49%
+          <br>Cause: Orbiting Matter
+        </div>
+        <span class="bar-label">11</span>
+      </div>
+    <div class="bar" style="height:146.85009010403422px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 12</strong><br>
+          312.5K DPS<br>
+          1:03 duration<br>
+          Died @ 0:59<br>
+          Boss: 86.75%
+          <br>Cause: Void Remnants
+        </div>
+        <span class="bar-label">12</span>
+      </div>
+    <div class="bar" style="height:151.47969618909684px;background:var(--red);">
+        <div class="bar-tooltip">
+          <strong>Fight 13</strong><br>
+          322.4K DPS<br>
+          1:04 duration<br>
+          Died @ 0:38<br>
+          Boss: 86.76%
+          <br>Cause: Bursting Emptiness
+        </div>
+        <span class="bar-label">13</span>
+      </div>
+    <div class="bar" style="height:113.11876043382605px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 14</strong><br>
+          240.7K DPS<br>
+          4:02 duration<br>
+          Died @ 3:37<br>
+          Boss: 56.7%
+          <br>Cause: Voidstalker Sting
+        </div>
+        <span class="bar-label">14</span>
+      </div>
+    <div class="bar" style="height:100.91488761871068px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 15</strong><br>
+          214.8K DPS<br>
+          4:52 duration<br>
+          Died @ 4:44<br>
+          Boss: 45.69%
+          <br>Cause: Simulacrum Backlash
+        </div>
+        <span class="bar-label">15</span>
+      </div>
+    <div class="bar" style="height:81.30684016760456px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 16</strong><br>
+          173.0K DPS<br>
+          5:03 duration<br>
+          Died @ 4:34<br>
+          Boss: 43.43%
+          <br>Cause: Simulacrum Backlash
+        </div>
+        <span class="bar-label">16</span>
+      </div>
+    <div class="bar" style="height:117.6849343843628px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 17</strong><br>
+          250.5K DPS<br>
+          1:01 duration<br>
+          Died @ 0:52<br>
+          Boss: 87.82%
+          <br>Cause: Void Remnants
+        </div>
+        <span class="bar-label">17</span>
+      </div>
+    <div class="bar" style="height:92.24723883649712px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 18</strong><br>
+          196.3K DPS<br>
+          5:56 duration<br>
+          Died @ 5:18<br>
+          Boss: 38.52%
+          <br>Cause: Dimensional Slash
+        </div>
+        <span class="bar-label">18</span>
+      </div>
+    <div class="bar" style="height:129.17413848381997px;background:var(--red);">
+        <div class="bar-tooltip">
+          <strong>Fight 19</strong><br>
+          274.9K DPS<br>
+          5:16 duration<br>
+          Died @ 2:30<br>
+          Boss: 43.5%
+          <br>Cause: Silverstrike Barrage
+        </div>
+        <span class="bar-label">19</span>
+      </div>
+    <div class="bar" style="height:126.54146996716455px;background:var(--red);">
+        <div class="bar-tooltip">
+          <strong>Fight 20</strong><br>
+          269.3K DPS<br>
+          5:23 duration<br>
+          Died @ 2:35<br>
+          Boss: 37.12%
+          <br>Cause: Stellar Emission
+        </div>
+        <span class="bar-label">20</span>
+      </div>
+    <div class="bar" style="height:86.07082840432942px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 21</strong><br>
+          183.2K DPS<br>
+          4:49 duration<br>
+          Died @ 4:41<br>
+          Boss: 43.12%
+          <br>Cause: Simulacrum Backlash
+        </div>
+        <span class="bar-label">21</span>
+      </div>
+    <div class="bar" style="height:86.6581629832727px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 22</strong><br>
+          184.4K DPS<br>
+          4:13 duration<br>
+          Died @ 4:01<br>
+          Boss: 50.46%
+          <br>Cause: Bursting Emptiness
+        </div>
+        <span class="bar-label">22</span>
+      </div>
+    <div class="bar" style="height:89.5741617008104px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 23</strong><br>
+          190.6K DPS<br>
+          6:05 duration<br>
+          Died @ 5:13<br>
+          Boss: 36.95%
+          <br>Cause: Cosmic Radiation
+        </div>
+        <span class="bar-label">23</span>
+      </div>
+    <div class="bar" style="height:92.25287724845495px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 24</strong><br>
+          196.3K DPS<br>
+          4:44 duration<br>
+          Died @ 4:32<br>
+          Boss: 41.61%
+          <br>Cause: Simulacrum Backlash
+        </div>
+        <span class="bar-label">24</span>
+      </div>
+    <div class="bar" style="height:170px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 25</strong><br>
+          361.8K DPS<br>
+          1:01 duration<br>
+          Died @ 0:53<br>
+          Boss: 86.33%
+          <br>Cause: Echoing Darkness
+        </div>
+        <span class="bar-label">25</span>
+      </div>
+    <div class="bar" style="height:95.15853887740323px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 27</strong><br>
+          202.5K DPS<br>
+          6:01 duration<br>
+          Died @ 5:14<br>
+          Boss: 31.27%
+          <br>Cause: Dimensional Slash
+        </div>
+        <span class="bar-label">27</span>
+      </div>
+    <div class="bar" style="height:88.50991144376513px;background:var(--green);">
+        <div class="bar-tooltip">
+          <strong>Fight 28</strong><br>
+          188.4K DPS<br>
+          5:43 duration<br>
+          Died @ 5:29<br>
+          Boss: 36.59%
+          <br>Cause: Melee
+        </div>
+        <span class="bar-label">28</span>
+      </div>
+    <div style="position:absolute;left:0;right:0;bottom:133.66097113354192px;border-top:2px dashed var(--accent);opacity:0.5;">
+      <span style="position:absolute;right:0;top:-16px;font-size:10px;color:var(--accent);">Avg 250.4K</span>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--dim);margin-top:20px;">
+    Pull IDs shown below bars. 1 pulls under 60s excluded from statistics.
+  </div>
+
+  <div class="two-col" style="margin-top:16px;">
+    <div class="card">
+      <div class="card-label">Session Trend</div>
+      <div class="stat-row"><span class="stat-label">First half avg</span><span>278.8K</span></div>
+      <div class="stat-row"><span class="stat-label">Second half avg</span><span>222.0K</span></div>
+      <div class="stat-row"><span class="stat-label">Overall DPS trend</span><span style="color:var(--yellow);">-20.4%</span></div>
+      <div class="stat-row"><span class="stat-label">Boss % trend</span><span style="color:var(--green);">Improving (later pulls go deeper)</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Consistency</div>
+      <div class="stat-row"><span class="stat-label">Best DPS pull</span><span>361.8K (F25)</span></div>
+      <div class="stat-row"><span class="stat-label">Worst pull (>60s)</span><span>173.0K (F16)</span></div>
+      <div class="stat-row"><span class="stat-label">Range</span><span>188.8K</span></div>
+      <div class="stat-row"><span class="stat-label">StdDev</span><span>55.5K (22%)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2 class="section-title">Death Pattern Analysis</h2>
+
+  <div class="callout">
+    <div class="callout-title">Died in 27/27 pulls (100% death rate)</div>
+    Nurnyx died in every pull except one. The average survival time was 2:54.
+    The #1 killers are <strong>Echoing Darkness</strong> (5 deaths in P1) and <strong>Simulacrum Backlash</strong> (4 deaths in P2), followed by <strong>Void Remnants</strong> (4 deaths).
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Deaths</th>
+        <th>Phase</th>
+        <th>Avg Time</th>
+        <th>Fights</th>
+        <th>Avoidable?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+          <td><strong>Echoing Darkness</strong></td>
+          <td class="death-indicator">4</td>
+          <td>P1, P1, P1, P1</td>
+          <td>1:32</td>
+          <td style="color:var(--dim);">F2, F5, F7, F25</td>
+          <td>Partially</td>
+        </tr>
+      <tr>
+          <td><strong>Void Remnants</strong></td>
+          <td class="death-indicator">4</td>
+          <td>P2, P1, P1, P1</td>
+          <td>1:59</td>
+          <td style="color:var(--dim);">F8, F10, F12, F17</td>
+          <td>Raid damage</td>
+        </tr>
+      <tr>
+          <td><strong>Simulacrum Backlash</strong></td>
+          <td class="death-indicator">4</td>
+          <td>P2, P2, P2, P2</td>
+          <td>4:38</td>
+          <td style="color:var(--dim);">F15, F16, F21, F24</td>
+          <td>Raid damage</td>
+        </tr>
+      <tr>
+          <td><strong>Stellar Emission</strong></td>
+          <td class="death-indicator">2</td>
+          <td>Inter, Inter</td>
+          <td>2:33</td>
+          <td style="color:var(--dim);">F9, F20</td>
+          <td>Raid damage</td>
+        </tr>
+      <tr>
+          <td><strong>Bursting Emptiness</strong></td>
+          <td class="death-indicator">2</td>
+          <td>P1, P2</td>
+          <td>2:20</td>
+          <td style="color:var(--dim);">F13, F22</td>
+          <td>Partially</td>
+        </tr>
+      <tr>
+          <td><strong>Dimensional Slash</strong></td>
+          <td class="death-indicator">2</td>
+          <td>P3, P3</td>
+          <td>5:16</td>
+          <td style="color:var(--dim);">F18, F27</td>
+          <td>Raid damage</td>
+        </tr>
+      <tr>
+          <td><strong>Silverstrike Arrow</strong></td>
+          <td class="death-indicator">1</td>
+          <td>P1</td>
+          <td>0:44</td>
+          <td style="color:var(--dim);">F1</td>
+          <td>Partially</td>
+        </tr>
+      <tr>
+          <td><strong>Cosmic Barrier</strong></td>
+          <td class="death-indicator">1</td>
+          <td>P2</td>
+          <td>3:35</td>
+          <td style="color:var(--dim);">F3</td>
+          <td>Raid damage</td>
+        </tr>
+      <tr>
+          <td><strong>Orbiting Matter</strong></td>
+          <td class="death-indicator">1</td>
+          <td>Inter</td>
+          <td>2:37</td>
+          <td style="color:var(--dim);">F11</td>
+          <td>Partially</td>
+        </tr>
+      <tr>
+          <td><strong>Voidstalker Sting</strong></td>
+          <td class="death-indicator">1</td>
+          <td>P2</td>
+          <td>3:37</td>
+          <td style="color:var(--dim);">F14</td>
+          <td>Partially</td>
+        </tr>
+      <tr>
+          <td><strong>Silverstrike Barrage</strong></td>
+          <td class="death-indicator">1</td>
+          <td>Inter</td>
+          <td>2:30</td>
+          <td style="color:var(--dim);">F19</td>
+          <td>Partially</td>
+        </tr>
+      <tr>
+          <td><strong>Cosmic Radiation</strong></td>
+          <td class="death-indicator">1</td>
+          <td>P3</td>
+          <td>5:13</td>
+          <td style="color:var(--dim);">F23</td>
+          <td>Partially</td>
+        </tr>
+      <tr>
+          <td><strong>Melee</strong></td>
+          <td class="death-indicator">1</td>
+          <td>P3</td>
+          <td>5:29</td>
+          <td style="color:var(--dim);">F28</td>
+          <td>Varies</td>
+        </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top:16px;">
+    <div class="callout">
+      <div class="callout-title">P1 Deaths: 11 pulls</div>
+      <p style="font-size:13px;color:var(--dim);">
+        4x Echoing Darkness, 3x Void Remnants, 1x Silverstrike Arrow, 1x Bursting Emptiness.
+        Echoing Darkness (Vorelus orbs) is the primary P1 killer. These deaths occur between 0:38 and 2:11,
+        coinciding with Vorelus spawn windows. Void Remnants kills at 0:52-1:09 indicate difficulty with the
+        intermission transition zone.
+      </p>
+    </div>
+    <div class="callout callout-yellow">
+      <div class="callout-title">P2 Deaths: 8 pulls</div>
+      <p style="font-size:13px;color:var(--dim);">
+        4x Simulacrum Backlash, 1x Cosmic Barrier, 1x Void Remnants, 1x Voidstalker Sting, 1x Bursting Emptiness.
+        Simulacrum Backlash is the dominant P2 killer (4 deaths). This is raid-wide damage from the Rift
+        Simulacrum -- positioning and defensive timing are critical.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2 class="section-title">Per-Phase Performance Breakdown</h2>
+
+  <div style="margin-bottom:16px;">
+    <div class="card-label" style="margin-bottom:8px;">Phase Reach Rate</div>
+    <div class="phase-bar">
+      <div class="phase-segment" style="flex:134;background:#58a6ff;">P1: 27/27</div>
+      <div class="phase-segment" style="flex:39;background:#d29922;">Inter: 16/27</div>
+      <div class="phase-segment" style="flex:136;background:#bc8cff;">P2: 12/27</div>
+      <div class="phase-segment" style="flex:60;background:#f85149;">P3: 4/27</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);">
+      <span>0:00</span><span>2:14 (P1 end)</span><span>2:53 (Inter end)</span><span>5:09 (P2 end)</span><span>5:09+</span>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Duration</th>
+        <th>Times Alive</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Deaths</th>
+        <th>Top Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:#58a6ff;font-weight:600;">P1: Sentinels</td>
+        <td>0:00 - 2:14</td>
+        <td style="color:#3fb950;">27/27</td>
+        <td><strong>314.8K</strong></td>
+        <td>361.8K</td>
+        <td class="death-indicator">11</td>
+        <td>4x Echoing Darkness</td>
+      </tr>
+      <tr>
+        <td style="color:#d29922;font-weight:600;">Intermission</td>
+        <td>2:14 - 2:53</td>
+        <td style="color:#d29922;">16/27</td>
+        <td><strong>~0</strong></td>
+        <td>-</td>
+        <td class="death-indicator">4</td>
+        <td>2x Stellar Emission</td>
+      </tr>
+      <tr>
+        <td style="color:#bc8cff;font-weight:600;">P2: Rift</td>
+        <td>2:53 - 5:09</td>
+        <td style="color:#f85149;">12/27</td>
+        <td><strong>113.2K</strong></td>
+        <td>175.5K</td>
+        <td class="death-indicator">8</td>
+        <td>4x Simulacrum Backlash</td>
+      </tr>
+      <tr>
+        <td style="color:#f85149;font-weight:600;">P3: Devouring Cosmos</td>
+        <td>5:09+</td>
+        <td style="color:#f85149;">4/27</td>
+        <td><strong>23.9K</strong></td>
+        <td>41.1K</td>
+        <td class="death-indicator">4</td>
+        <td>2x Dimensional Slash</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow" style="margin-top:16px;">
+    <div class="callout-title">Phase Transition Wall: Intermission + Early P2</div>
+    <p style="font-size:13px;color:var(--dim);">
+      Nurnyx only reaches P2 alive in 12 of 27 pulls (44%),
+      and P3 in just 4 of 27 (15%).
+      The intermission (Stellar Emission channel + Silverstrike Barrage + falling damage) and the P1-to-intermission transition
+      kill Nurnyx in 15 of 27 pulls. P1 DPS is strong at 314.8K average, but
+      P2 DPS drops to 113.2K (-64%) -- this is expected with the phase transition,
+      but the 8 deaths to Simulacrum Backlash in P2 indicate a mechanics issue, not a DPS issue.
+    </p>
+  </div>
+
+  <h3 style="font-size:15px;margin:20px 0 12px;">Per-Pull Phase DPS Breakdown (qualifying pulls reaching P2+)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Fight</th>
+        <th>Duration</th>
+        <th>Boss %</th>
+        <th>P1 DPS</th>
+        <th>P2 DPS</th>
+        <th>P3 DPS</th>
+        <th>Death</th>
+        <th>Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+          <td>F28</td>
+          <td>5:43</td>
+          <td>36.59%</td>
+          <td>324.7K</td>
+          <td>128.9K</td>
+          <td>41.1K</td>
+          <td class="death-indicator">5:29</td>
+          <td style="color:var(--dim);">Melee</td>
+        </tr>
+      <tr>
+          <td>F18</td>
+          <td>5:56</td>
+          <td>38.52%</td>
+          <td>359.6K</td>
+          <td>103.6K</td>
+          <td>6.7K</td>
+          <td class="death-indicator">5:18</td>
+          <td style="color:var(--dim);">Dimensional Slash</td>
+        </tr>
+      <tr>
+          <td>F27</td>
+          <td>6:01</td>
+          <td>31.27%</td>
+          <td>345.5K</td>
+          <td>125.8K</td>
+          <td>-</td>
+          <td class="death-indicator">5:14</td>
+          <td style="color:var(--dim);">Dimensional Slash</td>
+        </tr>
+      <tr>
+          <td>F23</td>
+          <td>6:05</td>
+          <td>36.95%</td>
+          <td>340.4K</td>
+          <td>102.0K</td>
+          <td>-</td>
+          <td class="death-indicator">5:13</td>
+          <td style="color:var(--dim);">Cosmic Radiation</td>
+        </tr>
+      <tr>
+          <td>F15</td>
+          <td>4:52</td>
+          <td>45.69%</td>
+          <td>353.8K</td>
+          <td>121.8K</td>
+          <td>-</td>
+          <td class="death-indicator">4:44</td>
+          <td style="color:var(--dim);">Simulacrum Backlash</td>
+        </tr>
+      <tr>
+          <td>F21</td>
+          <td>4:49</td>
+          <td>43.12%</td>
+          <td>306.3K</td>
+          <td>96.3K</td>
+          <td>-</td>
+          <td class="death-indicator">4:41</td>
+          <td style="color:var(--dim);">Simulacrum Backlash</td>
+        </tr>
+      <tr>
+          <td>F16</td>
+          <td>5:03</td>
+          <td>43.43%</td>
+          <td>284.1K</td>
+          <td>92.5K</td>
+          <td>-</td>
+          <td class="death-indicator">4:34</td>
+          <td style="color:var(--dim);">Simulacrum Backlash</td>
+        </tr>
+      <tr>
+          <td>F24</td>
+          <td>4:44</td>
+          <td>41.61%</td>
+          <td>323.1K</td>
+          <td>102.4K</td>
+          <td>-</td>
+          <td class="death-indicator">4:32</td>
+          <td style="color:var(--dim);">Simulacrum Backlash</td>
+        </tr>
+      <tr>
+          <td>F22</td>
+          <td>4:13</td>
+          <td>50.46%</td>
+          <td>291.6K</td>
+          <td>79.1K</td>
+          <td>-</td>
+          <td class="death-indicator">4:01</td>
+          <td style="color:var(--dim);">Bursting Emptiness</td>
+        </tr>
+      <tr>
+          <td>F8</td>
+          <td>3:59</td>
+          <td>54.68%</td>
+          <td>342.1K</td>
+          <td>113.8K</td>
+          <td>-</td>
+          <td class="death-indicator">3:55</td>
+          <td style="color:var(--dim);">Void Remnants</td>
+        </tr>
+      <tr>
+          <td>F14</td>
+          <td>4:02</td>
+          <td>56.7%</td>
+          <td>332.4K</td>
+          <td>175.5K</td>
+          <td>-</td>
+          <td class="death-indicator">3:37</td>
+          <td style="color:var(--dim);">Voidstalker Sting</td>
+        </tr>
+      <tr>
+          <td>F3</td>
+          <td>3:47</td>
+          <td>57.83%</td>
+          <td>316.1K</td>
+          <td>116.3K</td>
+          <td>-</td>
+          <td class="death-indicator">3:35</td>
+          <td style="color:var(--dim);">Cosmic Barrier</td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Cast Profile (Best Pull - Fight 28) -->
+<div class="section">
+  <h2 class="section-title">Cast Profile &mdash; Best Pull (Fight 28, 5:43)</h2>
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-label">Fight 28 Summary</div>
+    <div style="font-size:13px;color:var(--dim);margin-top:8px;">
+      DPS: <strong style="color:var(--text);">188.4K</strong> &middot;
+      Boss: 36.59% &middot; Died @ 5:29 to Melee &middot;
+      PI at 0:05, 2:53, 4:54 &middot; Heroism at 2:54 (P2 start) &middot;
+      Voidform: 3 casts &middot; VE: 2 casts (0:57, 4:18)
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Casts</th>
+        <th>CPM</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Shadowy Apparition</td><td>185</td><td>32.3</td><td style="color:var(--dim);">Passive proc, high count expected</td></tr>
+      <tr><td><strong>Mind Blast</strong></td><td>45</td><td>7.9</td><td style="color:var(--dim);">Primary Insanity generator</td></tr>
+      <tr><td><strong>Shadow Word: Madness</strong></td><td>38</td><td>6.6</td><td style="color:var(--dim);">Main spender -- solid usage</td></tr>
+      <tr><td>Mind Flay</td><td>24</td><td>4.2</td><td style="color:var(--dim);">Filler channel</td></tr>
+      <tr><td>Tentacle Slam</td><td>20</td><td>3.5</td><td style="color:var(--dim);">DoT applicator (VT + SWP spread)</td></tr>
+      <tr><td>Mind Flay: Insanity</td><td>20</td><td>3.5</td><td style="color:var(--dim);">Empowered filler during Madness</td></tr>
+      <tr><td>Shadow Word: Death</td><td>19</td><td>3.3</td><td style="color:var(--dim);">Execute / movement global</td></tr>
+      <tr><td>Shadow Word: Pain</td><td>13</td><td>2.3</td><td style="color:var(--dim);">DoT maintenance</td></tr>
+      <tr><td>Void Volley</td><td>11</td><td>1.9</td><td style="color:var(--dim);">AoE Insanity spender</td></tr>
+      <tr><td>Power Infusion</td><td>6</td><td>1.0</td><td style="color:var(--dim);">Self-PI (Twins of the Sun Priestess)</td></tr>
+      <tr><td>Halo</td><td>5</td><td>0.9</td><td style="color:var(--dim);">Archon hero talent ability</td></tr>
+      <tr><td>Voidform</td><td>3</td><td>0.5</td><td style="color:var(--dim);">2min CD, used on time</td></tr>
+      <tr><td>Desperate Prayer</td><td>2</td><td>0.3</td><td style="color:var(--dim);">Personal defensive</td></tr>
+      <tr><td>Vampiric Embrace</td><td>2</td><td>0.3</td><td style="color:var(--dim);">Raid CD (healing from damage)</td></tr>
+      <tr><td>Dispersion</td><td>1</td><td>0.2</td><td style="color:var(--dim);">Major defensive (6s immunity)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Reference Context -->
+<div class="section">
+  <h2 class="section-title">Reference Context</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    Top-ranked Shadow Priest kills on Mythic Crown of the Cosmos, for context.
+    These are completed kills -- Nurnyx is still progressing, so direct comparison is limited to phases seen.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Player</th>
+        <th>DPS</th>
+        <th>Kill Time</th>
+        <th>ilvl</th>
+        <th>Talent Delta</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+          <td>1</td>
+          <td><span style="color:#fff;font-weight:600;">Loafsp</span> <span style="color:var(--dim);font-size:12px;">Zul'jin</span></td>
+          <td><strong>111.5K</strong></td>
+          <td>7:22</td>
+          <td>291</td>
+          <td>6 diffs</td>
+        </tr>
+      <tr style="background:rgba(188,140,255,0.06);">
+          <td>2</td>
+          <td><span style="color:#fff;font-weight:600;">Stackedsp</span> <span style="color:var(--dim);font-size:12px;">Kazzak</span> <span class="ref-badge">Primary Ref</span></td>
+          <td><strong>111.0K</strong></td>
+          <td>8:19</td>
+          <td>290</td>
+          <td>2 diffs</td>
+        </tr>
+      <tr>
+          <td>3</td>
+          <td><span style="color:#fff;font-weight:600;">Arino</span> <span style="color:var(--dim);font-size:12px;">Sargeras</span></td>
+          <td><strong>109.9K</strong></td>
+          <td>8:49</td>
+          <td>291</td>
+          <td>4 diffs</td>
+        </tr>
+      <tr>
+          <td>4</td>
+          <td><span style="color:#fff;font-weight:600;">Cosmospi</span> <span style="color:var(--dim);font-size:12px;">Thrall</span></td>
+          <td><strong>109.9K</strong></td>
+          <td>8:43</td>
+          <td>274</td>
+          <td>6 diffs</td>
+        </tr>
+      <tr>
+          <td>5</td>
+          <td><span style="color:#fff;font-weight:600;">Lonelyshadow</span> <span style="color:var(--dim);font-size:12px;">Kazzak</span></td>
+          <td><strong>105.5K</strong></td>
+          <td>7:28</td>
+          <td>290</td>
+          <td>2 diffs</td>
+        </tr>
+      <tr style="border-top:2px solid var(--border);">
+        <td>-</td>
+        <td><span style="color:#fff;font-weight:700;">Nurnyx</span> <span style="color:var(--dim);font-size:12px;">Area 52</span></td>
+        <td><strong>188.4K</strong> <span style="color:var(--dim);font-size:11px;">(best pull)</span></td>
+        <td>5:29 <span style="color:var(--dim);font-size:11px;">(died)</span></td>
+        <td>291</td>
+        <td>-</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow" style="margin-top:16px;">
+    <div class="callout-title">Context</div>
+    <p style="font-size:13px;color:var(--dim);">
+      Reference players averaged 109.6K DPS over
+      8:08 kill durations with ilvl
+      287. Nurnyx's best-pull DPS of 188.4K
+      is measured over a shorter fight (died at 5:29 vs 7-8 min kills). P1 DPS of 314.8K is competitive
+      but difficult to compare directly since reference data spans full kill duration. The 2-talent-diff
+      primary reference (Stackedsp) ran a similar build at 290 ilvl.
+    </p>
+  </div>
+</div>
+
+<!-- Actionable Improvements -->
+<div class="section">
+  <h2 class="section-title">Actionable Improvements</h2>
+
+  <div class="improvement-item">
+    <h4><span class="priority-badge priority-1">#1 CRITICAL</span> Survive Echoing Darkness in P1 (5 deaths)</h4>
+    <p>
+      Echoing Darkness (Vorelus orbs) killed Nurnyx in 5 pulls at an average of 1:32 into the fight.
+      This is a repeating ability with ~3s intervals that stacks damage. In fights 2, 5, 7, and 25,
+      multiple simultaneous Echoing Darkness hits dealt 20-42K each, overwhelming available healing.
+      <br><br>
+      <strong>Fix:</strong> Use Dispersion proactively when Vorelus spawns Echoing Darkness clusters.
+      Fade can drop threat/aggro but won't prevent the orb damage. Track Vorelus's cast timer and
+      pre-position away from orb paths. On short pulls where Vorelus is alive (0:00-2:05), this
+      ability is the #1 threat.
+    </p>
+  </div>
+
+  <div class="improvement-item">
+    <h4><span class="priority-badge priority-1">#2 CRITICAL</span> Survive Simulacrum Backlash in P2 (4 deaths)</h4>
+    <p>
+      Simulacrum Backlash killed Nurnyx in fights 15, 16, 21, and 24 at an average of 4:38. This is
+      raid-wide pulsing damage from the Rift Simulacrum that hits every ~0.7 seconds. Combined with
+      Void Expulsion and other P2 mechanics, this creates lethal damage windows.
+      <br><br>
+      <strong>Fix:</strong> Use Vampiric Embrace proactively during Simulacrum Backlash windows.
+      Coordinate Dispersion for the most dangerous overlap (Backlash + Void Expulsion). Desperate
+      Prayer is a 2-minute CD -- it should be available for every Backlash window in P2.
+    </p>
+  </div>
+
+  <div class="improvement-item">
+    <h4><span class="priority-badge priority-2">#3 HIGH</span> Survive the Intermission (4 deaths in Inter + P1/Inter transition)</h4>
+    <p>
+      Stellar Emission channel (2:22-2:52) plus Silverstrike Barrage every 6s creates a sustained damage
+      check during intermission. Deaths at 2:30 (F9) and 2:35 (F20) indicate insufficient defensive usage
+      during this window. Orbiting Matter also killed Nurnyx at 2:37 (F11).
+      <br><br>
+      <strong>Fix:</strong> Pre-cast Desperate Prayer before Stellar Emission begins at 2:22. Save
+      Dispersion for the middle of the channel (~2:35-2:41) when damage peaks. Healthstone usage during
+      intermission is critical. Note: Nurnyx used a Healthstone and a Silvermoon Health Potion in fight 28
+      -- make sure both are available every pull.
+    </p>
+  </div>
+
+  <div class="improvement-item">
+    <h4><span class="priority-badge priority-3">#4 MODERATE</span> P2 DPS Optimization</h4>
+    <p>
+      P2 DPS averages 113.2K, which is 64% lower than P1's 314.8K.
+      Some drop is expected (movement from Rift Slash, target switching to adds), but the best P2 pull
+      (F14, 175.5K) shows significantly higher potential.
+      <br><br>
+      <strong>Fix:</strong> Align the second Voidform + PI window with P2 start (Heroism timing at 2:54
+      is already correct in F28). Maintain DoTs on Rift Simulacrum and Undying Voidspawn via Tentacle
+      Slam while keeping SW:Madness rolling on the priority target. Movement during Rift Slash should
+      use Shadow Word: Death as a movement GCD.
+    </p>
+  </div>
+
+  <div class="improvement-item">
+    <h4><span class="priority-badge priority-4">#5 POSITIVE</span> Strong P1 Execution and Improving Trend</h4>
+    <p>
+      P1 DPS is consistent at 314.8K average across 27 pulls, with the best P1
+      at 361.8K. Overall DPS trend appears lower in the second half of the session, but this
+      is expected -- later pulls lasted longer into P2/P3 where DPS naturally drops due to mechanics.
+      The deepest boss percentage pulls came late in the session (F27: 31.27%, F28: 36.59%),
+      demonstrating active learning and improved survival.
+      <br><br>
+      Cast profile on the best pull shows good ability usage: 7.9 Mind Blast CPM, 6.6 SW:Madness CPM,
+      proper Voidform/PI synchronization, and correct Archon hero talent usage (Halo on cooldown).
+      Power Infusion was correctly self-cast 6 times with Twins of the Sun Priestess.
+    </p>
+  </div>
+</div>
+
+<!-- Full Pull Log -->
+<div class="section">
+  <h2 class="section-title">Full Pull Log</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Pull</th>
+        <th>Duration</th>
+        <th>Boss %</th>
+        <th>DPS</th>
+        <th>Death @</th>
+        <th>Phase</th>
+        <th>Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="">
+          <td>F1</td>
+          <td>1:03</td>
+          <td>87.12%</td>
+          <td><strong>212.9K</strong></td>
+          <td class="death-indicator">0:44</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Silverstrike Arrow</td>
+        </tr>
+      <tr style="">
+          <td>F2</td>
+          <td>1:07</td>
+          <td>81.09%</td>
+          <td><strong>266.3K</strong></td>
+          <td class="death-indicator">1:00</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Echoing Darkness</td>
+        </tr>
+      <tr style="">
+          <td>F3</td>
+          <td>3:47</td>
+          <td>57.83%</td>
+          <td><strong>219.9K</strong></td>
+          <td class="death-indicator">3:35</td>
+          <td style="color:#bc8cff;">P2</td>
+          <td style="color:var(--dim);">Cosmic Barrier</td>
+        </tr>
+      <tr style="">
+          <td>F4</td>
+          <td>1:08</td>
+          <td>80.23%</td>
+          <td><strong>290.2K</strong></td>
+          <td class="death-indicator">0:58</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Unknown</td>
+        </tr>
+      <tr style="">
+          <td>F5</td>
+          <td>2:17</td>
+          <td>62%</td>
+          <td><strong>340.0K</strong></td>
+          <td class="death-indicator">2:05</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Echoing Darkness</td>
+        </tr>
+      <tr style="opacity:0.5;">
+          <td>F6</td>
+          <td>0:47</td>
+          <td>85.57%</td>
+          <td><strong>331.4K</strong></td>
+          <td class="death-indicator">0:39</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Unknown</td>
+        </tr>
+      <tr style="">
+          <td>F7</td>
+          <td>2:34</td>
+          <td>62%</td>
+          <td><strong>327.3K</strong></td>
+          <td class="death-indicator">2:11</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Echoing Darkness</td>
+        </tr>
+      <tr style="">
+          <td>F8</td>
+          <td>3:59</td>
+          <td>54.68%</td>
+          <td><strong>225.1K</strong></td>
+          <td class="death-indicator">3:55</td>
+          <td style="color:#bc8cff;">P2</td>
+          <td style="color:var(--dim);">Void Remnants</td>
+        </tr>
+      <tr style="">
+          <td>F9</td>
+          <td>2:59</td>
+          <td>61.99%</td>
+          <td><strong>270.2K</strong></td>
+          <td class="death-indicator">2:30</td>
+          <td style="color:#d29922;">Inter</td>
+          <td style="color:var(--dim);">Stellar Emission</td>
+        </tr>
+      <tr style="">
+          <td>F10</td>
+          <td>2:18</td>
+          <td>62%</td>
+          <td><strong>332.0K</strong></td>
+          <td class="death-indicator">2:09</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Void Remnants</td>
+        </tr>
+      <tr style="">
+          <td>F11</td>
+          <td>4:05</td>
+          <td>55.49%</td>
+          <td><strong>265.1K</strong></td>
+          <td class="death-indicator">2:37</td>
+          <td style="color:#d29922;">Inter</td>
+          <td style="color:var(--dim);">Orbiting Matter</td>
+        </tr>
+      <tr style="">
+          <td>F12</td>
+          <td>1:03</td>
+          <td>86.75%</td>
+          <td><strong>312.5K</strong></td>
+          <td class="death-indicator">0:59</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Void Remnants</td>
+        </tr>
+      <tr style="">
+          <td>F13</td>
+          <td>1:04</td>
+          <td>86.76%</td>
+          <td><strong>322.4K</strong></td>
+          <td class="death-indicator">0:38</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Bursting Emptiness</td>
+        </tr>
+      <tr style="">
+          <td>F14</td>
+          <td>4:02</td>
+          <td>56.7%</td>
+          <td><strong>240.7K</strong></td>
+          <td class="death-indicator">3:37</td>
+          <td style="color:#bc8cff;">P2</td>
+          <td style="color:var(--dim);">Voidstalker Sting</td>
+        </tr>
+      <tr style="">
+          <td>F15</td>
+          <td>4:52</td>
+          <td>45.69%</td>
+          <td><strong>214.8K</strong></td>
+          <td class="death-indicator">4:44</td>
+          <td style="color:#bc8cff;">P2</td>
+          <td style="color:var(--dim);">Simulacrum Backlash</td>
+        </tr>
+      <tr style="">
+          <td>F16</td>
+          <td>5:03</td>
+          <td>43.43%</td>
+          <td><strong>173.0K</strong></td>
+          <td class="death-indicator">4:34</td>
+          <td style="color:#bc8cff;">P2</td>
+          <td style="color:var(--dim);">Simulacrum Backlash</td>
+        </tr>
+      <tr style="">
+          <td>F17</td>
+          <td>1:01</td>
+          <td>87.82%</td>
+          <td><strong>250.5K</strong></td>
+          <td class="death-indicator">0:52</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Void Remnants</td>
+        </tr>
+      <tr style="">
+          <td>F18</td>
+          <td>5:56</td>
+          <td>38.52%</td>
+          <td><strong>196.3K</strong></td>
+          <td class="death-indicator">5:18</td>
+          <td style="color:#f85149;">P3</td>
+          <td style="color:var(--dim);">Dimensional Slash</td>
+        </tr>
+      <tr style="">
+          <td>F19</td>
+          <td>5:16</td>
+          <td>43.5%</td>
+          <td><strong>274.9K</strong></td>
+          <td class="death-indicator">2:30</td>
+          <td style="color:#d29922;">Inter</td>
+          <td style="color:var(--dim);">Silverstrike Barrage</td>
+        </tr>
+      <tr style="">
+          <td>F20</td>
+          <td>5:23</td>
+          <td>37.12%</td>
+          <td><strong>269.3K</strong></td>
+          <td class="death-indicator">2:35</td>
+          <td style="color:#d29922;">Inter</td>
+          <td style="color:var(--dim);">Stellar Emission</td>
+        </tr>
+      <tr style="">
+          <td>F21</td>
+          <td>4:49</td>
+          <td>43.12%</td>
+          <td><strong>183.2K</strong></td>
+          <td class="death-indicator">4:41</td>
+          <td style="color:#bc8cff;">P2</td>
+          <td style="color:var(--dim);">Simulacrum Backlash</td>
+        </tr>
+      <tr style="">
+          <td>F22</td>
+          <td>4:13</td>
+          <td>50.46%</td>
+          <td><strong>184.4K</strong></td>
+          <td class="death-indicator">4:01</td>
+          <td style="color:#bc8cff;">P2</td>
+          <td style="color:var(--dim);">Bursting Emptiness</td>
+        </tr>
+      <tr style="">
+          <td>F23</td>
+          <td>6:05</td>
+          <td>36.95%</td>
+          <td><strong>190.6K</strong></td>
+          <td class="death-indicator">5:13</td>
+          <td style="color:#f85149;">P3</td>
+          <td style="color:var(--dim);">Cosmic Radiation</td>
+        </tr>
+      <tr style="">
+          <td>F24</td>
+          <td>4:44</td>
+          <td>41.61%</td>
+          <td><strong>196.3K</strong></td>
+          <td class="death-indicator">4:32</td>
+          <td style="color:#bc8cff;">P2</td>
+          <td style="color:var(--dim);">Simulacrum Backlash</td>
+        </tr>
+      <tr style="">
+          <td>F25</td>
+          <td>1:01</td>
+          <td>86.33%</td>
+          <td><strong>361.8K</strong></td>
+          <td class="death-indicator">0:53</td>
+          <td style="color:#58a6ff;">P1</td>
+          <td style="color:var(--dim);">Echoing Darkness</td>
+        </tr>
+      <tr style="">
+          <td>F27</td>
+          <td>6:01</td>
+          <td>31.27%</td>
+          <td><strong>202.5K</strong></td>
+          <td class="death-indicator">5:14</td>
+          <td style="color:#f85149;">P3</td>
+          <td style="color:var(--dim);">Dimensional Slash</td>
+        </tr>
+      <tr style="">
+          <td>F28</td>
+          <td>5:43</td>
+          <td>36.59%</td>
+          <td><strong>188.4K</strong></td>
+          <td class="death-indicator">5:29</td>
+          <td style="color:#f85149;">P3</td>
+          <td style="color:var(--dim);">Melee</td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>
+    Generated by WCL DPS Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs</a>
+    &middot; Reference: Stackedsp (111.0K DPS, 290 ilvl, 2 talent diffs)
+    &middot; Shadow Priest rotation context from <a href="https://www.icy-veins.com/wow/shadow-priest-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins</a>
+  </p>
+  <p style="margin-top:4px;">
+    Phase boundaries: P1 0:00-2:14 | Inter 2:14-2:53 | P2 2:53-5:09 | P3 5:09+
+    &middot; DPS calculated as total damage / alive time (events-based, includes all damage sources)
+  </p>
+</div>
+
+</body>
+</html>

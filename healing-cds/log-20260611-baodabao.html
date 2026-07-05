@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baodabao — Frost Mage — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.phase { border-left: 3px solid var(--cyan); }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.movement { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .prog-boss-label { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; color: rgba(255,255,255,0.85); font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Baodabao <span class="dim">&mdash; Frost Mage</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (26 wipes, no kill) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">175.7K</div>
+    <div class="stat-label">DPS (Best Long Pull)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">0.01%</div>
+    <div class="stat-label">Best Pull (Boss %)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">36.9</div>
+    <div class="stat-label">Active CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">Baodabao dealt <strong class="yellow">175.7K DPS</strong> on the longest pull (Fight 23, 4:52) across 26 wipes on Mythic Crown of the Cosmos &mdash; this is <strong class="yellow">progression data</strong>, not a kill. The #1 ranked Frost Mage Asimage dealt <strong class="green">108.2K DPS on a 9:05 kill</strong> with only <strong class="green">2 talent differences</strong>. Direct DPS comparison is misleading here: Baodabao's pull covered only the first ~5 minutes (through early Phase 2), while Asimage's kill includes all three phases over 9+ minutes. Longer fights naturally have lower DPS as burst windows thin out. The key finding is <strong class="red">rotational CPM: 36.9 active CPM vs Asimage's 43.4</strong> &mdash; a <strong class="red">15% gap</strong> in how many GCDs are being used per minute of active combat. The biggest contributors are <strong class="red">Flurry at 3.5 CPM vs 7.6 CPM (&minus;54%)</strong> and <strong class="red">Ice Lance at 17.4 vs 20.7 CPM (&minus;16%)</strong>. These are the core of the Frost Mage Shatter combo &mdash; Flurry applies Freezing stacks and Brain Freeze procs, Ice Lance consumes them for Shatter damage. With only 17 Flurries vs 69 (adjusted: 3.5 vs 7.6 CPM), Baodabao is losing massive Shatter and Frost Splinter throughput.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Frost Mages on Mythic Crown of the Cosmos (all kills). Primary reference: <strong>Asimage</strong> (closest talent match at 2 diffs, 108.2K DPS, 9:05 kill). Note: Baodabao's data is from a 4:52 wipe &mdash; DPS is expected to be higher on shorter pulls due to burst phase bias.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Active CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Baodabao</strong> <span class="tag tag-warn">PROG</span></td>
+      <td>175,708</td>
+      <td>4:52 (wipe)</td>
+      <td>289.1</td>
+      <td>&mdash;</td>
+      <td class="yellow">36.9</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Asimage <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">108,201</td>
+      <td>9:05 (kill)</td>
+      <td>289.8</td>
+      <td><span class="tag tag-same">2 diff</span></td>
+      <td class="green">43.4</td>
+    </tr>
+    <tr>
+      <td>&#26432;&#23565;&#25196;&#28784; <span class="ref-badge">#2</span></td>
+      <td class="green">107,611</td>
+      <td>8:05 (kill)</td>
+      <td>290.0</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#29577;&#29577; <span class="ref-badge">#3</span></td>
+      <td class="green">106,856</td>
+      <td>8:17 (kill)</td>
+      <td>291.9</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Liecata <span class="ref-badge">#4</span></td>
+      <td class="green">106,292</td>
+      <td>9:03 (kill)</td>
+      <td>290.5</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#32982;&#22103;&#22103;&#23567;&#29066;&#29483; <span class="ref-badge">#5</span></td>
+      <td class="green">105,285</td>
+      <td>8:05 (kill)</td>
+      <td>290.3</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Baodabao has nearly identical ilvl to Asimage (289.1 vs 289.8) and only 2 talent differences. Because this is wipe data vs kill data, the raw DPS numbers are not directly comparable &mdash; the 4:52 pull captures mostly Phase 1 + early Phase 2 burst, while a 9:05 kill includes Phase 3 sustained. The meaningful comparison is <strong>CPM and ability usage patterns</strong>, which are independent of fight length.</p>
+
+<!-- FIGHT PHASES -->
+<h2>Crown of the Cosmos &mdash; Fight Structure</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase encounter against Alleria Windrunner. The raid's longest pull (Fight 23) reached 77.31% boss HP remaining in 4:52.</p>
+
+<div class="grid-3">
+  <div class="mechanic-card phase">
+    <div class="card-header cyan">Phase 1: Sentinels (0:00&ndash;~2:05)</div>
+    <p style="font-size: 13px;">Kill three Undying Sentinels while handling Grasp of Emptiness beams, Void Expulsion puddles, and Silverstrike Arrows. Boss is not directly targetable until Sentinels are down.</p>
+  </div>
+  <div class="mechanic-card phase">
+    <div class="card-header cyan">Intermission (~2:05&ndash;~2:50)</div>
+    <p style="font-size: 13px;">Platform breaks. Players pick up feathers and jump to a new section. ~45s of no combat. Baodabao: 50.8s inactive. Asimage: 44.4s inactive.</p>
+  </div>
+  <div class="mechanic-card phase">
+    <div class="card-header cyan">Phase 2: Rift Simulacrum (~2:50&ndash;wipe)</div>
+    <p style="font-size: 13px;">Silverstrike Arrows spawn Images of Alleria. Rift Simulacrum add on opposite platform. Lust typically used here. Baodabao's pull wiped at 4:52 in this phase.</p>
+  </div>
+</div>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Phase markers -->
+  <div style="position: absolute; top: 0; left: 0; width: 42%; height: 100%; background: rgba(57,210,192,0.06); border-right: 2px dashed var(--cyan);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--cyan); font-weight: 600;">Phase 1</span>
+  </div>
+  <div style="position: absolute; top: 0; left: 42%; width: 17%; height: 100%; background: rgba(139,148,158,0.06); border-right: 2px dashed var(--dim);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--dim); font-weight: 600;">Intermission</span>
+  </div>
+  <div style="position: absolute; top: 0; left: 59%; width: 41%; height: 100%; background: rgba(88,166,255,0.06);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--accent); font-weight: 600;">Phase 2</span>
+  </div>
+  <!-- Death cluster -->
+  <div class="timeline-marker" style="left: 51.4%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 2 deaths</span>
+  </div>
+  <div class="timeline-marker" style="left: 55.4%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 18px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Invincibale</span>
+  </div>
+  <div class="timeline-marker" style="left: 82%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--red); font-size: 9px;">&#x2620; Collapse (8 deaths)</span>
+  </div>
+  <div class="timeline-marker" style="left: 90%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="bottom: 18px; left: 6px; color: var(--red); font-size: 9px;">&#x2620; Baodabao + wipe</span>
+  </div>
+  <!-- Lust marker -->
+  <div class="timeline-marker" style="left: 61.2%; border-color: var(--yellow); width: 2px;">
+    <span class="timeline-label" style="top: 20px; left: 6px; color: var(--yellow); font-size: 9px;">Heroism</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">2:26</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:52</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State &mdash; Fight 23</div>
+  <p>0:00&ndash;2:31 = 20/20 alive &middot; 2:31 = 18/20 (Alitheria + Smokinthisza die to Silverstrike Barrage) &middot; 2:42 = 17/20 (Invincibale) &middot; 3:46 = 16/20 (Son&igrave;c) &middot; 3:56&ndash;4:03 = 12/20 (Invincibale, Orichamaru, Starfighter, Moistbear) &middot; 4:06 = 11/20 (Zinnks) &middot; 4:12&ndash;4:24 = 7/20 (Smokinthisza, Unholyftw, Nurnyx, Snackznchill) &middot; 4:24 = wipe (Baodabao + 4 more die to Bursting Emptiness)</p>
+  <p style="margin-top: 4px; color: var(--yellow);">Baodabao survived until the final wipe call at 4:24. The raid collapsed rapidly in Phase 2 &mdash; going from 16 alive to 7 in ~40 seconds. Baodabao was actively casting through the collapse.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Baodabao (4:52 wipe, active time 4:02 excluding intermission) vs Asimage (9:05 kill, active time 8:21). Sorted by DPS impact. Active CPM adjusts for the ~50s intermission where no combat occurs.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Ice Lance</strong></td>
+      <td>85</td>
+      <td class="yellow">21.1</td>
+      <td>188</td>
+      <td>22.6</td>
+      <td class="yellow">&minus;7%</td>
+      <td><span class="tag tag-warn">Slightly Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Flurry</strong></td>
+      <td>17</td>
+      <td class="red">4.2</td>
+      <td>69</td>
+      <td>8.3</td>
+      <td class="red">&minus;49%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Frostbolt</strong></td>
+      <td>27</td>
+      <td>6.7</td>
+      <td>56</td>
+      <td>6.7</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ray of Frost</strong></td>
+      <td>7</td>
+      <td>1.7</td>
+      <td>13</td>
+      <td>1.6</td>
+      <td class="green">+10%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Glacial Spike</strong></td>
+      <td>6</td>
+      <td class="yellow">1.5</td>
+      <td>20</td>
+      <td>2.4</td>
+      <td class="red">&minus;38%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Frozen Orb</strong></td>
+      <td>6</td>
+      <td class="yellow">1.5</td>
+      <td>16</td>
+      <td>1.9</td>
+      <td class="yellow">&minus;23%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Counterspell</td>
+      <td>4</td>
+      <td>1.0</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="dim">+</td>
+      <td><span class="tag tag-info">Interrupts</span></td>
+    </tr>
+    <tr>
+      <td>Supernova</td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">Utility</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Critical: Flurry Usage &minus;49%</div>
+    <p style="font-size: 14px;">Flurry is the #1 gap. At <strong>4.2 CPM vs 8.3 CPM</strong>, Baodabao is casting Flurry at roughly half the rate of the reference. In the current Frost Mage rotation (Spellslinger hero talent), Flurry is cast on every Brain Freeze proc and also has baseline charges available without Brain Freeze. Flurry applies <strong>Thermal Void</strong> (extending Icy Veins) and <strong>Freezing stacks</strong> to the target, which enables Shatter damage from Ice Lance. With 17 Flurries vs 69 (CPM-adjusted), Baodabao is generating far fewer Shatter windows and Freezing stacks, directly reducing both Ice Lance and Frost Splinter damage. This single gap cascades through the entire rotation.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Glacial Spike &minus;38%</div>
+    <p style="font-size: 14px;">Glacial Spike at <strong>1.5 CPM vs 2.4 CPM</strong> means fewer Icicle dump windows. Glacial Spike triggers <strong>Fingers of Frost</strong> (via Flash Freeze talent) and generates Frost Splinters, making it both a direct damage ability and a proc enabler. The lower Glacial Spike rate is partially caused by the lower Flurry/Frostbolt throughput &mdash; fewer Icicle-generating casts means fewer Glacial Spikes become available.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Total damage: Baodabao 61.3M (175.7K DPS over 4:52) vs Asimage 97.2M (108.2K DPS over 9:05). Sorted by share of total damage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Share Gap</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Shatter</strong></td>
+      <td>23,389K</td>
+      <td>38.1%</td>
+      <td>35,976K</td>
+      <td>37.0%</td>
+      <td class="green">+1.1%</td>
+    </tr>
+    <tr>
+      <td><strong>Ray of Frost</strong></td>
+      <td>7,746K</td>
+      <td>12.6%</td>
+      <td>12,598K</td>
+      <td>13.0%</td>
+      <td class="dim">&minus;0.3%</td>
+    </tr>
+    <tr>
+      <td><strong>Frost Splinter</strong></td>
+      <td>7,073K</td>
+      <td>11.5%</td>
+      <td>10,159K</td>
+      <td>10.5%</td>
+      <td class="green">+1.1%</td>
+    </tr>
+    <tr>
+      <td><strong>Ice Lance</strong></td>
+      <td>4,141K</td>
+      <td>6.8%</td>
+      <td>5,703K</td>
+      <td>5.9%</td>
+      <td class="green">+0.9%</td>
+    </tr>
+    <tr>
+      <td><strong>Frozen Orb</strong></td>
+      <td>3,855K</td>
+      <td>6.3%</td>
+      <td>6,331K</td>
+      <td>6.5%</td>
+      <td class="dim">&minus;0.2%</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Flurry</strong></td>
+      <td>3,221K</td>
+      <td>5.3%</td>
+      <td>9,383K</td>
+      <td class="green">9.7%</td>
+      <td class="red">&minus;4.4%</td>
+    </tr>
+    <tr>
+      <td><strong>Controlled Instincts</strong></td>
+      <td>2,916K</td>
+      <td>4.8%</td>
+      <td>2,568K</td>
+      <td>2.6%</td>
+      <td class="green">+2.1%</td>
+    </tr>
+    <tr>
+      <td><strong>Hand of Frost</strong></td>
+      <td>2,760K</td>
+      <td>4.5%</td>
+      <td>3,791K</td>
+      <td>3.9%</td>
+      <td class="green">+0.6%</td>
+    </tr>
+    <tr>
+      <td><strong>Glacial Spike</strong></td>
+      <td>2,266K</td>
+      <td>3.7%</td>
+      <td>5,425K</td>
+      <td class="green">5.6%</td>
+      <td class="red">&minus;1.9%</td>
+    </tr>
+    <tr>
+      <td><strong>Frostbolt</strong></td>
+      <td>1,967K</td>
+      <td>3.2%</td>
+      <td>2,141K</td>
+      <td>2.2%</td>
+      <td class="green">+1.0%</td>
+    </tr>
+    <tr>
+      <td>Glacial Assault</td>
+      <td>374K</td>
+      <td>0.6%</td>
+      <td>1,126K</td>
+      <td>1.2%</td>
+      <td class="dim">&minus;0.5%</td>
+    </tr>
+    <tr>
+      <td>Bombardments</td>
+      <td>246K</td>
+      <td>0.4%</td>
+      <td>547K</td>
+      <td>0.6%</td>
+      <td class="dim">&minus;0.2%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Damage Profile Analysis</div>
+  <p style="font-size: 14px;">The damage profile shares are surprisingly similar between prog wipe and kill &mdash; Shatter dominates at ~37-38% for both players, confirming the Shatter gameplay loop is fundamentally working. The two biggest share gaps are <strong class="red">Flurry (&minus;4.4% share)</strong> and <strong class="red">Glacial Spike (&minus;1.9% share)</strong>. Flurry's damage is both direct and indirect (it applies Freezing stacks for Shatter), so the 5.3% vs 9.7% share gap understates its true impact. Controlled Instincts (Water Elemental pet) running higher share (+2.1%) is natural for a shorter fight where the pet's damage is a larger fraction.</p>
+</div>
+
+<!-- FROZEN ORB TIMING -->
+<h2>Frozen Orb Usage</h2>
+<p class="section-intro">Frozen Orb is the primary cooldown for Frost Mage &mdash; it generates Brain Freeze procs (via Wintertide), Fingers of Frost, and deals sustained AoE damage. It should be cast on cooldown (~30s CD) in all situations.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="yellow">Baodabao</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:08</span> <span class="cast good">Frozen Orb #1</span></div>
+      <div><span class="dim">0:52</span> <span class="cast bad">Frozen Orb #2 (44.8s gap)</span></div>
+      <div><span class="dim">1:27</span> <span class="cast good">Frozen Orb #3 (35.1s gap)</span></div>
+      <div><span class="dim">1:59</span> <span class="cast good">Frozen Orb #4 (31.4s gap)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim" style="color: var(--yellow);">~50s intermission</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:01</span> <span class="cast bad">Frozen Orb #5 (62.6s gap)</span></div>
+      <div><span class="dim">3:30</span> <span class="cast good">Frozen Orb #6 (28.5s gap)</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">6 casts in 4:52 &mdash; 1.5 CPM (including intermission)</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Asimage</span> <span class="ref-badge">Reference</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:00</span> <span class="cast good">Frozen Orb #1 (pre-pull)</span></div>
+      <div><span class="dim">0:30</span> <span class="cast good">Frozen Orb #2 (29.7s gap)</span></div>
+      <div><span class="dim">1:05</span> <span class="cast good">Frozen Orb #3 (35.4s gap)</span></div>
+      <div><span class="dim">1:44</span> <span class="cast good">Frozen Orb #4 (38.7s gap)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim" style="color: var(--yellow);">~44s intermission</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">2:54</span> <span class="cast good">Frozen Orb #5</span></div>
+      <div><span class="dim">3:20</span> <span class="cast good">Frozen Orb #6 (25.8s gap)</span></div>
+      <div style="margin-top: 4px;"><em class="dim">... continues through kill (16 total casts)</em></div>
+      <div style="margin-top: 8px;"><strong class="green">16 casts in 9:05 &mdash; 1.9 CPM (active)</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Why This Matters</div>
+  <p style="font-size: 14px;">Frozen Orb has a ~30s cooldown but Baodabao averaged <strong>40.5s between casts</strong> (excluding intermission) vs Asimage's <strong>31.8s</strong>. The 44.8s gap between Orb #1 and #2 and the 62.6s gap between #4 and #5 (accounting for the intermission, the actual delay after combat resumed was ~12s) suggest Frozen Orb is not being treated as the top priority. Every missed Frozen Orb means fewer Brain Freeze procs, fewer Flurry casts, and fewer Shatter windows &mdash; this compounds the Flurry deficit.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during Fight 23. Lust timing is critical for Frost Mage burst windows.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player Timing</th><th>Ref Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism / Time Warp</strong></td>
+      <td>2:59</td>
+      <td>2:53</td>
+      <td><span class="tag tag-same">Both Phase 2 start</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>6 applications</td>
+      <td>13 applications</td>
+      <td><span class="tag tag-warn">Fewer (shorter fight)</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>2 applications</td>
+      <td>0 applications</td>
+      <td><span class="tag tag-info">Player had more</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td>None</td>
+      <td><span class="tag tag-same">Neither received PI</span></td>
+    </tr>
+    <tr>
+      <td><strong>Potion of Recklessness</strong></td>
+      <td>0:02 (1 use)</td>
+      <td>0:00 + 2:53 (2 uses)</td>
+      <td><span class="tag tag-warn">Ref used 2nd pot</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Both players received Heroism at Phase 2 start (~2:55). Asimage used a second potion at lust timing &mdash; Baodabao only used one at pull. On a prog pull, saving the second potion is reasonable since the fight may not last long enough to matter, but on future attempts where Phase 2 is reached consistently, aligning the 2nd pot with Heroism would add meaningful burst.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Baodabao during Fight 23. Crown of the Cosmos has significant unavoidable raid damage plus several positioning-dependent mechanics.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>1,977K</td>
+      <td>83</td>
+      <td>644K</td>
+      <td><span class="tag tag-same">No &mdash; Phase 2 pulsing damage</span></td>
+    </tr>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>1,782K</td>
+      <td>118</td>
+      <td>1,329K</td>
+      <td><span class="tag tag-same">No &mdash; persistent raid damage</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,176K</td>
+      <td>30</td>
+      <td>115K</td>
+      <td><span class="tag tag-warn">Partially &mdash; puddle placement</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>591K</td>
+      <td>28</td>
+      <td>159K</td>
+      <td><span class="tag tag-same">No &mdash; targeted DoT</span></td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td>
+      <td>505K</td>
+      <td>3</td>
+      <td>89K</td>
+      <td><span class="tag tag-warn">Partially &mdash; proximity</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>464K</td>
+      <td>21</td>
+      <td>86K</td>
+      <td><span class="tag tag-same">No &mdash; shield mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>450K</td>
+      <td>6</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>377K</td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-diff">Yes &mdash; intermission jump</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Emptiness</td>
+      <td>234K</td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-same">No &mdash; wipe mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>186K</td>
+      <td>14</td>
+      <td>205K</td>
+      <td><span class="tag tag-same">No &mdash; raid damage</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Most damage taken is unavoidable raid-wide mechanics (Simulacrum Backlash, Echoing Darkness, Stellar Emission). The <strong class="yellow">377K Falling damage</strong> (2 hits) during the intermission platform transition is notable &mdash; Frost Mages have Slow Fall to mitigate this. Void Expulsion hits (30) suggest some puddle damage taken, which is partially avoidable through better positioning. Overall a clean damage profile for progression.</p>
+
+<!-- DEFENSIVE USAGE -->
+<h2>Defensive &amp; Utility Usage</h2>
+<p class="section-intro">Frost Mage defensives used during Fight 23. Frost Mages have Ice Barrier (absorb shield), Ice Cold (damage immunity), Shimmer (instant blink while casting), and Alter Time (position reset).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Uses</th><th>Timing</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Ice Barrier</strong></td>
+      <td>7</td>
+      <td>0:45, 1:10, 1:41, 2:08, 2:48, 3:59, 4:10</td>
+      <td><span class="tag tag-same">Good &mdash; regular upkeep</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ice Cold</strong></td>
+      <td>1</td>
+      <td>2:04</td>
+      <td><span class="tag tag-same">End of Phase 1</span></td>
+    </tr>
+    <tr>
+      <td><strong>Shimmer</strong></td>
+      <td>4</td>
+      <td>0:29, 1:23, 2:46, 4:13</td>
+      <td><span class="tag tag-same">Movement mechanics</span></td>
+    </tr>
+    <tr>
+      <td><strong>Counterspell</strong></td>
+      <td>4</td>
+      <td>various</td>
+      <td><span class="tag tag-same">Good &mdash; 4 interrupts</span></td>
+    </tr>
+    <tr>
+      <td><strong>Nullsight</strong></td>
+      <td>3</td>
+      <td>0:02, 1:42, 3:19</td>
+      <td><span class="tag tag-info">Trinket active</span></td>
+    </tr>
+    <tr>
+      <td><strong>Alter Time</strong></td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Not used (ref used 2)</span></td>
+    </tr>
+    <tr>
+      <td><strong>Greater Invisibility</strong></td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Not used (ref used 2)</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Ice Barrier was used consistently throughout the fight (7 uses). Asimage used <strong>Alter Time</strong> twice (for Dimensional Slash positioning and platform transitions) and <strong>Greater Invisibility</strong> twice (damage reduction) &mdash; Baodabao used neither. These are both potent defensives that Frost Mages should incorporate, especially in progression where surviving longer means more data.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Baodabao's DPS across all 26 pulls on Mythic Crown of the Cosmos. Boss % labels show how far the raid progressed (lower = further into the fight). Pulls where Baodabao recorded 0 DPS are likely deaths early or bench swaps. Color: <span class="green">green</span> (&lt;10% boss), <span class="yellow">yellow</span> (10&ndash;50%), <span class="orange">orange</span> (50&ndash;90%), <span class="red">red</span> (&gt;90%).</p>
+
+<div class="card">
+  <div class="progression-chart" style="margin-bottom: 24px;">
+    <!-- Fight 1: 0 DPS, 99.45% boss, 28s -->
+    <div class="prog-bar" style="height: 5%; background: var(--red);" data-tooltip="F1: 0 DPS (0:28) Boss: 99.5%">
+      <span class="prog-label">1</span>
+    </div>
+    <!-- Fight 2: 0 DPS, 51.98% boss, 63s -->
+    <div class="prog-bar" style="height: 5%; background: var(--orange);" data-tooltip="F2: 0 DPS (1:03) Boss: 52.0%">
+      <span class="prog-label">2</span>
+    </div>
+    <!-- Fight 3: 0 DPS, 54.75% boss, 117s -->
+    <div class="prog-bar" style="height: 5%; background: var(--orange);" data-tooltip="F3: 0 DPS (1:57) Boss: 54.8%">
+      <span class="prog-label">3</span>
+    </div>
+    <!-- Fight 4: 40665 DPS, 54.62% boss, 76s -->
+    <div class="prog-bar" style="height: 14%; background: var(--orange);" data-tooltip="F4: 40.7K DPS (1:16) Boss: 54.6%">
+      <span class="prog-boss-label">54.6%</span>
+      <span class="prog-label">4</span>
+    </div>
+    <!-- Fight 5: 0 DPS, 74.02% boss, 60s -->
+    <div class="prog-bar" style="height: 5%; background: var(--orange);" data-tooltip="F5: 0 DPS (1:00) Boss: 74.0%">
+      <span class="prog-label">5</span>
+    </div>
+    <!-- Fight 6: 0 DPS, 19.48% boss, 143s -->
+    <div class="prog-bar" style="height: 5%; background: var(--yellow);" data-tooltip="F6: 0 DPS (2:23) Boss: 19.5%">
+      <span class="prog-label">6</span>
+    </div>
+    <!-- Fight 7: 161663 DPS, 41.72% boss, 89s -->
+    <div class="prog-bar" style="height: 56%; background: var(--yellow);" data-tooltip="F7: 161.7K DPS (1:29) Boss: 41.7%">
+      <span class="prog-boss-label">41.7%</span>
+      <span class="prog-label">7</span>
+    </div>
+    <!-- Fight 8: 92376 DPS, 0.01% boss, 142s - BEST BOSS % -->
+    <div class="prog-bar" style="height: 32%; background: var(--green);" data-tooltip="F8: 92.4K DPS (2:22) Boss: 0.01% ★ BEST">
+      <span class="prog-boss-label" style="color: var(--green);">0.01%</span>
+      <span class="prog-label" style="color: var(--green);">8 &#9733;</span>
+    </div>
+    <!-- Fight 9: 260787 DPS, 7.27% boss, 152s -->
+    <div class="prog-bar" style="height: 90%; background: var(--green);" data-tooltip="F9: 260.8K DPS (2:32) Boss: 7.3%">
+      <span class="prog-boss-label" style="color: var(--green);">7.3%</span>
+      <span class="prog-label">9</span>
+    </div>
+    <!-- Fight 10: 194079 DPS, 98.36% boss, 220s -->
+    <div class="prog-bar" style="height: 67%; background: var(--red);" data-tooltip="F10: 194.1K DPS (3:40) Boss: 98.4%">
+      <span class="prog-boss-label">98.4%</span>
+      <span class="prog-label">10</span>
+    </div>
+    <!-- Fight 11: 232608 DPS, 30.29% boss, 122s -->
+    <div class="prog-bar" style="height: 80%; background: var(--yellow);" data-tooltip="F11: 232.6K DPS (2:02) Boss: 30.3%">
+      <span class="prog-boss-label">30.3%</span>
+      <span class="prog-label">11</span>
+    </div>
+    <!-- Fight 12: 152597 DPS, 92.06% boss, 234s -->
+    <div class="prog-bar" style="height: 53%; background: var(--red);" data-tooltip="F12: 152.6K DPS (3:54) Boss: 92.1%">
+      <span class="prog-boss-label">92.1%</span>
+      <span class="prog-label">12</span>
+    </div>
+    <!-- Fight 13: 198392 DPS, 60.77% boss, 75s -->
+    <div class="prog-bar" style="height: 69%; background: var(--orange);" data-tooltip="F13: 198.4K DPS (1:15) Boss: 60.8%">
+      <span class="prog-boss-label">60.8%</span>
+      <span class="prog-label">13</span>
+    </div>
+    <!-- Fight 14: 189261 DPS, 95.25% boss, 231s -->
+    <div class="prog-bar" style="height: 65%; background: var(--red);" data-tooltip="F14: 189.3K DPS (3:51) Boss: 95.3%">
+      <span class="prog-boss-label">95.3%</span>
+      <span class="prog-label">14</span>
+    </div>
+    <!-- Fight 15: 246592 DPS, 9.05% boss, 149s -->
+    <div class="prog-bar" style="height: 85%; background: var(--green);" data-tooltip="F15: 246.6K DPS (2:29) Boss: 9.1%">
+      <span class="prog-boss-label" style="color: var(--green);">9.1%</span>
+      <span class="prog-label">15</span>
+    </div>
+    <!-- Fight 16: 154415 DPS, 21.23% boss, 130s -->
+    <div class="prog-bar" style="height: 53%; background: var(--yellow);" data-tooltip="F16: 154.4K DPS (2:10) Boss: 21.2%">
+      <span class="prog-boss-label">21.2%</span>
+      <span class="prog-label">16</span>
+    </div>
+    <!-- Fight 17: 289673 DPS, 0.01% boss, 144s - BEST BOSS % -->
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F17: 289.7K DPS (2:24) Boss: 0.01% ★ BEST">
+      <span class="prog-boss-label" style="color: var(--green);">0.01%</span>
+      <span class="prog-label" style="color: var(--green);">17 &#9733;</span>
+    </div>
+    <!-- Fight 18: 195150 DPS, 95.72% boss, 236s -->
+    <div class="prog-bar" style="height: 67%; background: var(--red);" data-tooltip="F18: 195.2K DPS (3:56) Boss: 95.7%">
+      <span class="prog-boss-label">95.7%</span>
+      <span class="prog-label">18</span>
+    </div>
+    <!-- Fight 19: 220393 DPS, 34.53% boss, 114s -->
+    <div class="prog-bar" style="height: 76%; background: var(--yellow);" data-tooltip="F19: 220.4K DPS (1:54) Boss: 34.5%">
+      <span class="prog-boss-label">34.5%</span>
+      <span class="prog-label">19</span>
+    </div>
+    <!-- Fight 20: 273608 DPS, 35.43% boss, 120s -->
+    <div class="prog-bar" style="height: 95%; background: var(--yellow);" data-tooltip="F20: 273.6K DPS (2:00) Boss: 35.4%">
+      <span class="prog-boss-label">35.4%</span>
+      <span class="prog-label">20</span>
+    </div>
+    <!-- Fight 21: 262363 DPS, 0.22% boss, 147s -->
+    <div class="prog-bar" style="height: 91%; background: var(--green);" data-tooltip="F21: 262.4K DPS (2:27) Boss: 0.2%">
+      <span class="prog-boss-label" style="color: var(--green);">0.2%</span>
+      <span class="prog-label">21</span>
+    </div>
+    <!-- Fight 22: 0 DPS, 99.7% boss, 25s -->
+    <div class="prog-bar" style="height: 5%; background: var(--red);" data-tooltip="F22: 0 DPS (0:25) Boss: 99.7%">
+      <span class="prog-label">22</span>
+    </div>
+    <!-- Fight 23: 175708 DPS, 77.31% boss, 293s - LONGEST PULL -->
+    <div class="prog-bar" style="height: 61%; background: var(--orange);" data-tooltip="F23: 175.7K DPS (4:52) Boss: 77.3% — LONGEST PULL">
+      <span class="prog-boss-label">77.3%</span>
+      <span class="prog-label" style="color: var(--accent);">23</span>
+    </div>
+    <!-- Fight 24: 196614 DPS, 92.92% boss, 229s -->
+    <div class="prog-bar" style="height: 68%; background: var(--red);" data-tooltip="F24: 196.6K DPS (3:49) Boss: 92.9%">
+      <span class="prog-boss-label">92.9%</span>
+      <span class="prog-label">24</span>
+    </div>
+    <!-- Fight 25: 197039 DPS, 99.88% boss, 188s -->
+    <div class="prog-bar" style="height: 68%; background: var(--red);" data-tooltip="F25: 197.0K DPS (3:08) Boss: 99.9%">
+      <span class="prog-boss-label">99.9%</span>
+      <span class="prog-label">25</span>
+    </div>
+    <!-- Fight 26: 0 DPS, 96.91% boss, 220s -->
+    <div class="prog-bar" style="height: 5%; background: var(--red);" data-tooltip="F26: 0 DPS (3:40) Boss: 96.9%">
+      <span class="prog-label">26</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 1</span>
+    <span style="color: var(--dim);"><span class="green">&#9632;</span> Boss &lt;10% &bull; <span class="yellow">&#9632;</span> 10&ndash;50% &bull; <span class="orange">&#9632;</span> 50&ndash;90% &bull; <span class="red">&#9632;</span> &gt;90%</span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Filtering to pulls where Baodabao was active (DPS > 0) and longer than 2 minutes: F8 (92K, <strong class="green">0.01%</strong>), F9 (261K, <strong class="green">7.3%</strong>), F10 (194K, 98.4%), F11 (233K, 30.3%), F12 (153K, 92.1%), F14 (189K, 95.3%), F15 (247K, <strong class="green">9.1%</strong>), F16 (154K, 21.2%), F17 (290K, <strong class="green">0.01%</strong>), F18 (195K, 95.7%), F19 (220K, 34.5%), F20 (274K, 35.4%), F21 (262K, <strong class="green">0.2%</strong>), F23 (176K, 77.3%), F24 (197K, 92.9%), F25 (197K, 99.9%).</p>
+  <p style="font-size: 14px; margin-top: 8px;">DPS varies significantly based on pull length and phase reached. The highest DPS numbers (260-290K) come from pulls that wiped in Phase 1 or right at the intermission &mdash; these capture the Frost Mage burst window. Pulls that reach Phase 2+ show 150-200K sustained DPS. Fight 23 (the longest pull at 4:52) shows <strong>175.7K</strong>, which includes a ~50s intermission of zero damage. Six pulls with 0 DPS recorded suggest either early deaths or being benched/swapped in.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. Nearly identical ilvl with slightly different stat distributions.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Baodabao</th><th>Asimage</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>289.1</td>
+      <td>289.8</td>
+      <td><span class="tag tag-same">&minus;0.7 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Intellect</td>
+      <td>2,664</td>
+      <td>2,684</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td>1,099</td>
+      <td>1,066</td>
+      <td class="green">Player has +3% more</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="yellow">696</td>
+      <td>748</td>
+      <td>Player has &minus;7% Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td>945</td>
+      <td>945</td>
+      <td><span class="tag tag-same">Identical</span></td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>0</td>
+      <td>0</td>
+      <td><span class="tag tag-same">Both zero</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Stat profiles are nearly identical. The 7% Haste difference (696 vs 748) would account for roughly <strong>~1 CPM</strong> of the active CPM gap, not the 6.5 CPM difference observed. The remaining ~5.5 CPM gap (36.9 vs 43.4) is execution and rotation priority, not gear. With 0 Versatility on both players, neither is stacking the weakest stat &mdash; the stat profiles are well-optimized for Frost Mage (Haste > Crit > Mastery).</p>
+
+<!-- CAST GAP ANALYSIS -->
+<h2>Cast Gap Analysis</h2>
+<p class="section-intro">Periods of 2.5+ seconds between rotational casts during active combat (excluding the ~50s intermission). Frost Mage has many instant casts (Ice Lance, Flurry) so gaps above 2.5s represent missed GCDs.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Gap Start</th><th>Duration</th><th>Before</th><th>After</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0:03</td>
+      <td>3.4s</td>
+      <td>Ray of Frost</td>
+      <td>Ice Lance</td>
+      <td><span class="tag tag-info">Pull setup</span></td>
+    </tr>
+    <tr>
+      <td>0:44</td>
+      <td>5.7s</td>
+      <td>Frostbolt</td>
+      <td>Glacial Spike</td>
+      <td><span class="tag tag-warn">Waiting for Glacial Spike?</span></td>
+    </tr>
+    <tr>
+      <td>0:58</td>
+      <td>3.4s</td>
+      <td>Ray of Frost</td>
+      <td>Ice Lance</td>
+      <td><span class="tag tag-info">Channel end</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>1:21</td>
+      <td>5.4s</td>
+      <td>Frostbolt</td>
+      <td>Ice Lance</td>
+      <td><span class="tag tag-warn">Unexplained</span></td>
+    </tr>
+    <tr>
+      <td>1:43</td>
+      <td>3.2s</td>
+      <td>Ray of Frost</td>
+      <td>Ice Lance</td>
+      <td><span class="tag tag-info">Channel end</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Gap Pattern Summary</div>
+  <p style="font-size: 14px;">Excluding the ~50.8s intermission gap (2:04&ndash;2:54), there are <strong>25 gaps totaling 78.5s</strong> of reduced activity in 242s of active combat time. Many of these are 2.7s gaps which correspond to the Frostbolt cast time (2.3-2.5s + GCD) &mdash; these are not true dead time but rather Frostbolt cast windows that appear as gaps between instant-cast abilities. The 3.4s gaps after Ray of Frost are the channel completing before the next instant cast. The <strong>two meaningful gaps</strong> are the 5.7s gap at 0:44 (likely waiting for Glacial Spike to become available instead of filling with Frostbolt) and the 5.4s gap at 1:21 (unexplained &mdash; possibly a movement/positioning event for Void Expulsion puddles). The Frostbolt-length gaps actually reflect <strong>under-use of instant casts</strong> (Flurry, Ice Lance with procs) that should be filling those windows.</p>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Double Flurry usage &mdash; cast on every Brain Freeze AND on available charges.</strong> This is the single biggest improvement available. At <strong>4.2 CPM vs 8.3 CPM</strong>, Baodabao is casting Flurry at half the reference rate. In the current Spellslinger Frost Mage rotation, Flurry should be cast whenever Brain Freeze procs (priority #2 after Frozen Orb), and also whenever a charge is available without Brain Freeze (lower priority but still above filler). Each Flurry applies Thermal Void (extending Icy Veins), generates Freezing stacks on the target, and does meaningful direct damage (5.3% of Baodabao's damage vs 9.7% for the reference). More Flurries means more Shatter-empowered Ice Lances, more Frost Splinters, and more Glacial Spikes becoming available. Estimated gain: <strong>+15-20% overall throughput</strong> &mdash; this is the rotation's core engine.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Cast Frozen Orb on cooldown &mdash; treat it as priority #1.</strong> Frozen Orb has a ~30s cooldown but Baodabao averaged <strong>40.5s between casts</strong> vs Asimage's 31.8s. The first Orb was delayed to 7.5s (Asimage casts it at 0.1s pre-pull), and the second didn't come until 52.2s (a 44.8s gap). Frozen Orb generates Brain Freeze procs (via Wintertide talent), Fingers of Frost procs, and deals sustained AoE damage. Every delayed Frozen Orb cascades into fewer Brain Freeze procs, fewer Flurries, fewer Shatter windows, and fewer Glacial Spikes. On pull: cast Frozen Orb at 0s before anything else. During combat: as soon as Frozen Orb is off cooldown, it should be the very next button pressed. Estimated gain: <strong>~1-2 extra Frozen Orbs per 5 minutes = 4-6 additional Brain Freeze procs</strong>.
+</div>
+
+<div class="action-item">
+  <strong>3. Fill Frostbolt cast windows with instant casts when procs are available.</strong> Many of the 2.7s gaps between instant casts correspond to Frostbolt casts. This is correct when no procs are available (Frostbolt is the filler). But with 24 Fingers of Frost procs and 15 Brain Freeze procs recorded, some of these gaps likely had procs available that were being held instead of immediately consumed. The Spellslinger rotation priority is: Frozen Orb > Flurry (Brain Freeze) > Ice Lance (Fingers of Frost or 6+ Freezing stacks) > Glacial Spike > Frostbolt. Procs should be used immediately, not banked.
+</div>
+
+<div class="action-item">
+  <strong>4. Use Alter Time and Greater Invisibility for survival.</strong> Asimage used Alter Time twice and Greater Invisibility twice over a 9-minute kill. Baodabao used neither over 4:52. Alter Time is a 10s position reset that doubles as a damage immunity when you snap back &mdash; critical for Dimensional Slash positioning and platform transitions. Greater Invisibility provides 60% damage reduction for 3 seconds &mdash; use it during high damage windows like Simulacrum Backlash pulses. These defensives extend survival during progression, giving more learning time per pull.
+</div>
+
+<div class="action-item">
+  <strong>5. Align 2nd Potion with Heroism in Phase 2.</strong> Baodabao used Potion of Recklessness at 0:02 (pull) but did not use a second potion when Heroism was cast at 2:59. Asimage used a second potion at 2:53 to stack with Time Warp. For future pulls that consistently reach Phase 2, saving the first potion for Heroism timing (or using one at pull AND one at Heroism if two are available) would amplify the strongest burst window of the fight.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Survivability:</strong> Baodabao survived until the final wipe call at 4:24 while the raid collapsed from 20 alive to 7 in the preceding 40 seconds. Dying to the final Bursting Emptiness with the rest of the remaining raid is not a personal error.<br><br>
+    <strong>Frostbolt CPM:</strong> At 6.7 CPM, Frostbolt usage exactly matches the reference (6.7 CPM). The filler spell is being cast at the right rate &mdash; the issue is above it in the priority (Flurry and Frozen Orb).<br><br>
+    <strong>Ray of Frost:</strong> At 1.7 CPM vs 1.6 CPM, Ray of Frost usage is slightly above the reference. This is a ~60s cooldown that converts to Comet Storm, and it's being used on schedule.<br><br>
+    <strong>Interrupts:</strong> 4 Counterspells vs Asimage's 1. Active interrupt participation during progression is valuable for the raid team.<br><br>
+    <strong>Damage taken profile:</strong> Mostly unavoidable damage. No excessive avoidable damage instances. The 377K from Falling during intermission is the only truly avoidable source &mdash; use Slow Fall for the platform transition.<br><br>
+    <strong>Damage distribution:</strong> Shatter at 38.1% of total damage (vs 37.0% for reference) confirms the fundamental Shatter gameplay loop is working &mdash; Ice Lance into Freezing targets is happening at the right proportion when casts are made. The gap is purely in how many total casts are generated per minute.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">The <strong>15% active CPM gap</strong> (36.9 vs 43.4) is the single finding that matters. It breaks down to: <strong>~60% Flurry under-use</strong> (4.2 vs 8.3 CPM &mdash; fewer Brain Freeze consumptions and fewer charge uses driving fewer Shatter windows and Freezing stacks), <strong>~25% Frozen Orb delays</strong> (40.5s avg interval vs 31.8s &mdash; fewer Brain Freeze procs generated), and <strong>~15% Glacial Spike cascade</strong> (fewer Icicles building from fewer Flurries/Frostbolts means fewer Glacial Spike casts). The good news: this is entirely execution-based. Gear is nearly identical (289.1 vs 289.8 ilvl), talents are 2 diffs apart, and stats are closely matched. Fixing items #1 and #2 (Flurry priority and Frozen Orb on cooldown) would likely close the majority of the CPM gap and bring sustained DPS in line with reference kills. This is a spec where the rotation is mechanically simple (most casts are instant), so the fix is primarily about priority discipline &mdash; Brain Freeze procs and Frozen Orb cooldown tracking.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (4:52 wipe, longest pull). Reference: Asimage (#1 ranked Frost Mage, report <code>j8vzPHa1MrfJZt4N</code>, Fight 44, 9:05 kill). All times relative to fight start. Progression data &mdash; 26 wipes, no kill.</p>
+  <p style="margin-top: 4px;">Talent delta: 2 differences between Baodabao and Asimage. Item level difference: &minus;0.7 (289.1 vs 289.8). External buffs: both had Heroism at Phase 2 start, both had Ebon Might from Aug Evoker. Neither received Power Infusion. The performance gap is execution-based.</p>
+  <p style="margin-top: 4px;">Spec guide sources: Icy Veins Frost Mage Rotation Guide (12.0.7), Maxroll Frost Mage Raid Guide (12.0.7), Method Frost Mage Guide (12.0.7). Current rotation priority: Frozen Orb &gt; Flurry (Brain Freeze) &gt; Ice Lance (Fingers of Frost / 6+ Freezing) &gt; Glacial Spike &gt; Frostbolt filler. Hero talent: Spellslinger.</p>
+</div>
+
+</body>
+</html>

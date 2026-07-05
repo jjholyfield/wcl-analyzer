@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zinnks - Augmentation Evoker - Crown of the Cosmos Prog Night 5</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1f409;</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --evoker: #33937f;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header .class-color { color: var(--evoker); }
+.header .spec-badge { font-size: 12px; font-weight: 600; background: #33937f33; color: var(--evoker); padding: 3px 10px; border-radius: 4px; }
+.header .prog-badge { font-size: 12px; font-weight: 600; background: var(--orange); color: #000; padding: 3px 10px; border-radius: 4px; }
+.header .meta { font-size: 14px; color: var(--dim); margin-top: 6px; }
+
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+@media (max-width: 768px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+th { font-weight: 600; color: var(--dim); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+tr:hover { background: #1c2128; }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; margin: 16px 0; padding: 0 4px; }
+.bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+.bar { width: 100%; min-width: 16px; border-radius: 3px 3px 0 0; position: relative; transition: all 0.2s; cursor: default; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-lr; transform: rotate(180deg); height: 50px; overflow: hidden; }
+.bar-value { font-size: 9px; color: var(--dim); margin-bottom: 2px; white-space: nowrap; }
+
+.bar.survived { background: var(--green); }
+.bar.died { background: var(--red); }
+.bar.died-cascade { background: #f8514966; }
+.bar.short { background: var(--border); }
+
+.avg-line { position: relative; width: 100%; height: 1px; margin: -90px 0 89px 0; z-index: 2; }
+.avg-line::after { content: ''; position: absolute; left: 0; right: 0; border-top: 2px dashed var(--yellow); }
+.avg-line-label { position: absolute; right: 0; top: -14px; font-size: 10px; color: var(--yellow); }
+
+.phase-bar { display: flex; height: 28px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.phase-bar .segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; }
+
+.callout { background: var(--surface); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 12px 0; font-size: 13px; }
+.callout.green { border-left-color: var(--green); }
+.callout.red { border-left-color: var(--red); }
+.callout.yellow { border-left-color: var(--yellow); }
+.callout.orange { border-left-color: var(--orange); }
+.callout strong { color: var(--text); }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge.green { background: #3fb95033; color: var(--green); }
+.badge.red { background: #f8514933; color: var(--red); }
+.badge.yellow { background: #d2992233; color: var(--yellow); }
+.badge.purple { background: #bc8cff33; color: var(--purple); }
+.badge.orange { background: #db6d2833; color: var(--orange); }
+.badge.dim { background: var(--border); color: var(--dim); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+.phase-reach-bar { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.phase-reach-fill { height: 20px; border-radius: 3px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 600; color: #fff; min-width: 40px; }
+
+.tooltip { position: relative; }
+.tooltip:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #000; color: var(--text); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+
+.footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.action-item .title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.action-item .detail { font-size: 13px; color: var(--dim); line-height: 1.5; }
+.action-item .impact { font-size: 12px; color: var(--yellow); margin-top: 6px; }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 8px 0 16px 0; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--dim); }
+.legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260630-crown" class="back-link">&larr; June 30, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="class-color">Zinnks</span>
+    <span class="spec-badge">Augmentation Evoker</span>
+    <span class="prog-badge">PROGRESSION NIGHT 5</span>
+  </h1>
+  <div class="meta">
+    Mythic Crown of the Cosmos &middot; June 30, 2026 &middot; 14 pulls analyzed (present in 14/20 usable pulls) &middot;
+    <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG" target="_blank">WCL Report</a>
+  </div>
+  <div class="meta" style="margin-top:4px;">
+    Deepest pull: Fight 25 (7:56) &middot; Night 4 deepest was 7:12 -- 44 seconds deeper into P3 tonight &middot;
+    4-heal comp: Senssay (MW), Dueche (HPal), Silencio (RDruid), Voidheart (Disc)
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="card-grid">
+  <div class="card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color: var(--evoker);">52.6K</div>
+    <div class="sub">Across 14 pulls (>60s)</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="sub">Matches reference ilvl</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color: var(--red);">0/14</div>
+    <div class="sub">Actionable deaths: 2 of 14</div>
+  </div>
+  <div class="card">
+    <div class="label">Best Pull</div>
+    <div class="value" style="color: var(--green);">65.6K</div>
+    <div class="sub">Fight 17 (7:48)</div>
+  </div>
+</div>
+
+<!-- AUGMENTATION EVOKER CONTEXT -->
+<div class="section">
+  <h2>Augmentation Evoker Context</h2>
+  <div class="callout">
+    <strong>Augmentation Evoker DPS is unique.</strong> Aug Evoker's primary contribution is buffing allies through Ebon Might, Prescience, and Breath of Eons. Their personal DPS on the meters represents only a fraction of their true raid contribution. The "DPS" numbers shown here are the damage attributed to Zinnks on WCL, which includes some of the buffed damage from allies. When comparing to reference kills, the DPS metric captures the Aug's effectiveness at maintaining buffs and timing cooldowns with ally burst windows.
+  </div>
+</div>
+
+<!-- PERFORMANCE ACROSS ALL PULLS -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div>Died (cascade)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow);"></div>Average DPS line</div>
+  </div>
+
+  <div class="bar-chart" id="dpsChart">
+    <!-- Fight 1: 39.4K, 438s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">39.4K</div>
+      <div class="bar died-cascade" style="height: 108px;" title="F1: 39,443 DPS | 7:18 | Died #6 at 5:30"></div>
+      <div class="bar-label">F1 7:18</div>
+    </div>
+    <!-- Fight 3: 56.3K, 427s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">56.3K</div>
+      <div class="bar died-cascade" style="height: 155px;" title="F3: 56,300 DPS | 7:07 | Died #15 at 6:53"></div>
+      <div class="bar-label">F3 7:07</div>
+    </div>
+    <!-- Fight 5: 50.1K, 306s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">50.1K</div>
+      <div class="bar died-cascade" style="height: 138px;" title="F5: 50,147 DPS | 5:06 | Died #11 at 4:56"></div>
+      <div class="bar-label">F5 5:06</div>
+    </div>
+    <!-- Fight 6: 55.2K, 371s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">55.2K</div>
+      <div class="bar died-cascade" style="height: 152px;" title="F6: 55,243 DPS | 6:11 | Died #10 at 5:35"></div>
+      <div class="bar-label">F6 6:11</div>
+    </div>
+    <!-- Fight 7: 57.8K, 427s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">57.8K</div>
+      <div class="bar died-cascade" style="height: 159px;" title="F7: 57,841 DPS | 7:07 | Died #4 at 5:20"></div>
+      <div class="bar-label">F7 7:07</div>
+    </div>
+    <!-- Fight 9: 46.3K, 308s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">46.3K</div>
+      <div class="bar died-cascade" style="height: 127px;" title="F9: 46,292 DPS | 5:08 | Died #4 at 4:51"></div>
+      <div class="bar-label">F9 5:08</div>
+    </div>
+    <!-- Fight 10: 47.4K, 377s, died ACTIONABLE -->
+    <div class="bar-col">
+      <div class="bar-value">47.4K</div>
+      <div class="bar died" style="height: 130px;" title="F10: 47,423 DPS | 6:17 | ACTIONABLE - Died #2 at 5:12 to Void Expulsion"></div>
+      <div class="bar-label">F10 6:17</div>
+    </div>
+    <!-- Fight 11: 60.3K, 465s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">60.3K</div>
+      <div class="bar died-cascade" style="height: 166px;" title="F11: 60,288 DPS | 7:45 | Died #13 at 7:34"></div>
+      <div class="bar-label">F11 7:45</div>
+    </div>
+    <!-- Fight 12: 58.2K, 454s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">58.2K</div>
+      <div class="bar died-cascade" style="height: 160px;" title="F12: 58,183 DPS | 7:34 | Died #12 at 7:02"></div>
+      <div class="bar-label">F12 7:34</div>
+    </div>
+    <!-- Fight 15: 54.8K, 458s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">54.8K</div>
+      <div class="bar died-cascade" style="height: 151px;" title="F15: 54,810 DPS | 7:38 | Died #11 at 7:07"></div>
+      <div class="bar-label">F15 7:38</div>
+    </div>
+    <!-- Fight 17: 65.6K, 469s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value" style="color:var(--green);">65.6K</div>
+      <div class="bar died-cascade" style="height: 180px;" title="F17: 65,586 DPS | 7:49 | Died #18 at 7:36 (BEST PULL)"></div>
+      <div class="bar-label">F17 7:49</div>
+    </div>
+    <!-- Fight 23: 44.5K, 352s, died ACTIONABLE -->
+    <div class="bar-col">
+      <div class="bar-value">44.5K</div>
+      <div class="bar died" style="height: 122px;" title="F23: 44,461 DPS | 5:52 | ACTIONABLE - Died #2 at 4:47 to Void Remnants"></div>
+      <div class="bar-label">F23 5:52</div>
+    </div>
+    <!-- Fight 24: 30.7K, 239s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value" style="color:var(--red);">30.7K</div>
+      <div class="bar died-cascade" style="height: 84px;" title="F24: 30,679 DPS | 3:59 | Died #17 at 3:50"></div>
+      <div class="bar-label">F24 3:59</div>
+    </div>
+    <!-- Fight 25: 59.6K, 476s, died cascade -->
+    <div class="bar-col">
+      <div class="bar-value">59.6K</div>
+      <div class="bar died-cascade" style="height: 164px;" title="F25: 59,558 DPS | 7:56 | Died #7 at 7:30 (DEEPEST PULL)"></div>
+      <div class="bar-label">F25 7:56</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="label">DPS Statistics</div>
+      <table>
+        <tr><td style="color:var(--dim)">Average</td><td style="font-weight:600">52,604</td></tr>
+        <tr><td style="color:var(--dim)">Median</td><td style="font-weight:600">54,810</td></tr>
+        <tr><td style="color:var(--dim)">Best</td><td style="font-weight:600;color:var(--green)">65,586 <span style="color:var(--dim);font-weight:400">(F17, 7:49)</span></td></tr>
+        <tr><td style="color:var(--dim)">Worst</td><td style="font-weight:600;color:var(--red)">30,679 <span style="color:var(--dim);font-weight:400">(F24, 3:59)</span></td></tr>
+        <tr><td style="color:var(--dim)">Range</td><td>34,907 (66% spread)</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="label">Session Trend</div>
+      <table>
+        <tr><td style="color:var(--dim)">First 7 pulls avg</td><td style="font-weight:600">50,384</td></tr>
+        <tr><td style="color:var(--dim)">Last 7 pulls avg</td><td style="font-weight:600;color:var(--green)">53,366</td></tr>
+        <tr><td style="color:var(--dim)">Improvement</td><td style="color:var(--green)">+5.9%</td></tr>
+        <tr><td style="color:var(--dim)">Best 3 pulls</td><td>65.6K, 60.3K, 59.6K</td></tr>
+        <tr><td style="color:var(--dim)">All in last 8</td><td style="color:var(--green)">Yes</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <strong>Positive trend.</strong> Zinnks' DPS improved through the night, with all three best pulls occurring in the second half of the session. The worst pull (F24, 30.7K) was a short 3:59 pull where 17 players died before Zinnks -- the raid collapsed early. Excluding that outlier, the range narrows to 39.4K-65.6K with a much tighter spread on the longer pulls.
+  </div>
+</div>
+
+<!-- DEATH ANALYSIS -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card">
+      <div class="label">Deaths</div>
+      <div class="value" style="color:var(--red);">14/14</div>
+      <div class="sub">Died in every pull</div>
+    </div>
+    <div class="card">
+      <div class="label">Actionable Deaths</div>
+      <div class="value" style="color:var(--yellow);">2</div>
+      <div class="sub">First 2 raid deaths</div>
+    </div>
+    <div class="card">
+      <div class="label">Cascade Deaths</div>
+      <div class="value" style="color:var(--dim);">12</div>
+      <div class="sub">After 2+ already dead</div>
+    </div>
+  </div>
+
+  <div class="callout yellow">
+    <strong>Zinnks died in all 14 pulls, but only 2 were individual failures.</strong> 12 of 14 deaths occurred after 2 or more raid members were already dead (cascade). The raid's collective survival is the issue, not Zinnks specifically. When the raid holds together, Zinnks survives deep into the fight (F17: survived to 7:36 as death #18, F3: survived to 6:53 as death #15).
+  </div>
+
+  <h3>Actionable Deaths (First 2 to Die)</h3>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Time</th><th>Phase</th><th>Killing Ability</th><th>Death #</th><th>Context</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>F10</td>
+        <td>5:12</td>
+        <td><span class="badge orange">P3</span></td>
+        <td style="color:var(--red);">Void Expulsion</td>
+        <td>#2</td>
+        <td>2nd raid death at 5:12 -- tied with first death. Void Expulsion is a dodge mechanic in P3.</td>
+      </tr>
+      <tr>
+        <td>F23</td>
+        <td>4:47</td>
+        <td><span class="badge yellow">P2</span></td>
+        <td style="color:var(--red);">Void Remnants</td>
+        <td>#2</td>
+        <td>2nd raid death at 4:47 in late P2. Void Remnants is residual void zone damage.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Cascade Deaths (Not Individually Actionable)</h3>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Zinnks Death Time</th><th>Phase</th><th>Killing Ability</th><th>Death #</th><th>2nd Raid Death</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>F1</td><td>5:30</td><td><span class="badge orange">P3</span></td><td>Unknown</td><td>#6</td><td>4:32</td></tr>
+      <tr><td>F3</td><td>6:53</td><td><span class="badge orange">P3</span></td><td>Gravity Collapse</td><td>#15</td><td>5:13</td></tr>
+      <tr><td>F5</td><td>4:56</td><td><span class="badge yellow">P2</span></td><td>Voidstalker Sting</td><td>#11</td><td>2:43</td></tr>
+      <tr><td>F6</td><td>5:35</td><td><span class="badge orange">P3</span></td><td>Voidstalker Sting</td><td>#10</td><td>2:43</td></tr>
+      <tr><td>F7</td><td>5:20</td><td><span class="badge orange">P3</span></td><td>Simulacrum Backlash</td><td>#4</td><td>2:55</td></tr>
+      <tr><td>F9</td><td>4:51</td><td><span class="badge yellow">P2</span></td><td>Voidstalker Sting</td><td>#4</td><td>4:32</td></tr>
+      <tr><td>F11</td><td>7:34</td><td><span class="badge orange">P3</span></td><td>Voidstalker Sting</td><td>#13</td><td>2:06</td></tr>
+      <tr><td>F12</td><td>7:02</td><td><span class="badge orange">P3</span></td><td>Voidstalker Sting</td><td>#12</td><td>1:53</td></tr>
+      <tr><td>F15</td><td>7:07</td><td><span class="badge orange">P3</span></td><td>Voidstalker Sting</td><td>#11</td><td>2:37</td></tr>
+      <tr><td>F17</td><td>7:36</td><td><span class="badge orange">P3</span></td><td>Gravity Collapse</td><td>#18</td><td>0:52</td></tr>
+      <tr><td>F24</td><td>3:50</td><td><span class="badge yellow">P2</span></td><td>Unknown</td><td>#17</td><td>2:37</td></tr>
+      <tr><td>F25</td><td>7:30</td><td><span class="badge orange">P3</span></td><td>Interrupting Tremor</td><td>#7</td><td>2:42</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Death timing pattern:</strong> 10 of 14 deaths occur in P3 (5:09+), 4 in P2. Zero deaths in P1 or Intermission. The killing abilities on cascade deaths are irrelevant -- the raid is already falling apart by then. Voidstalker Sting shows up as the final blow 6 times because it is a persistent DoT that finishes off players when healing thins out in a degraded raid state.
+  </div>
+</div>
+
+<!-- PHASE PERFORMANCE BREAKDOWN -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+
+  <h3>Phase Reach Rates</h3>
+  <div style="margin-bottom: 16px;">
+    <div class="phase-reach-bar">
+      <span style="width:90px;font-size:12px;color:var(--dim);">P1 Sentinels</span>
+      <div class="phase-reach-fill" style="width:100%;background:var(--green);">14/14 (100%)</div>
+    </div>
+    <div class="phase-reach-bar">
+      <span style="width:90px;font-size:12px;color:var(--dim);">Intermission</span>
+      <div class="phase-reach-fill" style="width:100%;background:var(--green);">14/14 (100%)</div>
+    </div>
+    <div class="phase-reach-bar">
+      <span style="width:90px;font-size:12px;color:var(--dim);">P2 Rift</span>
+      <div class="phase-reach-fill" style="width:100%;background:var(--green);">14/14 (100%)</div>
+    </div>
+    <div class="phase-reach-bar">
+      <span style="width:90px;font-size:12px;color:var(--dim);">P3 Cosmos</span>
+      <div class="phase-reach-fill" style="width:79%;background:var(--yellow);">11/14 (79%)</div>
+    </div>
+  </div>
+
+  <h3>Per-Phase DPS Breakdown</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Duration</th>
+        <th>Pulls Seen</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Worst DPS</th>
+        <th>Deaths in Phase</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge green">P1 Sentinels</span></td>
+        <td>0:00 - 2:14</td>
+        <td>14/14</td>
+        <td style="font-weight:600;">311.2K</td>
+        <td style="color:var(--green);">349.8K <span style="color:var(--dim);font-size:11px;">(F17)</span></td>
+        <td style="color:var(--red);">244.9K <span style="color:var(--dim);font-size:11px;">(F6)</span></td>
+        <td><span class="badge green">0</span></td>
+        <td style="font-size:12px;color:var(--dim);">Cleave on Sentinels + boss; multi-target inflates DPS</td>
+      </tr>
+      <tr>
+        <td><span class="badge dim">Intermission</span></td>
+        <td>2:14 - 2:53</td>
+        <td>14/14</td>
+        <td style="font-weight:600;color:var(--dim);">~0</td>
+        <td colspan="2" style="color:var(--dim);font-size:12px;">Pure survival phase -- near-zero personal damage expected</td>
+        <td><span class="badge green">0</span></td>
+        <td style="font-size:12px;color:var(--dim);">Stellar Emission + Silverstrike Barrage</td>
+      </tr>
+      <tr>
+        <td><span class="badge yellow">P2 Rift</span></td>
+        <td>2:53 - 5:09</td>
+        <td>14/14</td>
+        <td style="font-weight:600;">119.4K</td>
+        <td style="color:var(--green);">138.5K <span style="color:var(--dim);font-size:11px;">(F6)</span></td>
+        <td style="color:var(--red);">104.3K <span style="color:var(--dim);font-size:11px;">(F9)</span></td>
+        <td><span class="badge yellow">4</span></td>
+        <td style="font-size:12px;color:var(--dim);">2 actionable, 2 cascade</td>
+      </tr>
+      <tr>
+        <td><span class="badge orange">P3 Cosmos</span></td>
+        <td>5:09+</td>
+        <td>11/14</td>
+        <td style="font-weight:600;">48.2K</td>
+        <td style="color:var(--green);">73.8K <span style="color:var(--dim);font-size:11px;">(F17)</span></td>
+        <td style="color:var(--red);">15.3K <span style="color:var(--dim);font-size:11px;">(F1)</span></td>
+        <td><span class="badge red">10</span></td>
+        <td style="font-size:12px;color:var(--dim);">All cascade -- raid collapses here</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Phase Timeline Visualization</h3>
+  <div class="phase-bar" style="margin:12px 0;">
+    <div class="segment" style="flex:134;background:#3fb950;">P1 Sentinels (2:14)</div>
+    <div class="segment" style="flex:39;background:#8b949e;">Inter (0:39)</div>
+    <div class="segment" style="flex:136;background:#d29922;">P2 Rift (2:16)</div>
+    <div class="segment" style="flex:167;background:#db6d28;">P3 Cosmos (2:47+)</div>
+  </div>
+
+  <div class="callout">
+    <strong>P1 is rock solid.</strong> 311K avg DPS across all 14 pulls with zero deaths. P2 is consistent at 119K avg with moderate variance. P3 is where things break down -- avg DPS drops to 48K, heavily influenced by short P3 exposure on cascade wipes. On the pulls where the raid holds together longer (F17: 73.8K, F11: 71.8K, F25: 68.5K), P3 DPS is strong. The problem is not Zinnks' P3 execution -- it is raid-wide survival.
+  </div>
+
+  <h3>P3 DPS by Survival Duration</h3>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>P3 Duration</th><th>P3 DPS</th><th>Zinnks Death</th><th>Context</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>F17</td><td>2:40</td><td style="color:var(--green);font-weight:600;">73,771</td><td>7:36 (#18)</td><td>Best pull -- survived nearly full P3</td></tr>
+      <tr><td>F11</td><td>2:36</td><td style="color:var(--green);font-weight:600;">71,793</td><td>7:34 (#13)</td><td>Deep pull, strong sustained DPS</td></tr>
+      <tr><td>F25</td><td>2:47</td><td style="color:var(--green);font-weight:600;">68,463</td><td>7:30 (#7)</td><td>Deepest pull of night</td></tr>
+      <tr><td>F3</td><td>1:58</td><td style="font-weight:600;">66,086</td><td>6:53 (#15)</td><td>Good sustained output</td></tr>
+      <tr><td>F7</td><td>1:58</td><td style="font-weight:600;">64,117</td><td>5:20 (#4)</td><td>Died early in P3 cascade</td></tr>
+      <tr><td>F12</td><td>2:25</td><td style="font-weight:600;">58,337</td><td>7:02 (#12)</td><td>Moderate P3 time</td></tr>
+      <tr><td>F15</td><td>2:29</td><td style="font-weight:600;">48,746</td><td>7:07 (#11)</td><td>DPS drops on degraded raid</td></tr>
+      <tr><td>F6</td><td>1:02</td><td style="color:var(--dim);">26,816</td><td>5:35 (#10)</td><td>Short P3 -- barely entered phase</td></tr>
+      <tr><td>F10</td><td>1:08</td><td style="color:var(--dim);">20,743</td><td>5:12 (#2)</td><td>ACTIONABLE death to Void Expulsion</td></tr>
+      <tr><td>F23</td><td>0:43</td><td style="color:var(--dim);">15,802</td><td>4:47 (#2 in P2)</td><td>Died before full P3 entry</td></tr>
+      <tr><td>F1</td><td>2:09</td><td style="color:var(--dim);">15,284</td><td>5:30 (#6)</td><td>First pull of night, still warming up</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout green">
+    <strong>Pattern confirmed:</strong> When Zinnks survives into late P3 (2+ minutes of P3 time), DPS is consistently 58K-74K. The low P3 numbers (15K-27K) come from pulls where the raid had already collapsed and Zinnks had less than 70 seconds of P3 time before dying in cascade. This is not a P3 execution problem.
+  </div>
+</div>
+
+<!-- CAST PROFILE -->
+<div class="section">
+  <h2>Cast Profile (Fight 25 -- Deepest Pull, 7:56)</h2>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Casts</th><th>CPM</th><th>Role</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--evoker);font-weight:600;">Eruption</td>
+        <td>101</td>
+        <td>12.7</td>
+        <td><span class="badge green">Core Spender</span></td>
+        <td>Primary Essence spender, extends Ebon Might</td>
+      </tr>
+      <tr>
+        <td style="color:var(--evoker);">Living Flame</td>
+        <td>44</td>
+        <td>5.6</td>
+        <td><span class="badge dim">Filler</span></td>
+        <td>Used when low on Essence</td>
+      </tr>
+      <tr>
+        <td style="color:var(--accent);font-weight:600;">Prescience</td>
+        <td>38</td>
+        <td>4.8</td>
+        <td><span class="badge purple">Buff</span></td>
+        <td>Maintains crit buff on allies</td>
+      </tr>
+      <tr>
+        <td>Hover</td>
+        <td>25</td>
+        <td>3.2</td>
+        <td><span class="badge dim">Movement</span></td>
+        <td>Movement while casting -- good usage</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan);">Azure Strike</td>
+        <td>18</td>
+        <td>2.3</td>
+        <td><span class="badge dim">Filler/Cleave</span></td>
+        <td>Instant filler for movement/cleave</td>
+      </tr>
+      <tr>
+        <td style="color:var(--evoker);font-weight:600;">Fire Breath</td>
+        <td>14</td>
+        <td>1.8</td>
+        <td><span class="badge green">Core Empower</span></td>
+        <td>Empowered spell, every ~34s avg</td>
+      </tr>
+      <tr>
+        <td style="color:var(--evoker);font-weight:600;">Upheaval</td>
+        <td>14</td>
+        <td>1.8</td>
+        <td><span class="badge green">Core Empower</span></td>
+        <td>Empowered spell, paired with Fire Breath</td>
+      </tr>
+      <tr>
+        <td style="color:var(--yellow);font-weight:600;">Ebon Might</td>
+        <td>13</td>
+        <td>1.6</td>
+        <td><span class="badge yellow">Major Buff</span></td>
+        <td>Core group buff -- 10 applications on allies in F25</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);font-weight:600;">Breath of Eons</td>
+        <td>6</td>
+        <td>0.8</td>
+        <td><span class="badge purple">Major CD</span></td>
+        <td>2min CD used 6 times in 7:56 -- optimal usage</td>
+      </tr>
+      <tr>
+        <td>Obsidian Scales</td>
+        <td>6</td>
+        <td>0.8</td>
+        <td><span class="badge yellow">Defensive</span></td>
+        <td>Personal damage reduction</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan);">Tip the Scales</td>
+        <td>5</td>
+        <td>0.6</td>
+        <td><span class="badge green">Utility CD</span></td>
+        <td>Instant empower cast -- used well</td>
+      </tr>
+      <tr>
+        <td>Verdant Embrace</td>
+        <td>4</td>
+        <td>0.5</td>
+        <td><span class="badge dim">Self-Heal</span></td>
+        <td>Emergency self-healing</td>
+      </tr>
+      <tr>
+        <td>Time Spiral</td>
+        <td>3</td>
+        <td>0.4</td>
+        <td><span class="badge dim">Utility</span></td>
+        <td>Movement CD reset for group</td>
+      </tr>
+      <tr>
+        <td>Zephyr</td>
+        <td>1</td>
+        <td>0.1</td>
+        <td><span class="badge yellow">Raid Defensive</span></td>
+        <td>Raid-wide AoE DR</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Cooldown Timing (Fight 25)</h3>
+  <div class="two-col">
+    <div class="card">
+      <div class="label">Breath of Eons Timing</div>
+      <table>
+        <tr><td style="color:var(--dim)">Cast 1</td><td>0:19 <span class="badge green">P1 opener</span></td></tr>
+        <tr><td style="color:var(--dim)">Cast 2</td><td>1:35 <span class="badge green">P1 late</span></td></tr>
+        <tr><td style="color:var(--dim)">Cast 3</td><td>3:07 <span class="badge yellow">P2 early</span></td></tr>
+        <tr><td style="color:var(--dim)">Cast 4</td><td>4:08 <span class="badge yellow">P2 mid</span></td></tr>
+        <tr><td style="color:var(--dim)">Cast 5</td><td>5:58 <span class="badge orange">P3</span></td></tr>
+        <tr><td style="color:var(--dim)">Cast 6</td><td>7:20 <span class="badge orange">P3 late</span></td></tr>
+      </table>
+      <div style="font-size:12px;color:var(--dim);margin-top:8px;">Avg gap: ~1:52. On a 2min CD, this indicates excellent usage with minimal drift.</div>
+    </div>
+    <div class="card">
+      <div class="label">Ebon Might Refreshes</div>
+      <table>
+        <tr><td style="color:var(--dim)">Applications</td><td>10 in 7:56</td></tr>
+        <tr><td style="color:var(--dim)">Avg interval</td><td>~47s between casts</td></tr>
+        <tr><td style="color:var(--dim)">Timing</td><td>0:02, 0:36, 1:05, 1:35, 2:56, 3:58, 4:57, 5:39, 6:41, 7:10</td></tr>
+      </table>
+      <div style="font-size:12px;color:var(--dim);margin-top:8px;">Ebon Might is being refreshed frequently via Eruption casts. The cast-based refresh mechanic means each Eruption extends the duration, so 10 explicit Ebon Might casts represents 10 full re-applications on top of Eruption extensions.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<div class="section">
+  <h2>Damage Taken (Fight 25 -- 7:56)</h2>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th><th>Type</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--red);">Voidstalker Sting</td>
+        <td>4,094,621</td>
+        <td>219</td>
+        <td>18,699</td>
+        <td><span class="badge red">Unavoidable DoT</span></td>
+      </tr>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td>2,329,138</td>
+        <td>117</td>
+        <td>19,907</td>
+        <td><span class="badge yellow">Raid AoE</span></td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td>1,591,580</td>
+        <td>72</td>
+        <td>22,105</td>
+        <td><span class="badge yellow">Raid Mechanic</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--orange);">Simulacrum Backlash</td>
+        <td>1,588,306</td>
+        <td>58</td>
+        <td>27,385</td>
+        <td><span class="badge yellow">P2 Mechanic</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--orange);">Void Expulsion</td>
+        <td>1,520,983</td>
+        <td>46</td>
+        <td>33,065</td>
+        <td><span class="badge orange">Partially Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Gravity Collapse</td>
+        <td>986,868</td>
+        <td>9</td>
+        <td>109,652</td>
+        <td><span class="badge red">Heavy Hit</span></td>
+      </tr>
+      <tr>
+        <td>Grasp of Emptiness</td>
+        <td>964,001</td>
+        <td>20</td>
+        <td>48,200</td>
+        <td><span class="badge yellow">Raid Mechanic</span></td>
+      </tr>
+      <tr>
+        <td>Stretch Time</td>
+        <td>475,379</td>
+        <td>63</td>
+        <td>7,545</td>
+        <td><span class="badge dim">Unavoidable</span></td>
+      </tr>
+      <tr>
+        <td>Stellar Emission</td>
+        <td>382,501</td>
+        <td>14</td>
+        <td>27,321</td>
+        <td><span class="badge dim">Intermission</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--red);">Interrupting Tremor</td>
+        <td>367,203</td>
+        <td>4</td>
+        <td>91,801</td>
+        <td><span class="badge red">Heavy Hit</span></td>
+      </tr>
+      <tr>
+        <td>Corrupting Essence</td>
+        <td>344,262</td>
+        <td>2</td>
+        <td>172,131</td>
+        <td><span class="badge red">Major Hit</span></td>
+      </tr>
+      <tr>
+        <td>Cosmic Radiation</td>
+        <td>220,163</td>
+        <td>15</td>
+        <td>14,677</td>
+        <td><span class="badge orange">P3 Ramp</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Damage profile is normal.</strong> Voidstalker Sting (unavoidable DoT), Echoing Darkness (raid AoE), and Cosmic Barrier are expected sources. The heavy single hits from Gravity Collapse (110K avg) and Interrupting Tremor (92K avg) are the dangerous mechanics that need defensives. Zinnks is using Obsidian Scales (6 casts) and Verdant Embrace (4 casts) for self-preservation, which is appropriate.
+  </div>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<div class="section">
+  <h2>Reference Comparison (De-emphasized for Prog)</h2>
+
+  <div class="callout yellow">
+    <strong>Context:</strong> These references are from completed kills. Zinnks is still progressing and has not seen the full fight through to completion. Direct DPS comparison to kills is misleading -- kills have cleaner execution, no cascading deaths, and better buff alignment. This data shows the ceiling, not the gap.
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Player</th><th>Server</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Diff</th><th>Healer Comp</th></tr>
+    </thead>
+    <tbody style="font-size:13px;">
+      <tr style="color:var(--evoker);font-weight:500;">
+        <td>Zinnks</td>
+        <td>--</td>
+        <td>65,586 <span style="color:var(--dim);font-weight:400">(best pull)</span></td>
+        <td>7:49 <span style="color:var(--dim);font-weight:400">(wipe)</span></td>
+        <td>291</td>
+        <td>--</td>
+        <td>MW/HPal/RDru/Disc</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>Nerfs</td>
+        <td>EU</td>
+        <td>103,213</td>
+        <td>8:11</td>
+        <td>291</td>
+        <td><span class="badge yellow">8 diffs</span></td>
+        <td>Disc/RDru/HPal/MW</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>Mchacker</td>
+        <td>Kazzak-EU</td>
+        <td>101,456</td>
+        <td>7:10</td>
+        <td>291</td>
+        <td><span class="badge yellow">8 diffs</span></td>
+        <td>MW/Disc/RDru/PEvo</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>Dlkeyvoker</td>
+        <td>Stormscale-EU</td>
+        <td>101,251</td>
+        <td>7:42</td>
+        <td>291</td>
+        <td><span class="badge yellow">8 diffs</span></td>
+        <td>Disc/PEvo/PEvo/RDru</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>Frosivoker</td>
+        <td>Tarren Mill-EU</td>
+        <td>101,106</td>
+        <td>7:23</td>
+        <td>291</td>
+        <td><span class="badge yellow">10 diffs</span></td>
+        <td>MW/RDru/Disc/HPal</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>FP</td>
+        <td>EU</td>
+        <td>100,738</td>
+        <td>7:25</td>
+        <td>291</td>
+        <td><span class="badge orange">11 diffs</span></td>
+        <td>PEvo/MW/Disc/RDru</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="label">Reference Context</div>
+      <div style="font-size:13px; color:var(--dim); line-height:1.6;">
+        <p>Top-ranked Augmentation Evoker kills on Crown of the Cosmos do <strong style="color:var(--text)">100-103K DPS</strong> in 4-heal comps. Zinnks' best pull was 65.6K in a 7:49 wipe.</p>
+        <p style="margin-top:8px;">The DPS gap is expected during progression. Augmentation Evoker DPS scales with ally performance -- when the raid is dying and allies are dead, the Aug loses their damage vectors. In a clean kill where all 14 DPS survive, Aug DPS will naturally be 30-50% higher than in a cascading wipe.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Talent Differences</div>
+      <div style="font-size:13px; color:var(--dim); line-height:1.6;">
+        <p>8-11 talent point differences vs references. This is a moderate delta -- likely includes hero talent tree differences and some utility/throughput trade-offs.</p>
+        <p style="margin-top:8px;">All references are at ilvl 291 (same as Zinnks), so there is no gear gap. The DPS difference is entirely from clean kill vs prog wipe context, talent choices, and buff alignment.</p>
+        <p style="margin-top:8px;color:var(--yellow);">8 talent diffs is not trivial. Worth reviewing talent builds from the top references after the boss is killed to see if specific choices are contributing to the gap.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BUFF TIMING ANALYSIS -->
+<div class="section">
+  <h2>Buff Timing Analysis (Fight 25)</h2>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="label">Prescience Management</div>
+      <div style="font-size:13px;color:var(--dim);line-height:1.6;">
+        <p><strong style="color:var(--text);">38 Prescience casts</strong> in 7:56 (4.8 CPM). Prescience is the crit-buff applied to allies and should be maintained on cooldown. At ~12s per Prescience and a short CD, 38 casts in 476s is a strong application rate.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Defensive Usage</div>
+      <table>
+        <tr><td style="color:var(--dim)">Obsidian Scales</td><td>6 casts (0.8 CPM)</td><td><span class="badge green">Active</span></td></tr>
+        <tr><td style="color:var(--dim)">Verdant Embrace</td><td>4 casts (0.5 CPM)</td><td><span class="badge green">Active</span></td></tr>
+        <tr><td style="color:var(--dim)">Zephyr</td><td>1 cast</td><td><span class="badge dim">Raid CD</span></td></tr>
+        <tr><td style="color:var(--dim)">Healthstone</td><td>1 use</td><td><span class="badge dim">Emergency</span></td></tr>
+        <tr><td style="color:var(--dim)">Health Potion</td><td>1 use</td><td><span class="badge dim">Emergency</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <strong>Good defensive awareness.</strong> Zinnks is actively using Obsidian Scales (6 times in 7:56), self-healing with Verdant Embrace, and using consumables. The low Zephyr count (1 cast) could be improved -- as a raid-wide AoE DR, it should be coordinated with damage events, especially in P3 where the raid is taking heavy damage.
+  </div>
+</div>
+
+<!-- CONSISTENCY ANALYSIS -->
+<div class="section">
+  <h2>Consistency Analysis</h2>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="label">Long Pulls (6+ min) vs Short Pulls (&lt;6 min)</div>
+      <table>
+        <tr><th></th><th>Long (8 pulls)</th><th>Short (6 pulls)</th></tr>
+        <tr><td style="color:var(--dim)">Avg DPS</td><td style="font-weight:600;color:var(--green);">57,717</td><td style="font-weight:600;">44,536</td></tr>
+        <tr><td style="color:var(--dim)">Range</td><td>39.4K - 65.6K</td><td>30.7K - 55.2K</td></tr>
+        <tr><td style="color:var(--dim)">Pattern</td><td>Strong -- higher DPS on deeper pulls</td><td>Expected lower on short wipes</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="label">DPS by Pull Duration</div>
+      <table>
+        <tr><td style="color:var(--dim)">3-5 min pulls</td><td>44.3K avg (4 pulls)</td></tr>
+        <tr><td style="color:var(--dim)">5-7 min pulls</td><td>49.3K avg (2 pulls)</td></tr>
+        <tr><td style="color:var(--dim)">7+ min pulls</td><td>57.7K avg (8 pulls)</td></tr>
+      </table>
+      <div style="font-size:12px;color:var(--green);margin-top:8px;">DPS increases with pull duration -- strong sustained performance on longer attempts.</div>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <strong>Positive consistency signal:</strong> Zinnks does better on longer pulls, not worse. This means sustained performance is good and there is no fatigue or execution breakdown over time. The DPS gap between short and long pulls is explained by the Aug Evoker mechanic -- more alive allies = more buffed damage = higher attributed DPS.
+  </div>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<div class="section">
+  <h2>Actionable Items</h2>
+
+  <div class="action-item">
+    <div class="title" style="color:var(--yellow);">1. Void Expulsion Dodge (P3 Mechanic)</div>
+    <div class="detail">
+      Zinnks' one actionable P3 death (F10, death #2 at 5:12) was to Void Expulsion. This is a telegraphed ground effect that needs to be sidestepped. With Hover available (25 casts in F25 shows active usage), pre-positioning with Hover active before Void Expulsion windows would help.
+    </div>
+    <div class="impact">Impact: Prevents the 1 actionable P3 death. Use Hover or position more conservatively during Void Expulsion casts.</div>
+  </div>
+
+  <div class="action-item">
+    <div class="title" style="color:var(--yellow);">2. Void Remnants Positioning (P2 Mechanic)</div>
+    <div class="detail">
+      The other actionable death (F23, death #2 at 4:47) was to Void Remnants -- residual void zone damage in P2. This is a positioning awareness issue. Void zones persist on the ground and must be avoided while maintaining DPS on Rift targets.
+    </div>
+    <div class="impact">Impact: Prevents the 1 actionable P2 death. Stay aware of void zone positions, especially during P2 add transitions.</div>
+  </div>
+
+  <div class="action-item">
+    <div class="title" style="color:var(--accent);">3. Zephyr Usage for Raid Survival</div>
+    <div class="detail">
+      Zephyr (raid-wide AoE DR) was only used once in the deepest pull. Given that the raid's biggest problem is P3 survival, coordinating Zephyr usage with major P3 damage events (Cosmic Radiation, Gravity Collapse) could help the raid stay alive longer. More Zephyr usage = more allies alive = more Aug DPS.
+    </div>
+    <div class="impact">Impact: Raid-wide survival improvement. Coordinate Zephyr timing with healing officer for P3 damage windows.</div>
+  </div>
+
+  <div class="action-item">
+    <div class="title" style="color:var(--accent);">4. Talent Build Review</div>
+    <div class="detail">
+      8 talent differences vs the top-ranked references. This is worth investigating after the kill -- some talent choices may optimize for different scenarios (more defensive vs more throughput). However, talent changes should be based on comparing the actual CombatantInfo talent trees, not guide recommendations, since encounter-specific choices matter.
+    </div>
+    <div class="impact">Impact: Unknown until talent-by-talent comparison is done. Not urgent during prog -- execution and survival matter more.</div>
+  </div>
+
+  <div class="action-item">
+    <div class="title" style="color:var(--green);">5. Breath of Eons Alignment (Already Good)</div>
+    <div class="detail">
+      Breath of Eons was used 6 times in 7:56 with an average gap of ~1:52 on a 2-minute cooldown. This is near-optimal usage. The key for further improvement is aligning Breath of Eons with the highest-DPS burst windows of allies (e.g., when melee and ranged have their own 2-min CDs up). This is the highest-ceiling optimization for Aug Evoker but is already being done well.
+    </div>
+    <div class="impact">Impact: Already strong. Fine-tuning alignment with ally burst windows could squeeze out additional value.</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="section">
+  <h2>Verdict</h2>
+
+  <div class="callout green">
+    <strong>Zinnks is performing well for progression.</strong> The data shows:
+    <ul style="margin-top:8px;padding-left:20px;line-height:1.8;">
+      <li>Only 2 of 14 deaths were actionable individual failures -- 12 were cascade deaths from a raid that is still learning P3.</li>
+      <li>DPS improved through the session (+5.9% from first half to second half), with all three best pulls in the second half.</li>
+      <li>P1 execution is rock solid (311K avg, zero deaths). P2 is consistent. P3 DPS is strong on clean attempts (58K-74K).</li>
+      <li>Breath of Eons usage is near-optimal (6 casts in 7:56, ~1:52 avg gap on a 2min CD).</li>
+      <li>Defensive usage is active (Obsidian Scales x6, Verdant Embrace x4, consumables used).</li>
+      <li>The biggest limiting factor is raid-wide P3 survival, not Zinnks' individual performance.</li>
+    </ul>
+  </div>
+
+  <div style="font-size:13px;color:var(--dim);margin-top:12px;">
+    <strong style="color:var(--text);">What's working:</strong> Core rotation (Eruption x101, Fire Breath x14, Upheaval x14 in 7:56), Prescience maintenance (38 casts), Breath of Eons timing, defensive awareness, and session improvement trend.
+  </div>
+  <div style="font-size:13px;color:var(--dim);margin-top:8px;">
+    <strong style="color:var(--text);">Focus for next session:</strong> Avoid Void Expulsion and Void Remnants (the 2 actionable deaths), increase Zephyr usage in P3, and continue riding the upward DPS trend as the raid gets cleaner in P3.
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG" target="_blank">Warcraft Logs report qDfTzvAyV3pRb6rG</a></p>
+  <p>Reference players: Nerfs (EU), Mchacker (Kazzak-EU), Dlkeyvoker (Stormscale-EU), Frosivoker (Tarren Mill-EU), FP (EU) -- all 4-heal comp kills</p>
+  <p>Analysis mode: PROG (aggregate across 14 pulls, no kill) &middot; Phase boundaries: P1 0:00-2:14, Intermission 2:14-2:53, P2 2:53-5:09, P3 5:09+</p>
+  <p>Augmentation Evoker DPS represents attributed damage including ally buff contributions, not personal damage alone.</p>
+</div>
+
+</body>
+</html>

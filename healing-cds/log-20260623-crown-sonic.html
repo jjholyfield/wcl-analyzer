@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonic - Demonology Warlock - Crown of the Cosmos (Prog Night 3)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --warlock: #8788ee;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 32px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.back-link:hover { color: var(--accent); }
+
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--warlock); }
+.header .subtitle { font-size: 14px; color: var(--dim); }
+.header .tags { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.tag-prog { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
+.tag-night { background: rgba(88, 166, 255, 0.15); color: var(--accent); border: 1px solid rgba(88, 166, 255, 0.3); }
+.tag-spec { background: rgba(135, 136, 238, 0.15); color: var(--warlock); border: 1px solid rgba(135, 136, 238, 0.3); }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+section { margin-bottom: 32px; }
+section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+.alert-box { border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.alert-critical { background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.3); }
+.alert-warning { background: rgba(210, 153, 34, 0.1); border: 1px solid rgba(210, 153, 34, 0.3); }
+.alert-info { background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.3); }
+.alert-title { font-weight: 600; margin-bottom: 4px; font-size: 14px; }
+.alert-critical .alert-title { color: var(--red); }
+.alert-warning .alert-title { color: var(--yellow); }
+.alert-info .alert-title { color: var(--accent); }
+.alert-body { font-size: 13px; color: var(--dim); line-height: 1.7; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88, 166, 255, 0.05); }
+
+.bar-chart { display: flex; flex-direction: column; gap: 3px; }
+.bar-row { display: flex; align-items: center; gap: 8px; }
+.bar-label { width: 50px; text-align: right; font-size: 11px; color: var(--dim); flex-shrink: 0; }
+.bar-container { flex: 1; height: 22px; background: rgba(255,255,255,0.03); border-radius: 3px; position: relative; overflow: hidden; display: flex; align-items: center; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; min-width: 2px; }
+.bar-fill.died { background: var(--red); opacity: 0.7; }
+.bar-fill.short { background: var(--dim); opacity: 0.4; }
+.bar-value { position: absolute; right: 6px; font-size: 10px; color: var(--text); font-weight: 500; }
+.bar-death-marker { font-size: 9px; color: var(--red); margin-left: 4px; }
+.avg-line { position: absolute; height: 100%; width: 2px; background: var(--yellow); opacity: 0.6; z-index: 2; }
+
+.phase-table td.phase-name { font-weight: 600; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+
+.death-table tr.highlight { background: rgba(248, 81, 73, 0.08); }
+
+.ability-bars { margin-top: 8px; }
+.ability-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.ability-name { width: 160px; font-size: 12px; text-align: right; flex-shrink: 0; }
+.ability-bar-wrap { flex: 1; height: 18px; background: rgba(255,255,255,0.03); border-radius: 3px; position: relative; }
+.ability-bar { height: 100%; border-radius: 3px; }
+.ability-pct { width: 50px; font-size: 11px; color: var(--dim); }
+
+.dmg-taken-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.dmg-taken-name { width: 200px; font-size: 12px; text-align: right; flex-shrink: 0; }
+.dmg-taken-bar { flex: 1; height: 16px; background: rgba(255,255,255,0.03); border-radius: 3px; position: relative; }
+.dmg-taken-fill { height: 100%; border-radius: 3px; background: var(--red); opacity: 0.6; }
+.dmg-taken-val { width: 80px; font-size: 11px; color: var(--dim); }
+
+.ref-table { margin-top: 16px; }
+.ref-table .primary { background: rgba(188, 140, 255, 0.08); }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.full-width { grid-column: 1 / -1; }
+
+.trend-arrow { display: inline-block; margin-left: 4px; }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+.trend-flat { color: var(--dim); }
+
+.death-timeline { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.death-dot { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; }
+.death-dot.p1 { background: rgba(248, 81, 73, 0.3); color: var(--red); }
+.death-dot.inter { background: rgba(210, 153, 34, 0.3); color: var(--yellow); }
+.death-dot.p2 { background: rgba(219, 109, 40, 0.3); color: var(--orange); }
+.death-dot.p3 { background: rgba(188, 140, 255, 0.3); color: var(--purple); }
+
+.insight-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.insight-box h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.insight-box p { font-size: 12px; color: var(--dim); line-height: 1.6; }
+
+@media (max-width: 768px) {
+  body { padding: 16px; }
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23 Crown of the Cosmos Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Sonic</span> &mdash; Demonology Warlock</h1>
+  <div class="subtitle">Crown of the Cosmos &bull; Mythic &bull; June 23, 2026 &bull; Report Hz1Lm672dZnBw9YC</div>
+  <div class="tags">
+    <span class="tag tag-prog">PROGRESSION NIGHT 3</span>
+    <span class="tag tag-night">20 PULLS</span>
+    <span class="tag tag-spec">Demonology</span>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS</div>
+    <div class="card-value" style="color: var(--warlock)">218.8K</div>
+    <div class="card-sub">Median 217.2K &bull; Best 365.9K</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">292</div>
+    <div class="card-sub">Ref avg: 291 (comparable)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value" style="color: var(--red)">0 / 20</div>
+    <div class="card-sub">Died in every pull &bull; Avg: 3:27</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value" style="color: var(--green)">26.5%</div>
+    <div class="card-sub">Fight 25 &bull; 6:44 &bull; 153.5K DPS</div>
+  </div>
+</div>
+
+<!-- CRITICAL ALERT -->
+<div class="alert-box alert-critical">
+  <div class="alert-title">Survival is the #1 issue &mdash; died in all 20 pulls</div>
+  <div class="alert-body">
+    Sonic died in 100% of pulls with an average survival time of 3:27. The two primary killers are <strong>Cosmic Barrier</strong> (5 deaths) and <strong>Echoing Darkness</strong> (5 deaths), followed by <strong>Bursting Emptiness</strong> (3) and <strong>Silverstrike Barrage</strong> (3). Only reached Phase 3 in 3 of 20 pulls. Top-ranked Demo Warlocks on kill attempts (8:30+ fights) do 105&ndash;112K full-fight DPS, but they survive the entire encounter. Sonic's raw P1 damage output (313K avg) is strong, but it is meaningless if the player is dead before Phase 2 ends. Until survival is solved, everything else is secondary.
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="two-col">
+    <div>
+      <h3>Death Causes Ranked</h3>
+      <table class="death-table">
+        <tr><th>Ability</th><th>Deaths</th><th>Avg Time</th><th>Phase</th></tr>
+        <tr class="highlight"><td>Cosmic Barrier</td><td style="color:var(--red);font-weight:600">5</td><td>4:33</td><td>P2 / P3</td></tr>
+        <tr class="highlight"><td>Echoing Darkness</td><td style="color:var(--red);font-weight:600">5</td><td>1:34</td><td>P1</td></tr>
+        <tr><td>Bursting Emptiness</td><td style="color:var(--orange)">3</td><td>4:33</td><td>P2</td></tr>
+        <tr><td>Silverstrike Barrage</td><td style="color:var(--orange)">3</td><td>2:36</td><td>Intermission</td></tr>
+        <tr><td>Silverstrike Arrow</td><td>1</td><td>1:03</td><td>P1</td></tr>
+        <tr><td>Void Expulsion</td><td>1</td><td>4:45</td><td>P2</td></tr>
+        <tr><td>Dimensional Slash</td><td>1</td><td>5:23</td><td>P3</td></tr>
+        <tr><td>Grasp of Emptiness</td><td>1</td><td>4:51</td><td>P2</td></tr>
+      </table>
+    </div>
+
+    <div>
+      <h3>Deaths by Phase</h3>
+      <table>
+        <tr><th>Phase</th><th>Deaths</th><th>% of Total</th></tr>
+        <tr><td>P1: Sentinels (0:00&ndash;2:14)</td><td style="color:var(--red)">6</td><td>30%</td></tr>
+        <tr><td>Intermission (2:14&ndash;2:53)</td><td style="color:var(--orange)">3</td><td>15%</td></tr>
+        <tr><td>P2: Rift (2:53&ndash;5:09)</td><td style="color:var(--red)">8</td><td>40%</td></tr>
+        <tr><td>P3: Devouring Cosmos (5:09+)</td><td style="color:var(--yellow)">3</td><td>15%</td></tr>
+      </table>
+
+      <div style="margin-top: 16px;">
+        <h3>Death Timeline (all 20 pulls)</h3>
+        <div class="death-timeline">
+          <div class="death-dot p1" title="F7 1:03 Silverstrike Arrow">7</div>
+          <div class="death-dot p1" title="F8 1:17 Echoing Darkness">8</div>
+          <div class="death-dot p1" title="F10 1:53 Echoing Darkness">10</div>
+          <div class="death-dot p1" title="F14 1:18 Echoing Darkness">14</div>
+          <div class="death-dot p1" title="F21 1:55 Echoing Darkness">21</div>
+          <div class="death-dot p1" title="F22 1:29 Echoing Darkness">22</div>
+          <div class="death-dot inter" title="F11 2:42 Silverstrike Barrage">11</div>
+          <div class="death-dot inter" title="F15 2:31 Silverstrike Barrage">15</div>
+          <div class="death-dot inter" title="F16 2:37 Silverstrike Barrage">16</div>
+          <div class="death-dot p2" title="F5 3:41 Cosmic Barrier">5</div>
+          <div class="death-dot p2" title="F6 3:45 Cosmic Barrier">6</div>
+          <div class="death-dot p2" title="F17 3:44 Cosmic Barrier">17</div>
+          <div class="death-dot p2" title="F18 3:59 Bursting Emptiness">18</div>
+          <div class="death-dot p2" title="F9 4:26 Bursting Emptiness">9</div>
+          <div class="death-dot p2" title="F12 4:45 Void Expulsion">12</div>
+          <div class="death-dot p2" title="F20 4:51 Grasp of Emptiness">20</div>
+          <div class="death-dot p2" title="F13 5:01 Bursting Emptiness">13</div>
+          <div class="death-dot p3" title="F19 5:23 Dimensional Slash">19</div>
+          <div class="death-dot p3" title="F23 6:17 Cosmic Barrier">23</div>
+          <div class="death-dot p3" title="F25 6:22 Cosmic Barrier">25</div>
+        </div>
+        <div style="font-size:11px;color:var(--dim);margin-top:6px;">
+          <span style="color:var(--red)">&#9632;</span> P1
+          <span style="color:var(--yellow);margin-left:8px">&#9632;</span> Inter
+          <span style="color:var(--orange);margin-left:8px">&#9632;</span> P2
+          <span style="color:var(--purple);margin-left:8px">&#9632;</span> P3
+          &mdash; hover for details
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Death cause deep-dives -->
+  <div style="margin-top: 20px;">
+    <div class="alert-box alert-critical">
+      <div class="alert-title">Echoing Darkness: 5 deaths in P1 (fights 8, 10, 14, 21, 22)</div>
+      <div class="alert-body">
+        Vorelus's Echoing Darkness is periodic shadow damage that ramps. All 5 Echoing Darkness deaths happened between 1:03 and 1:55 &mdash; while Vorelus is active in Phase 1 (dies around 2:05). Sonic is consistently taking lethal Echoing Darkness hits of 25&ndash;35K while at low HP. <strong>Dark Pact, Unending Resolve, and Healthstones need to be used proactively during Vorelus's active window.</strong> Warlock has excellent self-sustain tools; they are not being used early enough.
+      </div>
+    </div>
+
+    <div class="alert-box alert-warning">
+      <div class="alert-title">Cosmic Barrier: 5 deaths in P2/P3 (fights 5, 6, 17, 23, 25)</div>
+      <div class="alert-body">
+        Cosmic Barrier is a shield mechanic that must be broken. Taking 12.3M total damage from it across 11 pulls suggests Sonic is either standing in the barrier AoE or not breaking the shield fast enough. Three of these deaths occur at 3:41&ndash;3:45 (shortly after P2 begins), suggesting the P1-to-P2 transition Cosmic Barrier is a consistent wall.
+      </div>
+    </div>
+
+    <div class="alert-box alert-warning">
+      <div class="alert-title">Silverstrike Barrage: 3 deaths during Intermission (fights 11, 15, 16)</div>
+      <div class="alert-body">
+        All three deaths are at 2:31&ndash;2:42 &mdash; the Intermission Silverstrike Barrage window (2:22&ndash;2:52). This is sustained AoE that demands a defensive or healthstone. Dying here 3 times means Sonic is entering the Intermission without adequate HP or not using personals. <strong>Use Unending Resolve at 2:20 and Dark Pact as backup.</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Per-Phase Performance Breakdown -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">This is the most important section for progression. Overall DPS is misleading because it blends a strong P1 opener with diminished P2/P3 performance. Phase reach rate shows how far Sonic consistently gets in the fight.</p>
+
+  <h3>Phase Reach Rate</h3>
+  <table>
+    <tr><th>Phase</th><th>Raid Reached</th><th>Sonic Alive</th><th>Status</th></tr>
+    <tr>
+      <td class="phase-name">P1: Sentinels (0:00&ndash;2:14)</td>
+      <td>20/20</td>
+      <td>20/20</td>
+      <td><span class="badge badge-green">100%</span></td>
+    </tr>
+    <tr>
+      <td class="phase-name">Intermission (2:14&ndash;2:53)</td>
+      <td>14/20</td>
+      <td>14/20</td>
+      <td><span class="badge badge-yellow">70%</span></td>
+    </tr>
+    <tr>
+      <td class="phase-name">P2: Rift (2:53&ndash;5:09)</td>
+      <td>14/20</td>
+      <td>11/20</td>
+      <td><span class="badge badge-red">55%</span></td>
+    </tr>
+    <tr>
+      <td class="phase-name">P3: Devouring Cosmos (5:09+)</td>
+      <td>6/20</td>
+      <td>3/20</td>
+      <td><span class="badge badge-red">15%</span></td>
+    </tr>
+  </table>
+
+  <div style="margin-top: 20px;">
+    <h3>Per-Phase DPS</h3>
+    <table class="phase-table">
+      <tr><th>Phase</th><th>Pulls Seen</th><th>Avg DPS</th><th>Best DPS</th><th>Deaths</th><th>Top Death Cause</th></tr>
+      <tr>
+        <td class="phase-name">P1: Sentinels</td>
+        <td>20/20</td>
+        <td style="color:var(--green);font-weight:600">313.1K</td>
+        <td>376.3K</td>
+        <td style="color:var(--red)">6</td>
+        <td>Echoing Darkness (5)</td>
+      </tr>
+      <tr>
+        <td class="phase-name">Intermission</td>
+        <td>14/20</td>
+        <td style="color:var(--dim)">0.7K</td>
+        <td>2.8K</td>
+        <td style="color:var(--orange)">3</td>
+        <td>Silverstrike Barrage (3)</td>
+      </tr>
+      <tr>
+        <td class="phase-name">P2: Rift</td>
+        <td>11/20</td>
+        <td style="color:var(--yellow)">138.6K</td>
+        <td>194.8K</td>
+        <td style="color:var(--red)">8</td>
+        <td>Cosmic Barrier (3)</td>
+      </tr>
+      <tr>
+        <td class="phase-name">P3: Devouring Cosmos</td>
+        <td>3/20</td>
+        <td style="color:var(--orange)">60.3K</td>
+        <td>76.8K</td>
+        <td style="color:var(--yellow)">3</td>
+        <td>Cosmic Barrier (2)</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="two-col" style="margin-top: 20px;">
+    <div class="insight-box">
+      <h4 style="color:var(--green)">P1 is Strong</h4>
+      <p>313K average DPS across all 20 pulls in Phase 1 shows solid opener execution. Tyrant window, Dreadstalker summons, and shard management are landing correctly in the first 2 minutes. The 6 deaths in P1 are all to Echoing Darkness &mdash; a survivability issue, not a DPS one.</p>
+    </div>
+    <div class="insight-box">
+      <h4 style="color:var(--red)">P2 DPS Drops 56% from P1</h4>
+      <p>DPS falls from 313K (P1) to 138K (P2) &mdash; a 56% decline. Some drop is expected because P1 includes the opener burst, multi-target Sentinel damage, and Tyrant. But the scale of the drop suggests significant uptime loss from movement mechanics (Rift Slash, Call of the Void) and possibly poor Tyrant timing in the second window. Only 3 of 20 pulls reach P3, so P2 is where the fight is being lost.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Performance Across All Pulls -->
+<section>
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">DPS per pull (total damage / fight duration). Every bar is red because Sonic died in every pull. Longer pulls show lower DPS because they include Intermission dead time and P2/P3 decline.</p>
+
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">F5</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 66.0%"></div>
+        <div class="bar-value">241.7K <span class="bar-death-marker">&#9760; 3:41</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F6</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 61.5%"></div>
+        <div class="bar-value">225.0K <span class="bar-death-marker">&#9760; 3:45</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F7</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 54.7%"></div>
+        <div class="bar-value">200.1K <span class="bar-death-marker">&#9760; 1:03</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F8</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 68.3%"></div>
+        <div class="bar-value">249.9K <span class="bar-death-marker">&#9760; 1:17</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F9</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 49.7%"></div>
+        <div class="bar-value">181.7K <span class="bar-death-marker">&#9760; 4:26</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F10</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 81.1%"></div>
+        <div class="bar-value">296.7K <span class="bar-death-marker">&#9760; 1:53</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F11</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 43.6%"></div>
+        <div class="bar-value">159.5K <span class="bar-death-marker">&#9760; 2:42</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F12</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 53.1%"></div>
+        <div class="bar-value">194.2K <span class="bar-death-marker">&#9760; 4:45</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F13</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 46.4%"></div>
+        <div class="bar-value">169.7K <span class="bar-death-marker">&#9760; 5:01</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F14</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 71.3%"></div>
+        <div class="bar-value">260.9K <span class="bar-death-marker">&#9760; 1:18</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F15</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 65.3%"></div>
+        <div class="bar-value">238.8K <span class="bar-death-marker">&#9760; 2:31</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F16</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 59.4%"></div>
+        <div class="bar-value">217.2K <span class="bar-death-marker">&#9760; 2:37</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F17</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 59.4%"></div>
+        <div class="bar-value">217.2K <span class="bar-death-marker">&#9760; 3:44</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F18</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 50.8%"></div>
+        <div class="bar-value">185.9K <span class="bar-death-marker">&#9760; 3:59</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F19</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 47.9%"></div>
+        <div class="bar-value">175.1K <span class="bar-death-marker">&#9760; 5:23</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F20</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 50.0%"></div>
+        <div class="bar-value">182.8K <span class="bar-death-marker">&#9760; 4:51</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F21</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 78.3%"></div>
+        <div class="bar-value">286.7K <span class="bar-death-marker">&#9760; 1:55</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F22</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 100%"></div>
+        <div class="bar-value">365.9K <span class="bar-death-marker">&#9760; 1:29</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F23</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 47.2%"></div>
+        <div class="bar-value">172.8K <span class="bar-death-marker">&#9760; 6:17</span></div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F25</div>
+      <div class="bar-container">
+        <div class="avg-line" style="left: 59.8%;" title="Avg: 218.8K"></div>
+        <div class="bar-fill died" style="width: 42.0%"></div>
+        <div class="bar-value">153.5K <span class="bar-death-marker">&#9760; 6:22</span></div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--dim);margin-top:8px;">
+    <span style="color:var(--yellow)">&#9474;</span> Yellow line = avg (218.8K) &bull;
+    Std Dev: 52.4K &bull; Range: 153.5K&ndash;365.9K
+  </div>
+</section>
+
+<!-- Consistency Analysis -->
+<section>
+  <h2>Consistency Analysis</h2>
+
+  <div class="two-col">
+    <div>
+      <h3>Session Trend</h3>
+      <table>
+        <tr><th>Segment</th><th>Avg DPS</th><th>Pulls</th></tr>
+        <tr><td>First 10 pulls (F5&ndash;F14)</td><td>217.9K</td><td>10</td></tr>
+        <tr><td>Last 10 pulls (F15&ndash;F25)</td><td>219.6K</td><td>10</td></tr>
+      </table>
+      <p style="font-size:12px;color:var(--dim);margin-top:8px;">
+        <span class="trend-arrow trend-flat">&harr;</span> Flat trend &mdash; no meaningful improvement or regression across the session. DPS output remained consistent but survival did not improve.
+      </p>
+    </div>
+
+    <div>
+      <h3>Duration vs DPS</h3>
+      <table>
+        <tr><th>Pull Length</th><th>Avg DPS</th><th>Count</th></tr>
+        <tr><td>Short (&lt;2 min)</td><td>274.7K</td><td>5</td></tr>
+        <tr><td>Medium (2&ndash;4 min)</td><td>216.5K</td><td>7</td></tr>
+        <tr><td>Long (&gt;4 min)</td><td>177.0K</td><td>8</td></tr>
+      </table>
+      <p style="font-size:12px;color:var(--dim);margin-top:8px;">
+        Short pulls are inflated by burst-phase bias (Tyrant + opener damage). DPS on long pulls (177K) reflects sustained performance including Intermission dead time and P2 decline.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Damage Taken Analysis -->
+<section>
+  <h2>Damage Taken Analysis</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Top damage sources across 11 qualifying pulls (&gt;3 min). Echoing Darkness and Voidstalker Sting are the dominant incoming damage sources.</p>
+
+  <table>
+    <tr><th>Ability</th><th>Hits</th><th>Total Damage</th><th>Absorbed</th><th>Avoidable?</th></tr>
+    <tr style="color:var(--red)">
+      <td><strong>Echoing Darkness</strong></td><td>1,307</td><td>24,757K</td><td>10,545K</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td><td>759</td><td>16,375K</td><td>5,046K</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Simulacrum Backlash</td><td>488</td><td>13,041K</td><td>2,764K</td>
+      <td>Unavoidable</td>
+    </tr>
+    <tr style="color:var(--orange)">
+      <td><strong>Cosmic Barrier</strong></td><td>417</td><td>12,273K</td><td>2,532K</td>
+      <td><span class="badge badge-red">Yes</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td><td>331</td><td>12,272K</td><td>2,146K</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td><td>159</td><td>3,556K</td><td>1,394K</td>
+      <td>Unavoidable</td>
+    </tr>
+    <tr style="color:var(--orange)">
+      <td><strong>Falling</strong></td><td>22</td><td>4,838K</td><td>&mdash;</td>
+      <td><span class="badge badge-red">Yes</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td><td>57</td><td>4,011K</td><td>640K</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Burning Rush (self)</td><td>166</td><td>2,978K</td><td>331K</td>
+      <td>Self-damage</td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td><td>52</td><td>2,011K</td><td>800K</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr style="color:var(--orange)">
+      <td><strong>Void Remnants</strong></td><td>13</td><td>2,322K</td><td>337K</td>
+      <td><span class="badge badge-red">Yes</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Barrage</td><td>18</td><td>1,509K</td><td>267K</td>
+      <td>Unavoidable</td>
+    </tr>
+  </table>
+
+  <div class="alert-box alert-warning" style="margin-top: 16px;">
+    <div class="alert-title">4.8M falling damage across 22 hits</div>
+    <div class="alert-body">Falling damage indicates being knocked off platforms or failing to position correctly during movement mechanics. At 220K per hit, this is significant self-inflicted damage that contributes to the survival problem. <strong>Use Demonic Circle or Demonic Gateway</strong> to prevent falls.</div>
+  </div>
+</section>
+
+<!-- Rotation Profile (Fight 25) -->
+<section>
+  <h2>Rotation Profile (Fight 25 &mdash; Longest Pull, 6:22 alive)</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Cast breakdown from the longest pull. Total 257 casts in 382 seconds alive = 40.4 CPM.</p>
+
+  <table>
+    <tr><th>Ability</th><th>Casts</th><th>CPM</th><th>Role</th></tr>
+    <tr><td style="color:var(--warlock)"><strong>Hand of Gul'dan</strong></td><td>70</td><td>11.0</td><td>Shard Spender (Imp summoner)</td></tr>
+    <tr><td style="color:var(--warlock)"><strong>Demonbolt</strong></td><td>61</td><td>9.6</td><td>Demonic Core spender</td></tr>
+    <tr><td>Shadow Bolt</td><td>44</td><td>6.9</td><td>Filler / Shard generator</td></tr>
+    <tr><td style="color:var(--accent)">Implosion</td><td>19</td><td>3.0</td><td>Imp detonation</td></tr>
+    <tr><td style="color:var(--green)">Call Dreadstalkers</td><td>16</td><td>2.5</td><td>Key summon (CD)</td></tr>
+    <tr><td>Infernal Bolt</td><td>8</td><td>1.3</td><td>Secondary filler</td></tr>
+    <tr><td style="color:var(--yellow)">Ruination</td><td>7</td><td>1.1</td><td>Diabolist proc</td></tr>
+    <tr><td style="color:var(--orange)"><strong>Summon Demonic Tyrant</strong></td><td>6</td><td>0.9</td><td>Major CD (~2min)</td></tr>
+    <tr><td>Soulburn</td><td>4</td><td>0.6</td><td>Utility</td></tr>
+    <tr><td>Blood Fury</td><td>3</td><td>0.5</td><td>Racial CD</td></tr>
+    <tr><td>Grimoire: Imp Lord</td><td>2</td><td>0.3</td><td>Supporting summon</td></tr>
+    <tr><td style="color:var(--cyan)">Unending Resolve</td><td>2</td><td>0.3</td><td>Defensive</td></tr>
+    <tr><td style="color:var(--cyan)">Dark Pact</td><td>2</td><td>0.3</td><td>Defensive</td></tr>
+    <tr><td>Demonic Healthstone</td><td>2</td><td>0.3</td><td>Health restore</td></tr>
+  </table>
+
+  <div class="alert-box alert-info" style="margin-top: 16px;">
+    <div class="alert-title">Defensive usage is very low</div>
+    <div class="alert-body">
+      In a 6:22 pull, Sonic used Unending Resolve only <strong>2 times</strong> (every 3:11) and Dark Pact only <strong>2 times</strong>. With a 100% death rate, the defensive toolkit is clearly underutilized. Unending Resolve is a 3-minute cooldown &mdash; it should be used at minimum twice per pull on a 6-minute fight. Dark Pact is 1 minute &mdash; it should see 5&ndash;6 uses. Demonic Healthstone was used twice, which is reasonable. The key gap is <strong>proactive defensive usage before known damage events</strong>, not reactive panic buttons.
+    </div>
+  </div>
+</section>
+
+<!-- Reference Context -->
+<section>
+  <h2>Reference Context (De-Emphasized)</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Top-ranked Demo Warlock kills on Mythic Crown. These are completed kills (8:20&ndash;8:50 fight length) &mdash; a ceiling to aim for, not a direct comparison to prog pulls.</p>
+
+  <table class="ref-table">
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th></tr>
+    <tr><td>Shoutfive-Twisting Nether</td><td style="color:var(--purple)">112,169</td><td>8:50</td><td>292</td><td><span class="badge badge-red">11 diffs</span></td></tr>
+    <tr class="primary"><td style="color:var(--purple)">&#9733; Primary Ref</td><td style="color:var(--purple)">110,657</td><td>8:35</td><td>290</td><td><span class="badge badge-green">3 diffs</span></td></tr>
+    <tr><td>Ref #3</td><td style="color:var(--purple)">107,817</td><td>8:25</td><td>290</td><td><span class="badge badge-yellow">4 diffs</span></td></tr>
+    <tr><td>Ref #4</td><td style="color:var(--purple)">105,506</td><td>8:30</td><td>291</td><td><span class="badge badge-yellow">7 diffs</span></td></tr>
+    <tr><td>Ref #5</td><td style="color:var(--purple)">103,355</td><td>8:28</td><td>290</td><td><span class="badge badge-yellow">6 diffs</span></td></tr>
+  </table>
+
+  <div class="insight-box" style="margin-top: 16px;">
+    <h4>Reference Framing</h4>
+    <p>
+      The primary reference has only 3 talent differences and comparable ilvl (290 vs 292). Their full-fight DPS is 110.7K over an 8:35 kill. Sonic's best pull DPS was 153.5K (fight 25, 6:44) &mdash; but that includes inflated P1 burst over a shorter duration. On a completed kill, with P3 sustained damage and Intermission dead time factored in, Sonic would likely land in the 85&ndash;100K range at current performance, depending on survival. The DPS potential is not the bottleneck &mdash; survival is.
+    </p>
+  </div>
+</section>
+
+<!-- Actionable Items -->
+<section>
+  <h2>Actionable Improvements</h2>
+
+  <div class="alert-box alert-critical">
+    <div class="alert-title">1. Survive Echoing Darkness in Phase 1 (5 deaths)</div>
+    <div class="alert-body">
+      Echoing Darkness from Vorelus hits every 2 seconds for 25&ndash;35K per tick. All 5 deaths occur between 1:03 and 1:55. Sonic needs to use <strong>Dark Pact</strong> (1 min CD, absorb shield) at the start of Vorelus's active window (~0:40), and <strong>Unending Resolve</strong> (3 min CD, 40% DR) if HP drops below 50% during the damage. Healthstone should be available for emergency top-offs. Burning Rush (self-damage) should be toggled OFF during heavy Echoing Darkness overlap. Sonic took 2,978K damage from Burning Rush across these pulls &mdash; that is self-inflicted damage during a survival crisis.
+    </div>
+  </div>
+
+  <div class="alert-box alert-critical">
+    <div class="alert-title">2. Survive the Intermission (3 deaths)</div>
+    <div class="alert-body">
+      Silverstrike Barrage during Intermission (2:22&ndash;2:52) killed Sonic 3 times at 2:31&ndash;2:42. This is sustained unavoidable AoE. Plan: arrive at Intermission above 80% HP. Use <strong>Dark Pact</strong> at 2:20 (just before Stellar Emission channel begins at 2:22). If UR is available (second charge or first use was pre-1:00), overlay it. Demonic Circle pre-placed for positioning. There are no targets to hit during Intermission, so survival is the ONLY job.
+    </div>
+  </div>
+
+  <div class="alert-box alert-warning">
+    <div class="alert-title">3. Handle Cosmic Barrier (5 deaths)</div>
+    <div class="alert-body">
+      Cosmic Barrier killed Sonic 5 times across P2 and P3 (3:41&ndash;6:22). This is 12.3M total damage absorbed from 417 hits. This mechanic creates a barrier that must be broken &mdash; standing inside it or being caught in the AoE pulse is lethal. Positioning matters: stay at range during Cosmic Barrier casts and focus damage on breaking the barrier. Use Demonic Gateway to reposition quickly if caught.
+    </div>
+  </div>
+
+  <div class="alert-box alert-warning">
+    <div class="alert-title">4. Stop falling off the platform (4.8M falling damage)</div>
+    <div class="alert-body">
+      22 instances of falling damage totaling 4.8M is substantial and completely avoidable. This is likely related to knockback mechanics or poor positioning near platform edges. <strong>Demonic Circle</strong> should be placed in a safe spot and used to recover from knockbacks. <strong>Demonic Gateway</strong> (used 2 times in fight 25) can also serve as a safety net. Awareness of platform edges during movement-heavy phases (P2 Rift Slash, P3 Dimensional Slash) needs to be higher.
+    </div>
+  </div>
+
+  <div class="alert-box alert-info">
+    <div class="alert-title">5. Increase defensive cooldown usage throughout the fight</div>
+    <div class="alert-body">
+      On the longest pull (6:22 alive), Sonic used Dark Pact only 2 times and Unending Resolve only 2 times. Dark Pact is a 1-minute CD &mdash; it should be used 5&ndash;6 times in a 6-minute fight. Unending Resolve is 3 minutes &mdash; use it on pull for Echoing Darkness and again during the P2 transition. Plan defensives around known damage windows: Echoing Darkness (P1), Silverstrike Barrage (Intermission), Void Expulsion (P1/P2), and Cosmic Barrier (P2/P3). Proactive use before damage events is far more effective than reactive use after HP drops.
+    </div>
+  </div>
+</section>
+
+<!-- Context Footer -->
+<section>
+  <h2>Summary Assessment</h2>
+
+  <div class="two-col">
+    <div class="insight-box">
+      <h4 style="color:var(--green)">What Is Working</h4>
+      <p>
+        &bull; P1 damage output is strong at 313K average &mdash; Tyrant window execution and shard management look solid in the opener<br>
+        &bull; DPS consistency across the session (first half 218K, second half 220K) shows no fatigue or tilt regression<br>
+        &bull; Rotation profile is correct: Hand of Gul'dan, Demonbolt, and Shadow Bolt usage rates look reasonable for Demonology<br>
+        &bull; ilvl (292) is on par with top-ranked players
+      </p>
+    </div>
+    <div class="insight-box">
+      <h4 style="color:var(--red)">What Needs Work</h4>
+      <p>
+        &bull; 100% death rate is the defining issue &mdash; zero pulls survived to wipe<br>
+        &bull; Defensive cooldowns are critically underused (Dark Pact 2x in a 6min pull, should be 5&ndash;6x)<br>
+        &bull; Echoing Darkness kills in P1 prevent seeing later phases &mdash; 6 of 20 deaths before Intermission<br>
+        &bull; Falling damage (4.8M) is fully avoidable and contributes to marginal HP situations<br>
+        &bull; P2 DPS drops 56% from P1 &mdash; needs better uptime management during movement mechanics<br>
+        &bull; Self-damage from Burning Rush during high-damage windows compounds the survival problem
+      </p>
+    </div>
+  </div>
+
+  <div class="alert-box alert-info" style="margin-top: 16px;">
+    <div class="alert-title">Bottom Line</div>
+    <div class="alert-body">
+      The performance gap is <strong>survival-based, not rotation-based</strong>. Sonic's damage output when alive is competitive. The path to improvement is straightforward: use Dark Pact and Unending Resolve proactively around known damage events, stop taking falling damage, turn off Burning Rush during heavy damage windows, and respect Cosmic Barrier positioning. Fixing survival will naturally improve DPS by extending uptime into later phases where the fight is actually decided.
+    </div>
+  </div>
+</section>
+
+<div class="footer">
+  <p>Generated by WCL Analyzer &bull; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs Report Hz1Lm672dZnBw9YC</a></p>
+  <p>Primary reference: Demo Warlock ranked #2 on Mythic Crown (110,657 DPS, 3 talent diffs, ilvl 290)</p>
+  <p>Spec guide reference: <a href="https://www.icy-veins.com/wow/demonology-warlock-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins Demonology Warlock Guide (12.0.7)</a></p>
+</div>
+
+</body>
+</html>

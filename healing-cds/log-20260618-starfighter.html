@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starfighter (Arms Warrior) — Crown of the Cosmos Prog Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --warrior: #c69b6d;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+
+/* Header */
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--warrior); }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-prog { background: rgba(210, 153, 34, 0.15); color: var(--yellow); border: 1px solid rgba(210, 153, 34, 0.3); }
+.tag-spec { background: rgba(198, 155, 109, 0.15); color: var(--warrior); border: 1px solid rgba(198, 155, 109, 0.3); margin-left: 8px; }
+
+/* Summary cards */
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.card-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 28px; font-weight: 700; }
+.card-detail { font-size: 12px; color: var(--dim); margin-top: 4px; }
+.val-green { color: var(--green); }
+.val-red { color: var(--red); }
+.val-yellow { color: var(--yellow); }
+.val-orange { color: var(--orange); }
+.val-accent { color: var(--accent); }
+.val-purple { color: var(--purple); }
+
+/* Sections */
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+.section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px 0; color: var(--accent); }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover { background: rgba(88, 166, 255, 0.04); }
+.highlight-row { background: rgba(198, 155, 109, 0.08); }
+.ref-row { background: rgba(188, 140, 255, 0.06); }
+
+/* Chart */
+.chart-container { position: relative; height: 260px; margin: 16px 0; display: flex; align-items: flex-end; gap: 3px; padding-bottom: 36px; }
+.chart-bar { flex: 1; border-radius: 4px 4px 0 0; position: relative; min-width: 10px; cursor: default; transition: opacity 0.15s; }
+.chart-bar:hover { opacity: 0.85; }
+.chart-bar .bar-label { position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+.chart-bar .bar-value { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+.bar-died { background: var(--red); }
+.bar-absent { background: var(--border); opacity: 0.3; }
+.chart-avg-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--yellow); z-index: 2; }
+.chart-avg-label { position: absolute; right: 4px; top: -14px; font-size: 10px; color: var(--yellow); }
+
+/* Warning/callout boxes */
+.callout { border-radius: 8px; padding: 16px; margin: 12px 0; font-size: 13px; }
+.callout-red { background: rgba(248, 81, 73, 0.08); border: 1px solid rgba(248, 81, 73, 0.25); }
+.callout-yellow { background: rgba(210, 153, 34, 0.08); border: 1px solid rgba(210, 153, 34, 0.25); }
+.callout-green { background: rgba(63, 185, 80, 0.08); border: 1px solid rgba(63, 185, 80, 0.25); }
+.callout-title { font-weight: 600; margin-bottom: 4px; }
+.callout-red .callout-title { color: var(--red); }
+.callout-yellow .callout-title { color: var(--yellow); }
+.callout-green .callout-title { color: var(--green); }
+
+/* Phase bar */
+.phase-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0 16px 0; }
+.phase-bar .seg { position: relative; }
+.phase-bar .seg-p1 { background: var(--accent); }
+.phase-bar .seg-inter { background: var(--yellow); }
+.phase-bar .seg-p2 { background: var(--orange); }
+.phase-bar .seg-p3 { background: var(--red); }
+.phase-labels { display: flex; font-size: 10px; color: var(--dim); margin-bottom: 8px; }
+.phase-labels span { text-align: center; }
+
+/* Badge */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+.badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
+.badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+
+/* Actionable items */
+.action-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.action-item .action-num { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--bg); font-size: 12px; font-weight: 700; margin-right: 8px; }
+.action-item .action-title { font-weight: 600; font-size: 14px; }
+.action-item .action-body { margin-top: 8px; font-size: 13px; color: var(--dim); line-height: 1.7; }
+.action-item .action-body strong { color: var(--text); }
+
+/* Footer */
+.footer { text-align: center; padding: 24px; font-size: 12px; color: var(--dim); margin-top: 32px; border-top: 1px solid var(--border); }
+
+/* CPM comparison bar */
+.cpm-bar-wrap { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+.cpm-bar { height: 14px; border-radius: 3px; min-width: 2px; }
+.cpm-bar-player { background: var(--warrior); }
+.cpm-bar-ref { background: var(--purple); opacity: 0.6; }
+
+/* Responsive */
+@media (max-width: 800px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Starfighter</span> <span class="tag tag-spec">Arms Warrior</span> <span class="tag tag-prog">Progression</span></h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &middot; June 18, 2026 &middot; 13 pulls (joined mid-session) &middot; Best: 31.27% &middot; No kill
+    <br>Report: <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">jqFfXprk4hcaWx3C</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS</div>
+    <div class="card-value val-accent">32.1K</div>
+    <div class="card-detail">Median: 33.2K &middot; StdDev: 7.8K</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">289</div>
+    <div class="card-detail">Reference: 290 &middot; Near-identical gear</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value val-red">0 / 13</div>
+    <div class="card-detail">Died every pull. Avg survival: 4:39</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value val-green">42.2K</div>
+    <div class="card-detail">Fight 19 &middot; 5:16 &middot; 43.5% boss</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Starfighter joined on pull 8 (fights 1-7 without). All 13 pulls shown below. <span class="badge badge-red">Died</span> in every pull.
+    Gray bars = absent. Red bars = died before wipe (all pulls).
+  </p>
+
+  <div class="chart-container" style="height: 220px;">
+    <!-- Chart bars generated with inline styles for each fight -->
+    <!-- Max DPS: 42153. Scale factor: 180px / 42153 -->
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F1</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F2</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F3</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F4</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F5</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F6</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F7</span></div>
+    <div class="chart-bar bar-died" style="height: 84px;"><span class="bar-value">19.7K</span><span class="bar-label">F8</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F9</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F10</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F11</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F12</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F13</span></div>
+    <div class="chart-bar bar-died" style="height: 105px;"><span class="bar-value">24.7K</span><span class="bar-label">F14</span></div>
+    <div class="chart-bar bar-died" style="height: 82px;"><span class="bar-value">19.2K</span><span class="bar-label">F15</span></div>
+    <div class="chart-bar bar-died" style="height: 106px;"><span class="bar-value">24.7K</span><span class="bar-label">F16</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F17</span></div>
+    <div class="chart-bar bar-died" style="height: 156px;"><span class="bar-value">36.4K</span><span class="bar-label">F18</span></div>
+    <div class="chart-bar bar-died" style="height: 180px;"><span class="bar-value">42.2K</span><span class="bar-label">F19</span></div>
+    <div class="chart-bar bar-died" style="height: 178px;"><span class="bar-value">41.6K</span><span class="bar-label">F20</span></div>
+    <div class="chart-bar bar-died" style="height: 166px;"><span class="bar-value">38.8K</span><span class="bar-label">F21</span></div>
+    <div class="chart-bar bar-died" style="height: 120px;"><span class="bar-value">28.0K</span><span class="bar-label">F22</span></div>
+    <div class="chart-bar bar-died" style="height: 168px;"><span class="bar-value">39.3K</span><span class="bar-label">F23</span></div>
+    <div class="chart-bar bar-died" style="height: 164px;"><span class="bar-value">38.3K</span><span class="bar-label">F24</span></div>
+    <div class="chart-bar bar-absent" style="height: 10px;"><span class="bar-label">F25</span></div>
+    <div class="chart-bar bar-died" style="height: 142px;"><span class="bar-value">33.2K</span><span class="bar-label">F27</span></div>
+    <div class="chart-bar bar-died" style="height: 136px;"><span class="bar-value">31.8K</span><span class="bar-label">F28</span></div>
+    <!-- Average line at 32.1K = ~137px from bottom -->
+    <div class="chart-avg-line" style="bottom: 173px;">
+      <span class="chart-avg-label">Avg 32.1K</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+    <div>
+      <h3>Session Trend</h3>
+      <table>
+        <tr><td>First 6 pulls (F8-F19)</td><td style="text-align:right;"><strong>27,800</strong> avg DPS</td></tr>
+        <tr><td>Last 7 pulls (F20-F28)</td><td style="text-align:right;"><strong>35,846</strong> avg DPS</td></tr>
+        <tr><td>Improvement</td><td style="text-align:right;"><span class="val-green">+28.9%</span></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Consistency</h3>
+      <table>
+        <tr><td>Best 5 pulls avg</td><td style="text-align:right;"><strong>40,034</strong> DPS (avg surv: 5:02)</td></tr>
+        <tr><td>Worst 5 pulls avg</td><td style="text-align:right;"><strong>23,242</strong> DPS (avg surv: 4:02)</td></tr>
+        <tr><td>Spread</td><td style="text-align:right;"><span class="val-yellow">42.2K - 19.2K</span></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout callout-red">
+    <div class="callout-title">100% Death Rate: Died in 13 / 13 pulls</div>
+    Average survival time: <strong>4:39</strong>. Never survived to wipe. All 9 P2 deaths and all 4 P3 deaths represent lost DPS time for the raid. Survival is the single highest-priority improvement area.
+  </div>
+
+  <h3>Death Causes Ranked</h3>
+  <table>
+    <thead>
+      <tr><th>Killing Ability</th><th>Deaths</th><th>Phase</th><th>Avg Time</th><th>Fights</th><th>Avoidable?</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background: rgba(248,81,73,0.06);">
+        <td><strong>Simulacrum Backlash</strong></td>
+        <td><span class="val-red">4</span></td>
+        <td>P2 / P3</td>
+        <td>4:40</td>
+        <td>F15, F19, F20, F28</td>
+        <td><span class="badge badge-red">Yes</span></td>
+      </tr>
+      <tr>
+        <td><strong>Void Barrage</strong></td>
+        <td><span class="val-red">2</span></td>
+        <td>P2</td>
+        <td>4:12</td>
+        <td>F8, F21</td>
+        <td><span class="badge badge-yellow">Partially</span></td>
+      </tr>
+      <tr>
+        <td><strong>Void Expulsion</strong></td>
+        <td><span class="val-red">2</span></td>
+        <td>P2</td>
+        <td>4:17</td>
+        <td>F14, F16</td>
+        <td><span class="badge badge-red">Yes</span></td>
+      </tr>
+      <tr>
+        <td><strong>Dimensional Slash</strong></td>
+        <td><span class="val-red">2</span></td>
+        <td>P3</td>
+        <td>5:16</td>
+        <td>F18, F27</td>
+        <td><span class="badge badge-red">Yes</span></td>
+      </tr>
+      <tr>
+        <td><strong>Grasp of Emptiness</strong></td>
+        <td>1</td>
+        <td>P2</td>
+        <td>4:01</td>
+        <td>F22</td>
+        <td><span class="badge badge-red">Yes</span></td>
+      </tr>
+      <tr>
+        <td><strong>Gravity Collapse</strong></td>
+        <td>1</td>
+        <td>P3</td>
+        <td>5:42</td>
+        <td>F23</td>
+        <td><span class="badge badge-yellow">Partially</span></td>
+      </tr>
+      <tr>
+        <td><strong>Melee</strong></td>
+        <td>1</td>
+        <td>P2</td>
+        <td>4:36</td>
+        <td>F24</td>
+        <td><span class="badge badge-yellow">Positioning</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-red" style="margin-top: 16px;">
+    <div class="callout-title">#1 Killer: Simulacrum Backlash (4 deaths)</div>
+    Simulacrum Backlash hits when the Rift Simulacrum's cast completes or its shield (Cosmic Barrier) breaks at the wrong time. Four deaths to this ability across the night suggest a pattern of either not repositioning around the Simulacrum or not using a defensive when it detonates. Use <strong>Spell Reflection</strong> or <strong>Defensive Stance</strong> preemptively when the Simulacrum is casting.
+  </div>
+
+  <h3>Death Timing Heatmap</h3>
+  <p style="font-size: 12px; color: var(--dim); margin-bottom: 8px;">0 deaths in P1 or Intermission. All deaths occur in P2 (69%) or P3 (31%).</p>
+  <div class="phase-bar" style="height: 32px; border-radius: 6px;">
+    <div class="seg seg-p1" style="flex: 134; opacity: 0.3;" title="P1: 0 deaths"></div>
+    <div class="seg seg-inter" style="flex: 39; opacity: 0.3;" title="Intermission: 0 deaths"></div>
+    <div class="seg seg-p2" style="flex: 136; position: relative;" title="P2: 9 deaths">
+      <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:12px; font-weight:700; color:white;">9 deaths</span>
+    </div>
+    <div class="seg seg-p3" style="flex: 56; position: relative;" title="P3: 4 deaths">
+      <span style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:11px; font-weight:700; color:white;">4</span>
+    </div>
+  </div>
+  <div class="phase-labels">
+    <span style="flex: 134;">P1 (0:00-2:14)</span>
+    <span style="flex: 39;">Inter</span>
+    <span style="flex: 136;">P2 (2:53-5:09)</span>
+    <span style="flex: 56;">P3 (5:09+)</span>
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    DPS measured as raw damage to all targets per second alive in each phase. Reference is ranked #4 Arms Warrior kill (殷红飨宴, 290 ilvl, 4 talent diffs). P3 comparison is heavily skewed because Starfighter dies almost immediately upon entering P3.
+  </p>
+
+  <h3>Phase Reach Rate</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Pulls Seen</th><th>Rate</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>P1: Sentinels</td><td>13 / 13</td><td>100%</td><td><span class="badge badge-green">All pulls</span></td></tr>
+      <tr><td>Intermission</td><td>13 / 13</td><td>100%</td><td><span class="badge badge-green">All pulls</span></td></tr>
+      <tr><td>P2: Rift</td><td>13 / 13</td><td>100%</td><td><span class="badge badge-green">All pulls</span></td></tr>
+      <tr><td>P3: Devouring Cosmos</td><td>6 / 13</td><td>46%</td><td><span class="badge badge-red">&lt;50%</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: 24px;">Per-Phase DPS (Raw Damage to All Targets)</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Duration</th><th>Pulls</th><th>Avg DPS</th><th>Best DPS</th><th>Ref DPS</th><th>vs Ref</th><th>Deaths</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color: var(--accent);">P1: Sentinels</strong></td>
+        <td>2:14</td>
+        <td>13</td>
+        <td><strong>275,976</strong></td>
+        <td>326,693</td>
+        <td style="color: var(--purple);">340,103</td>
+        <td><span class="val-yellow">81%</span></td>
+        <td><span class="val-green">0</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--yellow);">Intermission</strong></td>
+        <td>0:39</td>
+        <td>13</td>
+        <td><strong>0</strong></td>
+        <td>0</td>
+        <td style="color: var(--purple);">0</td>
+        <td><span class="val-green">--</span></td>
+        <td><span class="val-green">0</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--orange);">P2: Rift</strong></td>
+        <td>2:16</td>
+        <td>13</td>
+        <td><strong>100,507</strong></td>
+        <td>111,885</td>
+        <td style="color: var(--purple);">134,457</td>
+        <td><span class="val-orange">75%</span></td>
+        <td><span class="val-red">9</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color: var(--red);">P3: Cosmos</strong></td>
+        <td>varies</td>
+        <td>4*</td>
+        <td><strong>21,998</strong></td>
+        <td>65,960</td>
+        <td style="color: var(--purple);">111,237</td>
+        <td><span class="val-red">20%</span></td>
+        <td><span class="val-red">4</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 11px; color: var(--dim); margin-top: 4px;">* Only 4 of 6 P3 reaches had measurable damage. Two pulls (F27, F28) had near-zero P3 damage due to immediate death on entry.</p>
+
+  <div class="callout callout-yellow" style="margin-top: 16px;">
+    <div class="callout-title">Phase-Specific Insights</div>
+    <ul style="margin-top: 8px; padding-left: 20px; font-size: 13px; color: var(--dim); line-height: 1.8;">
+      <li><strong>P1 is the strongest phase</strong> — 81% of reference with heavy AoE on Sentinels (Morium, Vorelus, Demiar, Void Droplets). No deaths. This is where Arms Warrior excels with Sweeping Strikes + Bladestorm cleave.</li>
+      <li><strong>P2 drops to 75% of reference</strong> and accounts for 9 of 13 deaths. The single-target / priority-add nature of P2 (Rift Simulacrum, Undying Voidspawn) is harder for Arms to navigate, and constant deaths cut effective DPS time short.</li>
+      <li><strong>P3 is effectively unexplored</strong> — only 4 pulls had any P3 damage, and most were sub-15 seconds of uptime before death. The 20% reference figure is meaningless as a comparison; Starfighter simply needs to survive long enough to DO damage in P3.</li>
+      <li><strong>Intermission has zero damage from both players</strong> — this is correct, as the Stellar Emission channel is a pure survival phase with no targets.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Cast Profile Comparison -->
+<div class="section">
+  <h2>Cast Profile Comparison</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Starfighter's best pull (F23, 6:05 alive for 5:42) vs reference kill (殷红飨宴, 9:03). Overall CPM: <strong style="color: var(--warrior);">38.3</strong> vs <strong style="color: var(--purple);">51.7</strong> (<span class="val-red">-26%</span>). The 13.4 CPM gap represents approximately <strong>82 missed casts</strong> over the fight duration.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Player CPM</th><th>Ref CPM</th><th>Delta</th><th>Visual</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td><strong>Mortal Strike</strong></td>
+        <td>9.9</td>
+        <td style="color: var(--purple);">12.7</td>
+        <td><span class="val-red">-22%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 99px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 127px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr class="highlight-row">
+        <td><strong>Execute</strong></td>
+        <td>5.1</td>
+        <td style="color: var(--purple);">10.9</td>
+        <td><span class="val-red">-53%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 51px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 109px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Overpower</td>
+        <td>6.4</td>
+        <td style="color: var(--purple);">7.7</td>
+        <td><span class="val-yellow">-17%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 64px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 77px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Heroic Strike</td>
+        <td>4.4</td>
+        <td style="color: var(--purple);">4.5</td>
+        <td><span class="val-green">-2%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 44px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 45px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Slam</td>
+        <td>3.6</td>
+        <td style="color: var(--purple);">4.2</td>
+        <td><span class="val-yellow">-14%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 36px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 42px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Colossus Smash</td>
+        <td>1.5</td>
+        <td style="color: var(--purple);">1.9</td>
+        <td><span class="val-yellow">-21%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 30px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 38px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Rend</td>
+        <td>1.3</td>
+        <td style="color: var(--purple);">1.9</td>
+        <td><span class="val-orange">-32%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 26px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 38px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Avatar</td>
+        <td>0.8</td>
+        <td style="color: var(--purple);">1.0</td>
+        <td><span class="val-yellow">-20%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 16px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 20px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Bladestorm</td>
+        <td>0.8</td>
+        <td style="color: var(--purple);">0.9</td>
+        <td><span class="val-green">-11%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 16px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 18px;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Charge</td>
+        <td>2.0</td>
+        <td style="color: var(--purple);">2.7</td>
+        <td><span class="val-orange">-26%</span></td>
+        <td>
+          <div class="cpm-bar-wrap">
+            <div class="cpm-bar cpm-bar-player" style="width: 40px;"></div>
+            <div class="cpm-bar cpm-bar-ref" style="width: 54px;"></div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow" style="margin-top: 16px;">
+    <div class="callout-title">Biggest Gap: Execute (-53% CPM)</div>
+    The reference player casts Execute at 10.9 CPM vs Starfighter's 5.1 CPM. For a Slayer Arms Warrior, Execute is the highest priority ability during the execute phase (target below 35%) and also procs from <strong>Sudden Death</strong> throughout the fight. Missing this many Executes suggests either: (1) not pressing Execute on Sudden Death procs above 35%, or (2) not prioritizing Execute high enough in the rotation. Mortal Strike at -22% is the second largest gap and represents the primary rotational ability that should be pressed on cooldown at all times.
+  </div>
+</div>
+
+<!-- Damage Taken Analysis -->
+<div class="section">
+  <h2>Damage Taken Profile (Fight 23)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Damage taken across the 5:42 Starfighter was alive in the longest pull. Amounts include absorbed damage.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th><th>Category</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td>3,477,963</td>
+        <td>117</td>
+        <td>29,726</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+      <tr>
+        <td>Grasp of Emptiness</td>
+        <td>2,034,603</td>
+        <td>35</td>
+        <td>58,132</td>
+        <td><span class="badge badge-yellow">Partially</span></td>
+      </tr>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td>1,891,350</td>
+        <td>69</td>
+        <td>27,411</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+      <tr style="background: rgba(248,81,73,0.06);">
+        <td><strong>Simulacrum Backlash</strong></td>
+        <td>1,585,484</td>
+        <td>53</td>
+        <td>29,915</td>
+        <td><span class="badge badge-red">Avoidable</span></td>
+      </tr>
+      <tr style="background: rgba(248,81,73,0.06);">
+        <td><strong>Void Expulsion</strong></td>
+        <td>1,561,881</td>
+        <td>36</td>
+        <td>43,386</td>
+        <td><span class="badge badge-red">Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Corrupting Essence</td>
+        <td>800,975</td>
+        <td>5</td>
+        <td>160,195</td>
+        <td><span class="badge badge-yellow">Partially</span></td>
+      </tr>
+      <tr>
+        <td>Silverstrike Barrage</td>
+        <td>659,930</td>
+        <td>3</td>
+        <td>219,977</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td>588,868</td>
+        <td>24</td>
+        <td>24,536</td>
+        <td><span class="badge badge-yellow">Partially</span></td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td>455,883</td>
+        <td>6</td>
+        <td>75,981</td>
+        <td><span class="badge badge-red">Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Cosmic Radiation</td>
+        <td>379,404</td>
+        <td>15</td>
+        <td>25,294</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+      <tr>
+        <td>Falling</td>
+        <td>408,772</td>
+        <td>2</td>
+        <td>204,386</td>
+        <td><span class="badge badge-yellow">Platform transition</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    <strong>Avoidable damage total: ~3.6M</strong> (Simulacrum Backlash + Void Expulsion + Void Barrage). This avoidable damage is the primary driver of deaths. Reducing exposure to these three abilities would dramatically improve survival.
+  </p>
+</div>
+
+<!-- Defensive Usage -->
+<div class="section">
+  <h2>Defensive Cooldown Usage</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Arms Warrior has access to: Die by the Sword (4min, parry + damage reduction), Defensive Stance (toggle, -20% damage taken / -10% damage done), Spell Reflection (25s, reflects first spell), Rallying Cry (3min, raid CD), and Ignore Pain (rage spend).
+  </p>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div>
+      <h3>Fight 23 (5:42 alive)</h3>
+      <table>
+        <thead><tr><th>Time</th><th>Ability</th></tr></thead>
+        <tbody>
+          <tr><td>0:17</td><td>Spell Reflection</td></tr>
+          <tr><td>0:58</td><td>Spell Reflection</td></tr>
+          <tr><td>2:12</td><td>Defensive Stance</td></tr>
+          <tr><td>4:29</td><td>Spell Reflection</td></tr>
+          <tr><td>5:04</td><td>Spell Reflection</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size: 11px; color: var(--dim); margin-top: 4px;">
+        No Die by the Sword used. No Rallying Cry. No Healthstone. 4 Spell Reflections only.
+      </p>
+    </div>
+    <div>
+      <h3>Fight 27 (5:14 alive)</h3>
+      <table>
+        <thead><tr><th>Time</th><th>Ability</th></tr></thead>
+        <tbody>
+          <tr><td>1:00</td><td>Spell Reflection</td></tr>
+          <tr><td>1:27</td><td>Spell Reflection</td></tr>
+          <tr><td>1:42</td><td>Healthstone</td></tr>
+          <tr><td>2:17</td><td>Defensive Stance</td></tr>
+          <tr><td>3:46</td><td>Spell Reflection</td></tr>
+          <tr><td>4:47</td><td>Spell Reflection</td></tr>
+          <tr><td>4:50</td><td>Rallying Cry</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size: 11px; color: var(--dim); margin-top: 4px;">
+        Better usage in F27 with Healthstone + Rallying Cry, but still no Die by the Sword.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout callout-red" style="margin-top: 16px;">
+    <div class="callout-title">Missing: Die by the Sword</div>
+    Die by the Sword was never used across either sampled fight. This is Arms Warrior's strongest personal defensive and should be available for dangerous P2/P3 overlaps. The reference player used Die by the Sword once in their kill. With a 100% death rate, this CD should be planned for specific P2 danger windows (Void Expulsion overlaps, Simulacrum Backlash).
+  </div>
+
+  <div class="callout callout-yellow">
+    <div class="callout-title">No Potion of Recklessness</div>
+    The reference player used 2 potions during the kill fight. No potion usage was detected for Starfighter. While this is a DPS issue rather than survival, pre-pot + second pot are free damage.
+  </div>
+</div>
+
+<!-- External Buffs -->
+<div class="section">
+  <h2>External Buffs Received (Fight 23)</h2>
+  <table>
+    <thead>
+      <tr><th>Buff</th><th>Time</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Ebon Might (Aug Evoker)</td>
+        <td>0:02, 0:34, 1:34, 2:58, 4:28</td>
+        <td>5 applications across the fight</td>
+      </tr>
+      <tr>
+        <td>Heroism</td>
+        <td>2:55</td>
+        <td>P2 start (correct usage for prog)</td>
+      </tr>
+      <tr>
+        <td>Power Infusion</td>
+        <td>2:56</td>
+        <td>Paired with Heroism at P2 start</td>
+      </tr>
+      <tr>
+        <td>Prescience (Aug Evoker)</td>
+        <td>3:22</td>
+        <td>Single application during P2</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Lust + PI are timed at P2 start. This is a good window for burst, and Starfighter should ensure <strong>Avatar + Colossus Smash + Bladestorm</strong> are available to align with this window.
+  </p>
+</div>
+
+<!-- Reference Context -->
+<div class="section">
+  <h2>Reference Context <span class="badge badge-purple">De-emphasized for Prog</span></h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Context only. Starfighter is progressing this boss, not optimizing a kill yet. The reference represents a ceiling to aim for once survival is resolved.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Metric</th><th style="color: var(--warrior);">Starfighter (Best)</th><th style="color: var(--purple);">Reference (殷红飨宴)</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Overall DPS</td>
+        <td>42,153 (F19)</td>
+        <td style="color: var(--purple);">95,806</td>
+        <td>44% of reference. Expected during prog with deaths.</td>
+      </tr>
+      <tr>
+        <td>Item Level</td>
+        <td>289</td>
+        <td style="color: var(--purple);">290</td>
+        <td>Near-identical. Gear is not the gap.</td>
+      </tr>
+      <tr>
+        <td>Talent Diffs</td>
+        <td colspan="2" style="text-align: center;">4 differences</td>
+        <td>Similar build. Not a major factor.</td>
+      </tr>
+      <tr>
+        <td>CPM</td>
+        <td>38.3</td>
+        <td style="color: var(--purple);">51.7</td>
+        <td>74% of reference. 82 missed casts per fight.</td>
+      </tr>
+      <tr>
+        <td>Kill Time</td>
+        <td>N/A (prog)</td>
+        <td style="color: var(--purple);">9:03</td>
+        <td>Reference had full fight; Starfighter max alive 5:42.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Per-Fight Breakdown Table -->
+<div class="section">
+  <h2>Full Pull-by-Pull Breakdown</h2>
+  <table>
+    <thead>
+      <tr><th>Pull</th><th>Duration</th><th>Boss %</th><th>DPS</th><th>Died At</th><th>Killing Blow</th><th>Phase</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>F8</td><td>3:59</td><td>54.68%</td><td>19,695</td><td>3:43</td><td>Void Barrage</td><td>P2</td></tr>
+      <tr><td>F14</td><td>4:02</td><td>56.70%</td><td>24,660</td><td>3:55</td><td>Void Expulsion</td><td>P2</td></tr>
+      <tr><td>F15</td><td>4:52</td><td>45.69%</td><td>19,183</td><td>3:53</td><td>Simulacrum Backlash</td><td>P2</td></tr>
+      <tr><td>F16</td><td>5:03</td><td>43.43%</td><td>24,709</td><td>4:39</td><td>Void Expulsion</td><td>P2</td></tr>
+      <tr><td>F18</td><td>5:56</td><td>38.52%</td><td style="color: var(--green);">36,398</td><td>5:18</td><td>Dimensional Slash</td><td>P3</td></tr>
+      <tr style="background: rgba(63,185,80,0.06);"><td>F19</td><td>5:16</td><td>43.50%</td><td style="color: var(--green);"><strong>42,153</strong></td><td>4:55</td><td>Simulacrum Backlash</td><td>P2</td></tr>
+      <tr><td>F20</td><td>5:23</td><td>37.12%</td><td style="color: var(--green);">41,564</td><td>5:16</td><td>Simulacrum Backlash</td><td>P3</td></tr>
+      <tr><td>F21</td><td>4:49</td><td>43.12%</td><td>38,820</td><td>4:40</td><td>Void Barrage</td><td>P2</td></tr>
+      <tr><td>F22</td><td>4:13</td><td>50.46%</td><td>27,962</td><td>4:01</td><td>Grasp of Emptiness</td><td>P2</td></tr>
+      <tr><td>F23</td><td>6:05</td><td>36.95%</td><td style="color: var(--green);">39,289</td><td>5:42</td><td>Gravity Collapse</td><td>P3</td></tr>
+      <tr><td>F24</td><td>4:44</td><td>41.61%</td><td>38,345</td><td>4:36</td><td>Melee</td><td>P2</td></tr>
+      <tr><td>F27</td><td>6:01</td><td>31.27%</td><td>33,151</td><td>5:14</td><td>Dimensional Slash</td><td>P3</td></tr>
+      <tr><td>F28</td><td>5:43</td><td>36.59%</td><td>31,793</td><td>4:34</td><td>Simulacrum Backlash</td><td>P2</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Actionable Improvements -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="action-item">
+    <span class="action-num">1</span>
+    <span class="action-title">Use Die by the Sword on P2 Danger Windows</span>
+    <div class="action-body">
+      <strong>Impact: Survival (100% death rate)</strong><br>
+      Die by the Sword was never used across sampled fights. This is Arms Warrior's strongest personal defensive (parry + damage reduction) on a 4-minute cooldown. Plan to use it during the first major Void Expulsion + Simulacrum Backlash overlap in P2 (~3:30-4:00). With 9 deaths in P2 and 5 of those to Void Expulsion or Simulacrum Backlash, this single change could eliminate nearly half of all deaths.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">2</span>
+    <span class="action-title">Resolve Simulacrum Backlash Positioning (#1 killer, 4 deaths)</span>
+    <div class="action-body">
+      <strong>Impact: -4 deaths per session</strong><br>
+      Simulacrum Backlash killed Starfighter more than any other ability. This damage comes from the Rift Simulacrum when its Cosmic Barrier breaks or its cast completes. As a melee, use <strong>Spell Reflection</strong> specifically for this ability when the Simulacrum is casting, and use <strong>Defensive Stance</strong> preemptively if Spell Reflection is on cooldown. Also consider repositioning away from the Simulacrum during its channel rather than tunneling DPS on it.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">3</span>
+    <span class="action-title">Increase Execute Usage (+53% gap vs reference)</span>
+    <div class="action-body">
+      <strong>Impact: ~5-8K DPS increase</strong><br>
+      The reference player casts Execute at 10.9 CPM compared to Starfighter's 5.1 CPM. For Slayer Arms Warriors, <strong>Sudden Death</strong> procs give free Execute casts above 35% HP. These procs should be used immediately as they are the highest priority ability when available. Below 35% HP, Execute replaces Mortal Strike as the primary spender. Watching for the Sudden Death proc notification and pressing Execute immediately will close the single largest rotational gap.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">4</span>
+    <span class="action-title">Fill More GCDs — 38.3 CPM vs 51.7 Reference</span>
+    <div class="action-body">
+      <strong>Impact: 82 missed casts per fight</strong><br>
+      The 26% CPM gap is spread across all abilities, not just one. Mortal Strike (-22%), Execute (-53%), Overpower (-17%), and Colossus Smash (-21%) are all below reference. This suggests periods of inactivity where no buttons are being pressed. Possible causes: (1) GCD gaps during movement/mechanics — use <strong>Heroic Throw</strong> or <strong>Charge</strong> to maintain uptime while repositioning, (2) rage starvation — avoid overcapping rage during Colossus Smash windows, (3) death downtime — 82 missed casts includes time after death, so improving survival (items 1-2) will naturally raise this number.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">5</span>
+    <span class="action-title">Use Potions and Plan Cooldown Windows</span>
+    <div class="action-body">
+      <strong>Impact: ~3-5% DPS increase</strong><br>
+      No potion usage detected. The reference used 2 potions. Pre-pot on pull (Potion of Recklessness before the pull timer) and second pot at P2 start when Heroism + Power Infusion are available. Also align <strong>Avatar + Colossus Smash + Bladestorm</strong> with the Heroism window at 2:53 for maximum burst during the P2 opener. Currently using Avatar 5 times in a 6:05 fight, which is correct pacing, but aligning with external buffs would amplify each use.
+    </div>
+  </div>
+</div>
+
+<!-- Context & What's Working -->
+<div class="section">
+  <h2>Context & What's Working</h2>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Positive Signals</div>
+    <ul style="margin-top: 8px; padding-left: 20px; font-size: 13px; line-height: 1.8;">
+      <li><strong>Strong improvement trend:</strong> DPS increased 28.9% from first half to second half of the session. Actively learning the fight.</li>
+      <li><strong>P1 is strong:</strong> 81% of reference DPS on the sentinel adds with zero deaths. The AoE cleave opener is executed well.</li>
+      <li><strong>Intermission survival is clean:</strong> Zero deaths during the Stellar Emission channel — handling falling damage and barrage correctly.</li>
+      <li><strong>Bladestorm and Avatar usage on cooldown:</strong> Both within 10-20% of reference, meaning major CD management is reasonable.</li>
+      <li><strong>Heroic Strike CPM matches reference:</strong> Rage dump usage is near-identical at 4.4 vs 4.5 CPM.</li>
+      <li><strong>Gear is not the issue:</strong> 289 ilvl vs 290 reference. This is an execution and survival gap, not a gear gap.</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-yellow">
+    <div class="callout-title">Session Summary</div>
+    <p style="font-size: 13px; margin-top: 4px;">
+      Starfighter joined Crown of the Cosmos progression mid-session (pull 8 of 27) and showed clear improvement across the night. The primary issue is not DPS output but <strong>survival</strong> — dying in 100% of pulls, always in P2 or P3. The DPS gap vs reference is largely a consequence of spending significant portions of each fight dead. Fixing the survival issues (Die by the Sword usage, Simulacrum Backlash handling, Void Expulsion positioning) would both eliminate death-related DPS loss and give the opportunity to practice P3 execution, which remains effectively unexplored.
+    </p>
+    <p style="font-size: 13px; margin-top: 8px;">
+      The 26% CPM gap (38.3 vs 51.7) is partially inflated by death downtime, but the Execute CPM gap (-53%) represents a real rotational issue that should be addressed alongside survival improvements.
+    </p>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs</a><br>
+  Reference player: 殷红飨宴 (Arms Warrior, 290 ilvl, ranked #4 on Mythic Crown of the Cosmos, 4 talent diffs)<br>
+  Report: pvc9TJMVHZKWya6j fight 67 &middot; Analysis mode: PROG &middot; Phase-aware breakdown
+</div>
+
+</body>
+</html>

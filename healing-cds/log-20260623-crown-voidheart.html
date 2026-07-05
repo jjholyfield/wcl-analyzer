@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voidheart (Shadow Priest) — Crown of the Cosmos Prog Night 3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --priest: #ffffff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--priest); }
+.header .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 8px; }
+.prog-tag { display: inline-block; background: var(--orange); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+.night-tag { display: inline-block; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .detail { font-size: 12px; color: var(--dim); margin-top: 4px; }
+.card .value.green { color: var(--green); }
+.card .value.yellow { color: var(--yellow); }
+.card .value.red { color: var(--red); }
+.card .value.orange { color: var(--orange); }
+
+section { margin-bottom: 32px; }
+section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88,166,255,0.04); }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; margin: 16px 0; padding: 0 4px; position: relative; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+.bar { width: 100%; min-width: 12px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s; cursor: default; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-lr; text-orientation: mixed; height: 30px; overflow: hidden; }
+.bar-value { font-size: 9px; color: var(--dim); margin-bottom: 2px; white-space: nowrap; }
+.bar.death { background: var(--red); }
+.bar.survived { background: var(--green); }
+.bar.short { background: var(--border); }
+
+.avg-line-container { position: relative; height: 0; }
+.avg-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--yellow); opacity: 0.5; z-index: 1; }
+.avg-line-label { position: absolute; right: 0; transform: translateY(-100%); font-size: 10px; color: var(--yellow); opacity: 0.7; }
+
+.death-cause-card { background: var(--surface); border: 1px solid var(--red); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.death-cause-card .cause-name { font-size: 16px; font-weight: 700; color: var(--red); }
+.death-cause-card .cause-count { font-size: 13px; color: var(--dim); }
+.death-cause-card .cause-detail { font-size: 13px; margin-top: 8px; }
+
+.warning-box { background: rgba(248,81,73,0.1); border: 1px solid var(--red); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.warning-box .warning-title { font-weight: 700; color: var(--red); margin-bottom: 4px; }
+
+.info-box { background: rgba(88,166,255,0.08); border: 1px solid var(--accent); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.info-box .info-title { font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+
+.phase-badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+.phase-badge.p1 { background: rgba(63,185,80,0.15); color: var(--green); }
+.phase-badge.inter { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.phase-badge.p2 { background: rgba(219,109,40,0.15); color: var(--orange); }
+.phase-badge.p3 { background: rgba(248,81,73,0.15); color: var(--red); }
+
+.ref-row { background: rgba(188,140,255,0.06); }
+.ref-badge { display: inline-block; background: var(--purple); color: #000; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; }
+
+.survival-timeline { display: flex; height: 24px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.survival-segment { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
+
+.actionable { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.actionable .priority { display: inline-block; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-right: 8px; }
+.actionable .priority.p2 { background: var(--orange); }
+.actionable .priority.p3 { background: var(--yellow); color: #000; }
+.actionable h4 { font-size: 14px; margin-bottom: 8px; }
+.actionable p { font-size: 13px; color: var(--dim); }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.stat-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
+.stat-item .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-item .stat-value { font-size: 20px; font-weight: 700; margin: 4px 0; }
+
+.tooltip { position: relative; }
+.tooltip:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #1c2129; border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+
+.ability-bar { height: 6px; border-radius: 3px; background: var(--accent); display: inline-block; vertical-align: middle; }
+
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Voidh&eacute;art</span> &mdash; Shadow Priest
+    <span class="prog-tag">PROGRESSION</span>
+    <span class="night-tag">NIGHT 3</span>
+  </h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &middot; 20 pulls &middot; Best: 13.55% (Fight 21, 2:03) &middot; Longest: 6:44 (Fight 25) &middot; June 23, 2026
+    &middot; <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Report Hz1Lm672dZnBw9YC</a>
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS (P1)</div>
+    <div class="value">228.6K</div>
+    <div class="detail">Across all 20 pulls (alive in P1 every pull)</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">287</div>
+    <div class="detail">5pc Tier (1986) + 2pc Accessory (1971)</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value red">1 / 20</div>
+    <div class="detail">Died in 19 pulls. Avg survival: 2:40</div>
+  </div>
+  <div class="card">
+    <div class="label">Best Pull</div>
+    <div class="value orange">26.51%</div>
+    <div class="detail">Fight 25 &mdash; 6:44 (died at 1:08, battle-rezzed)</div>
+  </div>
+</div>
+
+<!-- CRITICAL SURVIVAL WARNING -->
+<section>
+  <div class="warning-box">
+    <div class="warning-title">CRITICAL: Died in 19 of 20 Pulls (5% Survival Rate)</div>
+    <p style="font-size:13px; margin-top:8px;">
+      Voidh&eacute;art survived to the raid wipe in only <strong>1 of 20 pulls</strong> (Fight 21, a P1 wipe at 2:03).
+      The average first-death time was <strong>2:40</strong> into the fight. In 7 pulls, Voidh&eacute;art died during Phase 1 (before 2:14).
+      In 4 pulls, death came during the Intermission. In 7 pulls, death came in Phase 2. Only 1 first-death occurred in Phase 3.
+      <strong>Survival is the single most impactful improvement area.</strong> A dead DPS contributes zero damage &mdash; every additional 30 seconds alive
+      translates to roughly 7 million additional damage the raid is currently missing.
+    </p>
+  </div>
+</section>
+
+<!-- PER-PHASE PERFORMANCE BREAKDOWN -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+
+  <h3>Phase Reach Rate</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Fight Reached</th><th>Voidh&eacute;art Alive</th><th>Alive Rate</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge p1">P1: Sentinels</span></td>
+        <td>20 / 20</td>
+        <td>20 / 20</td>
+        <td style="color:var(--green);">100%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge inter">Intermission</span></td>
+        <td>14 / 20</td>
+        <td>13 / 20</td>
+        <td style="color:var(--yellow);">65%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge p2">P2: Rift</span></td>
+        <td>14 / 20</td>
+        <td>9 / 20</td>
+        <td style="color:var(--red);">45%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge p3">P3: Devouring Cosmos</span></td>
+        <td>6 / 20</td>
+        <td>3 / 20</td>
+        <td style="color:var(--red);">15%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Per-Phase DPS (when alive)</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Pulls Alive</th><th>Avg DPS</th><th>Best DPS</th><th>Deaths in Phase</th><th>Top Death Cause</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge p1">P1: Sentinels</span></td>
+        <td>20</td>
+        <td style="font-weight:600;">228.6K</td>
+        <td>266.7K (f21)</td>
+        <td style="color:var(--red);">7</td>
+        <td>Corrupting Essence (2), Grasp of Emptiness (2), Echoing Darkness (1), Silverstrike Arrow (1), Void Expulsion (1)</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge inter">Intermission</span></td>
+        <td>13</td>
+        <td style="color:var(--dim);">~0K</td>
+        <td style="color:var(--dim);">N/A (no targets)</td>
+        <td style="color:var(--red);">4</td>
+        <td>Silverstrike Barrage (2), Orbiting Matter (2)</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge p2">P2: Rift</span></td>
+        <td>6</td>
+        <td style="font-weight:600;">44.4K</td>
+        <td>94.0K (f25)</td>
+        <td style="color:var(--red);">7</td>
+        <td>Cosmic Barrier (3), Void Expulsion (2), Bursting Emptiness (1), Grasp of Emptiness (1)</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge p3">P3: Cosmos</span></td>
+        <td>2</td>
+        <td style="font-weight:600;">32.1K</td>
+        <td>38.8K (f25)</td>
+        <td style="color:var(--red);">1</td>
+        <td>Bursting Emptiness (1)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-box" style="margin-top:16px;">
+    <div class="info-title">Phase-Specific Insights</div>
+    <ul style="font-size:13px; margin-top:8px; padding-left:20px;">
+      <li><strong>P1 DPS is strong</strong> &mdash; 228.6K average across all 20 pulls with solid consistency. The top-ranked Shadow Priests do ~110K over a full kill, so Voidh&eacute;art's P1 burst is competitive. The 4-ilvl gap to the reference (291 vs 287) accounts for some delta.</li>
+      <li><strong>7 deaths in P1</strong> (35% of pulls) are the biggest problem. Corrupting Essence (2 deaths at ~1:08) and Grasp of Emptiness (2 deaths) are the repeat offenders. These are positional mechanics &mdash; being in the wrong spot when they fire.</li>
+      <li><strong>Intermission survival is poor:</strong> 4 deaths during the Silverstrike Barrage / Stellar Emission channel window. Silverstrike Barrage alone killed Voidh&eacute;art twice (fights 17 and 19). This requires defensive CD usage: Dispersion or Fade with Phantasm should cover this window.</li>
+      <li><strong>P2 DPS varies wildly</strong> (15.8K to 94.0K) &mdash; the 94K in fight 25 came after a battle-rez, suggesting Voidh&eacute;art can execute the phase when alive. Cosmic Barrier is the #1 P2 killer (3 deaths), a ticking DoT that requires active healing or defensives.</li>
+      <li><strong>P3 reached only twice alive</strong> &mdash; not enough data to evaluate. The 32.1K average is reasonable for an unfamiliar phase.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- PERFORMANCE ACROSS ALL PULLS -->
+<section>
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    DPS calculated as total damage / fight duration. Red bars = died before the raid wipe. Green = survived to wipe.
+    Hover for details. Dashed yellow line = session average.
+  </p>
+
+  <div class="bar-chart" id="dps-chart">
+    <!-- Fight 5: 129K, 3:48, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">129K</div>
+      <div class="bar death" style="height:48%" title="F5: 129.3K DPS | 3:48 | Died 2:29 Inter | Orbiting Matter | 50.4%"></div>
+      <div class="bar-label">F5</div>
+    </div>
+    <!-- Fight 6: 127K, 3:53, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">127K</div>
+      <div class="bar death" style="height:47%" title="F6: 126.8K DPS | 3:53 | Died 3:28 P2 | Void Expulsion | 47.1%"></div>
+      <div class="bar-label">F6</div>
+    </div>
+    <!-- Fight 7: 238K, 1:17, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">238K</div>
+      <div class="bar death" style="height:89%" title="F7: 238.1K DPS | 1:17 | Died 1:02 P1 | Silverstrike Arrow | 84.1%"></div>
+      <div class="bar-label">F7</div>
+    </div>
+    <!-- Fight 8: 236K, 1:21, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">236K</div>
+      <div class="bar death" style="height:88%" title="F8: 236.1K DPS | 1:21 | Died 1:16 P1 | Echoing Darkness | 82.2%"></div>
+      <div class="bar-label">F8</div>
+    </div>
+    <!-- Fight 9: 120K, 5:15, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">120K</div>
+      <div class="bar death" style="height:45%" title="F9: 120.1K DPS | 5:15 | Died 4:25 P2 | Grasp of Emptiness | 32.9%"></div>
+      <div class="bar-label">F9</div>
+    </div>
+    <!-- Fight 10: 230K, 2:00, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">230K</div>
+      <div class="bar death" style="height:86%" title="F10: 230.3K DPS | 2:00 | Died 1:46 P1 | Grasp of Emptiness | 71.1%"></div>
+      <div class="bar-label">F10</div>
+    </div>
+    <!-- Fight 11: 137K, 3:47, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">137K</div>
+      <div class="bar death" style="height:51%" title="F11: 136.7K DPS | 3:47 | Died 3:24 P2 | Cosmic Barrier | 50.0%"></div>
+      <div class="bar-label">F11</div>
+    </div>
+    <!-- Fight 12: 114K, 4:47, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">114K</div>
+      <div class="bar death" style="height:42%" title="F12: 113.5K DPS | 4:47 | Died 2:43 Inter | Orbiting Matter | 42.5%"></div>
+      <div class="bar-label">F12</div>
+    </div>
+    <!-- Fight 13: 49K, 6:01, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">49K</div>
+      <div class="bar death" style="height:18%" title="F13: 48.6K DPS | 6:01 | Died 1:00 P1 | Grasp of Emptiness | 32.3%"></div>
+      <div class="bar-label">F13</div>
+    </div>
+    <!-- Fight 14: 144K, 1:26, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">144K</div>
+      <div class="bar death" style="height:54%" title="F14: 143.7K DPS | 1:26 | Died 1:09 P1 | Void Expulsion | 81.2%"></div>
+      <div class="bar-label">F14</div>
+    </div>
+    <!-- Fight 15: 191K, 3:05, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">191K</div>
+      <div class="bar death" style="height:72%" title="F15: 191.4K DPS | 3:05 | Died 3:04 P2 | Cosmic Barrier | 61.8%"></div>
+      <div class="bar-label">F15</div>
+    </div>
+    <!-- Fight 16: 168K, 3:05, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">168K</div>
+      <div class="bar death" style="height:63%" title="F16: 167.7K DPS | 3:05 | Died 3:01 P2 | Cosmic Barrier | 61.6%"></div>
+      <div class="bar-label">F16</div>
+    </div>
+    <!-- Fight 17: 150K, 3:55, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">150K</div>
+      <div class="bar death" style="height:56%" title="F17: 150.2K DPS | 3:55 | Died 2:30 Inter | Silverstrike Barrage | 47.9%"></div>
+      <div class="bar-label">F17</div>
+    </div>
+    <!-- Fight 18: 127K, 4:23, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">127K</div>
+      <div class="bar death" style="height:47%" title="F18: 126.5K DPS | 4:23 | Died 3:59 P2 | Bursting Emptiness | 43.4%"></div>
+      <div class="bar-label">F18</div>
+    </div>
+    <!-- Fight 19: 86K, 6:09, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">86K</div>
+      <div class="bar death" style="height:32%" title="F19: 85.9K DPS | 6:09 | Died 2:42 Inter | Silverstrike Barrage | 36.4%"></div>
+      <div class="bar-label">F19</div>
+    </div>
+    <!-- Fight 20: 121K, 5:15, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">121K</div>
+      <div class="bar death" style="height:45%" title="F20: 121.2K DPS | 5:15 | Died 4:44 P2 | Void Expulsion | 34.8%"></div>
+      <div class="bar-label">F20</div>
+    </div>
+    <!-- Fight 21: 267K, 2:03, SURVIVED -->
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--green);">267K</div>
+      <div class="bar survived" style="height:100%" title="F21: 266.7K DPS | 2:03 | SURVIVED | P1 wipe | 67.1%"></div>
+      <div class="bar-label">F21</div>
+    </div>
+    <!-- Fight 22: 210K, 1:32, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">210K</div>
+      <div class="bar death" style="height:79%" title="F22: 209.5K DPS | 1:32 | Died 1:07 P1 | Corrupting Essence | 74.6%"></div>
+      <div class="bar-label">F22</div>
+    </div>
+    <!-- Fight 23: 120K, 6:25, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">120K</div>
+      <div class="bar death" style="height:45%" title="F23: 119.7K DPS | 6:25 | Died 5:40 P3 | Bursting Emptiness | 31.1%"></div>
+      <div class="bar-label">F23</div>
+    </div>
+    <!-- Fight 25: 112K, 6:44, died -->
+    <div class="bar-wrapper">
+      <div class="bar-value">112K</div>
+      <div class="bar death" style="height:42%" title="F25: 112.2K DPS | 6:44 | Died 1:08 P1 (BR'd) | Corrupting Essence | 26.5%"></div>
+      <div class="bar-label">F25</div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-item">
+      <div class="stat-label">Average DPS (full fight)</div>
+      <div class="stat-value">154.8K</div>
+      <div style="font-size:11px; color:var(--dim);">Across 20 pulls &gt;60s</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Best Pull DPS</div>
+      <div class="stat-value" style="color:var(--green);">266.7K</div>
+      <div style="font-size:11px; color:var(--dim);">Fight 21 (2:03, survived P1 wipe)</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Worst Pull DPS</div>
+      <div class="stat-value" style="color:var(--red);">48.6K</div>
+      <div style="font-size:11px; color:var(--dim);">Fight 13 (died at 1:00 in a 6:01 pull)</div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <div class="info-title">Session Trend</div>
+    <p style="font-size:13px; margin-top:8px;">
+      <strong>P1 DPS improved +13.7%</strong> over the session (first 10 pulls avg 213.9K vs last 10 pulls avg 243.2K).
+      This is a positive learning curve in Phase 1 execution. However, survival did not improve at the same rate &mdash;
+      Voidh&eacute;art died in 9 of the last 10 pulls, the same rate as the first 10.
+      The DPS gap between "short pulls where Voidh&eacute;art died early" (high full-fight DPS due to burst bias) vs
+      "long pulls" (lower DPS because dead time drags down the average) is clearly visible in the chart.
+    </p>
+  </div>
+</section>
+
+<!-- DEATH PATTERN ANALYSIS -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    Died in <strong>19 of 20 pulls</strong>. Average survival time: <strong>2:38</strong>.
+    22 total deaths across 20 pulls (3 pulls had 2 deaths each &mdash; fights 17, 19, and 25 via battle-rez).
+  </p>
+
+  <h3>Death Causes Ranked (first death per pull)</h3>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Deaths</th><th>Avg Time</th><th>Phase</th><th>Avoidable?</th><th>Fights</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600; color:var(--red);">Cosmic Barrier</td>
+        <td>3</td>
+        <td>3:10</td>
+        <td><span class="phase-badge p2">P2</span></td>
+        <td style="color:var(--yellow);">Partially &mdash; ticking DoT, requires defensives/healing</td>
+        <td>F11, F15, F16</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600; color:var(--red);">Corrupting Essence</td>
+        <td>2</td>
+        <td>1:08</td>
+        <td><span class="phase-badge p1">P1</span></td>
+        <td style="color:var(--red);">Yes &mdash; dodge the add's AoE / move away from source</td>
+        <td>F22, F25</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600; color:var(--orange);">Grasp of Emptiness</td>
+        <td>2</td>
+        <td>1:23</td>
+        <td><span class="phase-badge p1">P1</span></td>
+        <td style="color:var(--red);">Yes &mdash; movement/positioning mechanic</td>
+        <td>F10, F13</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600; color:var(--orange);">Void Expulsion</td>
+        <td>2</td>
+        <td>2:59</td>
+        <td><span class="phase-badge p1">P1</span> / <span class="phase-badge p2">P2</span></td>
+        <td style="color:var(--red);">Yes &mdash; dodge the expulsion zone</td>
+        <td>F14, F20</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600; color:var(--orange);">Silverstrike Barrage</td>
+        <td>2</td>
+        <td>2:36</td>
+        <td><span class="phase-badge inter">Intermission</span></td>
+        <td style="color:var(--yellow);">Partially &mdash; use Dispersion/Fade during Barrage window</td>
+        <td>F17, F19</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600; color:var(--orange);">Bursting Emptiness</td>
+        <td>2</td>
+        <td>4:50</td>
+        <td><span class="phase-badge p2">P2</span> / <span class="phase-badge p3">P3</span></td>
+        <td style="color:var(--red);">Yes &mdash; move out of the detonation area</td>
+        <td>F18, F23</td>
+      </tr>
+      <tr>
+        <td>Orbiting Matter</td>
+        <td>2</td>
+        <td>2:36</td>
+        <td><span class="phase-badge inter">Intermission</span></td>
+        <td style="color:var(--red);">Yes &mdash; avoid orb paths during intermission</td>
+        <td>F5, F12</td>
+      </tr>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td>1</td>
+        <td>1:16</td>
+        <td><span class="phase-badge p1">P1</span></td>
+        <td style="color:var(--yellow);">Partially &mdash; Vorelus periodic, stay spread</td>
+        <td>F8</td>
+      </tr>
+      <tr>
+        <td>Silverstrike Arrow</td>
+        <td>1</td>
+        <td>1:02</td>
+        <td><span class="phase-badge p1">P1</span></td>
+        <td style="color:var(--red);">Yes &mdash; dodge targeted arrow</td>
+        <td>F7</td>
+      </tr>
+      <tr>
+        <td>Grasp of Emptiness (P2)</td>
+        <td>1</td>
+        <td>4:25</td>
+        <td><span class="phase-badge p2">P2</span></td>
+        <td style="color:var(--red);">Yes &mdash; movement/positioning</td>
+        <td>F9</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Top killer callout -->
+  <div class="death-cause-card">
+    <div class="cause-name">No Single Dominant Killer &mdash; Deaths Spread Across 8+ Mechanics</div>
+    <div class="cause-count">19 pulls with death, 8 different killing abilities</div>
+    <div class="cause-detail">
+      Unlike a player who dies repeatedly to one mechanic, Voidh&eacute;art is dying to nearly everything.
+      The most common killers are <strong>Cosmic Barrier</strong> (3 deaths) and several mechanics tied at 2 deaths each.
+      This pattern suggests a <strong>general survivability problem</strong> &mdash; either insufficient health/damage reduction,
+      poor awareness of multiple mechanics simultaneously, or not using personal defensives (Dispersion, Desperate Prayer, Fade, Vampiric Embrace)
+      proactively. The diversity of death causes means there is no single "fix one mechanic" solution.
+    </div>
+  </div>
+
+  <h3>Death Timing Distribution</h3>
+  <div class="survival-timeline">
+    <div class="survival-segment" style="flex:7; background:rgba(248,81,73,0.3);">
+      <span style="color:var(--red);">P1: 7 deaths</span>
+    </div>
+    <div class="survival-segment" style="flex:4; background:rgba(210,153,34,0.3);">
+      <span style="color:var(--yellow);">Inter: 4</span>
+    </div>
+    <div class="survival-segment" style="flex:7; background:rgba(219,109,40,0.3);">
+      <span style="color:var(--orange);">P2: 7 deaths</span>
+    </div>
+    <div class="survival-segment" style="flex:1; background:rgba(248,81,73,0.15);">
+      <span style="color:var(--red);">P3: 1</span>
+    </div>
+  </div>
+  <p style="font-size:12px; color:var(--dim);">
+    First-death distribution: 7 in P1 (37%), 4 in Intermission (21%), 7 in P2 (37%), 1 in P3 (5%).
+    The even split between P1 and P2 deaths means improvements are needed in both phases.
+  </p>
+</section>
+
+<!-- CONSISTENCY ANALYSIS -->
+<section>
+  <h2>Consistency Analysis</h2>
+
+  <h3>Survival Pulls vs Death Pulls</h3>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:12px;">
+    Only 1 pull (Fight 21) had no death. This makes a statistical comparison unreliable.
+    However, Fight 21 was a P1 wipe where Voidh&eacute;art did 266.7K DPS over 2:03 &mdash; the session's best DPS number.
+    This confirms that when alive for the duration, P1 DPS execution is strong.
+  </p>
+
+  <h3>P1 DPS Consistency (all 20 pulls)</h3>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Average P1 DPS</td><td style="font-weight:600;">228.6K</td></tr>
+      <tr><td>Best P1 DPS</td><td style="color:var(--green);">266.7K (Fight 21)</td></tr>
+      <tr><td>Worst P1 DPS</td><td style="color:var(--red);">130.8K (Fight 13 &mdash; died at 1:00)</td></tr>
+      <tr><td>Standard Deviation</td><td>34.8K (15.2% of mean)</td></tr>
+      <tr><td>Excluding early deaths (&lt;70s)</td><td>Avg rises to 240.8K &mdash; deaths before full opener skew the stats down</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Best 5 Pulls vs Worst 5 Pulls (by P1 DPS)</h3>
+  <table>
+    <thead>
+      <tr><th>Group</th><th>Avg P1 DPS</th><th>Fights</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--green);">Best 5</td>
+        <td style="font-weight:600;">263.1K</td>
+        <td>F21 (266.7K), F23 (266.5K), F15 (263.7K), F17 (263.4K), F9 (254.9K)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--red);">Worst 5</td>
+        <td style="font-weight:600;">188.1K</td>
+        <td>F13 (130.8K), F14 (143.7K), F22 (209.5K), F25 (215.3K), F6 (220.6K)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--dim); margin-top:8px;">
+    The worst 5 all involve early P1 deaths (sub-70s fights or opener disruptions). When Voidh&eacute;art gets a clean opener,
+    P1 DPS is consistently 240K+.
+  </p>
+</section>
+
+<!-- ABILITY BREAKDOWN (FIGHT 25) -->
+<section>
+  <h2>Ability Breakdown (Best Full Pull &mdash; Fight 25, 6:44)</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    Fight 25 was the longest pull (404s) reaching Phase 3. Voidh&eacute;art died at 1:08 to Corrupting Essence (P1) but was battle-rezzed
+    and continued DPSing, ending with 45.3M total damage (112.2K full-fight DPS).
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Damage</th><th>% Total</th><th>Hits</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">Shadow Word: Madness</td>
+        <td>7.56M</td>
+        <td><div class="ability-bar" style="width:100%;"></div> 16.7%</td>
+        <td>221</td>
+        <td>Primary Insanity spender &mdash; strong uptime</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Mind Blast</td>
+        <td>7.35M</td>
+        <td><div class="ability-bar" style="width:97%;"></div> 16.2%</td>
+        <td>46</td>
+        <td>Core builder. 6.8 CPM &mdash; solid charge management</td>
+      </tr>
+      <tr>
+        <td>Shadowy Apparition</td>
+        <td>4.20M</td>
+        <td><div class="ability-bar" style="width:55%;"></div> 9.3%</td>
+        <td>181</td>
+        <td>Passive proc from Vampiric Touch / SW:P ticks</td>
+      </tr>
+      <tr>
+        <td>Shadow Word: Pain</td>
+        <td>3.49M</td>
+        <td><div class="ability-bar" style="width:46%;"></div> 7.7%</td>
+        <td>350</td>
+        <td>DoT maintenance &mdash; 1.6 CPM on refresh casts</td>
+      </tr>
+      <tr>
+        <td>Mind Flay: Insanity</td>
+        <td>3.16M</td>
+        <td><div class="ability-bar" style="width:42%;"></div> 7.0%</td>
+        <td>57</td>
+        <td>Empowered filler during SW:Madness</td>
+      </tr>
+      <tr>
+        <td>Void Apparition</td>
+        <td>2.69M</td>
+        <td><div class="ability-bar" style="width:36%;"></div> 5.9%</td>
+        <td>83</td>
+        <td>Hero talent proc (Voidweaver)</td>
+      </tr>
+      <tr>
+        <td>Mind Flay</td>
+        <td>1.99M</td>
+        <td><div class="ability-bar" style="width:26%;"></div> 4.4%</td>
+        <td>75</td>
+        <td>Base filler when SW:Madness not active</td>
+      </tr>
+      <tr>
+        <td>Psychic Link</td>
+        <td>1.94M</td>
+        <td><div class="ability-bar" style="width:26%;"></div> 4.3%</td>
+        <td>269</td>
+        <td>Cleave damage to secondary targets</td>
+      </tr>
+      <tr>
+        <td>Vampiric Touch</td>
+        <td>1.91M</td>
+        <td><div class="ability-bar" style="width:25%;"></div> 4.2%</td>
+        <td>337</td>
+        <td>DoT ticks &mdash; well maintained</td>
+      </tr>
+      <tr>
+        <td>Void Spike</td>
+        <td>1.89M</td>
+        <td><div class="ability-bar" style="width:25%;"></div> 4.2%</td>
+        <td>289</td>
+        <td>Voidweaver talent proc</td>
+      </tr>
+      <tr>
+        <td>Void Volley</td>
+        <td>1.84M</td>
+        <td><div class="ability-bar" style="width:24%;"></div> 4.1%</td>
+        <td>128</td>
+        <td>Insanity generator during Voidform</td>
+      </tr>
+      <tr>
+        <td>Halo</td>
+        <td>1.56M</td>
+        <td><div class="ability-bar" style="width:21%;"></div> 3.4%</td>
+        <td>78</td>
+        <td>5 casts (0.7 CPM) &mdash; used on CD</td>
+      </tr>
+      <tr>
+        <td>Void Bolt</td>
+        <td>1.26M</td>
+        <td><div class="ability-bar" style="width:17%;"></div> 2.8%</td>
+        <td>94</td>
+        <td>Voidweaver proc during Entropic Rift</td>
+      </tr>
+      <tr>
+        <td>Shadow Word: Death</td>
+        <td>0.97M</td>
+        <td><div class="ability-bar" style="width:13%;"></div> 2.1%</td>
+        <td>7</td>
+        <td>Execute / movement GCD</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Cast Profile Summary (Fight 25)</h3>
+  <div class="stat-grid">
+    <div class="stat-item">
+      <div class="stat-label">Voidform Uses</div>
+      <div class="stat-value">3</div>
+      <div style="font-size:11px; color:var(--dim);">Every 2 min &mdash; on schedule</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Power Infusion</div>
+      <div class="stat-value">6</div>
+      <div style="font-size:11px; color:var(--dim);">Self-cast (Twins of the Sun)</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Dispersion</div>
+      <div class="stat-value">1</div>
+      <div style="font-size:11px; color:var(--dim);">Only used once in 6:44</div>
+    </div>
+  </div>
+</section>
+
+<!-- DEFENSIVE USAGE -->
+<section>
+  <h2>Defensive Usage Analysis</h2>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Uses (F25)</th><th>Cooldown</th><th>Expected Uses (6:44)</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Dispersion</td>
+        <td style="color:var(--red);">1</td>
+        <td>2 min</td>
+        <td>3</td>
+        <td style="color:var(--red);">Severely underused. This is the Shadow Priest's strongest defensive and should be used for every Intermission Barrage and high-damage P2/P3 overlap.</td>
+      </tr>
+      <tr>
+        <td>Desperate Prayer</td>
+        <td style="color:var(--red);">1</td>
+        <td>1.5 min</td>
+        <td>4</td>
+        <td style="color:var(--red);">Underused. Free heal + max HP increase. Should be used proactively when health dips below 50%.</td>
+      </tr>
+      <tr>
+        <td>Fade</td>
+        <td style="color:var(--yellow);">5</td>
+        <td>30s</td>
+        <td>12+</td>
+        <td style="color:var(--yellow);">Used for movement, but with Phantasm talent, Fade also provides a speed boost for dodging mechanics.</td>
+      </tr>
+      <tr>
+        <td>Vampiric Embrace</td>
+        <td style="color:var(--red);">1</td>
+        <td>2 min</td>
+        <td>3</td>
+        <td style="color:var(--red);">Raid CD for self-healing + group healing. Massively underused.</td>
+      </tr>
+      <tr>
+        <td>Healthstone</td>
+        <td style="color:var(--yellow);">1</td>
+        <td>one-use</td>
+        <td>1</td>
+        <td>Used</td>
+      </tr>
+      <tr>
+        <td>Health Potion</td>
+        <td style="color:var(--green);">1</td>
+        <td>5 min</td>
+        <td>1</td>
+        <td>Used (Silvermoon Health Potion)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warning-box" style="margin-top:16px;">
+    <div class="warning-title">Defensive Cooldown Usage is the #1 Root Cause of Deaths</div>
+    <p style="font-size:13px; margin-top:8px;">
+      Across Fight 25 (6:44), Voidh&eacute;art used <strong>Dispersion only once</strong> and <strong>Desperate Prayer only once</strong>.
+      Shadow Priest has strong personal defensives: Dispersion (90% DR, 6s, 2 min CD), Desperate Prayer (instant 25% max HP heal, 1.5 min CD),
+      and Vampiric Embrace (party healing from damage done, 2 min CD). In a 6:44 fight, Dispersion should be available 3 times, Desperate Prayer 4 times.
+      <strong>Using these proactively before known damage events (Barrage, Cosmic Barrier, Void Expulsion) would prevent the majority of these deaths.</strong>
+    </p>
+  </div>
+</section>
+
+<!-- REFERENCE CONTEXT -->
+<section>
+  <h2>Reference Context (De-emphasized)</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    Top-ranked Shadow Priests on Mythic Crown of the Cosmos are doing this fight with a full kill.
+    Direct comparison is limited because Voidh&eacute;art has not killed this boss. This section provides a ceiling to aim for.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th></tr>
+    </thead>
+    <tbody>
+      <tr class="ref-row">
+        <td><span class="ref-badge">REF</span> Loafsp (Zul'jin)</td>
+        <td style="color:var(--purple); font-weight:600;">111.5K</td>
+        <td>7:22</td>
+        <td>291</td>
+        <td><span style="color:var(--yellow);">4 diffs</span></td>
+      </tr>
+      <tr>
+        <td>Stackedsp (Kazzak)</td>
+        <td style="color:var(--purple);">111.0K</td>
+        <td>8:19</td>
+        <td>290</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Arino (Sargeras)</td>
+        <td style="color:var(--purple);">109.9K</td>
+        <td>8:49</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Cosmospi (Thrall)</td>
+        <td style="color:var(--purple);">109.9K</td>
+        <td>8:43</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>&#19981;&#40509;&#22823;&#33085;&#21733;</td>
+        <td style="color:var(--purple);">109.8K</td>
+        <td>8:24</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr style="border-top:2px solid var(--border);">
+        <td><strong>Voidh&eacute;art (best pull)</strong></td>
+        <td style="font-weight:600;">112.2K</td>
+        <td>6:44 (no kill)</td>
+        <td>287</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-box" style="margin-top:12px;">
+    <div class="info-title">Reference Comparison Notes</div>
+    <ul style="font-size:13px; margin-top:8px; padding-left:20px;">
+      <li><strong>Voidh&eacute;art's best pull DPS (112.2K in F25) is competitive with the top 5 worldwide.</strong>
+        This is remarkable given the 4-ilvl disadvantage (287 vs 291) and the fact that Voidh&eacute;art died and was battle-rezzed during that pull.</li>
+      <li>The 4 talent differences to Loafsp are minor. The performance gap is not build-related.</li>
+      <li>The reference players survive the full fight. Voidh&eacute;art's challenge is not DPS output &mdash; it is staying alive long enough to apply it.</li>
+      <li><strong>If Voidh&eacute;art survives a full kill attempt, DPS will be competitive.</strong> The bottleneck is exclusively survival.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- PULL-BY-PULL DEATH LOG -->
+<section>
+  <h2>Pull-by-Pull Death Log</h2>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Duration</th><th>Boss %</th><th>Phase Reached</th><th>Death Time</th><th>Killing Ability</th><th>Phase</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>5</td><td>3:48</td><td>50.4%</td><td>P2</td>
+        <td style="color:var(--red);">2:29</td>
+        <td>Orbiting Matter</td>
+        <td><span class="phase-badge inter">Intermission</span></td>
+      </tr>
+      <tr>
+        <td>6</td><td>3:53</td><td>47.1%</td><td>P2</td>
+        <td style="color:var(--red);">3:28</td>
+        <td>Void Expulsion</td>
+        <td><span class="phase-badge p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>7</td><td>1:17</td><td>84.1%</td><td>P1</td>
+        <td style="color:var(--red);">1:02</td>
+        <td>Silverstrike Arrow</td>
+        <td><span class="phase-badge p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>8</td><td>1:21</td><td>82.2%</td><td>P1</td>
+        <td style="color:var(--red);">1:16</td>
+        <td>Echoing Darkness</td>
+        <td><span class="phase-badge p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>9</td><td>5:15</td><td>32.9%</td><td>P2</td>
+        <td style="color:var(--red);">4:25</td>
+        <td>Grasp of Emptiness</td>
+        <td><span class="phase-badge p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>10</td><td>2:00</td><td>71.1%</td><td>P1</td>
+        <td style="color:var(--red);">1:46</td>
+        <td>Grasp of Emptiness</td>
+        <td><span class="phase-badge p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>11</td><td>3:47</td><td>50.0%</td><td>P2</td>
+        <td style="color:var(--red);">3:24</td>
+        <td>Cosmic Barrier</td>
+        <td><span class="phase-badge p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>12</td><td>4:47</td><td>42.5%</td><td>P2</td>
+        <td style="color:var(--red);">2:43</td>
+        <td>Orbiting Matter</td>
+        <td><span class="phase-badge inter">Intermission</span></td>
+      </tr>
+      <tr>
+        <td>13</td><td>6:01</td><td>32.3%</td><td>P3</td>
+        <td style="color:var(--red);">1:00</td>
+        <td>Grasp of Emptiness</td>
+        <td><span class="phase-badge p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>14</td><td>1:26</td><td>81.2%</td><td>P1</td>
+        <td style="color:var(--red);">1:09</td>
+        <td>Void Expulsion</td>
+        <td><span class="phase-badge p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>15</td><td>3:05</td><td>61.8%</td><td>P2</td>
+        <td style="color:var(--red);">3:04</td>
+        <td>Cosmic Barrier</td>
+        <td><span class="phase-badge p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>16</td><td>3:05</td><td>61.6%</td><td>P2</td>
+        <td style="color:var(--red);">3:01</td>
+        <td>Cosmic Barrier</td>
+        <td><span class="phase-badge p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>17</td><td>3:55</td><td>47.9%</td><td>P2</td>
+        <td style="color:var(--red);">2:30</td>
+        <td>Silverstrike Barrage</td>
+        <td><span class="phase-badge inter">Intermission</span></td>
+      </tr>
+      <tr>
+        <td>18</td><td>4:23</td><td>43.4%</td><td>P2</td>
+        <td style="color:var(--red);">3:59</td>
+        <td>Bursting Emptiness</td>
+        <td><span class="phase-badge p2">P2</span></td>
+      </tr>
+      <tr>
+        <td>19</td><td>6:09</td><td>36.4%</td><td>P3</td>
+        <td style="color:var(--red);">2:42</td>
+        <td>Silverstrike Barrage</td>
+        <td><span class="phase-badge inter">Intermission</span></td>
+      </tr>
+      <tr>
+        <td>20</td><td>5:15</td><td>34.8%</td><td>P2</td>
+        <td style="color:var(--red);">4:44</td>
+        <td>Void Expulsion</td>
+        <td><span class="phase-badge p2">P2</span></td>
+      </tr>
+      <tr style="background:rgba(63,185,80,0.06);">
+        <td>21</td><td>2:03</td><td>67.1%</td><td>P1</td>
+        <td style="color:var(--green);">Survived</td>
+        <td>&mdash;</td>
+        <td><span class="phase-badge p1">P1 wipe</span></td>
+      </tr>
+      <tr>
+        <td>22</td><td>1:32</td><td>74.6%</td><td>P1</td>
+        <td style="color:var(--red);">1:07</td>
+        <td>Corrupting Essence</td>
+        <td><span class="phase-badge p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>23</td><td>6:25</td><td>31.1%</td><td>P3</td>
+        <td style="color:var(--red);">5:40</td>
+        <td>Bursting Emptiness</td>
+        <td><span class="phase-badge p3">P3</span></td>
+      </tr>
+      <tr>
+        <td>25</td><td>6:44</td><td>26.5%</td><td>P3</td>
+        <td style="color:var(--red);">1:08 (BR)</td>
+        <td>Corrupting Essence</td>
+        <td><span class="phase-badge p1">P1</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ACTIONABLE IMPROVEMENTS -->
+<section>
+  <h2>Actionable Improvements</h2>
+
+  <div class="actionable">
+    <h4><span class="priority">P1</span> Use Dispersion Proactively for Known Damage Events</h4>
+    <p>
+      Dispersion was used <strong>once</strong> in the longest pull (6:44). It has a 2-minute cooldown and provides 90% damage reduction for 6 seconds.
+      This is the most impactful change Voidh&eacute;art can make. <strong>Plan Dispersion for:</strong>
+      (1) Every Intermission Silverstrike Barrage window (~2:14-2:53),
+      (2) Cosmic Barrier in P2 when stacks get high,
+      (3) Any overlap moment where multiple mechanics fire simultaneously.
+      At 2 min CD, it should be available 3 times in a 7-minute pull. Currently using it less than once.
+      <strong>Estimated impact:</strong> Would directly prevent 6+ of the 19 deaths (Silverstrike Barrage x2, Cosmic Barrier x3, Bursting Emptiness x1).
+    </p>
+  </div>
+
+  <div class="actionable">
+    <h4><span class="priority">P1</span> Use Desperate Prayer on Cooldown During Damage</h4>
+    <p>
+      Desperate Prayer was used <strong>once</strong> in 6:44. It is a 1.5 min CD instant heal that increases max HP.
+      Shadow Priests have limited self-healing outside of Vampiric Embrace &mdash; Desperate Prayer is the primary reactive heal.
+      Use it any time health drops below 50%, especially during Echoing Darkness ticks in P1, Stellar Emission in Intermission,
+      and Cosmic Barrier in P2. <strong>Expected uses in a 7-minute fight: 4.</strong>
+    </p>
+  </div>
+
+  <div class="actionable">
+    <h4><span class="priority p2">P2</span> Dodge Corrupting Essence in Phase 1 (2 Deaths at ~1:08)</h4>
+    <p>
+      Corrupting Essence killed Voidh&eacute;art in fights 22 and 25 at nearly the same time (1:07 and 1:08).
+      This is a consistent positional failure &mdash; the mechanic fires at the same time every pull.
+      <strong>Fix:</strong> Pre-position before the ~1:05 mark to avoid the Corrupting Essence source.
+      This is a free death to remove because the timing is 100% predictable.
+    </p>
+  </div>
+
+  <div class="actionable">
+    <h4><span class="priority p2">P2</span> Plan Intermission Survival Rotation</h4>
+    <p>
+      4 of 19 deaths occurred during the Intermission (2:14-2:53). The Intermission has no DPS targets &mdash; it is pure survival.
+      <strong>Build a personal survival plan:</strong> Dispersion for Silverstrike Barrage burst, Desperate Prayer when health is low,
+      Fade for movement speed (Phantasm), and pre-shield with Power Word: Shield if available.
+      Surviving the Intermission is a binary gate &mdash; failing it means zero P2 contribution.
+    </p>
+  </div>
+
+  <div class="actionable">
+    <h4><span class="priority p3">P3</span> DPS Execution is Not the Problem &mdash; Survival Is</h4>
+    <p>
+      Voidh&eacute;art's P1 DPS (228.6K avg) is strong, and the best full-fight DPS (112.2K in F25) is competitive with the
+      top 5 Shadow Priests worldwide despite a 4-ilvl disadvantage. The ability rotation looks correct: SW:Madness and Mind Blast
+      are the top two damage sources (33% combined), DoTs are maintained, Voidform is used on CD, Halo is pressed regularly.
+      <strong>There are no major rotation fixes needed.</strong> The entire DPS gain from here comes from staying alive.
+      Each additional 30 seconds of survival adds ~7M damage to the raid's total.
+    </p>
+  </div>
+</section>
+
+<!-- CONTEXT FOOTER -->
+<section>
+  <div class="info-box">
+    <div class="info-title">Summary Assessment</div>
+    <p style="font-size:13px; margin-top:8px;">
+      Voidh&eacute;art's performance gap is <strong>100% survival-based, not execution-based.</strong>
+      P1 DPS is competitive. Ability priority is correct. CDs are used on schedule (Voidform every 2 min, PI synced).
+      The problem is dying in 19 of 20 pulls due to a combination of: (1) severely underused personal defensives (Dispersion, Desperate Prayer),
+      (2) repeated positional failures with Corrupting Essence at ~1:08, and (3) no survival plan for the Intermission Barrage window.
+    </p>
+    <p style="font-size:13px; margin-top:8px;">
+      <strong>What is already good:</strong> P1 DPS execution is strong and improving (+13.7% over the session). Ability priority matches current
+      Shadow Priest guides (SW:Madness uptime, Mind Blast charge management, Halo on CD). Voidform/PI sync is correct.
+      Fight 25 demonstrated that when alive (via battle-rez), Voidh&eacute;art can sustain competitive damage deep into P2 and P3.
+    </p>
+    <p style="font-size:13px; margin-top:8px;">
+      <strong>Positive trend:</strong> P1 DPS improved 13.7% from early to late pulls. The two longest survival pulls (F23 at 5:40, F25 at 6:44 with BR)
+      both came in the final quarter of the session, suggesting growing fight familiarity.
+    </p>
+  </div>
+</section>
+
+<div class="footer">
+  <p>
+    Generated by WCL DPS Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs report Hz1Lm672dZnBw9YC</a>
+    &middot; Reference: Top 5 Shadow Priests on Mythic Crown of the Cosmos (Loafsp 111.5K, Stackedsp 111.0K, Arino 109.9K, Cosmospi 109.9K)
+    &middot; Analysis date: June 25, 2026
+  </p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snackznchill — Frost Mage — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 150px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .boss-pct-label { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; white-space: nowrap; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Snackznchill <span class="dim">&mdash; Frost Mage</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (26 wipes, no kill) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">180K</div>
+    <div class="stat-label">DPS (Best Long Pull)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289.8</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">0.01%</div>
+    <div class="stat-label">Best Pull (Boss %)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">37.9</div>
+    <div class="stat-label">Total CPM (Alive)</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">Snackznchill dealt <strong class="yellow">180K DPS</strong> across the longest pull (4:53, fight 23) before dying at <strong class="red">4:22 to Void Remnants</strong>. The raid's best boss % was <strong class="green">0.01%</strong> (fights 8 and 17), indicating near-kills. Compared to the #1 ranked Frost Mage Asimage (<strong class="purple">108K DPS</strong> on a 9:05 kill with only <strong class="green">1 talent diff</strong>), Snackznchill's burst-inflated DPS is expected for a 293s wipe vs a 545s kill. The core issue is <strong class="red">CPM: 37.9 vs 43.1</strong> &mdash; a <strong class="red">12% GCD efficiency gap</strong>. The main bottleneck is <strong class="red">Flurry usage at 4.5 CPM vs 7.6 CPM (&minus;41%)</strong>, which cascades into fewer Thermal Void procs (12 vs 49), fewer Shatter-empowered Ice Lances, and less Frost Splinter damage. With near-identical gear (289.8 vs 289.8 ilvl) and only 1 talent difference, the gap is execution &mdash; specifically Flurry management and filler efficiency.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Frost Mages on Mythic Crown of the Cosmos. All references are from <strong>kill fights</strong> (545-485s) &mdash; Snackznchill's data is from a 293s wipe pull, so DPS numbers are burst-inflated and not directly comparable. CPM and ability priorities are the meaningful comparison points.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Fight Time</th><th>ilvl</th><th>Talent Delta</th><th>Total CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Snackznchill</strong> <span class="tag tag-warn">PROG</span></td>
+      <td>180K</td>
+      <td>4:53 (wipe)</td>
+      <td>289.8</td>
+      <td>&mdash;</td>
+      <td class="red">37.9</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Asimage <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">108K</td>
+      <td>9:05 (kill)</td>
+      <td>289.8</td>
+      <td><span class="tag tag-same">1 diff</span></td>
+      <td class="green">43.1</td>
+    </tr>
+    <tr>
+      <td>Liecata <span class="ref-badge">#4</span></td>
+      <td class="green">106K</td>
+      <td>9:03 (kill)</td>
+      <td>290.5</td>
+      <td><span class="tag tag-same">1 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#x7389;&#x7389; <span class="ref-badge">#3</span></td>
+      <td class="green">107K</td>
+      <td>8:17 (kill)</td>
+      <td>291.9</td>
+      <td><span class="tag tag-same">2 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#x80D6;&#x561F;&#x561F;&#x5C0F;&#x718A;&#x732B; <span class="ref-badge">#5</span></td>
+      <td class="green">105K</td>
+      <td>8:05 (kill)</td>
+      <td>290.3</td>
+      <td><span class="tag tag-same">2 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#x6740;&#x5D3D;&#x626C;&#x7070; <span class="ref-badge">#2</span></td>
+      <td class="green">108K</td>
+      <td>8:05 (kill)</td>
+      <td>290.0</td>
+      <td><span class="tag tag-warn">3 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Asimage is the primary reference: only 1 talent difference, identical 289.8 ilvl, and the #1 ranked Frost Mage on this boss. Both are Spellslinger spec. Since the reference is from a kill (9:05) and Snackznchill's data is from a wipe (4:53), raw DPS is not comparable &mdash; but CPM, ability priority, and proc management are directly comparable regardless of fight length.</p>
+
+<!-- FIGHT 23 TIMELINE -->
+<h2>Fight 23 Timeline (Longest Pull &mdash; 4:53)</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase fight: Phase 1 (Sentinels), Intermission (arrow dodging), Phase 2 (Rift Simulacrum), and Phase 3 (Devouring Cosmos). This pull reached deep into Phase 2/3 before the raid collapsed.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left: 51.4%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 2:31 &mdash; 3 deaths</span>
+  </div>
+  <div class="timeline-marker" style="left: 77.0%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="top: 18px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 3:46 &mdash; Sonic</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="top: 34px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 4:00 &mdash; 5 deaths</span>
+  </div>
+  <div class="timeline-marker" style="left: 89.6%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red); font-size: 9px; font-weight: 600;">&#x2620; 4:22 &mdash; Snackznchill</span>
+  </div>
+  <div class="timeline-marker" style="left: 90.0%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 4:24 &mdash; Raid collapses</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 33%; color: var(--dim);">~P1 Sentinels</span>
+  <span class="timeline-label" style="bottom: 2px; left: 60%; color: var(--dim);">~P2/P3</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:53</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State</div>
+  <p>0:00&ndash;2:31 = 20/20 alive &middot; 2:31 = 17/20 (Alitheria, Smokinthisza, Invincibale to Silverstrike Barrage) &middot; 3:46 = 16/20 (Sonic to Voidstalker Sting) &middot; 3:56&ndash;4:03 = 11/20 (5 deaths in 7 seconds: Invincibale, Orichamaru, Starfighter, Moistbear, Zinnks) &middot; <strong class="red">4:22 = Snackznchill dies to Void Remnants</strong> &middot; 4:24 = mass cascade (8 deaths in 2 seconds)</p>
+  <p style="margin-top: 4px; color: var(--yellow);">Snackznchill survived through the first major death wave at 2:31 and the second wave at 4:00 but died 22 seconds later to Void Remnants at 4:22 with the raid at 11/20 alive. This is a mechanics death during a hectic phase transition &mdash; the raid was already collapsing.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Snackznchill (4:53 wipe, 4:22 alive) vs Asimage (9:05 kill). CPM is normalized to alive time for Snackznchill (262.5s). All abilities &mdash; sorted by priority impact.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(63,185,80,0.05);">
+      <td><strong>Ice Lance</strong></td>
+      <td>83</td>
+      <td>19.0</td>
+      <td>188</td>
+      <td class="purple">20.7</td>
+      <td class="yellow">&minus;8%</td>
+      <td><span class="tag tag-same">Acceptable</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Flurry</strong></td>
+      <td>22</td>
+      <td class="red">5.0</td>
+      <td>69</td>
+      <td class="purple">7.6</td>
+      <td class="red">&minus;34%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Frostbolt</strong></td>
+      <td>22</td>
+      <td class="yellow">5.0</td>
+      <td>56</td>
+      <td class="purple">6.2</td>
+      <td class="yellow">&minus;18%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Glacial Spike</strong></td>
+      <td>8</td>
+      <td class="yellow">1.8</td>
+      <td>20</td>
+      <td class="purple">2.2</td>
+      <td class="yellow">&minus;17%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Frozen Orb</strong></td>
+      <td>7</td>
+      <td class="yellow">1.6</td>
+      <td>16</td>
+      <td class="purple">1.8</td>
+      <td class="yellow">&minus;10%</td>
+      <td><span class="tag tag-warn">Slightly Low</span></td>
+    </tr>
+    <tr style="background: rgba(63,185,80,0.05);">
+      <td><strong>Ray of Frost</strong></td>
+      <td>7</td>
+      <td class="green">1.6</td>
+      <td>13</td>
+      <td class="purple">1.4</td>
+      <td class="green">+12%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Ice Barrier</td>
+      <td>6</td>
+      <td>1.4</td>
+      <td>7</td>
+      <td>0.8</td>
+      <td class="dim">+75%</td>
+      <td><span class="tag tag-info">Defensive</span></td>
+    </tr>
+    <tr>
+      <td>Shimmer</td>
+      <td>4</td>
+      <td>0.9</td>
+      <td>4</td>
+      <td>0.4</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">Movement</span></td>
+    </tr>
+    <tr>
+      <td>Nullsight (trinket)</td>
+      <td>3</td>
+      <td>0.7</td>
+      <td>6</td>
+      <td>0.7</td>
+      <td class="green">Same</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Counterspell</td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">Utility</span></td>
+    </tr>
+    <tr>
+      <td>Alter Time</td>
+      <td>0</td>
+      <td class="red">0.0</td>
+      <td>2</td>
+      <td>0.2</td>
+      <td class="red">&minus;100%</td>
+      <td><span class="tag tag-diff">Never Used</span></td>
+    </tr>
+    <tr>
+      <td>Ice Cold</td>
+      <td>0</td>
+      <td class="red">0.0</td>
+      <td>2</td>
+      <td>0.2</td>
+      <td class="red">&minus;100%</td>
+      <td><span class="tag tag-diff">Never Used</span></td>
+    </tr>
+    <tr>
+      <td>Greater Invisibility</td>
+      <td>0</td>
+      <td class="red">0.0</td>
+      <td>2</td>
+      <td>0.2</td>
+      <td class="red">&minus;100%</td>
+      <td><span class="tag tag-diff">Never Used</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Critical: Flurry Starvation (&minus;34% CPM)</div>
+    <p style="font-size: 14px;">Flurry is the cornerstone of the Spellslinger Frost Mage rotation. Each Flurry applies <strong>Winter's Chill</strong> to the target, enabling the next <strong>Ice Lance to Shatter</strong> for massive bonus damage. At <strong>5.0 CPM vs 7.6 CPM</strong>, Snackznchill is casting Flurry <strong>34% less often</strong> than the reference. This cascades through the entire rotation: fewer Flurries = fewer Winter's Chill debuffs = fewer Shatter-empowered Ice Lances = fewer Frost Splinter procs = fewer Thermal Void activations (12 vs 49). Flurry should be used on cooldown with Brain Freeze procs, and also when Thermal Void is not active (even without Brain Freeze, if a charge is available).</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Frostbolt Filler Gap (&minus;18% CPM)</div>
+    <p style="font-size: 14px;">Frostbolt is the filler spell that generates Brain Freeze procs (which reset Flurry) and builds Icicles for Glacial Spike. At <strong>5.0 CPM vs 6.2 CPM</strong>, Snackznchill is leaving gaps between casts where Frostbolt should be filling. Combined with the Flurry deficit, this means <strong>fewer Brain Freeze procs are being generated</strong> (12 observed vs an expected ~22 for the alive time), creating a vicious cycle: less Frostbolt &rarr; less Brain Freeze &rarr; less Flurry &rarr; less Shatter damage.</p>
+  </div>
+</div>
+
+<!-- THERMAL VOID / PROC MANAGEMENT -->
+<h2>Proc Management: Thermal Void &amp; Spellslinger</h2>
+<p class="section-intro">Thermal Void activates automatically when consuming Winter's Chill stacks via Ice Lance after Flurry. More Flurry casts = more Thermal Void windows = more damage amplification. This is the single biggest driver of the DPS gap.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Asimage</span> <span class="ref-badge">Reference (9:05 kill)</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">Flurry casts:</span> <strong class="green">69</strong> (7.6 CPM)</div>
+      <div><span class="dim">Thermal Void procs:</span> <strong class="green">49</strong></div>
+      <div><span class="dim">Brain Freeze procs:</span> observed in rotation</div>
+      <div><span class="dim">Splinterstorm procs:</span> <strong>25</strong></div>
+      <div style="margin: 8px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">Pattern:</span> <span class="cast good">Flurry every ~8s, nearly on cooldown</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Thermal Void is active constantly &mdash; 49 procs means nearly continuous uptime across the fight</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Snackznchill</span> <span class="tag tag-warn">PROG</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">Flurry casts:</span> <strong class="red">22</strong> (5.0 CPM)</div>
+      <div><span class="dim">Thermal Void procs:</span> <strong class="red">12</strong></div>
+      <div><span class="dim">Brain Freeze procs:</span> <strong>12</strong> observed</div>
+      <div><span class="dim">Splinterstorm procs:</span> <strong>6</strong></div>
+      <div style="margin: 8px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">Pattern:</span> <span class="cast bad">Flurry every ~12s, many skipped windows</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">Only 12 Thermal Void procs in 4:22 &mdash; Asimage would have ~24 in the same timeframe</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Why Thermal Void Matters</div>
+  <p style="font-size: 14px;">In Spellslinger Frost, the rotation revolves around consuming Winter's Chill stacks with Ice Lance. Each Flurry applies Winter's Chill, and when Ice Lance consumes the stacks, it triggers <strong>Thermal Void</strong> (damage amp + haste), generates <strong>Frost Splinters</strong> (10.4% of total damage), and enables <strong>Shatter</strong> (38.6% of total damage). With only 12 Thermal Void procs vs the reference's projected ~24 in the same timeframe, Snackznchill is losing damage from every linked system. The fix is simple: <strong>cast Flurry more aggressively</strong> &mdash; use it on every Brain Freeze proc without delay, and use available charges even without Brain Freeze when Thermal Void is not active.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage by ability for fight 23 (event-based totals). Player total: 63.2M in 262.5s alive. Reference total: 97.2M in 545s. Sorted by share of total damage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Shatter</strong></td>
+      <td>24,379K</td>
+      <td>38.6%</td>
+      <td class="purple">35,976K</td>
+      <td>37.0%</td>
+      <td><span class="tag tag-same">Similar share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ray of Frost</strong></td>
+      <td>7,599K</td>
+      <td>12.0%</td>
+      <td class="purple">12,598K</td>
+      <td>13.0%</td>
+      <td><span class="tag tag-same">Similar share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Frost Splinter</strong></td>
+      <td>6,579K</td>
+      <td>10.4%</td>
+      <td class="purple">10,159K</td>
+      <td>10.5%</td>
+      <td><span class="tag tag-same">Similar share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Frozen Orb</strong></td>
+      <td>5,723K</td>
+      <td>9.1%</td>
+      <td class="purple">6,331K</td>
+      <td>6.5%</td>
+      <td><span class="tag tag-info">Higher share (burst)</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Flurry</strong></td>
+      <td>3,645K</td>
+      <td class="red">5.8%</td>
+      <td class="purple">9,383K</td>
+      <td>9.7%</td>
+      <td><span class="tag tag-diff">&minus;61% total dmg</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ice Lance</strong></td>
+      <td>3,662K</td>
+      <td>5.8%</td>
+      <td class="purple">5,703K</td>
+      <td>5.9%</td>
+      <td><span class="tag tag-same">Similar share</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Glacial Spike</strong></td>
+      <td>2,775K</td>
+      <td class="yellow">4.4%</td>
+      <td class="purple">5,425K</td>
+      <td>5.6%</td>
+      <td><span class="tag tag-warn">&minus;49% total dmg</span></td>
+    </tr>
+    <tr>
+      <td><strong>Controlled Instincts</strong></td>
+      <td>3,406K</td>
+      <td>5.4%</td>
+      <td class="purple">2,568K</td>
+      <td>2.6%</td>
+      <td><span class="tag tag-info">Higher burst phase</span></td>
+    </tr>
+    <tr>
+      <td><strong>Hand of Frost</strong></td>
+      <td>2,443K</td>
+      <td>3.9%</td>
+      <td class="purple">3,791K</td>
+      <td>3.9%</td>
+      <td><span class="tag tag-same">Identical share</span></td>
+    </tr>
+    <tr>
+      <td>Frostbolt</td>
+      <td>1,769K</td>
+      <td>2.8%</td>
+      <td>2,141K</td>
+      <td>2.2%</td>
+      <td><span class="dim">Filler</span></td>
+    </tr>
+    <tr>
+      <td>Glacial Assault</td>
+      <td>472K</td>
+      <td>0.7%</td>
+      <td>1,126K</td>
+      <td>1.2%</td>
+      <td><span class="dim">Passive proc</span></td>
+    </tr>
+    <tr>
+      <td>Bombardments</td>
+      <td>228K</td>
+      <td>0.4%</td>
+      <td>547K</td>
+      <td>0.6%</td>
+      <td><span class="dim">Passive proc</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Damage Distribution Analysis</div>
+  <p style="font-size: 14px;">The damage <strong>share percentages</strong> are largely similar between Snackznchill and Asimage &mdash; Shatter (~38%), Ray of Frost (~12%), Frost Splinter (~10%) are all in line. The two glaring outliers: <strong class="red">Flurry at 5.8% vs 9.7%</strong> (the player casts it 34% less often and each cast does proportionally less damage since fewer are buffed by Brain Freeze), and <strong class="yellow">Glacial Spike at 4.4% vs 5.6%</strong> (fewer Frostbolts means fewer Icicles means fewer Glacial Spikes). Controlled Instincts is overrepresented (5.4% vs 2.6%) because the wipe's shorter duration means opener burst accounts for a larger share.</p>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown Usage</h2>
+<p class="section-intro">Major cooldown timings for Snackznchill in fight 23. Frost Mage cooldowns are primarily short-cooldown abilities that should be used on CD.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cooldown</th><th>Player Uses</th><th>Ref Uses</th><th>Player Timings</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Frozen Orb</strong></td>
+      <td>7</td>
+      <td>16</td>
+      <td style="font-size: 12px; font-family: monospace;">0:02, 0:32, 1:01, 1:42, 2:56, 3:22, 3:54</td>
+      <td><span class="tag tag-same">On CD</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ray of Frost</strong></td>
+      <td>7</td>
+      <td>13</td>
+      <td style="font-size: 12px; font-family: monospace;">0:03, 0:15, 0:49, 1:35, 3:06, 3:16, 4:01</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Glacial Spike</strong></td>
+      <td>8</td>
+      <td>20</td>
+      <td style="font-size: 12px; font-family: monospace;">0:25, 0:49, 1:16, 1:45, 2:56, 3:21, 3:44, 4:11</td>
+      <td><span class="tag tag-warn">Low (filler gap)</span></td>
+    </tr>
+    <tr>
+      <td><strong>Potion of Recklessness</strong></td>
+      <td>1</td>
+      <td>2</td>
+      <td style="font-size: 12px; font-family: monospace;">0:00 (pre-pot)</td>
+      <td><span class="tag tag-same">Correct</span></td>
+    </tr>
+    <tr>
+      <td><strong>Alter Time</strong></td>
+      <td class="red">0</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">Never used</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ice Cold</strong></td>
+      <td class="red">0</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">Never used</span></td>
+    </tr>
+    <tr>
+      <td><strong>Greater Invisibility</strong></td>
+      <td class="red">0</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">Never used</span></td>
+    </tr>
+    <tr>
+      <td>Ice Barrier</td>
+      <td>6</td>
+      <td>7</td>
+      <td style="font-size: 12px; font-family: monospace;">1:53, 2:08, 2:28, 3:41, 3:42, 4:15</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Counterspell</td>
+      <td>1</td>
+      <td>1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--red);">
+  <div class="card-header red">Missing Defensive Cooldowns</div>
+  <p style="font-size: 14px;">Asimage used <strong>Alter Time</strong> (2x), <strong>Ice Cold</strong> (2x), and <strong>Greater Invisibility</strong> (2x) across a 9-minute kill. Snackznchill used <strong>none of these</strong> across 4:22 of combat. On Crown of the Cosmos, where mechanics like Void Remnants, Silverstrike Barrage, and Simulacrum Backlash are lethal, these defensives are critical for survival. Snackznchill died to <strong>Void Remnants at 4:22</strong> &mdash; Ice Cold or Greater Invisibility could have saved that life. Using defensive cooldowns is not just about survival; staying alive means more total damage dealt.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during fight 23.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player Timing</th><th>Ref Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Bloodlust / Time Warp</strong></td>
+      <td>2:59</td>
+      <td>2:53</td>
+      <td><span class="tag tag-same">Both mid-fight</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>6 applications</td>
+      <td>12 applications</td>
+      <td><span class="tag tag-warn">Shorter fight</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td>None</td>
+      <td><span class="tag tag-same">Neither received PI</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>None</td>
+      <td>None</td>
+      <td><span class="tag tag-same">Neither received</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">External buff context is similar. Both players had Ebon Might from an Aug Evoker, with the difference in application count explained by fight length (4:22 vs 9:05). Neither received Power Infusion or Prescience. The performance gap cannot be attributed to external buffs.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Snackznchill during fight 23. Crown of the Cosmos has significant unavoidable raid-wide damage from multiple sources.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>3,256K</td>
+      <td>118</td>
+      <td><span class="tag tag-same">No &mdash; persistent raid ticks</span></td>
+    </tr>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>2,486K</td>
+      <td>79</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide burst</span></td>
+    </tr>
+    <tr>
+      <td><strong>Voidstalker Sting</strong></td>
+      <td>1,840K</td>
+      <td>68</td>
+      <td><span class="tag tag-same">No &mdash; targeted DoT</span></td>
+    </tr>
+    <tr>
+      <td><strong>Void Expulsion</strong></td>
+      <td>1,308K</td>
+      <td>30</td>
+      <td><span class="tag tag-warn">Partially &mdash; puddle placement</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>548K</td>
+      <td>21</td>
+      <td><span class="tag tag-same">No &mdash; mechanic damage</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>469K</td>
+      <td>6</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>377K</td>
+      <td>14</td>
+      <td><span class="tag tag-same">No &mdash; environmental</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Falling</strong></td>
+      <td>353K</td>
+      <td>2</td>
+      <td><span class="tag tag-diff">Yes &mdash; avoidable</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Void Remnants</strong> (killing blow)</td>
+      <td>336K</td>
+      <td>2</td>
+      <td><span class="tag tag-diff">Yes &mdash; avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Orbiting Matter</td>
+      <td>307K</td>
+      <td>1</td>
+      <td><span class="tag tag-warn">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow / Ricochet / Barrage</td>
+      <td>721K</td>
+      <td>5</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="yellow">Mixed damage profile.</strong> Most damage is unavoidable (Echoing Darkness, Simulacrum Backlash, Voidstalker Sting). However, <strong class="red">Falling damage (353K, 2 hits)</strong> is fully avoidable and suggests platform transition issues. The killing blow &mdash; <strong class="red">Void Remnants (336K)</strong> &mdash; is also avoidable with proper positioning or defensive cooldown usage (Ice Cold, Greater Invisibility, or Alter Time were all available and unused).</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Snackznchill's DPS across all 26 pulls on Mythic Crown of the Cosmos. Boss % is shown above each bar &mdash; lower is better (0% = dead boss). Fights where Snackznchill did 0 DPS (deaths in P1 / not present) are grayed out. Color indicates boss % reached: <span class="green">green &lt;10%</span>, <span class="yellow">yellow 10-50%</span>, <span class="orange">orange 50-90%</span>, <span class="red">red &gt;90%</span>.</p>
+
+<div class="card">
+  <div class="progression-chart" style="height: 170px; padding-bottom: 24px;">
+    <!-- Fight 1: 28s, 99.45%, 0 DPS -->
+    <div class="prog-bar" style="height: 2%; background: var(--dim);" data-tooltip="F1: 0 DPS (0:28) | 99.45% boss">
+      <span class="boss-pct-label red">99%</span>
+    </div>
+    <!-- Fight 2: 63s, 51.98%, 27593 DPS -->
+    <div class="prog-bar" style="height: 9%; background: var(--orange);" data-tooltip="F2: 28K DPS (1:03) | 51.98% boss">
+      <span class="boss-pct-label orange">52%</span>
+    </div>
+    <!-- Fight 3: 117s, 54.75%, 264014 DPS -->
+    <div class="prog-bar" style="height: 86%; background: var(--orange);" data-tooltip="F3: 264K DPS (1:57) | 54.75% boss">
+      <span class="boss-pct-label orange">55%</span>
+    </div>
+    <!-- Fight 4: 76s, 54.62%, 189220 DPS -->
+    <div class="prog-bar" style="height: 62%; background: var(--orange);" data-tooltip="F4: 189K DPS (1:16) | 54.62% boss">
+      <span class="boss-pct-label orange">55%</span>
+    </div>
+    <!-- Fight 5: 60s, 74.02%, 193761 DPS -->
+    <div class="prog-bar" style="height: 63%; background: var(--orange);" data-tooltip="F5: 194K DPS (1:00) | 74.02% boss">
+      <span class="boss-pct-label orange">74%</span>
+    </div>
+    <!-- Fight 6: 143s, 19.48%, 245805 DPS -->
+    <div class="prog-bar" style="height: 80%; background: var(--yellow);" data-tooltip="F6: 246K DPS (2:23) | 19.48% boss">
+      <span class="boss-pct-label yellow">19%</span>
+    </div>
+    <!-- Fight 7: 89s, 41.72%, 157873 DPS -->
+    <div class="prog-bar" style="height: 52%; background: var(--yellow);" data-tooltip="F7: 158K DPS (1:29) | 41.72% boss">
+      <span class="boss-pct-label yellow">42%</span>
+    </div>
+    <!-- Fight 8: 142s, 0.01%, 279115 DPS -->
+    <div class="prog-bar" style="height: 91%; background: var(--green);" data-tooltip="F8: 279K DPS (2:22) | 0.01% boss - NEAR KILL">
+      <span class="boss-pct-label green">0%!</span>
+    </div>
+    <!-- Fight 9: 152s, 7.27%, 217185 DPS -->
+    <div class="prog-bar" style="height: 71%; background: var(--green);" data-tooltip="F9: 217K DPS (2:32) | 7.27% boss">
+      <span class="boss-pct-label green">7%</span>
+    </div>
+    <!-- Fight 10: 220s, 98.36%, 0 DPS -->
+    <div class="prog-bar" style="height: 2%; background: var(--dim);" data-tooltip="F10: 0 DPS (3:40) | 98.36% boss">
+      <span class="boss-pct-label red">98%</span>
+    </div>
+    <!-- Fight 11: 122s, 30.29%, 262911 DPS -->
+    <div class="prog-bar" style="height: 86%; background: var(--yellow);" data-tooltip="F11: 263K DPS (2:02) | 30.29% boss">
+      <span class="boss-pct-label yellow">30%</span>
+    </div>
+    <!-- Fight 12: 234s, 92.06%, 195153 DPS -->
+    <div class="prog-bar" style="height: 64%; background: var(--red);" data-tooltip="F12: 195K DPS (3:54) | 92.06% boss">
+      <span class="boss-pct-label red">92%</span>
+    </div>
+    <!-- Fight 13: 75s, 60.77%, 195435 DPS -->
+    <div class="prog-bar" style="height: 64%; background: var(--orange);" data-tooltip="F13: 195K DPS (1:15) | 60.77% boss">
+      <span class="boss-pct-label orange">61%</span>
+    </div>
+    <!-- Fight 14: 231s, 95.25%, 199876 DPS -->
+    <div class="prog-bar" style="height: 65%; background: var(--red);" data-tooltip="F14: 200K DPS (3:51) | 95.25% boss">
+      <span class="boss-pct-label red">95%</span>
+    </div>
+    <!-- Fight 15: 149s, 9.05%, 81153 DPS -->
+    <div class="prog-bar" style="height: 26%; background: var(--green);" data-tooltip="F15: 81K DPS (2:29) | 9.05% boss">
+      <span class="boss-pct-label green">9%</span>
+    </div>
+    <!-- Fight 16: 130s, 21.23%, 242356 DPS -->
+    <div class="prog-bar" style="height: 79%; background: var(--yellow);" data-tooltip="F16: 242K DPS (2:10) | 21.23% boss">
+      <span class="boss-pct-label yellow">21%</span>
+    </div>
+    <!-- Fight 17: 144s, 0.01%, 250419 DPS -->
+    <div class="prog-bar" style="height: 82%; background: var(--green);" data-tooltip="F17: 250K DPS (2:24) | 0.01% boss - NEAR KILL">
+      <span class="boss-pct-label green">0%!</span>
+    </div>
+    <!-- Fight 18: 236s, 95.72%, 234160 DPS -->
+    <div class="prog-bar" style="height: 76%; background: var(--red);" data-tooltip="F18: 234K DPS (3:56) | 95.72% boss">
+      <span class="boss-pct-label red">96%</span>
+    </div>
+    <!-- Fight 19: 114s, 34.53%, 237139 DPS -->
+    <div class="prog-bar" style="height: 77%; background: var(--yellow);" data-tooltip="F19: 237K DPS (1:54) | 34.53% boss">
+      <span class="boss-pct-label yellow">35%</span>
+    </div>
+    <!-- Fight 20: 120s, 35.43%, 179824 DPS -->
+    <div class="prog-bar" style="height: 59%; background: var(--yellow);" data-tooltip="F20: 180K DPS (2:00) | 35.43% boss">
+      <span class="boss-pct-label yellow">35%</span>
+    </div>
+    <!-- Fight 21: 147s, 0.22%, 306090 DPS -->
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F21: 306K DPS (2:27) | 0.22% boss - NEAR KILL">
+      <span class="boss-pct-label green">0.2%!</span>
+    </div>
+    <!-- Fight 22: 25s, 99.7%, 0 DPS -->
+    <div class="prog-bar" style="height: 2%; background: var(--dim);" data-tooltip="F22: 0 DPS (0:25) | 99.7% boss">
+      <span class="boss-pct-label red">100%</span>
+    </div>
+    <!-- Fight 23: 293s, 77.31%, 179925 DPS -->
+    <div class="prog-bar" style="height: 59%; background: var(--orange);" data-tooltip="F23: 180K DPS (4:53) | 77.31% boss - LONGEST PULL">
+      <span class="boss-pct-label orange">77%</span>
+    </div>
+    <!-- Fight 24: 229s, 92.92%, 189986 DPS -->
+    <div class="prog-bar" style="height: 62%; background: var(--red);" data-tooltip="F24: 190K DPS (3:49) | 92.92% boss">
+      <span class="boss-pct-label red">93%</span>
+    </div>
+    <!-- Fight 25: 188s, 99.88%, 230530 DPS -->
+    <div class="prog-bar" style="height: 75%; background: var(--red);" data-tooltip="F25: 231K DPS (3:08) | 99.88% boss">
+      <span class="boss-pct-label red">100%</span>
+    </div>
+    <!-- Fight 26: 220s, 96.91%, 149949 DPS -->
+    <div class="prog-bar" style="height: 49%; background: var(--red);" data-tooltip="F26: 150K DPS (3:40) | 96.91% boss">
+      <span class="boss-pct-label red">97%</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px; margin-top: 4px;">
+    <span>Fight 1</span>
+    <span><span class="green">&#9632;</span> &lt;10% boss &bull; <span class="yellow">&#9632;</span> 10-50% &bull; <span class="orange">&#9632;</span> 50-90% &bull; <span class="red">&#9632;</span> &gt;90% &bull; <span class="dim">&#9632;</span> Early death/0 DPS</span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Three fights reached <strong class="green">sub-1% boss HP</strong>: Fight 8 (0.01%, 279K DPS), Fight 17 (0.01%, 250K DPS), and Fight 21 (0.22%, 306K DPS). Snackznchill's best personal DPS was <strong>306K in Fight 21</strong> (the raid's best boss % pull). Three fights show 0 DPS (F1, F10, F22) indicating early deaths before meaningful contribution. The later pulls (F23-F26) show declining performance: F23 was the longest pull (4:53) but the boss was only at 77% &mdash; indicating the raid reached later phases but lost control. DPS ranged from <strong>150K to 306K</strong> across meaningful pulls, with higher numbers naturally appearing in shorter fights (burst bias). The <strong>consistent 180-250K range</strong> across 2-3 minute pulls is the true performance baseline.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. Nearly identical ilvl.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Snackznchill</th><th>Asimage</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>289.8</td>
+      <td>289.8</td>
+      <td><span class="tag tag-same">Identical</span></td>
+    </tr>
+    <tr>
+      <td>Intellect</td>
+      <td>2,604</td>
+      <td>&mdash;</td>
+      <td><span class="dim">Primary stat</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td>1,357</td>
+      <td>&mdash;</td>
+      <td><span class="dim">Highest secondary</span></td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td>835</td>
+      <td>&mdash;</td>
+      <td><span class="dim">Icicle damage</span></td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="yellow">498</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Low &mdash; affects cast speed</span></td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="dim">None</span></td>
+    </tr>
+    <tr>
+      <td><strong>Talent Delta</strong></td>
+      <td colspan="2" style="text-align: center;">1 difference</td>
+      <td><span class="tag tag-same">Near-identical build</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Gear is not a factor in the performance gap. Both players are 289.8 ilvl with only 1 talent difference. Snackznchill's <strong class="yellow">Haste is notably low (498)</strong>, which directly affects cast speed and GCD length. This partially explains the CPM gap &mdash; slower casts mean fewer casts per minute &mdash; but the Flurry usage deficit (34% lower CPM) far exceeds what Haste alone can explain. The gap is primarily rotation execution.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Cast Flurry more aggressively &mdash; target 7+ CPM, currently at 5.0.</strong> This is the single most impactful fix. Every Flurry applies Winter's Chill, which enables Shatter-empowered Ice Lances (38.6% of total damage) and triggers Thermal Void (damage amp). Currently at <strong>22 Flurry casts in 4:22 (5.0 CPM) vs the reference's 69 casts in 9:05 (7.6 CPM)</strong>. The fix: use Flurry immediately on every Brain Freeze proc (do not hold it), and use available Flurry charges even without Brain Freeze when Thermal Void is not active. In Spellslinger, the rotation priority is: <strong>Flurry (with Brain Freeze) > Ice Lance (with Fingers of Frost) > Frozen Orb > Glacial Spike > Frostbolt</strong>. Estimated impact: raising Flurry CPM from 5.0 to 7.0+ would roughly double Thermal Void uptime and increase Shatter damage by ~15-20%.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Fill GCD gaps with Frostbolt &mdash; never let the GCD sit empty.</strong> Total CPM is <strong>37.9 vs 43.1 (&minus;12%)</strong>, meaning approximately 23 GCDs were lost over 4:22 of combat. These lost GCDs should be Frostbolt casts, which generate Brain Freeze procs (fueling more Flurries) and build Icicles (fueling more Glacial Spikes). The progression environment makes movement necessary, but Shimmer (instant blink while casting) was only used 4 times &mdash; using Shimmer to maintain casts during movement would recover several lost GCDs. On a fight like Crown where movement is constant (platform transitions, Void Expulsion puddles, Silverstrike dodging), ABC (Always Be Casting) discipline is critical.
+</div>
+
+<div class="action-item">
+  <strong>3. Use defensive cooldowns to survive &mdash; Ice Cold, Alter Time, Greater Invisibility.</strong> Snackznchill used <strong>zero</strong> of these three defensives and died at 4:22 to Void Remnants. The reference player used each one <strong>twice</strong> across a 9-minute kill. Ice Cold (immune) would have prevented the Void Remnants death entirely. Alter Time allows repositioning while reverting HP. Greater Invisibility provides 60% damage reduction. On mythic Crown of the Cosmos, these are not optional &mdash; they are mandatory survival tools for handling lethal overlap mechanics in Phase 2 and Phase 3. Bind them accessibly and practice using them preemptively when you see dangerous abilities channeling.
+</div>
+
+<div class="action-item">
+  <strong>4. Avoid falling damage &mdash; 353K across 2 hits is avoidable.</strong> Two fall damage events (353K total) indicate platform transition issues during phase changes. Frost Mage has Slow Fall and Shimmer to manage these transitions safely. This damage strains healers and risks death during overlap phases. Practice the platform transition timing to eliminate this entirely.
+</div>
+
+<div class="action-item">
+  <strong>5. Prioritize second potion usage for extended fights.</strong> Pre-pot was correctly used at 0:00, but no second potion was consumed. In a 4:53 pull, a second Potion of Recklessness should be available around 4:00 and should align with Bloodlust or a burn phase. The reference used 2 potions across the 9-minute kill. On kill attempts, this second pot will matter.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Frozen Orb usage:</strong> 7 casts in 4:22, roughly on cooldown. This is the primary AoE cooldown and it was used well throughout the fight.<br><br>
+    <strong>Ray of Frost:</strong> 1.6 CPM matches the reference's 1.4 CPM &mdash; actually slightly better. This is a significant damage source (12% of total) and it is being used optimally.<br><br>
+    <strong>Damage distribution:</strong> The share percentages (Shatter 38.6%, Ray of Frost 12%, Frost Splinter 10.4%) closely match the reference's distribution. The rotation structure is correct &mdash; the issue is throughput (casting speed and Flurry frequency), not ability selection.<br><br>
+    <strong>Pre-pot and trinket:</strong> Potion of Recklessness used at 0:00 (correct) and Nullsight trinket used on cooldown (0.7 CPM matches reference).<br><br>
+    <strong>Near-kills:</strong> Snackznchill contributed to three sub-1% pulls (fights 8, 17, 21) with DPS ranging from 250K to 306K. The team is close to killing this boss.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Context</div>
+  <p style="font-size: 14px;">This is <strong>wipe data from progression</strong> &mdash; not a kill. Comparing to reference kills has inherent limitations: the reference played the full 9-minute fight including all three phases and the execute window, while Snackznchill's longest pull was 4:53. Raw DPS will naturally be higher for shorter fights (burst phase bias) and lower for full kills (sustained execution). The meaningful comparisons are <strong>CPM (37.9 vs 43.1)</strong>, <strong>Flurry management (5.0 vs 7.6 CPM)</strong>, and <strong>defensive cooldown usage (0 vs 6 casts)</strong>. Fixing these execution items will directly translate to surviving longer and dealing more total damage on kill attempts.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (4:53 wipe, longest pull). Reference: Asimage (#1 ranked Frost Mage, report <code>j8vzPHa1MrfJZt4N</code>, Fight 44, 9:05 kill, 108K DPS). All times relative to fight start. CPM calculated against player alive time (262.5s) to account for death at 4:22.</p>
+  <p style="margin-top: 4px;">Talent delta: 1 difference between Snackznchill and Asimage. Item level: identical (289.8). Both Spellslinger spec. External buffs: both had Ebon Might, neither received PI. The performance gap is execution-based &mdash; primarily Flurry management and defensive cooldown usage.</p>
+  <p style="margin-top: 8px; color: var(--dim); font-size: 11px;">Generated by WCL Analyzer &middot; Data from Warcraft Logs v2 API &middot; Spec mechanics referenced from Icy Veins, Method, and Maxroll Frost Mage guides (patch 12.0.7)</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dueche (Holy Paladin) - Crown of the Cosmos - June 23 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --paladin: #f48cba;
+  --shaman: #0070dd;
+  --monk: #00ff98;
+  --druid: #ff7c0a;
+  --priest: #fff;
+  --warrior: #c69b6d;
+  --dk: #c41e3a;
+  --dh: #a330c9;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+  line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 24px; }
+.header h1 { font-size: 28px; font-weight: 700; }
+.header h1 .player-name { color: var(--paladin); }
+.header .meta { color: var(--dim); font-size: 14px; margin-top: 4px; }
+.prog-tag {
+  display: inline-block; background: rgba(248,81,73,0.15); color: var(--red);
+  padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  margin-left: 8px; vertical-align: middle;
+}
+.night-tag {
+  display: inline-block; background: rgba(188,140,255,0.15); color: var(--purple);
+  padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  margin-left: 4px; vertical-align: middle;
+}
+
+/* Summary Cards */
+.summary-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;
+}
+.summary-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; text-align: center;
+}
+.summary-card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.summary-card .value { font-size: 24px; font-weight: 700; }
+.summary-card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* Verdict */
+.verdict {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin-bottom: 24px; border-left: 4px solid var(--yellow);
+}
+.verdict.critical { border-left-color: var(--red); }
+.verdict.good { border-left-color: var(--green); }
+.verdict h3 { font-size: 15px; margin-bottom: 8px; }
+.verdict p { font-size: 14px; color: var(--dim); line-height: 1.7; }
+
+/* Section headers */
+.section { margin-bottom: 32px; }
+.section h2 {
+  font-size: 18px; font-weight: 600; margin-bottom: 16px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+
+/* Tables */
+table {
+  width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px;
+}
+th, td {
+  padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border);
+}
+th { color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+tr:hover { background: rgba(255,255,255,0.02); }
+.highlight-row { background: rgba(244,140,186,0.08); }
+
+/* Bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.bar-label { width: 40px; text-align: right; color: var(--dim); flex-shrink: 0; }
+.bar-container { flex: 1; height: 28px; background: var(--surface); border-radius: 4px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 500; min-width: 50px; }
+.bar-survived { background: linear-gradient(90deg, rgba(63,185,80,0.3), rgba(63,185,80,0.15)); color: var(--green); }
+.bar-died { background: linear-gradient(90deg, rgba(248,81,73,0.3), rgba(248,81,73,0.15)); color: var(--red); }
+.bar-value { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--dim); }
+.avg-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--accent); z-index: 2; }
+
+/* Phase table */
+.phase-table td:first-child { font-weight: 600; }
+.phase-p1 { color: var(--green); }
+.phase-inter { color: var(--cyan); }
+.phase-p2 { color: var(--yellow); }
+.phase-p3 { color: var(--red); }
+
+/* CD pills */
+.cd-pill {
+  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+  font-weight: 500; margin: 1px 2px; white-space: nowrap;
+}
+.cd-paladin { background: rgba(244,140,186,0.15); color: var(--paladin); }
+.cd-shaman { background: rgba(0,112,222,0.15); color: var(--shaman); }
+.cd-monk { background: rgba(0,255,150,0.15); color: var(--monk); }
+.cd-druid { background: rgba(255,125,10,0.15); color: var(--druid); }
+.cd-warrior { background: rgba(198,155,109,0.15); color: var(--warrior); }
+.cd-priest { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+.cd-dk { background: rgba(196,30,58,0.15); color: var(--dk); }
+.cd-dh { background: rgba(163,48,201,0.15); color: var(--dh); }
+.cd-dead { background: rgba(248,81,73,0.15); color: var(--red); font-style: italic; }
+.cd-none { background: rgba(139,148,158,0.1); color: var(--dim); font-style: italic; }
+
+/* Death forensics */
+.forensic { font-family: 'Courier New', monospace; font-size: 12px; background: var(--surface); padding: 16px; border-radius: 8px; border: 1px solid var(--border); overflow-x: auto; }
+.forensic .dmg { color: var(--red); }
+.forensic .heal { color: var(--green); }
+.forensic .abs { color: var(--cyan); }
+.forensic .dead { color: var(--red); font-weight: 700; }
+
+/* Action items */
+.action-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; margin-bottom: 12px;
+}
+.action-card.critical { border-left: 4px solid var(--red); }
+.action-card.important { border-left: 4px solid var(--accent); }
+.action-card.positive { border-left: 4px solid var(--green); }
+.action-card h4 { font-size: 14px; margin-bottom: 6px; }
+.action-card p { font-size: 13px; color: var(--dim); line-height: 1.6; }
+
+/* Grid layouts */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-card .stat-value { font-size: 28px; font-weight: 700; margin: 4px 0; }
+.stat-card .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+
+/* OH bar */
+.oh-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; }
+.oh-bar .effective { background: var(--green); }
+.oh-bar .overheal { background: var(--red); opacity: 0.5; }
+
+.footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+@media (max-width: 768px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23, 2026 Crown of the Cosmos Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Dueche</span> &mdash; Holy Paladin
+    <span class="prog-tag">PROGRESSION</span>
+    <span class="night-tag">NIGHT 3</span>
+  </h1>
+  <div class="meta">
+    Mythic Crown of the Cosmos &middot; 20 pulls &middot; Best: 13.55% (Fight 21, 2:03) &middot; Longest: 6:44 (Fight 25, 42.77%) &middot; June 23, 2026
+    &middot; <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Report Hz1Lm672dZnBw9YC</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Avg HPS</div>
+    <div class="value" style="color: var(--green);">164.9K</div>
+    <div class="sub">Across 20 pulls (&gt;60s)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">275</div>
+    <div class="sub">Top-ranked HPals: 291</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color: var(--red);">1 / 20</div>
+    <div class="sub">Survived 1 pull (Fight 13)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Avg Overheal</div>
+    <div class="value" style="color: var(--green);">31.4%</div>
+    <div class="sub">Healthy range (&lt;35%)</div>
+  </div>
+</div>
+
+<!-- Bottom Line Verdict -->
+<div class="verdict">
+  <h3>Bottom Line</h3>
+  <p>
+    Dueche died in 19 of 20 pulls this session. The throughput numbers are reasonable when alive &mdash; 164.9K average HPS with 31.4% overheal is healthy for prog &mdash; but
+    the constant deaths are the dominant issue. Six deaths came in P1 (before any real healing pressure), nine in P2 (Cosmic Barrier and Void Remnants are the repeat killers),
+    and three in P3. The primary death causes are <strong>Void Remnants</strong> (3), <strong>Cosmic Barrier</strong> (3), <strong>Bursting Emptiness</strong> (2), and
+    <strong>Silverstrike Arrow/Barrage</strong> (3). Aura Mastery was only used in 11 of 20 pulls, with inconsistent timing (stddev 98s). On the best pull (Fight 25, 6:44),
+    HPS hit 189K with only 24% overheal, showing the throughput ceiling is there when survival cooperates.
+  </p>
+</div>
+
+<!-- HPS Across All Pulls -->
+<div class="section">
+  <h2>HPS Across All Pulls</h2>
+  <div class="bar-chart" style="position: relative;">
+    <div class="bar-row">
+      <div class="bar-label">F5</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 85%;">179K &middot; 3:48 &middot; 50%</div>
+        <div class="bar-value">Died 3:40 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F6</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 75%;">157K &middot; 3:53 &middot; 47%</div>
+        <div class="bar-value">Died 3:42 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F7</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 74%;">155K &middot; 1:17 &middot; 84%</div>
+        <div class="bar-value">Died 1:09 (P1)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F8</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 85%;">179K &middot; 1:21 &middot; 82%</div>
+        <div class="bar-value">Died 1:17 (P1)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F9</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 66%;">139K &middot; 5:15 &middot; 33%</div>
+        <div class="bar-value">Died 4:26 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F10</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 90%;">189K &middot; 2:00 &middot; 71%</div>
+        <div class="bar-value">Died 1:52 (P1)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F11</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 72%;">152K &middot; 3:47 &middot; 50%</div>
+        <div class="bar-value">Died 3:36 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F12</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 69%;">146K &middot; 4:47 &middot; 42%</div>
+        <div class="bar-value">Died 4:31 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F13</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-survived" style="width: 71%;">150K &middot; 6:01 &middot; 32%</div>
+        <div class="bar-value" style="color: var(--green);">Survived</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F14</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 85%;">180K &middot; 1:26 &middot; 81%</div>
+        <div class="bar-value">Died 1:18 (P1)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F15</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 77%;">163K &middot; 3:05 &middot; 62%</div>
+        <div class="bar-value">Died 2:37 (Inter)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F16</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 74%;">155K &middot; 3:05 &middot; 62%</div>
+        <div class="bar-value">Died 2:59 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F17</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 86%;">180K &middot; 3:55 &middot; 48%</div>
+        <div class="bar-value">Died 3:52 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F18</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 84%;">176K &middot; 4:23 &middot; 43%</div>
+        <div class="bar-value">Died 4:05 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F19</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 62%;">130K &middot; 6:09 &middot; 36%</div>
+        <div class="bar-value">Died 5:10 (P3)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F20</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 75%;">157K &middot; 5:15 &middot; 35%</div>
+        <div class="bar-value">Died 4:51 (P2)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F21</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 100%;">210K &middot; 2:03 &middot; 67%</div>
+        <div class="bar-value">Died 2:02 (P1)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F22</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 75%;">157K &middot; 1:32 &middot; 75%</div>
+        <div class="bar-value">Died 1:22 (P1)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F23</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 72%;">152K &middot; 6:25 &middot; 31%</div>
+        <div class="bar-value">Died 5:42 (P3)</div>
+      </div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">F25</div>
+      <div class="bar-container">
+        <div class="bar-fill bar-died" style="width: 90%;">189K &middot; 6:44 &middot; 43%</div>
+        <div class="bar-value">Died 6:31 (P3)</div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 4px;">
+    Average HPS line: 164.9K. Best pull: Fight 21 (210K). Longest pull: Fight 25 (189K, 6:44).
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Phase reach: Intermission in <strong>14/20</strong> pulls &middot; P2 in <strong>14/20</strong> pulls &middot; P3 in <strong>4/20</strong> pulls.
+    Dueche was alive at every phase the team reached, except one pull where death occurred during Intermission (F15).
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>Avg HPS</th>
+        <th>Deaths</th>
+        <th>Top Death Causes</th>
+        <th>AW Used</th>
+        <th>AM Used</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="phase-p1"><strong>P1: Sentinels</strong><br><span style="font-size:11px;color:var(--dim)">0:00 &ndash; 2:14</span></td>
+        <td>20/20</td>
+        <td>136.8K</td>
+        <td style="color: var(--yellow);">6</td>
+        <td><span style="font-size:12px">Silverstrike Arrow (2), Echoing Darkness (1), Melee (1), Unknown (2)</span></td>
+        <td>20 (all pulls)</td>
+        <td>9</td>
+      </tr>
+      <tr>
+        <td class="phase-inter"><strong>Intermission</strong><br><span style="font-size:11px;color:var(--dim)">2:14 &ndash; 2:53</span></td>
+        <td>14/20</td>
+        <td>139.8K</td>
+        <td>1</td>
+        <td><span style="font-size:12px">Silverstrike Barrage (1)</span></td>
+        <td>1</td>
+        <td>0</td>
+      </tr>
+      <tr>
+        <td class="phase-p2"><strong>P2: Rift</strong><br><span style="font-size:11px;color:var(--dim)">2:53 &ndash; ~5:09</span></td>
+        <td>14/20</td>
+        <td>237.4K</td>
+        <td style="color: var(--red);"><strong>9</strong></td>
+        <td><span style="font-size:12px">Cosmic Barrier (3), Void Remnants (3), Bursting Emptiness (2), Unknown (1)</span></td>
+        <td>12</td>
+        <td>5</td>
+      </tr>
+      <tr>
+        <td class="phase-p3"><strong>P3: Devouring</strong><br><span style="font-size:11px;color:var(--dim)">5:09+</span></td>
+        <td>4/20</td>
+        <td>139.9K</td>
+        <td>3</td>
+        <td><span style="font-size:12px">Voidstalker Sting (1), Unknown (2)</span></td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top: 16px;">
+    <div class="verdict" style="border-left-color: var(--yellow);">
+      <h3>P1 Overheal: 37.8%</h3>
+      <p>P1 has the lowest damage intake but highest overheal. This suggests over-commitment of healing when damage is manageable.
+      HPS of 136.8K in P1 vs 237.4K in P2 shows Dueche correctly scales output to match damage &mdash; but the 37.8% overheal in P1 means mana and globals are being spent on targets already at full health. Consider using more P1 globals on DPS filler (Judgment, Hammer of Wrath).</p>
+    </div>
+    <div class="verdict" style="border-left-color: var(--red);">
+      <h3>P2 is the Death Zone</h3>
+      <p>9 of 19 deaths occurred in P2, making it the clear progression wall. Cosmic Barrier (persistent ticking damage) and Void Remnants (ground soak) are the primary killers.
+      The P2 HPS of 237.4K with only 17.9% overheal shows efficient healing under pressure &mdash; the problem is mechanical, not throughput. Dueche needs to prioritize personal survival
+      (Divine Protection, Divine Shield) during Cosmic Barrier overlap windows in P2.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CD Discipline Analysis -->
+<div class="section">
+  <h2>CD Discipline Analysis</h2>
+
+  <table>
+    <thead>
+      <tr><th>Cooldown</th><th>Used In</th><th>Total Uses</th><th>Avg First Use</th><th>StdDev</th><th>By Phase</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Avenging Wrath</strong><br><span style="font-size:11px;color:var(--dim)">2min CD, throughput</span></td>
+        <td style="color:var(--green)">20/20</td>
+        <td>33</td>
+        <td>5.1s</td>
+        <td style="color:var(--green)">1.3s</td>
+        <td>P1: 20, Inter: 1, P2: 12, P3: 0</td>
+        <td style="font-size:12px;color:var(--dim)">Consistently opened every pull. Second use in 12 longer pulls. Never reached P3 with AW available.</td>
+      </tr>
+      <tr>
+        <td><strong>Aura Mastery</strong><br><span style="font-size:11px;color:var(--dim)">3min CD, raid DR</span></td>
+        <td style="color:var(--red)">11/20</td>
+        <td>14</td>
+        <td>69.2s</td>
+        <td style="color:var(--red)">98.1s</td>
+        <td>P1: 9, P2: 5, P3: 0</td>
+        <td style="font-size:12px;color:var(--dim)">Missed in 9 pulls. Timing wildly inconsistent &mdash; ranges from 4s to 277s. No established pattern.</td>
+      </tr>
+      <tr>
+        <td><strong>Divine Protection</strong><br><span style="font-size:11px;color:var(--dim)">1min CD, personal</span></td>
+        <td style="color:var(--green)">18/20</td>
+        <td>40</td>
+        <td colspan="2">&mdash;</td>
+        <td colspan="2" style="font-size:12px;color:var(--dim)">Used regularly (2/pull average). Good personal defensive discipline.</td>
+      </tr>
+      <tr>
+        <td><strong>Divine Shield</strong><br><span style="font-size:11px;color:var(--dim)">5min CD, immunity</span></td>
+        <td>6/20</td>
+        <td>6</td>
+        <td colspan="2">&mdash;</td>
+        <td colspan="2" style="font-size:12px;color:var(--dim)">Emergency usage on longer pulls. Appropriate reactive usage.</td>
+      </tr>
+      <tr>
+        <td><strong>Lay on Hands</strong><br><span style="font-size:11px;color:var(--dim)">10min CD, emergency</span></td>
+        <td style="color:var(--green)">20/20</td>
+        <td>20</td>
+        <td colspan="2">&mdash;</td>
+        <td colspan="2" style="font-size:12px;color:var(--dim)">Used every single pull. Good awareness of emergency heal timing.</td>
+      </tr>
+      <tr>
+        <td><strong>Blessing of Sacrifice</strong><br><span style="font-size:11px;color:var(--dim)">2min CD, external</span></td>
+        <td>10/20</td>
+        <td>10</td>
+        <td colspan="2">&mdash;</td>
+        <td colspan="2" style="font-size:12px;color:var(--dim)">Used in half the pulls. Reactive external, appropriate.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="verdict critical">
+    <h3>Aura Mastery Discipline Needs Work</h3>
+    <p>Aura Mastery is Holy Paladin's primary raid CD, but it went unused in 9 of 20 pulls and had wildly inconsistent timing when used (stddev of 98s).
+    In some pulls it was used at 4-5 seconds (opener), in others at 262-277 seconds (late P2). This suggests there is no established plan for when AM should be deployed.
+    With AM on a 3-minute cooldown, the team should designate a specific boss ability window in P1 (around 0:50-1:30, Null Corona or Grasp of Emptiness) and again in P2 for AM coverage.
+    Compare to Avenging Wrath: 1.3s stddev shows a clear pattern of opening every pull with AW &mdash; AM needs the same discipline.</p>
+  </div>
+</div>
+
+<!-- Team CD Coordination (Fight 25) -->
+<div class="section">
+  <h2>Team CD Coordination &mdash; Fight 25 (Longest Pull, 6:44)</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th style="text-align:center">P1 (0:00-2:14)</th>
+        <th style="text-align:center">Intermission (2:14-2:53)</th>
+        <th style="text-align:center">P2 (2:53-5:26)</th>
+        <th style="text-align:center">P3 (5:26+)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td><strong style="color:var(--paladin)">Dueche</strong><br><span style="font-size:11px;color:var(--dim)">Holy Paladin</span></td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-paladin">AW @ 0:03</span>
+          <span class="cd-pill cd-paladin">AM @ 1:26</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-paladin">AW @ 2:48</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-paladin">AM @ 4:30</span>
+          <span class="cd-pill cd-paladin">AW @ 4:49</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-dead">Died 6:31</span>
+        </td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--monk)">Senssay</strong><br><span style="font-size:11px;color:var(--dim)">MW Monk</span></td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-monk">Yu'lon @ 1:03</span>
+          <span class="cd-pill cd-monk">Revival @ 1:10</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-none">No major CD</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-dead">Died early</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-dead">Dead</span>
+        </td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--shaman)">Brewtote</strong><br><span style="font-size:11px;color:var(--dim)">Resto Shaman</span></td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-shaman">Asc @ 0:06</span>
+          <span class="cd-pill cd-shaman">SLT @ 0:27</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-none">No major CD</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-shaman">SLT @ 4:23</span>
+          <span class="cd-pill cd-shaman">Asc @ 4:35</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-none">No major CD</span>
+        </td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--druid)">Silencio</strong><br><span style="font-size:11px;color:var(--dim)">Resto Druid</span></td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-druid">Convoke @ 0:01</span>
+          <span class="cd-pill cd-druid">Tranq @ 0:10</span>
+          <span class="cd-pill cd-druid">Convoke @ 1:06</span>
+          <span class="cd-pill cd-druid">Convoke @ 2:07</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-none">No major CD</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-druid">Convoke @ 3:17</span>
+          <span class="cd-pill cd-druid">Tranq @ 3:34</span>
+          <span class="cd-pill cd-druid">Convoke @ 4:25</span>
+        </td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-druid">Convoke @ 5:25</span>
+        </td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--warrior)">Starfighter</strong><br><span style="font-size:11px;color:var(--dim)">Warrior</span></td>
+        <td style="text-align:center"><span class="cd-pill cd-none">--</span></td>
+        <td style="text-align:center"><span class="cd-pill cd-none">--</span></td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-warrior">RC @ 4:55</span>
+        </td>
+        <td style="text-align:center"><span class="cd-pill cd-none">--</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--priest)">Voidheart</strong><br><span style="font-size:11px;color:var(--dim)">Shadow Priest</span></td>
+        <td style="text-align:center"><span class="cd-pill cd-none">--</span></td>
+        <td style="text-align:center"><span class="cd-pill cd-none">--</span></td>
+        <td style="text-align:center">
+          <span class="cd-pill cd-priest">VE @ 4:57</span>
+        </td>
+        <td style="text-align:center"><span class="cd-pill cd-none">--</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+    <strong>Observations:</strong> Intermission (Stellar Emission) has zero healer CDs deployed &mdash; the team is surviving without cooldowns here.
+    Senssay (MW Monk) died in P1/early P2, leaving only 3 healers for the majority of the fight.
+    P2 CD coverage is back-loaded: all healer CDs cluster around 4:23-4:57 (late P2). The first ~90s of P2 has no healer CDs.
+    Rallying Cry and Vampiric Embrace both fire at ~4:55, stacking with Brewtote's SLT and Asc &mdash; heavy overlap.
+  </div>
+</div>
+
+<!-- Cast Profile (Fight 25) -->
+<div class="section">
+  <h2>Cast Profile &mdash; Fight 25 (6:31 alive time)</h2>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Casts</th><th>CPM</th><th>Role</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Holy Shock</strong></td>
+        <td>105</td>
+        <td style="color:var(--green)">16.1</td>
+        <td style="font-size:12px;color:var(--dim)">Core rotational, Holy Power generator</td>
+        <td style="color:var(--green)">Strong. Near max uptime.</td>
+      </tr>
+      <tr>
+        <td><strong>Light of Dawn</strong></td>
+        <td>57</td>
+        <td style="color:var(--green)">8.8</td>
+        <td style="font-size:12px;color:var(--dim)">Holy Power spender, raid AoE heal</td>
+        <td style="color:var(--green)">Good raid healing priority.</td>
+      </tr>
+      <tr>
+        <td><strong>Judgment</strong></td>
+        <td>29</td>
+        <td>4.5</td>
+        <td style="font-size:12px;color:var(--dim)">DPS filler, Greater Judgment healing</td>
+        <td>Reasonable DPS contribution.</td>
+      </tr>
+      <tr>
+        <td><strong>Eternal Flame</strong></td>
+        <td>27</td>
+        <td>4.1</td>
+        <td style="font-size:12px;color:var(--dim)">Holy Power spender, HoT on target</td>
+        <td>Used alongside LoD for spot healing.</td>
+      </tr>
+      <tr>
+        <td><strong>Flash of Light</strong></td>
+        <td>22</td>
+        <td>3.4</td>
+        <td style="font-size:12px;color:var(--dim)">Triage single-target heal</td>
+        <td>Moderate usage, appropriate for prog.</td>
+      </tr>
+      <tr>
+        <td><strong>Holy Light</strong></td>
+        <td>10</td>
+        <td>1.5</td>
+        <td style="font-size:12px;color:var(--dim)">Efficient single-target heal</td>
+        <td style="font-size:12px;color:var(--dim)">Low usage, likely used during low-pressure moments.</td>
+      </tr>
+      <tr>
+        <td><strong>Hammer of Wrath</strong></td>
+        <td>10</td>
+        <td>1.5</td>
+        <td style="font-size:12px;color:var(--dim)">Execute-phase DPS filler</td>
+        <td>Available during AW and execute range.</td>
+      </tr>
+      <tr>
+        <td><strong>Divine Toll</strong></td>
+        <td>9</td>
+        <td style="color:var(--green)">1.4</td>
+        <td style="font-size:12px;color:var(--dim)">Rotational, multi-Holy Shock</td>
+        <td style="color:var(--green)">Good uptime on CD.</td>
+      </tr>
+      <tr>
+        <td><strong>Divine Steed</strong></td>
+        <td>6</td>
+        <td>0.9</td>
+        <td style="font-size:12px;color:var(--dim)">Movement ability</td>
+        <td>Normal usage for mobility-limited spec.</td>
+      </tr>
+      <tr>
+        <td><strong>Cleanse</strong></td>
+        <td>4</td>
+        <td>0.6</td>
+        <td style="font-size:12px;color:var(--dim)">Dispel</td>
+        <td>Active dispelling, good awareness.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top: 12px;">
+    <div class="action-card positive">
+      <h4>Strong Core Rotation</h4>
+      <p>Holy Shock at 16.1 CPM shows near-maximum uptime on the primary ability. Light of Dawn at 8.8 CPM indicates consistent Holy Power spending into the raid heal.
+      Divine Toll used 9 times in 6.5 minutes shows good CD awareness. The core Holy Paladin rotation is well-executed.</p>
+    </div>
+    <div class="action-card important">
+      <h4>DPS Filler Could Improve</h4>
+      <p>Total DPS: 7,469 (2.92M total damage). Judgment (29 casts) and Hammer of Wrath (10 casts) are the primary damage sources.
+      For a 6:31 fight, there are quiet windows in P1 where more Judgment casts and Consecration damage could push DPS higher.
+      However, during prog this is a low priority compared to survival.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Healing Breakdown -->
+<div class="section">
+  <h2>Healing Breakdown &mdash; Fight 25</h2>
+
+  <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 16px;">
+    <div class="stat-card">
+      <div class="stat-label">Effective Healing</div>
+      <div class="stat-value" style="color:var(--green)">69.2M</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Overheal</div>
+      <div class="stat-value" style="color:var(--red)">22.4M</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Overheal %</div>
+      <div class="stat-value" style="color:var(--green)">24.5%</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Source</th><th>Effective</th><th>% of Total</th><th>Overheal %</th><th style="width:200px">Effective vs Overheal</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Light of Dawn</strong></td>
+        <td>15.31M</td>
+        <td>22.1%</td>
+        <td style="color:var(--green)">22.0%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:78%"></div><div class="overheal" style="width:22%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Beacon of Light</strong></td>
+        <td>11.93M</td>
+        <td>17.2%</td>
+        <td style="color:var(--yellow)">36.0%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:64%"></div><div class="overheal" style="width:36%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Holy Shock</strong></td>
+        <td>11.69M</td>
+        <td>16.9%</td>
+        <td style="color:var(--green)">29.7%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:70%"></div><div class="overheal" style="width:30%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Litany of Light</strong></td>
+        <td>5.68M</td>
+        <td>8.2%</td>
+        <td style="color:var(--green)">0.0%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:100%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Eternal Flame</strong></td>
+        <td>4.62M</td>
+        <td>6.7%</td>
+        <td style="color:var(--green)">13.6%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:86%"></div><div class="overheal" style="width:14%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Beacon of the Savior</strong></td>
+        <td>2.89M</td>
+        <td>4.2%</td>
+        <td style="color:var(--green)">0.0%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:100%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Brought to Light</strong></td>
+        <td>2.21M</td>
+        <td>3.2%</td>
+        <td style="color:var(--green)">20.1%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:80%"></div><div class="overheal" style="width:20%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Light of the Martyr</strong></td>
+        <td>2.03M</td>
+        <td>2.9%</td>
+        <td style="color:var(--green)">0.0%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:100%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Dawnlight</strong></td>
+        <td>1.76M</td>
+        <td>2.5%</td>
+        <td style="color:var(--red)">40.5%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:60%"></div><div class="overheal" style="width:40%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Flash of Light</strong></td>
+        <td>1.60M</td>
+        <td>2.3%</td>
+        <td style="color:var(--green)">28.4%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:72%"></div><div class="overheal" style="width:28%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Sun Sear</strong></td>
+        <td>1.43M</td>
+        <td>2.1%</td>
+        <td style="color:var(--green)">26.7%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:73%"></div><div class="overheal" style="width:27%"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Greater Judgment</strong></td>
+        <td>1.41M</td>
+        <td>2.0%</td>
+        <td style="color:var(--green)">0.0%</td>
+        <td><div class="oh-bar"><div class="effective" style="width:100%"></div></div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+    <strong>Herald of the Sun build confirmed</strong> &mdash; Dawnlight, Sun Sear, Sun's Avatar all present. Light of Dawn (22.1%), Beacon of Light (17.2%), and Holy Shock (16.9%) are the top 3 healing sources,
+    which is the expected distribution for a raid Holy Paladin. Beacon overheal at 36% is normal (beacon transfers overheal passively). Dawnlight at 40.5% overheal suggests some Dawnlight procs are landing during
+    low-damage windows &mdash; this is a passive proc and not directly controllable.
+  </div>
+</div>
+
+<!-- DPS Contribution -->
+<div class="section">
+  <h2>DPS Contribution &mdash; Fight 25</h2>
+  <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="stat-card">
+      <div class="stat-label">DPS</div>
+      <div class="stat-value">7,469</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Damage</div>
+      <div class="stat-value">2.92M</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Top Source</div>
+      <div class="stat-value" style="font-size:18px">Judgment (1.13M)</div>
+    </div>
+  </div>
+  <div style="font-size: 13px; color: var(--dim); margin-top: 12px;">
+    DPS contribution is low but not zero. Judgment (1.13M), Holy Shock damage component (via Litany of Light, 1.06M), and Hammer of Wrath (570K) are the damage sources.
+    Average DPS across all pulls was 1,107 &mdash; the 7,469 on fight 25 is higher because it was the longest pull with more sustained uptime.
+    On shorter pulls (F7, F8, F10, F14, F21, F22), DPS registered as 0, which could indicate very short fight times or death before meaningful DPS casts.
+    During prog, DPS is secondary to staying alive and healing.
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Duration</th><th>Death Time</th><th>Phase</th><th>Killing Ability</th><th>Time Dead</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>F7</td><td>1:17</td><td style="color:var(--red)">1:09</td><td class="phase-p1">P1</td><td>Echoing Darkness</td><td>8s (10%)</td></tr>
+      <tr><td>F8</td><td>1:21</td><td style="color:var(--red)">1:17</td><td class="phase-p1">P1</td><td>Unknown</td><td>4s (5%)</td></tr>
+      <tr><td>F10</td><td>2:00</td><td style="color:var(--red)">1:52</td><td class="phase-p1">P1</td><td>Unknown</td><td>8s (7%)</td></tr>
+      <tr><td>F14</td><td>1:26</td><td style="color:var(--red)">1:18</td><td class="phase-p1">P1</td><td>Silverstrike Arrow</td><td>8s (10%)</td></tr>
+      <tr><td>F21</td><td>2:03</td><td style="color:var(--red)">2:02</td><td class="phase-p1">P1</td><td>Melee</td><td>1s (1%)</td></tr>
+      <tr><td>F22</td><td>1:32</td><td style="color:var(--red)">1:22</td><td class="phase-p1">P1</td><td>Silverstrike Arrow</td><td>10s (11%)</td></tr>
+      <tr style="background:rgba(57,210,192,0.05)"><td>F15</td><td>3:05</td><td style="color:var(--cyan)">2:37</td><td class="phase-inter">Inter</td><td>Silverstrike Barrage</td><td>28s (15%)</td></tr>
+      <tr><td>F5</td><td>3:48</td><td style="color:var(--yellow)">3:40</td><td class="phase-p2">P2</td><td>Void Remnants</td><td>8s (4%)</td></tr>
+      <tr><td>F6</td><td>3:53</td><td style="color:var(--yellow)">3:42</td><td class="phase-p2">P2</td><td>Cosmic Barrier</td><td>11s (5%)</td></tr>
+      <tr><td>F9</td><td>5:15</td><td style="color:var(--yellow)">4:26</td><td class="phase-p2">P2</td><td>Bursting Emptiness</td><td>49s (16%)</td></tr>
+      <tr><td>F11</td><td>3:47</td><td style="color:var(--yellow)">3:36</td><td class="phase-p2">P2</td><td>Cosmic Barrier</td><td>11s (5%)</td></tr>
+      <tr><td>F12</td><td>4:47</td><td style="color:var(--yellow)">4:31</td><td class="phase-p2">P2</td><td>Void Remnants</td><td>16s (6%)</td></tr>
+      <tr><td>F16</td><td>3:05</td><td style="color:var(--yellow)">2:59</td><td class="phase-p2">P2</td><td>Unknown</td><td>6s (3%)</td></tr>
+      <tr><td>F17</td><td>3:55</td><td style="color:var(--yellow)">3:52</td><td class="phase-p2">P2</td><td>Cosmic Barrier</td><td>3s (1%)</td></tr>
+      <tr><td>F18</td><td>4:23</td><td style="color:var(--yellow)">4:05</td><td class="phase-p2">P2</td><td>Void Remnants</td><td>18s (7%)</td></tr>
+      <tr><td>F20</td><td>5:15</td><td style="color:var(--yellow)">4:51</td><td class="phase-p2">P2</td><td>Bursting Emptiness</td><td>24s (8%)</td></tr>
+      <tr><td>F19</td><td>6:09</td><td style="color:var(--red)">5:10</td><td class="phase-p3">P3</td><td>Unknown</td><td>59s (16%)</td></tr>
+      <tr><td>F23</td><td>6:25</td><td style="color:var(--red)">5:42</td><td class="phase-p3">P3</td><td>Unknown</td><td>43s (11%)</td></tr>
+      <tr><td>F25</td><td>6:44</td><td style="color:var(--red)">6:31</td><td class="phase-p3">P3</td><td>Voidstalker Sting</td><td>13s (3%)</td></tr>
+    </tbody>
+  </table>
+
+  <div style="font-size: 13px; color: var(--dim); margin-top: 8px; margin-bottom: 16px;">
+    <strong>Death cause breakdown:</strong> Void Remnants (3) &middot; Cosmic Barrier (3) &middot; Silverstrike Arrow/Barrage (3) &middot; Bursting Emptiness (2) &middot;
+    Voidstalker Sting (1) &middot; Echoing Darkness (1) &middot; Melee (1) &middot; Unknown (5)
+  </div>
+
+  <div class="two-col">
+    <div class="verdict" style="border-left-color: var(--yellow);">
+      <h3>P1 Deaths (6): Positioning Mechanics</h3>
+      <p>Silverstrike Arrow (2 kills) fires at specific players during Sentinel phase &mdash; requires pre-positioning.
+      Echoing Darkness (Vorelus) is avoidable ground damage. One Melee death suggests being in tank range.
+      These are all avoidable &mdash; P1 healing pressure is low (136.8K HPS), so deaths here are pure positioning failures, not throughput issues.</p>
+    </div>
+    <div class="verdict critical">
+      <h3>P2 Deaths (9): The Progression Wall</h3>
+      <p>Cosmic Barrier is persistent ticking damage during P2 that requires active mitigation. Void Remnants are ground zones that must be dodged.
+      Bursting Emptiness overlaps with other P2 mechanics creating lethal damage combinations.
+      The consistent pattern of dying 3:30-4:50 into the fight suggests P2 mechanic execution is the primary blocker for this player.
+      Divine Protection and Divine Shield should be mapped to specific P2 overlap windows.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Death Forensics - Fight 25 -->
+<div class="section">
+  <h2>Death Forensics &mdash; Fight 25 (Died at 6:31)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Last 15 seconds of damage intake. Voidstalker Sting was ticking every second for 53-85K while Cosmic Barrier dealt 20-25K per tick simultaneously.
+    Total incoming DPS in this window exceeded 75K/second with escalating Voidstalker Sting damage.
+  </p>
+  <div class="forensic">
+<span class="dmg">375.9s  Cosmic Barrier         20,080 dmg  (+5,020 abs)</span>
+<span class="dmg">376.7s  Voidstalker Sting      55,365 dmg</span>
+<span class="dmg">376.9s  Cosmic Barrier         24,588 dmg</span>
+<span class="dmg">377.7s  Voidstalker Sting      54,789 dmg</span>
+<span class="dmg">377.9s  Cosmic Barrier         24,332 dmg</span>
+<span class="dmg">378.7s  Voidstalker Sting      53,635 dmg</span>
+<span class="dmg">378.9s  Cosmic Barrier         19,056 dmg  (+4,764 abs)</span>
+<span class="dmg">379.7s  Voidstalker Sting      54,212 dmg</span>
+<span class="dmg">379.9s  Cosmic Barrier         24,075 dmg</span>
+<span class="dmg">380.7s  Voidstalker Sting      53,635 dmg</span>
+<span class="dmg">381.7s  Voidstalker Sting      31,720 dmg  (+16,604 abs)</span>
+<span class="dmg">382.7s  Voidstalker Sting      53,693 dmg</span>
+<span class="dmg">383.7s  Voidstalker Sting      52,597 dmg</span>
+<span class="dmg">384.7s  Voidstalker Sting      52,049 dmg</span>
+<span style="color:var(--orange)">385.7s  Voidstalker Sting      28,358 dmg  (+18,486 abs)  -- shields breaking</span>
+<span class="dmg">386.7s  Voidstalker Sting      54,240 dmg</span>
+<span style="color:var(--red); font-weight:600">387.7s  Voidstalker Sting      84,778 dmg  -- ESCALATING</span>
+<span style="color:var(--red); font-weight:600">388.7s  Voidstalker Sting      83,047 dmg</span>
+<span class="dmg">388.9s  Void Expulsion         41,492 dmg  -- additional mechanic hit</span>
+<span style="color:var(--red); font-weight:600">389.7s  Voidstalker Sting      81,318 dmg</span>
+<span class="dead">390.7s  Voidstalker Sting      66,637 dmg  (11,220 overkill) -- DEAD</span>
+  </div>
+
+  <div class="verdict" style="margin-top: 12px; border-left-color: var(--orange);">
+    <h3>Death Analysis: Voidstalker Sting Escalation in P3</h3>
+    <p>Voidstalker Sting started at ~54K/tick and escalated to 84K/tick in the final seconds. Combined with Cosmic Barrier's steady 24K/tick and a Void Expulsion hit,
+    total incoming damage exceeded 100K/second. This is P3 stacking mechanics &mdash; Voidstalker Sting damage increases the longer the debuff persists.
+    At 6:31 into the fight with the team at 42.77% boss HP, this is expected P3 lethality. Blessing of Sacrifice was active (visible as self-damage), redirecting
+    damage from another player while Dueche was already under heavy pressure. Consider not using BoSac during personal high-damage windows in P3.</p>
+  </div>
+</div>
+
+<!-- Healer Team Ranking -->
+<div class="section">
+  <h2>Healer Team Comparison &mdash; Session Averages</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Player</th><th>Spec</th><th>Avg HPS</th><th>Best HPS</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td>1</td>
+        <td><strong style="color:var(--paladin)">Dueche</strong></td>
+        <td>Holy Paladin</td>
+        <td style="color:var(--green)">164.9K</td>
+        <td>210.4K (F21)</td>
+        <td style="font-size:12px;color:var(--dim)">Highest avg HPS but 19/20 deaths</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong style="color:var(--monk)">Senssay</strong></td>
+        <td>MW Monk</td>
+        <td>144.3K</td>
+        <td>170.0K (F9)</td>
+        <td style="font-size:12px;color:var(--dim)">43.8K on F25 suggests early death on longest pull</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong style="color:var(--shaman)">Brewtote</strong></td>
+        <td>Resto Shaman</td>
+        <td>144.1K</td>
+        <td>171.0K (F21)</td>
+        <td style="font-size:12px;color:var(--dim)">Consistent output, best SLT/Asc coverage</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong style="color:var(--druid)">Silencio</strong></td>
+        <td>Resto Druid</td>
+        <td>138.0K</td>
+        <td>164.4K (F23)</td>
+        <td style="font-size:12px;color:var(--dim)">65K on F13 (likely early death). Heavy Convoke usage.</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    HPS comparisons across prog pulls are approximate &mdash; healers who die early inflate surviving healers' numbers (more damage to heal, fewer healers).
+    Dueche's highest avg HPS is partly because HPal's throughput ceiling during Avenging Wrath windows is very high, but 19/20 deaths mean this output was cut short in nearly every pull.
+  </div>
+</div>
+
+<!-- Reference Comparison (De-Emphasized) -->
+<div class="section">
+  <h2>Reference Comparison <span style="font-size: 12px; color: var(--dim); font-weight: 400;">(de-emphasized for prog)</span></h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Top-ranked Holy Paladins on Mythic Crown kills. These players have kills with full-length fights &mdash; direct HPS comparison to prog pulls is not meaningful.
+    Shown for context on what throughput looks like in a successful kill.
+  </p>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Palearya</td><td>226,690</td><td>7:44</td><td>291</td></tr>
+      <tr><td>2</td><td>Nostpala</td><td>217,444</td><td>7:14</td><td>291</td></tr>
+      <tr><td>3</td><td>Holynurse</td><td>215,219</td><td>7:38</td><td>291</td></tr>
+      <tr><td>4</td><td>Nexxey</td><td>214,357</td><td>7:02</td><td>291</td></tr>
+      <tr><td>5</td><td>&#xC300;&#xC220;</td><td>211,505</td><td>7:41</td><td>291</td></tr>
+      <tr class="highlight-row"><td>&mdash;</td><td><strong style="color:var(--paladin)">Dueche</strong></td><td>164,870 avg</td><td>Prog (no kill)</td><td>275</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    16 ilvl gap between Dueche (275) and top-ranked players (291). This is significant &mdash; higher ilvl means more intellect, bigger heals, and more stamina to survive mechanics.
+    Gear progression will naturally close part of the HPS gap. Best pull HPS (210K on F21) is within ~10% of top-ranked throughput when normalized for ilvl difference.
+  </div>
+</div>
+
+<!-- Per-Fight Overheal Trend -->
+<div class="section">
+  <h2>Overheal % Across Session</h2>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Duration</th><th>HPS</th><th>OH%</th><th style="width:200px">OH Distribution</th><th>DPS</th><th>Boss %</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>F5</td><td>3:48</td><td>179K</td><td style="color:var(--yellow)">30.7%</td><td><div class="oh-bar"><div class="effective" style="width:69%"></div><div class="overheal" style="width:31%"></div></div></td><td>1,747</td><td>50%</td></tr>
+      <tr><td>F6</td><td>3:53</td><td>157K</td><td style="color:var(--yellow)">33.9%</td><td><div class="oh-bar"><div class="effective" style="width:66%"></div><div class="overheal" style="width:34%"></div></div></td><td>1,425</td><td>47%</td></tr>
+      <tr><td>F7</td><td>1:17</td><td>155K</td><td style="color:var(--red)">38.1%</td><td><div class="oh-bar"><div class="effective" style="width:62%"></div><div class="overheal" style="width:38%"></div></div></td><td>0</td><td>84%</td></tr>
+      <tr><td>F8</td><td>1:21</td><td>179K</td><td style="color:var(--yellow)">30.8%</td><td><div class="oh-bar"><div class="effective" style="width:69%"></div><div class="overheal" style="width:31%"></div></div></td><td>0</td><td>82%</td></tr>
+      <tr><td>F9</td><td>5:15</td><td>139K</td><td style="color:var(--yellow)">35.0%</td><td><div class="oh-bar"><div class="effective" style="width:65%"></div><div class="overheal" style="width:35%"></div></div></td><td>2,383</td><td>33%</td></tr>
+      <tr><td>F10</td><td>2:00</td><td>189K</td><td style="color:var(--green)">27.0%</td><td><div class="oh-bar"><div class="effective" style="width:73%"></div><div class="overheal" style="width:27%"></div></div></td><td>0</td><td>71%</td></tr>
+      <tr><td>F11</td><td>3:47</td><td>152K</td><td style="color:var(--yellow)">35.0%</td><td><div class="oh-bar"><div class="effective" style="width:65%"></div><div class="overheal" style="width:35%"></div></div></td><td>951</td><td>50%</td></tr>
+      <tr><td>F12</td><td>4:47</td><td>146K</td><td style="color:var(--green)">29.8%</td><td><div class="oh-bar"><div class="effective" style="width:70%"></div><div class="overheal" style="width:30%"></div></div></td><td>2,676</td><td>42%</td></tr>
+      <tr style="background:rgba(63,185,80,0.05)"><td>F13</td><td>6:01</td><td>150K</td><td style="color:var(--yellow)">33.4%</td><td><div class="oh-bar"><div class="effective" style="width:67%"></div><div class="overheal" style="width:33%"></div></div></td><td>2,657</td><td>32%</td></tr>
+      <tr><td>F14</td><td>1:26</td><td>180K</td><td style="color:var(--green)">26.5%</td><td><div class="oh-bar"><div class="effective" style="width:74%"></div><div class="overheal" style="width:26%"></div></div></td><td>0</td><td>81%</td></tr>
+      <tr><td>F15</td><td>3:05</td><td>163K</td><td style="color:var(--yellow)">30.3%</td><td><div class="oh-bar"><div class="effective" style="width:70%"></div><div class="overheal" style="width:30%"></div></div></td><td>0</td><td>62%</td></tr>
+      <tr><td>F16</td><td>3:05</td><td>155K</td><td style="color:var(--yellow)">34.5%</td><td><div class="oh-bar"><div class="effective" style="width:66%"></div><div class="overheal" style="width:34%"></div></div></td><td>0</td><td>62%</td></tr>
+      <tr><td>F17</td><td>3:55</td><td>180K</td><td style="color:var(--yellow)">34.4%</td><td><div class="oh-bar"><div class="effective" style="width:66%"></div><div class="overheal" style="width:34%"></div></div></td><td>1,955</td><td>48%</td></tr>
+      <tr><td>F18</td><td>4:23</td><td>176K</td><td style="color:var(--green)">23.6%</td><td><div class="oh-bar"><div class="effective" style="width:76%"></div><div class="overheal" style="width:24%"></div></div></td><td>925</td><td>43%</td></tr>
+      <tr><td>F19</td><td>6:09</td><td>130K</td><td style="color:var(--yellow)">31.7%</td><td><div class="oh-bar"><div class="effective" style="width:68%"></div><div class="overheal" style="width:32%"></div></div></td><td>743</td><td>36%</td></tr>
+      <tr><td>F20</td><td>5:15</td><td>157K</td><td style="color:var(--yellow)">33.2%</td><td><div class="oh-bar"><div class="effective" style="width:67%"></div><div class="overheal" style="width:33%"></div></div></td><td>1,570</td><td>35%</td></tr>
+      <tr><td>F21</td><td>2:03</td><td style="color:var(--green)">210K</td><td style="color:var(--green)">29.6%</td><td><div class="oh-bar"><div class="effective" style="width:70%"></div><div class="overheal" style="width:30%"></div></div></td><td>0</td><td>67%</td></tr>
+      <tr><td>F22</td><td>1:32</td><td>157K</td><td style="color:var(--red)">36.4%</td><td><div class="oh-bar"><div class="effective" style="width:64%"></div><div class="overheal" style="width:36%"></div></div></td><td>0</td><td>75%</td></tr>
+      <tr><td>F23</td><td>6:25</td><td>152K</td><td style="color:var(--yellow)">30.4%</td><td><div class="oh-bar"><div class="effective" style="width:70%"></div><div class="overheal" style="width:30%"></div></div></td><td>2,345</td><td>31%</td></tr>
+      <tr><td>F25</td><td>6:44</td><td style="color:var(--green)">189K</td><td style="color:var(--green)">24.0%</td><td><div class="oh-bar"><div class="effective" style="width:76%"></div><div class="overheal" style="width:24%"></div></div></td><td>2,764</td><td>43%</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim);">
+    Overheal trends down on longer pulls: F18 (23.6%), F25 (24.0%). Short P1 wipes tend to have higher overheal (F7: 38.1%) because P1 damage is low.
+    This is a positive trend &mdash; Dueche becomes more efficient as fights get longer and damage increases.
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Items</h2>
+
+  <div class="action-card critical">
+    <h4>1. Survive P2 Mechanics &mdash; Cosmic Barrier and Void Remnants</h4>
+    <p>9 of 19 deaths occurred in Phase 2, with Cosmic Barrier (3 kills) and Void Remnants (3 kills) as the primary causes.
+    Cosmic Barrier is persistent ticking damage that requires active mitigation &mdash; Divine Protection should be used on CD during P2 when Cosmic Barrier is active.
+    Void Remnants are ground zones that must be dodged immediately. Map out a P2 personal CD plan: Divine Protection for the first Cosmic Barrier window,
+    Divine Shield as emergency when Cosmic Barrier overlaps with Rift Slash or Voidstalker Sting. On the best pull (F13, only survival), both AW and AM were used
+    at 52s and 270s &mdash; the P2 CD usage on that pull may hold the key.</p>
+  </div>
+
+  <div class="action-card critical">
+    <h4>2. Establish Consistent Aura Mastery Timing</h4>
+    <p>Aura Mastery was only used in 11/20 pulls with a timing stddev of 98.1 seconds. Compare to Avenging Wrath at 1.3s stddev &mdash; the opening AW is locked in,
+    but AM has no established pattern. This is Holy Paladin's most impactful raid CD. Work with the healing team to assign AM to a specific boss ability window:
+    either the first Grasp of Emptiness (around 0:25) or the first Null Corona (around 0:20) in P1, and then again for a P2 mechanic overlap.
+    A 3-minute CD used predictably at the same boss event every pull gives the raid more reliable damage reduction than a reactive AM that sometimes never gets pressed.</p>
+  </div>
+
+  <div class="action-card critical">
+    <h4>3. Reduce P1 Deaths &mdash; Clean Mechanics Before Healing Pressure</h4>
+    <p>6 deaths in P1 where healing demand is lowest (136.8K HPS, 37.8% overheal). Silverstrike Arrow killed Dueche twice &mdash; this is a targeted ability requiring
+    pre-positioning before it fires. Echoing Darkness (Vorelus) is ground damage that must be dodged. One Melee death at 2:02 suggests being too close to an enemy.
+    P1 is the "free" phase with low pressure &mdash; dying here means the team loses a healer for the hard parts. Focus on personal positioning during Vorelus and
+    Morium mechanics, and be at range from adds.</p>
+  </div>
+
+  <div class="action-card important">
+    <h4>4. Plan Team CD Coverage for Intermission and Early P2</h4>
+    <p>On Fight 25 (longest pull), the Intermission (Stellar Emission, 2:14-2:53) had zero healer CDs deployed. Early P2 (2:53-4:20) also had no healer CDs until
+    Brewtote's SLT at 4:23. The team survived, but if intermission damage increases or early P2 gets harder, there is no CD safety net for 2+ minutes.
+    Coordinate with the healing team to place at least one healer CD in early P2 (Dueche's second AW is naturally available around 2:08-2:30, align with P2 start).</p>
+  </div>
+
+  <div class="action-card positive">
+    <h4>5. Core Rotation is Solid</h4>
+    <p>Holy Shock at 16.1 CPM, Light of Dawn at 8.8 CPM, Divine Toll at 1.4 CPM &mdash; the core Holy Paladin rotation is well-executed on the longest pull.
+    24.5% overheal on Fight 25 is excellent for prog. The Herald of the Sun build is performing well with Dawnlight, Sun Sear, and Litany of Light contributing meaningful
+    passive healing. The throughput fundamentals are not the issue &mdash; survival is the bottleneck. When Dueche stays alive (F13), the output is there to support the team.</p>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p><strong>Data source:</strong> Report <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a>
+  &middot; Fights 5-25 (20 pulls, fight 24 excluded as reset) &middot; Mythic Crown of the Cosmos (encounter 3181)</p>
+  <p><strong>Reference players:</strong> Top 5 Holy Paladin HPS rankings on Mythic Crown (all ilvl 291, kills 7:02-7:44)</p>
+  <p><strong>Analysis context:</strong> Progression Night 3, no kill. Dueche ilvl 275 vs reference ilvl 291 (16-point gap).
+  Herald of the Sun hero talent build. Analysis focused on survival patterns and CD discipline rather than throughput comparison.</p>
+  <p style="margin-top: 8px;">Generated by WCL Healer Analyzer &middot; Phase-aware prog mode</p>
+</div>
+
+</body>
+</html>

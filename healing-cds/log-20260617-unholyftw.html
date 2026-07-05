@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unholyftw &mdash; Unholy Death Knight &mdash; Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .legend { display: flex; gap: 16px; font-size: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Unholyftw <span class="dim">&mdash; Unholy Death Knight</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">126.9K</div>
+    <div class="stat-label">DPS (Full Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289.7</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">Died 7:39</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">48.0</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--orange); margin-top: 16px;">
+  <div class="card-header orange">Bottom Line</div>
+  <p style="font-size: 15px;">Unholyftw parsed <strong class="red">126.9K DPS</strong> on the kill, compared to Pickltoez's <strong class="green">186.3K</strong> reference &mdash; a <strong class="red">32% gap</strong> despite a <strong class="green">33 ilvl advantage</strong> (289.7 vs 256.5). The core issue is <strong class="red">Scourge Strike CPM at 16.7 vs 24.4</strong> (&minus;32%), <strong class="red">Graveyard at 1.0 vs 4.4 CPM</strong> (&minus;77%), and <strong class="yellow">Outbreak over-casting at 2.6 vs 0.1 CPM</strong>. With <strong>7 talent diffs</strong>, the DPS gap is overwhelmingly execution-based &mdash; too many GCDs lost to Outbreak re-applications, not enough Scourge Strike filler, and severely underusing Graveyard. Unholyftw died at 7:39 to Festering Vines (19s before kill), contributing ~126.9K DPS across 7:39 alive time.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Unholy Death Knights on Mythic Rotmire. Primary reference: <strong>Pickltoez</strong> (closest talent match at 7 diffs, 186K DPS, 6:53 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Unholyftw</strong> <span class="death-marker">died 7:39</span></td>
+      <td class="red">126,862</td>
+      <td>7:58</td>
+      <td>289.7</td>
+      <td>&mdash;</td>
+      <td>48.0</td>
+    </tr>
+    <tr>
+      <td>&#1061;&#1086;&#1083;&#1086;&#1076;&#1080;&#1084;&#1099;&#1095; <span class="ref-badge">#1</span></td>
+      <td class="green">210,645</td>
+      <td>5:51</td>
+      <td>288.9</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#1056;&#1072;&#1082;&#1077;&#1090;&#1099;&#1095;&#1100; <span class="ref-badge">#2</span></td>
+      <td class="green">195,570</td>
+      <td>5:51</td>
+      <td>270.6</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>G&agrave;rrosh <span class="ref-badge">#3</span></td>
+      <td class="green">192,803</td>
+      <td>7:46</td>
+      <td>290.6</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Pickltoez <span class="ref-badge">#4 PRIMARY</span></td>
+      <td class="green">186,327</td>
+      <td>6:53</td>
+      <td>256.5</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td>55.3</td>
+    </tr>
+    <tr>
+      <td>Maxmeyer <span class="ref-badge">#5</span></td>
+      <td class="green">181,673</td>
+      <td>6:47</td>
+      <td>290.3</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Pickltoez (256.5 ilvl) is the primary reference with the fewest talent diffs (7). Despite being <strong>33 ilvl lower</strong>, Pickltoez does <strong>47% more DPS</strong>. This confirms the gap is execution, not gear. All 5 references survived their kills; Unholyftw died 19 seconds before the boss fell.</p>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major events. Fungal Bloom fires on a ~136s cycle. Festering Vines repeats ~68s. Unholyftw survived through all 3 Blooms and died to Festering Vines at 7:39.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Death marker -->
+  <div class="timeline-marker" style="left: 95.9%; border-color: var(--text); width: 2px;">
+    <span class="timeline-label" style="bottom: 2px; right: 6px; color: var(--red); font-weight: 700;">&#x2620; DEAD (7:39)</span>
+  </div>
+  <!-- Alive zone -->
+  <div style="position: absolute; left: 0; top: 0; width: 95.9%; height: 100%; background: rgba(63,185,80,0.06); border-right: 2px dashed var(--red);"></div>
+  <div style="position: absolute; left: 95.9%; top: 0; width: 4.1%; height: 100%; background: rgba(248,81,73,0.04);">
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<!-- RAID STATE -->
+<div class="card">
+  <div class="card-header">Raid State &mdash; Death Timeline</div>
+  <p style="font-size: 14px; margin-bottom: 8px;">Kill fight deaths (8 total). The raid ran clean until 3:07, then lost players progressively.</p>
+  <div style="font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8;">
+    <div><span class="dim" style="display:inline-block;width:60px;">0:00</span> <span class="green">19/19 alive</span></div>
+    <div><span class="dim" style="display:inline-block;width:60px;">3:07</span> <span class="death-marker">Tiareynna</span> &rarr; Writhing Vines <span class="dim">&mdash; 18/19</span></div>
+    <div><span class="dim" style="display:inline-block;width:60px;">6:07</span> <span class="death-marker">Nurnyx</span> <span class="death-marker">Snackznchill</span> <span class="death-marker">Son&igrave;c</span> &rarr; Festering Vines <span class="dim">&mdash; 15/19</span></div>
+    <div><span class="dim" style="display:inline-block;width:60px;">6:40</span> <span class="death-marker">Zinnks</span> &rarr; Fungal Bloom <span class="dim">&mdash; 14/19</span></div>
+    <div><span class="dim" style="display:inline-block;width:60px;">7:38</span> <span class="death-marker">Invincibale</span> &rarr; Festering Vines <span class="dim">&mdash; 13/19</span></div>
+    <div><span class="dim" style="display:inline-block;width:60px;">7:39</span> <span class="death-marker">Unholyftw</span> &rarr; Festering Vines <span class="dim">&mdash; 12/19</span></div>
+    <div><span class="dim" style="display:inline-block;width:60px;">7:40</span> <span class="death-marker">Nucke</span> &rarr; Melee <span class="dim">&mdash; 11/19 (boss dies ~7:58)</span></div>
+  </div>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Unholyftw (7:58 fight, died 7:39) vs Pickltoez (6:53 full fight). Abilities sorted by impact on Unholy DK performance. Rotational abilities are the primary focus.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Unholyftw CPM</th>
+      <th>Casts</th>
+      <th>Pickltoez CPM</th>
+      <th>Casts</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Scourge Strike</strong></td>
+      <td class="red"><strong>16.7</strong></td>
+      <td>133</td>
+      <td>24.4</td>
+      <td>168</td>
+      <td class="red">&minus;32%</td>
+      <td><span class="tag tag-crit">LOW</span></td>
+    </tr>
+    <tr>
+      <td>Death Coil</td>
+      <td class="green">8.8</td>
+      <td>70</td>
+      <td>6.8</td>
+      <td>47</td>
+      <td class="green">+29%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Necrotic Coil</td>
+      <td class="green">4.5</td>
+      <td>36</td>
+      <td>3.8</td>
+      <td>26</td>
+      <td class="green">+20%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Graveyard</strong></td>
+      <td class="red"><strong>1.0</strong></td>
+      <td>8</td>
+      <td>4.4</td>
+      <td>30</td>
+      <td class="red">&minus;77%</td>
+      <td><span class="tag tag-crit">VERY LOW</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Festering Scythe</td>
+      <td class="yellow">1.8</td>
+      <td>14</td>
+      <td>3.2</td>
+      <td>22</td>
+      <td class="yellow">&minus;45%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Festering Strike</td>
+      <td>2.6</td>
+      <td>21</td>
+      <td>3.2</td>
+      <td>22</td>
+      <td class="dim">&minus;17%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Outbreak</strong></td>
+      <td class="yellow"><strong>2.6</strong></td>
+      <td>21</td>
+      <td>0.1</td>
+      <td>1</td>
+      <td class="yellow">+1,716%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr>
+      <td>Soul Reaper</td>
+      <td>1.6</td>
+      <td>13</td>
+      <td>1.9</td>
+      <td>13</td>
+      <td class="dim">&minus;14%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Dark Transformation</td>
+      <td>1.3</td>
+      <td>10</td>
+      <td>1.3</td>
+      <td>9</td>
+      <td class="dim">&minus;4%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Putrefy</td>
+      <td>1.0</td>
+      <td>8</td>
+      <td>1.5</td>
+      <td>10</td>
+      <td class="dim">&minus;31%</td>
+      <td><span class="tag tag-info">Minor</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Epidemic</td>
+      <td class="yellow">0.6</td>
+      <td>5</td>
+      <td>1.3</td>
+      <td>9</td>
+      <td class="yellow">&minus;52%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Army of the Dead</td>
+      <td>0.6</td>
+      <td>5</td>
+      <td>0.7</td>
+      <td>5</td>
+      <td class="dim">&minus;14%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Anti-Magic Shell</td>
+      <td>0.6</td>
+      <td>5</td>
+      <td>0.7</td>
+      <td>5</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Potion of Recklessness</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Death Grip</td>
+      <td>1.0</td>
+      <td>8</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Utility</span></td>
+    </tr>
+    <tr>
+      <td>Death Charge</td>
+      <td>0.9</td>
+      <td>7</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Movement</span></td>
+    </tr>
+    <tr>
+      <td>Chains of Ice</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Utility</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Scourge Strike Deficit</div>
+    <p style="font-size: 14px;">Scourge Strike is the primary rune spender and core rotational ability for Unholy DK. Unholyftw averaged <strong>16.7 CPM</strong> vs Pickltoez at <strong>24.4 CPM</strong> &mdash; a 32% deficit, which translates to roughly <strong>35 missing Scourge Strike casts</strong> over the fight length. Part of this gap is explained by the 21 Outbreak casts consuming GCDs that should have gone to Scourge Strike. The remaining gap (~14 casts) suggests periods of downtime or inefficient resource management between rune regeneration cycles.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Outbreak Over-casting</div>
+    <p style="font-size: 14px;">Outbreak applies Virulent Plague to all nearby enemies. It should be cast <strong>once per target</strong> (the DoT does not stack), then refreshed by Scourge Strike / Festering Strike via Pestilence. Unholyftw cast Outbreak <strong>21 times (2.6 CPM)</strong> vs Pickltoez's <strong>1 cast (0.1 CPM)</strong>. That is <strong>20 wasted GCDs</strong> &mdash; time that should have been spent on Scourge Strike or Festering Strike. Every unnecessary Outbreak is a rune spender that does not generate meaningful damage.</p>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top: 0;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Graveyard Usage</div>
+    <p style="font-size: 14px;">Graveyard is a significant damage source contributing <strong>9.1% of Pickltoez's total damage</strong> (7,144K). Unholyftw cast it only <strong>8 times (1.0 CPM)</strong> vs Pickltoez's <strong>30 casts (4.4 CPM)</strong> &mdash; a 77% deficit. Graveyard contributed just <strong>3.6% of Unholyftw's damage</strong> (2,209K). This is a major missed opportunity and likely the single biggest contributor to the DPS gap after Scourge Strike.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Festering Scythe + Epidemic</div>
+    <p style="font-size: 14px;">Festering Scythe at <strong>1.8 CPM vs 3.2 CPM</strong> (&minus;45%) and Epidemic at <strong>0.6 CPM vs 1.3 CPM</strong> (&minus;52%) suggest Unholyftw is not maximizing AoE during add phases. Pickltoez squeezes nearly twice as many Festering Scythe procs and Epidemic casts, which adds up especially during Rotmire's frequent Shroomling spawns where cleave damage matters.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Top damage sources for Unholyftw (60.6M total, 126.9K DPS) vs Pickltoez (78.1M total, 186.3K DPS). Sorted by contribution.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Unholyftw</th><th>%</th><th></th><th>Pickltoez</th><th>%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Melee</strong></td>
+      <td>6,494K</td>
+      <td>10.7%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 73%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>7,223K</td>
+      <td>9.2%</td>
+    </tr>
+    <tr>
+      <td><strong>Putrefy</strong></td>
+      <td>5,295K</td>
+      <td>8.7%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 60%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>8,870K</td>
+      <td>11.4%</td>
+    </tr>
+    <tr>
+      <td><strong>Shadow Bolt</strong> <span class="dim">(pet)</span></td>
+      <td>4,763K</td>
+      <td>7.9%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 64%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>7,447K</td>
+      <td>9.5%</td>
+    </tr>
+    <tr>
+      <td><strong>Sweeping Claws</strong> <span class="dim">(pet)</span></td>
+      <td>4,330K</td>
+      <td>7.1%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 63%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>6,837K</td>
+      <td>8.8%</td>
+    </tr>
+    <tr>
+      <td><strong>Scourge Strike</strong></td>
+      <td>4,061K</td>
+      <td>6.7%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 82%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>4,949K</td>
+      <td>6.3%</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Graveyard</strong></td>
+      <td class="red">2,209K</td>
+      <td class="red">3.6%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 31%; background: var(--red);"></div>
+        </div>
+      </td>
+      <td>7,144K</td>
+      <td>9.1%</td>
+    </tr>
+    <tr>
+      <td>Dread Plague</td>
+      <td>3,428K</td>
+      <td>5.7%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 100%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>2,774K</td>
+      <td>3.6%</td>
+    </tr>
+    <tr>
+      <td>Death Coil</td>
+      <td>3,425K</td>
+      <td>5.7%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 100%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>2,458K</td>
+      <td>3.1%</td>
+    </tr>
+    <tr>
+      <td>Necrotic Coil</td>
+      <td>2,881K</td>
+      <td>4.8%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 100%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>1,863K</td>
+      <td>2.4%</td>
+    </tr>
+    <tr>
+      <td>Pestilence</td>
+      <td>2,752K</td>
+      <td>4.5%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 83%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>3,305K</td>
+      <td>4.2%</td>
+    </tr>
+    <tr>
+      <td>Ruptured Viscera</td>
+      <td>2,746K</td>
+      <td>4.5%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 97%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>2,822K</td>
+      <td>3.6%</td>
+    </tr>
+    <tr>
+      <td>Virulent Plague</td>
+      <td>2,713K</td>
+      <td>4.5%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 92%; background: var(--accent);"></div>
+        </div>
+      </td>
+      <td>2,954K</td>
+      <td>3.8%</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Epidemic</td>
+      <td class="yellow">2,032K</td>
+      <td>3.4%</td>
+      <td>
+        <div class="dmg-bar" style="width: 120px;">
+          <div class="dmg-fill" style="width: 66%; background: var(--yellow);"></div>
+        </div>
+      </td>
+      <td>3,089K</td>
+      <td>4.0%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--accent);">
+  <div class="card-header">Key Damage Comparison</div>
+  <p style="font-size: 14px;">The single biggest damage source gap is <strong class="red">Graveyard</strong>: Pickltoez gets 7,144K (9.1% of total) while Unholyftw gets only 2,209K (3.6%). That is a <strong>4,935K raw damage gap</strong> from one ability alone, worth roughly <strong>10.3K DPS</strong> over the fight. Combined with the Scourge Strike, Putrefy, and pet damage deficits, these rotational gaps account for the majority of the 59.5K DPS difference.</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Total damage taken: 22.0M across 652 events. Most damage is unavoidable raid-wide mechanics (Rotting Pustules, Fungal Bloom). Death cause: Festering Vines at 7:39.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total</th><th>Hits</th><th>Avoidable?</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td>12,405K</td>
+      <td>449</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+      <td>Stacking soft enrage, ticks on entire raid</td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2,812K</td>
+      <td>44</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+      <td>Periodic raid damage</td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>2,512K</td>
+      <td>35</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+      <td>Major raid-wide at 100 energy</td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>2,451K</td>
+      <td>103</td>
+      <td><span class="tag tag-warn">Partially</span></td>
+      <td>Includes boss melee and add hits &mdash; expected for melee</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Festering Vines</strong></td>
+      <td class="red">1,503K</td>
+      <td>19</td>
+      <td><span class="tag tag-diff">Avoidable</span></td>
+      <td><strong>Killing blow at 7:39.</strong> Root mechanic &mdash; break free by kiting</td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>278K</td>
+      <td>1</td>
+      <td><span class="tag tag-warn">Partially</span></td>
+      <td>Add death explosion &mdash; proximity damage</td>
+    </tr>
+    <tr>
+      <td>Blightshot</td>
+      <td>62K</td>
+      <td>1</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+      <td>Boss ability, single hit</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Festering Vines was the killing blow. 19 ticks of damage suggests Unholyftw was rooted for an extended period and unable to break free. Late in the fight (7:39), the raid had already lost 6 players and healing was thin. AMS was available and was used 5 times throughout the fight, but positioning or root management was the fatal issue.</p>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs Received</h2>
+<p class="section-intro">Key external buffs that influenced DPS output. Both Unholyftw and Pickltoez had lust on pull.</p>
+
+<div class="grid-3">
+  <div class="card">
+    <div class="card-header cyan">Bloodlust / Heroism</div>
+    <p style="font-size: 14px;"><strong class="green">Time Warp at 0:00</strong> (pull)</p>
+    <p class="dim" style="font-size: 12px;">Pickltoez also had Heroism at 0:01 &mdash; same timing</p>
+  </div>
+  <div class="card">
+    <div class="card-header cyan">Augmentation Evoker</div>
+    <p style="font-size: 14px;"><strong>Ebon Might</strong> &times;11 applications</p>
+    <p style="font-size: 14px;"><strong>Prescience</strong> &times;9 applications</p>
+    <p class="dim" style="font-size: 12px;">Aug Evoker (Zinnks) present &mdash; likely boosted Unholyftw's DPS by ~5-8%</p>
+  </div>
+  <div class="card">
+    <div class="card-header cyan">Consumables</div>
+    <p style="font-size: 14px;"><strong class="green">Potion of Recklessness</strong> &times;2</p>
+    <p style="font-size: 14px;">Pre-pot at 0:03, second pot at 6:23</p>
+    <p style="font-size: 14px;"><strong>Blood Fury</strong> (racial) &times;4</p>
+    <p class="dim" style="font-size: 12px;">Good consumable usage, double-potted and used racial on cooldown</p>
+  </div>
+</div>
+
+<!-- DEFENSIVE USAGE -->
+<h2>Defensive Usage</h2>
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Uses</th><th>Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Anti-Magic Shell</td>
+      <td>5</td>
+      <td>4:11, 5:14, 5:54, 6:40, 7:20</td>
+      <td><span class="tag tag-same">Good</span> Used on CD for Bloom and Pustule mitigation</td>
+    </tr>
+    <tr>
+      <td>Anti-Magic Zone</td>
+      <td>1</td>
+      <td>Kill fight &mdash; 1 use</td>
+      <td><span class="tag tag-same">OK</span> Raid utility CD</td>
+    </tr>
+    <tr>
+      <td>Icebound Fortitude</td>
+      <td>1</td>
+      <td>6:44</td>
+      <td><span class="tag tag-warn">Late</span> Only used once near end of fight</td>
+    </tr>
+    <tr>
+      <td>Death Pact</td>
+      <td>1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Emergency</span> Used once</td>
+    </tr>
+    <tr>
+      <td>Healthstone</td>
+      <td>1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">DPS across all 20 pulls (19 wipes + kill). Short wipes (&lt;2 min) inflate DPS due to burst-phase bias. Only pulls &gt;3 minutes provide meaningful DPS trends. Best long pull: #17 at 121,869 DPS (5:45).</p>
+
+<div class="card">
+<div class="progression-chart">
+  <!-- Fight 2: 1:12, 134K DPS, wipe 81% -->
+  <div class="prog-bar" style="height: 15%; background: var(--red);" data-tooltip="#2 | 1:12 | 134K DPS | 81%"></div>
+  <!-- Fight 3: 1:10, 139K DPS, wipe 80% -->
+  <div class="prog-bar" style="height: 15%; background: var(--red);" data-tooltip="#3 | 1:10 | 139K DPS | 80%"></div>
+  <!-- Fight 4: 0:51, 144K DPS, wipe 83% -->
+  <div class="prog-bar" style="height: 11%; background: var(--red);" data-tooltip="#4 | 0:51 | 144K DPS | 83%"></div>
+  <!-- Fight 5: 2:42, 118K DPS, wipe 67% -->
+  <div class="prog-bar" style="height: 34%; background: var(--orange);" data-tooltip="#5 | 2:42 | 118K DPS | 67%"></div>
+  <!-- Fight 7: 2:18, 92K DPS, wipe 70% -->
+  <div class="prog-bar" style="height: 29%; background: var(--orange);" data-tooltip="#7 | 2:18 | 92K DPS | 70%"></div>
+  <!-- Fight 8: 2:16, 91K DPS, wipe 71% -->
+  <div class="prog-bar" style="height: 29%; background: var(--orange);" data-tooltip="#8 | 2:16 | 91K DPS | 71%"></div>
+  <!-- Fight 9: 3:14, 116K DPS, wipe 58% -->
+  <div class="prog-bar" style="height: 41%; background: var(--yellow);" data-tooltip="#9 | 3:14 | 116K DPS | 58%"></div>
+  <!-- Fight 10: 5:37, 112K DPS, wipe 36% -->
+  <div class="prog-bar" style="height: 71%; background: var(--yellow);" data-tooltip="#10 | 5:37 | 112K DPS | 36%"></div>
+  <!-- Fight 11: 4:47, 110K DPS, wipe 48% -->
+  <div class="prog-bar" style="height: 60%; background: var(--yellow);" data-tooltip="#11 | 4:47 | 110K DPS | 48%"></div>
+  <!-- Fight 12: 5:42, 106K DPS, wipe 38% -->
+  <div class="prog-bar" style="height: 72%; background: var(--yellow);" data-tooltip="#12 | 5:42 | 106K DPS | 38%"></div>
+  <!-- Fight 13: 2:51, 122K DPS, wipe 63% -->
+  <div class="prog-bar" style="height: 36%; background: var(--orange);" data-tooltip="#13 | 2:51 | 122K DPS | 63%"></div>
+  <!-- Fight 14: 1:15, 125K DPS, wipe 81% -->
+  <div class="prog-bar" style="height: 16%; background: var(--red);" data-tooltip="#14 | 1:15 | 125K DPS | 81%"></div>
+  <!-- Fight 15: 5:04, 108K DPS, wipe 39% -->
+  <div class="prog-bar" style="height: 64%; background: var(--yellow);" data-tooltip="#15 | 5:04 | 108K DPS | 39%"></div>
+  <!-- Fight 16: 0:53, 188K DPS, wipe 81% -->
+  <div class="prog-bar" style="height: 11%; background: var(--red);" data-tooltip="#16 | 0:53 | 188K DPS | 81%"></div>
+  <!-- Fight 17: 5:45, 122K DPS, wipe 31% -->
+  <div class="prog-bar" style="height: 72%; background: var(--yellow);" data-tooltip="#17 | 5:45 | 122K DPS | 31%"></div>
+  <!-- Fight 18: 6:51, 120K DPS, wipe 18% -->
+  <div class="prog-bar" style="height: 86%; background: var(--yellow);" data-tooltip="#18 | 6:51 | 120K DPS | 18%"></div>
+  <!-- Fight 19: 5:01, 107K DPS, wipe 35% -->
+  <div class="prog-bar" style="height: 63%; background: var(--yellow);" data-tooltip="#19 | 5:01 | 107K DPS | 35%"></div>
+  <!-- Fight 20: 0:54, 163K DPS, wipe 82% -->
+  <div class="prog-bar" style="height: 11%; background: var(--red);" data-tooltip="#20 | 0:54 | 163K DPS | 82%"></div>
+  <!-- Fight 21: 7:14, 119K DPS, wipe 14% -->
+  <div class="prog-bar" style="height: 91%; background: var(--yellow);" data-tooltip="#21 | 7:14 | 119K DPS | 14%"></div>
+  <!-- Fight 22: 7:58, 127K DPS, KILL -->
+  <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="#22 | 7:58 | 127K DPS | KILL"></div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background: var(--red);"></div> Short wipe (&lt;2 min)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background: var(--orange);"></div> Medium wipe (2-3 min)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background: var(--yellow);"></div> Long pull (&gt;3 min)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background: var(--green);"></div> Kill</div>
+</div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+<table>
+  <thead>
+    <tr><th>Pull</th><th>Duration</th><th>DPS</th><th>Boss %</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>#2</td><td>1:12</td><td>134,398</td><td>81%</td><td class="dim">Short wipe, burst inflated</td></tr>
+    <tr><td>#3</td><td>1:10</td><td>138,583</td><td>80%</td><td class="dim">Short wipe, burst inflated</td></tr>
+    <tr><td>#4</td><td>0:51</td><td>143,766</td><td>83%</td><td class="dim">Very short wipe</td></tr>
+    <tr><td>#5</td><td>2:42</td><td>118,165</td><td>67%</td><td class="dim">Medium wipe</td></tr>
+    <tr><td>#7</td><td>2:18</td><td class="red">91,608</td><td>70%</td><td>Lowest medium pull DPS</td></tr>
+    <tr><td>#8</td><td>2:16</td><td class="red">91,149</td><td>71%</td><td>Lowest overall DPS</td></tr>
+    <tr><td>#9</td><td>3:14</td><td>115,697</td><td>58%</td><td class="dim">First real-length pull</td></tr>
+    <tr><td>#10</td><td>5:37</td><td>112,274</td><td>36%</td><td class="dim">Solid progression pull</td></tr>
+    <tr><td>#11</td><td>4:47</td><td>109,717</td><td>48%</td><td class="dim">Regression from #10</td></tr>
+    <tr><td>#12</td><td>5:42</td><td>106,038</td><td>38%</td><td class="dim">Continued regression</td></tr>
+    <tr><td>#13</td><td>2:51</td><td>121,955</td><td>63%</td><td class="dim">Short-ish, burst bias</td></tr>
+    <tr><td>#14</td><td>1:15</td><td>125,296</td><td>81%</td><td class="dim">Very short wipe</td></tr>
+    <tr><td>#15</td><td>5:04</td><td>108,190</td><td>39%</td><td class="dim">Steady</td></tr>
+    <tr><td>#16</td><td>0:53</td><td class="green">187,867</td><td>81%</td><td>Highest DPS (burst inflated)</td></tr>
+    <tr><td>#17</td><td>5:45</td><td class="green">121,869</td><td>31%</td><td>Best full-length pull DPS</td></tr>
+    <tr><td>#18</td><td>6:51</td><td>119,636</td><td>18%</td><td class="dim">Near-kill length</td></tr>
+    <tr><td>#19</td><td>5:01</td><td>107,159</td><td>35%</td><td class="dim">DPS dip</td></tr>
+    <tr><td>#20</td><td>0:54</td><td>163,012</td><td>82%</td><td class="dim">Short wipe, burst inflated</td></tr>
+    <tr><td>#21</td><td>7:14</td><td>118,754</td><td>14%</td><td>Near-kill, very close</td></tr>
+    <tr style="background: rgba(63,185,80,0.06);"><td><strong>#22</strong></td><td><strong>7:58</strong></td><td><strong>126,862</strong></td><td class="green"><strong>KILL</strong></td><td><strong>Kill pull &mdash; best full-length DPS</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Across meaningful pulls (&gt;3 min), DPS was remarkably consistent in the <strong>106K-122K range</strong>, with the kill pull at <strong>127K being the best full-length performance</strong>. No significant improvement curve across 20 pulls &mdash; the rotational issues (Outbreak spam, low Graveyard, low Scourge Strike) are consistent across all attempts, suggesting fundamental rotation habits rather than fight-specific mistakes. The kill pull's slightly higher DPS (127K vs ~115K avg) may be attributed to the fight going the longest and reaching more execute windows.</p>
+</div>
+
+<!-- ACTIONABLE IMPROVEMENTS -->
+<h2>Actionable Improvements</h2>
+<p class="section-intro">Ranked by estimated DPS impact. Fixing the top 3 items would recover an estimated 40-50K DPS, closing the majority of the gap to the reference.</p>
+
+<div class="action-item critical">
+  <strong>1. Stop re-casting Outbreak &mdash; save 20 GCDs per fight (~10K DPS recovery)</strong><br>
+  Outbreak was cast <strong>21 times</strong> vs the reference's <strong>1 cast</strong>. Virulent Plague is maintained automatically by Scourge Strike and Festering Strike via Pestilence. Apply Outbreak once on pull and on new add spawns only. Every unnecessary Outbreak costs a Scourge Strike, which is ~30K raw damage per cast. Converting 20 Outbreak casts to Scourge Strikes recovers ~600K damage and frees runes for more productive spenders.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Increase Scourge Strike CPM from 16.7 to 24+ &mdash; core rotational uptime (~15K DPS recovery)</strong><br>
+  Scourge Strike at 16.7 CPM is 32% below the reference's 24.4. This is partly caused by Outbreak waste (item 1) but also indicates periods of GCD downtime. As the primary rune spender, Scourge Strike should be pressed on every available rune when other priorities (Festering Strike for wounds, cooldowns) are met. Target: <strong>24+ CPM</strong>. An additional 35 Scourge Strikes across the fight would add approximately 35 &times; 30.5K = ~1,070K direct damage, plus Pestilence and Wound burst procs.
+</div>
+
+<div class="action-item critical">
+  <strong>3. Dramatically increase Graveyard usage from 8 to 30 casts (~10K DPS recovery)</strong><br>
+  Graveyard contributed <strong>9.1% of the reference's total damage</strong> but only <strong>3.6% of Unholyftw's</strong>. At 1.0 CPM vs 4.4 CPM, this single ability's deficit accounts for ~4,935K lost damage (10.3K DPS). Graveyard should be used on cooldown, especially during add phases and Dark Transformation windows. This is the highest ROI fix &mdash; one button pressed 22 more times would close ~17% of the total DPS gap.
+</div>
+
+<div class="action-item">
+  <strong>4. More Festering Scythe + Epidemic during add phases (~3-5K DPS recovery)</strong><br>
+  Festering Scythe at 1.8 CPM (vs 3.2) and Epidemic at 0.6 CPM (vs 1.3) indicate underutilized AoE. During Rotmire's frequent Shroomling spawns, prioritize Festering Scythe procs and use Epidemic to spend Runic Power when 3+ targets are stacked instead of single-target Death Coil. This would improve add phase contribution and Epidemic's total damage (currently 2,032K vs reference 3,089K).
+</div>
+
+<div class="action-item">
+  <strong>5. Positioning for Festering Vines &mdash; survival priority</strong><br>
+  Died at 7:39 to Festering Vines (19 hits of damage taken). Multiple raid members died to Vines in this pull (3 at 6:07, 1 at 7:38). While late-fight deaths are less impactful since the boss was at &lt;1%, improving Vines handling ensures more uptime on the boss in progression pulls where every second counts. Pre-position for root breaks and use Death's Advance or Death Charge to create distance before the root lands.
+</div>
+
+<!-- WHAT'S GOOD -->
+<h2>What's Working</h2>
+<div class="grid-2">
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Cooldown Usage</div>
+    <p style="font-size: 14px;">Dark Transformation usage matches reference at <strong>1.3 CPM</strong>. Army of the Dead, Anti-Magic Shell, and Soul Reaper usage are all within expected ranges. The cooldown rotation is correct &mdash; the gap is in the filler between cooldowns.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Consumable Discipline</div>
+    <p style="font-size: 14px;">Double-potted (Potion of Recklessness at pull and at 6:23), used Blood Fury racial 4 times on cooldown, and used Healthstone. Consumable and racial usage is on par with or better than the reference.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Death Coil / Necrotic Coil</div>
+    <p style="font-size: 14px;">Death Coil at <strong>8.8 CPM</strong> (vs 6.8) and Necrotic Coil at <strong>4.5 CPM</strong> (vs 3.8) are both above reference. Runic Power spending on single-target is efficient. The issue is not RP management but rune management (Scourge Strike) and GCD allocation (Outbreak).</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Consistency Across Pulls</div>
+    <p style="font-size: 14px;">DPS was stable across all meaningful pulls (106K-127K range), with the kill pull being the best. No sign of tilt or fatigue &mdash; performance was consistent from pull 5 through pull 22. The rotational improvements needed are habitual, not situational.</p>
+  </div>
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--accent);">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">The <strong>32% DPS gap</strong> (127K vs 186K) against a reference player <strong>33 ilvl lower</strong> is <strong>execution-based, not gear or talent</strong>. The 7 talent differences are minor and do not explain the gap. Three specific rotational fixes &mdash; stopping Outbreak spam, maximizing Scourge Strike, and using Graveyard on cooldown &mdash; would recover an estimated <strong>35-40K DPS</strong> and bring performance in line with the 180K+ range. Cooldown management, consumable usage, and defensive play are already solid. The fixes are about GCD efficiency in the filler rotation between burst windows.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/1Mch2jqLWmAZ8r9a#fight=22" style="color: var(--accent);">Warcraft Logs Report 1Mch2jqLWmAZ8r9a</a></p>
+  <p>Primary reference: Pickltoez (Drak'thul) &mdash; Rank #4 Unholy Death Knight &middot; 186,327 DPS &middot; 6:53 kill &middot; 7 talent diffs &middot; ilvl 256.5</p>
+  <p>Analysis date: June 17, 2026</p>
+</div>
+
+</body>
+</html>

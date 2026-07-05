@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darthurg (MM Hunter) - Crown of the Cosmos Prog Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --hunter: #aad372;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.5; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 span.player-name { color: var(--hunter); }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.header .subtitle .boss { color: var(--text); font-weight: 600; }
+.prog-tag { display: inline-block; background: var(--orange); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; letter-spacing: 0.5px; }
+.night-tag { display: inline-block; background: var(--purple); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 4px; vertical-align: middle; letter-spacing: 0.5px; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .detail { font-size: 12px; color: var(--dim); margin-top: 4px; }
+.card .value.green { color: var(--green); }
+.card .value.red { color: var(--red); }
+.card .value.yellow { color: var(--yellow); }
+.card .value.orange { color: var(--orange); }
+.card .value.accent { color: var(--accent); }
+
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--dim); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border: 1px solid var(--border); }
+tr:nth-child(even) td { background: rgba(22, 27, 34, 0.5); }
+tr.highlight td { background: rgba(88, 166, 255, 0.08); }
+
+.bar-chart { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.bar-label { width: 45px; text-align: right; color: var(--dim); font-size: 12px; flex-shrink: 0; }
+.bar-container { flex: 1; height: 28px; background: var(--surface); border-radius: 4px; position: relative; overflow: hidden; border: 1px solid var(--border); }
+.bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; min-width: 40px; }
+.bar-fill.survived { background: var(--green); color: #000; }
+.bar-fill.died { background: var(--red); color: #fff; }
+.bar-fill.short { background: var(--border); color: var(--dim); }
+.bar-dps { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--dim); }
+.avg-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--yellow); z-index: 2; }
+.avg-label { position: absolute; top: -16px; font-size: 10px; color: var(--yellow); transform: translateX(-50%); white-space: nowrap; }
+
+.callout { background: var(--surface); border-left: 3px solid var(--red); padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 16px; }
+.callout.warning { border-left-color: var(--orange); }
+.callout.info { border-left-color: var(--accent); }
+.callout.success { border-left-color: var(--green); }
+.callout h4 { font-size: 14px; margin-bottom: 6px; }
+.callout p { font-size: 13px; color: var(--dim); }
+
+.death-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.death-card .death-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.death-card .death-fight { font-weight: 600; }
+.death-card .death-phase { font-size: 12px; padding: 2px 8px; border-radius: 4px; }
+.death-card .phase-p1 { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.death-card .phase-inter { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.death-card .phase-p2 { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.death-card .phase-p3 { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+.death-card .death-sequence { font-size: 12px; color: var(--dim); font-family: 'Consolas', monospace; }
+.death-card .death-sequence .killing-blow { color: var(--red); font-weight: 600; }
+
+.phase-badge { font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.phase-p1 { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.phase-inter { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.phase-p2 { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.phase-p3 { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.action-item .action-number { display: inline-block; background: var(--accent); color: #000; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: 700; font-size: 12px; margin-right: 8px; }
+.action-item h4 { display: inline; font-size: 14px; }
+.action-item p { font-size: 13px; color: var(--dim); margin-top: 8px; }
+.action-item .impact { font-size: 12px; color: var(--orange); margin-top: 4px; font-weight: 600; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .cards { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); text-align: center; }
+
+.phase-timeline { display: flex; width: 100%; height: 40px; border-radius: 8px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border); }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+.phase-segment.p1 { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.phase-segment.inter { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.phase-segment.p2 { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.phase-segment.p3 { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
+
+.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--dim); }
+.stat-value { font-weight: 600; }
+
+.tag { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+.tag-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.tag-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.tag-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Darthurg</span> &mdash; Marksmanship Hunter
+    <span class="prog-tag">PROGRESSION</span>
+    <span class="night-tag">NIGHT 3</span>
+  </h1>
+  <div class="subtitle">
+    <span class="boss">Mythic Crown of the Cosmos</span> &middot; 11 pulls (joined mid-session at pull 14) &middot; Best: 26.51% &middot; June 23, 2026
+    &middot; <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg Active DPS</div>
+    <div class="value accent">194.6K</div>
+    <div class="detail">Median: 211.9K &middot; StdDev: 52.1K</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">288</div>
+    <div class="detail">Reference: 291 ilvl (-3)</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value red">1 / 11</div>
+    <div class="detail">Survived 1 pull (9%) &mdash; died in 10</div>
+  </div>
+  <div class="card">
+    <div class="label">Best Pull</div>
+    <div class="value green">26.51%</div>
+    <div class="detail">Fight 25 &middot; 6:44 &middot; 108K active DPS</div>
+  </div>
+</div>
+
+<!-- Phase Timeline Visual -->
+<div class="section">
+  <h2>Fight Phases &mdash; Crown of the Cosmos</h2>
+  <div class="phase-timeline">
+    <div class="phase-segment p1" style="width:33.2%">P1: Sentinels (0:00&ndash;2:14)</div>
+    <div class="phase-segment inter" style="width:9.7%">Inter (2:14&ndash;2:53)</div>
+    <div class="phase-segment p2" style="width:37.9%">P2: Rift (2:53&ndash;5:26)</div>
+    <div class="phase-segment p3" style="width:19.2%">P3: Cosmos (5:26+)</div>
+  </div>
+  <div style="font-size:12px;color:var(--dim);margin-bottom:8px;">
+    <strong>P1:</strong> Alleria + Sentinels (Demiar, Morium, Vorelus). Null Corona, Grasp of Emptiness, Void Expulsion, Echoing Darkness. Multi-target cleave phase.
+    <br><strong>Intermission:</strong> Stellar Emission channel (sustained AoE) + Silverstrike Barrage. Pure survival &mdash; no targets.
+    <br><strong>P2:</strong> Rift Simulacrum, Undying Voidspawn, Silver Simulacrum. Rift Slash, Call of the Void, Voidstalker Sting. Heavy movement.
+    <br><strong>P3:</strong> Cosmic Radiation, Dimensional Slash, Aspect of the End, Cosmic Portal. Everything overlaps.
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    Active DPS = total damage / time alive (not total fight time). Bars color-coded: <span style="color:var(--green);">survived to wipe</span> vs <span style="color:var(--red);">died before wipe</span>.
+    Yellow line = session average (194.6K).
+  </p>
+
+  <div class="bar-chart" style="position:relative;">
+    <!-- Fight 14 -->
+    <div class="bar-row">
+      <div class="bar-label">F14</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:74.1%">211.9K &middot; 1:02</div>
+        <span class="bar-dps">P1 death</span>
+      </div>
+    </div>
+    <!-- Fight 15 -->
+    <div class="bar-row">
+      <div class="bar-label">F15</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:52.3%">149.4K &middot; 3:03</div>
+        <span class="bar-dps">P2 death</span>
+      </div>
+    </div>
+    <!-- Fight 16 -->
+    <div class="bar-row">
+      <div class="bar-label">F16</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:62.6%">179.0K &middot; 3:02</div>
+        <span class="bar-dps">P2 death</span>
+      </div>
+    </div>
+    <!-- Fight 17 -->
+    <div class="bar-row">
+      <div class="bar-label">F17</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:74.7%">213.6K &middot; 2:30</div>
+        <span class="bar-dps">Intermission death</span>
+      </div>
+    </div>
+    <!-- Fight 18 -->
+    <div class="bar-row">
+      <div class="bar-label">F18</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:61.3%">175.2K &middot; 4:00</div>
+        <span class="bar-dps">P2 death</span>
+      </div>
+    </div>
+    <!-- Fight 19 -->
+    <div class="bar-row">
+      <div class="bar-label">F19</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:41.1%">117.5K &middot; 5:13</div>
+        <span class="bar-dps">P2 death</span>
+      </div>
+    </div>
+    <!-- Fight 20 -->
+    <div class="bar-row">
+      <div class="bar-label">F20</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:79%">225.9K &middot; 2:38</div>
+        <span class="bar-dps">Intermission death</span>
+      </div>
+    </div>
+    <!-- Fight 21 -->
+    <div class="bar-row">
+      <div class="bar-label">F21</div>
+      <div class="bar-container">
+        <div class="bar-fill survived" style="width:79.9%">228.6K &middot; 2:03</div>
+        <span class="bar-dps">SURVIVED</span>
+      </div>
+    </div>
+    <!-- Fight 22 -->
+    <div class="bar-row">
+      <div class="bar-label">F22</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:100%">285.9K &middot; 1:28</div>
+        <span class="bar-dps">P1 death</span>
+      </div>
+    </div>
+    <!-- Fight 23 -->
+    <div class="bar-row">
+      <div class="bar-label">F23</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:86.1%">246.2K &middot; 2:31</div>
+        <span class="bar-dps">Intermission death</span>
+      </div>
+    </div>
+    <!-- Fight 25 -->
+    <div class="bar-row">
+      <div class="bar-label">F25</div>
+      <div class="bar-container">
+        <div class="bar-fill died" style="width:37.8%">108.1K &middot; 5:59</div>
+        <span class="bar-dps">P3 death (best pull)</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;" class="grid-2">
+    <div class="card">
+      <div class="label">Session Trend</div>
+      <div style="font-size:13px;margin-top:8px;">
+        <div class="stat-row"><span class="stat-label">First 5 pulls (F14-18)</span><span class="stat-value">186.1K avg</span></div>
+        <div class="stat-row"><span class="stat-label">Last 5 pulls (F20-25)</span><span class="stat-value">194.3K avg</span></div>
+        <div class="stat-row"><span class="stat-label">Trend</span><span class="stat-value" style="color:var(--green);">+4.4% improvement</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">DPS Consistency</div>
+      <div style="font-size:13px;margin-top:8px;">
+        <div class="stat-row"><span class="stat-label">Best active DPS</span><span class="stat-value">285.9K (F22, 1:28)</span></div>
+        <div class="stat-row"><span class="stat-label">Worst active DPS</span><span class="stat-value">108.1K (F25, 5:59)</span></div>
+        <div class="stat-row"><span class="stat-label">Spread</span><span class="stat-value" style="color:var(--orange);">177.8K (high variance)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CRITICAL: Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout" style="margin-bottom:20px;">
+    <h4>Died in 10 of 11 pulls &mdash; 9% survival rate</h4>
+    <p>Average survival time: 2:50 (170 seconds). The single survival (fight 21) was a short 2:03 pull that wiped before intermission. Darthurg has not survived the intermission + P2 transition in any pull this session.</p>
+  </div>
+
+  <!-- Deaths by Phase Summary -->
+  <div class="cards" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+    <div class="card">
+      <div class="label">P1 Deaths</div>
+      <div class="value" style="color:var(--green);">2</div>
+      <div class="detail">Fights 14, 22</div>
+    </div>
+    <div class="card">
+      <div class="label">Intermission Deaths</div>
+      <div class="value" style="color:var(--orange);">3</div>
+      <div class="detail">Fights 17, 20, 23</div>
+    </div>
+    <div class="card">
+      <div class="label">P2 Deaths</div>
+      <div class="value" style="color:var(--red);">4</div>
+      <div class="detail">Fights 15, 16, 18, 19</div>
+    </div>
+    <div class="card">
+      <div class="label">P3 Deaths</div>
+      <div class="value" style="color:var(--purple);">1</div>
+      <div class="detail">Fight 25</div>
+    </div>
+  </div>
+
+  <!-- Death Cause Table -->
+  <table style="margin-bottom:20px;">
+    <thead>
+      <tr>
+        <th>Killing Mechanic</th>
+        <th>Deaths</th>
+        <th>Phase</th>
+        <th>Fights</th>
+        <th>Avoidable?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cosmic Barrier + early P2 damage</strong></td>
+        <td style="color:var(--red);font-weight:600;">2</td>
+        <td><span class="phase-badge phase-p2">P2</span></td>
+        <td>15, 16</td>
+        <td><span class="tag tag-yellow">Partially</span> &mdash; P2 entrance overlap</td>
+      </tr>
+      <tr>
+        <td><strong>Orbiting Matter + Stellar Emission</strong></td>
+        <td style="color:var(--red);font-weight:600;">2</td>
+        <td><span class="phase-badge phase-inter">Inter</span></td>
+        <td>20, 23</td>
+        <td><span class="tag tag-red">Yes</span> &mdash; positioning during intermission</td>
+      </tr>
+      <tr>
+        <td><strong>Grasp of Emptiness (stacking)</strong></td>
+        <td style="color:var(--red);font-weight:600;">2</td>
+        <td><span class="phase-badge phase-p1">P1</span> / <span class="phase-badge phase-p3">P3</span></td>
+        <td>14, 25</td>
+        <td><span class="tag tag-red">Yes</span> &mdash; must move out of Grasp</td>
+      </tr>
+      <tr>
+        <td><strong>Simulacrum Backlash + Void Barrage</strong></td>
+        <td style="color:var(--red);font-weight:600;">2</td>
+        <td><span class="phase-badge phase-p2">P2</span></td>
+        <td>18, 23 (2nd death)</td>
+        <td><span class="tag tag-yellow">Partially</span> &mdash; stacking damage in P2</td>
+      </tr>
+      <tr>
+        <td><strong>Silverstrike Barrage</strong></td>
+        <td>1</td>
+        <td><span class="phase-badge phase-inter">Inter</span></td>
+        <td>17</td>
+        <td><span class="tag tag-red">Yes</span> &mdash; dodge projectiles</td>
+      </tr>
+      <tr>
+        <td><strong>Void Remnants + Bursting Emptiness</strong></td>
+        <td>1</td>
+        <td><span class="phase-badge phase-p1">P1</span></td>
+        <td>22</td>
+        <td><span class="tag tag-red">Yes</span> &mdash; Vorelus add mechanic</td>
+      </tr>
+      <tr>
+        <td><strong>Voidstalker Sting + Cosmic Radiation</strong></td>
+        <td>1</td>
+        <td><span class="phase-badge phase-p2">P2</span></td>
+        <td>19</td>
+        <td><span class="tag tag-yellow">Partially</span> &mdash; DoT + ambient damage overlap</td>
+      </tr>
+      <tr>
+        <td><strong>Gravity Collapse + Grasp of Emptiness</strong></td>
+        <td>1</td>
+        <td><span class="phase-badge phase-p3">P3</span></td>
+        <td>25</td>
+        <td><span class="tag tag-red">Yes</span> &mdash; positioning</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning">
+    <h4>Pattern: Intermission is a wall</h4>
+    <p>3 deaths during intermission (fights 17, 20, 23). Two were from <strong>Orbiting Matter</strong> (310K single hit) combined with Stellar Emission ticking damage.
+       Darthurg needs a personal defensive (Aspect of the Turtle or Exhilaration) ready for the Orbiting Matter hit during intermission.
+       On fight 20, Aspect of the Turtle was used at 2:35 (155s) &mdash; just 3 seconds after the Orbiting Matter hit, meaning it was reactive rather than preemptive.
+       On fight 23, death came at 2:30 with no defensive used.
+    </p>
+  </div>
+
+  <div class="callout warning">
+    <h4>Pattern: P2 entrance kills</h4>
+    <p>Fights 15 and 16 both show death at exactly 3:02 to <strong>Cosmic Barrier</strong> ticking damage immediately upon P2 start (173s).
+       This is the P2 entrance mechanic &mdash; the Rift Simulacrum's Cosmic Barrier deals ramping periodic damage. Darthurg needs to be at full health entering P2 and use a defensive for the transition.
+       Both pulls show the same 26K/tick damage with no defensive response.</p>
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">This is the core analysis. Overall DPS is misleading because it blends a 235K P1 with near-zero intermission and low P2 numbers. The phase breakdown shows exactly where performance falls off and why.</p>
+
+  <!-- Phase Reach Rate -->
+  <div class="cards" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+    <div class="card">
+      <div class="label">Reached P1</div>
+      <div class="value green">11 / 11</div>
+      <div class="detail">100%</div>
+    </div>
+    <div class="card">
+      <div class="label">Reached Intermission</div>
+      <div class="value green">8 / 11</div>
+      <div class="detail">73% &mdash; 2 P1 deaths + 1 short wipe</div>
+    </div>
+    <div class="card">
+      <div class="label">Reached P2</div>
+      <div class="value yellow">8 / 11</div>
+      <div class="detail">73% &mdash; 3 pre-P2 deaths</div>
+    </div>
+    <div class="card">
+      <div class="label">Reached P3</div>
+      <div class="value red">3 / 11</div>
+      <div class="detail">27% &mdash; most deaths in Inter/P2</div>
+    </div>
+  </div>
+
+  <!-- Per-Phase DPS Table -->
+  <table style="margin-bottom:20px;">
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Deaths</th>
+        <th>Primary Death Causes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge phase-p1">P1: Sentinels</span></td>
+        <td>11 / 11</td>
+        <td style="color:var(--green);font-weight:600;">234.7K</td>
+        <td>285.9K</td>
+        <td>2</td>
+        <td>Grasp of Emptiness, Void Remnants</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-inter">Intermission</span></td>
+        <td>8 / 11</td>
+        <td style="color:var(--dim);">3.4K</td>
+        <td>9.7K</td>
+        <td>3</td>
+        <td>Orbiting Matter, Silverstrike Barrage</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-p2">P2: Rift</span></td>
+        <td>8 / 11</td>
+        <td style="color:var(--orange);font-weight:600;">61.4K</td>
+        <td>96.5K</td>
+        <td>4</td>
+        <td>Cosmic Barrier, Void Barrage, Simulacrum Backlash</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge phase-p3">P3: Cosmos</span></td>
+        <td>3 / 11</td>
+        <td style="color:var(--red);font-weight:600;">5.4K</td>
+        <td>5.4K</td>
+        <td>1</td>
+        <td>Gravity Collapse + Grasp of Emptiness</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2">
+    <div class="callout info">
+      <h4>P1 Performance: Strong</h4>
+      <p>234.7K average DPS in P1 across all 11 pulls with high consistency (194K&ndash;286K range). This is a multi-target cleave phase with Sentinels dying sequentially, which suits MM Hunter's Trick Shots and Volley. P1 execution is solid &mdash; this is not where the problem is.</p>
+    </div>
+    <div class="callout">
+      <h4>P2 Performance: 74% DPS drop from P1</h4>
+      <p>DPS drops from 234.7K in P1 to 61.4K in P2 &mdash; a 74% decrease. This is partly expected (fewer targets, more movement from Rift Slash every 12s), but 61K is extremely low for an MM Hunter. Top-ranked MM Hunters on Crown maintain 90K+ in P2. Deaths account for some of this (4 P2 deaths cutting damage short), but even on longer P2 survival pulls (F18: 67s in P2, F19: 140s in P2), DPS was 86K and 29K respectively.</p>
+    </div>
+  </div>
+
+  <div class="callout warning" style="margin-top:16px;">
+    <h4>P2 DPS investigation</h4>
+    <p>On fight 19 (longest P2 survival at 140s in P2), Darthurg only did 28.6K DPS. This suggests significant uptime loss from either: (1) running mechanics and not casting, (2) dying and being battle-rezzed (the second death in fight 19 was at 5:12 near P2/P3 boundary with Cosmic Radiation already active), or (3) unfamiliarity with P2 positioning causing extended downtime. On fight 18 (67s in P2), DPS was 85.7K which is closer to expected. The variance suggests inconsistent P2 execution.</p>
+  </div>
+</div>
+
+<!-- Death Sequence Details -->
+<div class="section">
+  <h2>Death Sequence Details</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Last damage events before each death. Understanding the kill sequence helps identify what defensive could have saved the pull.</p>
+
+  <div class="death-card">
+    <div class="death-header">
+      <span class="death-fight">Fight 14 &mdash; 1:02 into pull</span>
+      <span class="death-phase phase-p1">P1: Sentinels</span>
+    </div>
+    <div class="death-sequence">
+      <div>0:59 Echoing Darkness &mdash; 40K</div>
+      <div>0:59 Grasp of Emptiness &mdash; 56K</div>
+      <div>1:00 Grasp of Emptiness &mdash; 56K</div>
+      <div>1:01 Echoing Darkness &mdash; 20K + 40K</div>
+      <div>1:01 Grasp of Emptiness &mdash; 56K + Void Expulsion 44K</div>
+      <div class="killing-blow">1:02 Grasp of Emptiness &mdash; 46K [KILLING BLOW, 10K overkill]</div>
+    </div>
+    <p style="font-size:12px;color:var(--dim);margin-top:8px;">Stacking Grasp of Emptiness + Echoing Darkness from Vorelus. Needed to move out of Grasp or use Exhilaration. First pull in session &mdash; likely positioning error.</p>
+  </div>
+
+  <div class="death-card">
+    <div class="death-header">
+      <span class="death-fight">Fight 17 &mdash; 2:30 into pull</span>
+      <span class="death-phase phase-inter">Intermission</span>
+    </div>
+    <div class="death-sequence">
+      <div>2:27 Stellar Emission &mdash; 16K</div>
+      <div>2:29 Stellar Emission &mdash; 24K</div>
+      <div class="killing-blow">2:30 Silverstrike Barrage &mdash; 537K [KILLING BLOW, 45K overkill]</div>
+    </div>
+    <p style="font-size:12px;color:var(--dim);margin-top:8px;">Silverstrike Barrage is a massive hit during intermission. Must be dodged or Turtle'd. No defensive used. Stellar Emission was ticking health down beforehand.</p>
+  </div>
+
+  <div class="death-card">
+    <div class="death-header">
+      <span class="death-fight">Fight 20 &mdash; 2:38 into pull (1st death)</span>
+      <span class="death-phase phase-inter">Intermission</span>
+    </div>
+    <div class="death-sequence">
+      <div class="killing-blow">2:34 Orbiting Matter &mdash; 310K</div>
+      <div>2:35 Stellar Emission &mdash; 48K</div>
+      <div>2:37 Stellar Emission &mdash; 0 (absorbed/immune)</div>
+    </div>
+    <p style="font-size:12px;color:var(--dim);margin-top:8px;">Orbiting Matter one-shot for 310K. Aspect of the Turtle was used at 2:35 (1 second AFTER the hit). Turtle needs to be preemptive for Orbiting Matter.</p>
+  </div>
+
+  <div class="death-card">
+    <div class="death-header">
+      <span class="death-fight">Fight 22 &mdash; 1:28 into pull</span>
+      <span class="death-phase phase-p1">P1: Sentinels</span>
+    </div>
+    <div class="death-sequence">
+      <div>1:25 Echoing Darkness &mdash; 40K</div>
+      <div>1:27 Echoing Darkness &mdash; 40K</div>
+      <div>1:27 Melee &mdash; 15K</div>
+      <div>1:28 Void Remnants &mdash; 207K</div>
+      <div class="killing-blow">1:28 Bursting Emptiness &mdash; 194K [KILLING BLOW, 129K overkill]</div>
+    </div>
+    <p style="font-size:12px;color:var(--dim);margin-top:8px;">Void Remnants (207K) + Bursting Emptiness (194K) combo from Vorelus add death sequence. Total 401K in 0.3 seconds. Must be away from Vorelus when it dies or have Turtle ready.</p>
+  </div>
+
+  <div class="death-card">
+    <div class="death-header">
+      <span class="death-fight">Fight 25 &mdash; 5:58 into pull (best pull)</span>
+      <span class="death-phase phase-p3">P3: Cosmos</span>
+    </div>
+    <div class="death-sequence">
+      <div>5:55 Gravity Collapse &mdash; 155K</div>
+      <div>5:56 Grasp of Emptiness &mdash; 56K + Cosmic Barrier 26K</div>
+      <div>5:57 Grasp of Emptiness &mdash; 56K + Cosmic Barrier 26K</div>
+      <div>5:58 Grasp of Emptiness &mdash; 56K + Cosmic Barrier 26K</div>
+      <div class="killing-blow">5:59 Grasp of Emptiness &mdash; 31K [KILLING BLOW, 25K overkill]</div>
+    </div>
+    <p style="font-size:12px;color:var(--dim);margin-top:8px;">P3 overlap: Gravity Collapse (155K) softened, then stacking Grasp of Emptiness + Cosmic Barrier ticks finished the job. P3 is brutal &mdash; this death was 32 seconds into P3 on the deepest pull of the night. Exhilaration was used at 5:30 (28s before death) and was on CD. Survival of the Fittest not available.</p>
+  </div>
+</div>
+
+<!-- Cast Profile (Fight 25) -->
+<div class="section">
+  <h2>Cast Profile &mdash; Best Pull (Fight 25, 6:44)</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Ability usage on the longest pull. Darthurg died at 5:59, so this represents ~6 minutes of active combat.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Casts</th>
+        <th>CPM</th>
+        <th>Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--hunter);font-weight:600;">Arcane Shot</td>
+        <td>80</td>
+        <td>11.9</td>
+        <td>Precise Shots spender / filler</td>
+      </tr>
+      <tr>
+        <td style="color:var(--hunter);font-weight:600;">Aimed Shot</td>
+        <td>42</td>
+        <td>6.2</td>
+        <td>Core rotational &mdash; generates Precise Shots</td>
+      </tr>
+      <tr>
+        <td style="color:var(--hunter);font-weight:600;">Rapid Fire</td>
+        <td>16</td>
+        <td>2.4</td>
+        <td>Bulletstorm builder &mdash; on CD priority</td>
+      </tr>
+      <tr>
+        <td>Steady Shot</td>
+        <td>10</td>
+        <td>1.5</td>
+        <td>Focus generator / filler</td>
+      </tr>
+      <tr>
+        <td>Explosive Shot</td>
+        <td>8</td>
+        <td>1.2</td>
+        <td>Rotational damage</td>
+      </tr>
+      <tr>
+        <td>Volley</td>
+        <td>5</td>
+        <td>0.7</td>
+        <td>AoE + Double Tap activator</td>
+      </tr>
+      <tr>
+        <td style="color:var(--accent);">Trueshot</td>
+        <td>2</td>
+        <td>0.3</td>
+        <td>Major CD (90-120s)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--accent);">Blood Fury</td>
+        <td>2</td>
+        <td>0.3</td>
+        <td>Racial CD</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan);">Exhilaration</td>
+        <td>3</td>
+        <td>0.4</td>
+        <td>Self-heal (2min CD)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan);">Aspect of the Turtle</td>
+        <td>1</td>
+        <td>0.1</td>
+        <td>Immunity (3min CD)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan);">Disengage</td>
+        <td>2</td>
+        <td>0.3</td>
+        <td>Movement / repositioning</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px;font-size:13px;color:var(--dim);">
+    <strong>Total rotational CPM:</strong> 27.2 across all abilities.
+    <strong>Moonlight Chakram:</strong> Only 1 cast in fight 25. Sentinel hero tree should be using this more frequently (especially late in Trueshot windows per guide).
+  </div>
+</div>
+
+<!-- Defensive Usage -->
+<div class="section">
+  <h2>Defensive Usage Across All Pulls</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Defensive</th>
+        <th>Total Uses</th>
+        <th>Uses / Pull</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Exhilaration</td>
+        <td>10</td>
+        <td>0.9</td>
+        <td>Good usage rate. 2min CD should be available ~2-3 times per pull on longer fights.</td>
+      </tr>
+      <tr>
+        <td>Disengage</td>
+        <td>12</td>
+        <td>1.1</td>
+        <td>Used for repositioning. Most uses in P2 entrance and late-fight.</td>
+      </tr>
+      <tr>
+        <td>Survival of the Fittest</td>
+        <td>5</td>
+        <td>0.5</td>
+        <td>3min CD. Used 5 times across 11 pulls &mdash; could be used more proactively.</td>
+      </tr>
+      <tr>
+        <td style="color:var(--yellow);">Aspect of the Turtle</td>
+        <td style="color:var(--yellow);font-weight:600;">4</td>
+        <td style="color:var(--yellow);">0.4</td>
+        <td style="color:var(--yellow);">3min immunity CD used only 4 times in 11 pulls. On 3 intermission deaths, Turtle was either unused or reactive (too late). Should be assigned to Orbiting Matter or Silverstrike Barrage in intermission.</td>
+      </tr>
+      <tr>
+        <td>Healthstone</td>
+        <td>5</td>
+        <td>0.5</td>
+        <td>Available once per pull &mdash; used in about half of pulls.</td>
+      </tr>
+      <tr>
+        <td>Health Potion</td>
+        <td>1</td>
+        <td>0.09</td>
+        <td>Only 1 health pot used across 11 pulls. Should be used more in emergencies.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Damage Taken Analysis (Fight 25) -->
+<div class="section">
+  <h2>Damage Taken Breakdown &mdash; Fight 25</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Total damage taken by source on the longest pull (6:44, died at 5:59).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Total Damage</th>
+        <th>Hits</th>
+        <th>Avg / Hit</th>
+        <th>Avoidable?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td>2.34M</td>
+        <td>100</td>
+        <td>23.4K</td>
+        <td><span class="tag tag-yellow">Partially</span> &mdash; DoT, can be reduced with positioning</td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td>2.34M</td>
+        <td>82</td>
+        <td>28.6K</td>
+        <td><span class="tag tag-yellow">Partially</span> &mdash; proximity-based splash damage</td>
+      </tr>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td>2.10M</td>
+        <td>117</td>
+        <td>18.0K</td>
+        <td><span class="tag tag-green">No</span> &mdash; unavoidable raid damage from Vorelus</td>
+      </tr>
+      <tr>
+        <td>Void Expulsion</td>
+        <td>1.59M</td>
+        <td>40</td>
+        <td>39.7K</td>
+        <td><span class="tag tag-green">No</span> &mdash; raid-wide AoE</td>
+      </tr>
+      <tr>
+        <td>Grasp of Emptiness</td>
+        <td>784K</td>
+        <td>17</td>
+        <td>46.1K</td>
+        <td><span class="tag tag-red">Yes</span> &mdash; move out of grasp zones</td>
+      </tr>
+      <tr>
+        <td>Stellar Emission</td>
+        <td>501K</td>
+        <td>14</td>
+        <td>35.8K</td>
+        <td><span class="tag tag-green">No</span> &mdash; intermission channel (unavoidable)</td>
+      </tr>
+      <tr>
+        <td>Cosmic Radiation</td>
+        <td>386K</td>
+        <td>15</td>
+        <td>25.7K</td>
+        <td><span class="tag tag-green">No</span> &mdash; P3 ambient damage</td>
+      </tr>
+      <tr style="color:var(--red);">
+        <td><strong>Falling</strong></td>
+        <td><strong>380K</strong></td>
+        <td><strong>2</strong></td>
+        <td><strong>190K</strong></td>
+        <td><span class="tag tag-red">Yes</span> &mdash; environmental, should never happen</td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td>348K</td>
+        <td>19</td>
+        <td>18.3K</td>
+        <td><span class="tag tag-green">No</span> &mdash; phase transition damage</td>
+      </tr>
+      <tr>
+        <td>Gravity Collapse</td>
+        <td>311K</td>
+        <td>2</td>
+        <td>155K</td>
+        <td><span class="tag tag-yellow">Partially</span> &mdash; P3 knockback mechanic</td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td>267K</td>
+        <td>4</td>
+        <td>66.8K</td>
+        <td><span class="tag tag-red">Yes</span> &mdash; frontal cone, should be dodged</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="margin-top:16px;">
+    <h4>380K Falling Damage</h4>
+    <p>Darthurg took 380K falling damage across 2 hits on fight 25. This is environmental damage from being knocked or displaced off platforms. This is 100% avoidable and potentially contributed to a death or near-death. Disengage can be used mid-fall to negate fall damage.</p>
+  </div>
+</div>
+
+<!-- External Buffs -->
+<div class="section">
+  <h2>External Buffs &mdash; Fight 25</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Buff</th>
+        <th>Applications</th>
+        <th>Timings</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Ebon Might (Aug Evoker)</td>
+        <td>8</td>
+        <td>0:02, 1:37, 2:58, 3:34, 4:02, 4:31, 5:02, 5:32</td>
+      </tr>
+      <tr>
+        <td>Prescience (Aug Evoker)</td>
+        <td>1</td>
+        <td>0:10</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim);">Bloodlust / Heroism</td>
+        <td style="color:var(--dim);">0</td>
+        <td style="color:var(--dim);">Not detected on fight 25 for Darthurg</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim);">Power Infusion</td>
+        <td style="color:var(--dim);">0</td>
+        <td style="color:var(--dim);">Not received</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size:12px;color:var(--dim);margin-top:8px;">
+    Zinnks (Aug Evoker) was providing consistent Ebon Might coverage. Low Prescience count may indicate Aug was prioritizing other DPS targets for the crit buff. No PI received from either Shadow Priest.
+  </div>
+</div>
+
+<!-- Cooldown Usage -->
+<div class="section">
+  <h2>Cooldown Usage Across Session</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Cooldown</th>
+        <th>Total Uses</th>
+        <th>Uses / Pull</th>
+        <th>Expected</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--hunter);">Trueshot</td>
+        <td>18</td>
+        <td>1.6</td>
+        <td>1-3 per pull (90-120s CD)</td>
+        <td><span class="tag tag-green">Good</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--hunter);">Volley</td>
+        <td>43</td>
+        <td>3.9</td>
+        <td>High priority &mdash; Double Tap activator</td>
+        <td><span class="tag tag-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>Blood Fury (Racial)</td>
+        <td>18</td>
+        <td>1.6</td>
+        <td>1-3 per pull (2min CD)</td>
+        <td><span class="tag tag-green">Good</span></td>
+      </tr>
+      <tr>
+        <td>Algeth'ar Puzzle Box (Trinket)</td>
+        <td>2</td>
+        <td>0.2</td>
+        <td>On-use trinket, paired with Trueshot</td>
+        <td><span class="tag tag-yellow">Low</span> &mdash; only 2 uses seen (fight 25 data)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Reference Context -->
+<div class="section">
+  <h2>Reference Context (De-emphasized)</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    Reference comparison is de-emphasized for prog. These numbers show the ceiling for MM Hunter on this boss &mdash; a target to aim for once the fight is fully learned, not a gap to close right now.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>DPS</th>
+        <th>Kill Time</th>
+        <th>Server</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="color:var(--purple);">
+        <td>#1 Morganalter</td>
+        <td>123.9K</td>
+        <td>8:40</td>
+        <td>CN</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>#2 Punisherinho</td>
+        <td>116.9K</td>
+        <td>7:04</td>
+        <td>Kazzak</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>#3 &#31859;&#21653;&#21653;&#39282;&#20859;&#21592;</td>
+        <td>112.6K</td>
+        <td>7:57</td>
+        <td>CN</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>#4 &#23567;&#40657;&#20108;&#21313;&#20108;&#21495;</td>
+        <td>112.3K</td>
+        <td>8:07</td>
+        <td>CN</td>
+      </tr>
+      <tr style="color:var(--purple);">
+        <td>#5 &#25220;&#20316;&#19994;</td>
+        <td>112.1K</td>
+        <td>8:40</td>
+        <td>CN</td>
+      </tr>
+      <tr class="highlight">
+        <td><strong>Darthurg (avg active)</strong></td>
+        <td><strong>194.6K*</strong></td>
+        <td><strong>N/A (prog)</strong></td>
+        <td><strong>&mdash;</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="font-size:12px;color:var(--dim);margin-top:8px;">
+    * Darthurg's 194.6K is <strong>active DPS</strong> (total damage / time alive), not fight DPS. Reference kills show DPS over full fight (7-8 minutes). Active DPS is inflated by short survival times &mdash; on the longest pull (F25, 5:59 active), Darthurg did 108K active DPS, which is closer to reference kill DPS. Talent difference vs #2 Punisherinho: 5 nodes.
+    <br><br>
+    <strong>Context:</strong> Reference kills are from fully progressed teams with full fight execution. Darthurg's P1 DPS (~235K over 2:14) is strong for the phase. The comparison becomes meaningful once survival allows consistent P2/P3 time.
+  </div>
+</div>
+
+<!-- Consistency Analysis -->
+<div class="section">
+  <h2>Consistency Analysis</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="label">Survival Pulls vs Death Pulls</div>
+      <div style="font-size:13px;margin-top:8px;">
+        <div class="stat-row"><span class="stat-label">Survival avg DPS</span><span class="stat-value" style="color:var(--green);">228.6K</span></div>
+        <div class="stat-row"><span class="stat-label">Death pulls avg DPS</span><span class="stat-value" style="color:var(--red);">191.2K</span></div>
+        <div class="stat-row"><span class="stat-label">Note</span><span class="stat-value" style="font-size:11px;">Only 1 survival pull (short)</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Early vs Late Session</div>
+      <div style="font-size:13px;margin-top:8px;">
+        <div class="stat-row"><span class="stat-label">Pulls 14-18 (first 5)</span><span class="stat-value">186.1K avg</span></div>
+        <div class="stat-row"><span class="stat-label">Pulls 19-25 (last 6)</span><span class="stat-value">194.3K avg</span></div>
+        <div class="stat-row"><span class="stat-label">Improvement</span><span class="stat-value" style="color:var(--green);">+4.4%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <h3>Best 3 Pulls vs Worst 3 Pulls (Active DPS)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Fight</th>
+          <th>Active DPS</th>
+          <th>Active Time</th>
+          <th>Death Phase</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="color:var(--green);">
+          <td>Best 1</td>
+          <td>F22</td>
+          <td>285.9K</td>
+          <td>1:28</td>
+          <td>P1</td>
+        </tr>
+        <tr style="color:var(--green);">
+          <td>Best 2</td>
+          <td>F23</td>
+          <td>246.2K</td>
+          <td>2:31</td>
+          <td>Intermission</td>
+        </tr>
+        <tr style="color:var(--green);">
+          <td>Best 3</td>
+          <td>F21</td>
+          <td>228.6K</td>
+          <td>2:03</td>
+          <td>Survived</td>
+        </tr>
+        <tr style="color:var(--red);">
+          <td>Worst 1</td>
+          <td>F25</td>
+          <td>108.1K</td>
+          <td>5:59</td>
+          <td>P3</td>
+        </tr>
+        <tr style="color:var(--red);">
+          <td>Worst 2</td>
+          <td>F19</td>
+          <td>117.5K</td>
+          <td>5:13</td>
+          <td>P2</td>
+        </tr>
+        <tr style="color:var(--red);">
+          <td>Worst 3</td>
+          <td>F15</td>
+          <td>149.4K</td>
+          <td>3:03</td>
+          <td>P2</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:var(--dim);margin-top:8px;">
+      Clear pattern: the best active DPS pulls are the shortest ones (P1-only or early intermission death). The worst DPS pulls are the longest &mdash; the longer Darthurg survives into P2/P3, the more the active DPS drops. This indicates either genuine P2 uptime issues or that the earlier-dying pulls have inflated DPS from the burst-heavy P1 phase.
+    </p>
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Prioritized by impact. Survival is the #1 priority &mdash; a dead DPS does zero damage. Rotation optimization is secondary until survival is consistent through P2.</p>
+
+  <div class="action-item">
+    <span class="action-number">1</span>
+    <h4>Pre-assign Aspect of the Turtle to Intermission</h4>
+    <p>3 of 10 deaths (30%) occurred during intermission, primarily to Orbiting Matter (310K single hit) and Silverstrike Barrage (537K). Aspect of the Turtle was used only 4 times across 11 pulls and was reactive on fight 20 (cast 1 second AFTER the killing hit). Plan: Turtle at the start of Orbiting Matter. This mechanic is on a fixed timer during intermission and can be anticipated.</p>
+    <div class="impact">Impact: Eliminates ~30% of deaths. Surviving intermission is the prerequisite for all P2/P3 learning.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-number">2</span>
+    <h4>Health management entering P2 &mdash; Cosmic Barrier transition</h4>
+    <p>Fights 15 and 16 both show death at 3:02 to Cosmic Barrier ticking damage (26K/tick) immediately upon P2 entrance. Darthurg entered P2 without full health after surviving intermission. Use Exhilaration during intermission (it has no DPS cost since there are no targets) to enter P2 at full health, and have Survival of the Fittest ready for the P2 transition.</p>
+    <div class="impact">Impact: Eliminates 2 deaths. Cosmic Barrier is constant periodic damage in P2 &mdash; entering at full HP is the difference between surviving and dying in the first 10 seconds.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-number">3</span>
+    <h4>Eliminate falling damage</h4>
+    <p>380K falling damage across 2 hits on fight 25. This is environmental damage from knockbacks or poor positioning near edges. As a Hunter, Disengage mid-air completely negates fall damage. There is no excuse for taking falling damage as a Marksmanship Hunter.</p>
+    <div class="impact">Impact: 380K is a significant health chunk that likely contributed to the P3 death at 5:58. Completely avoidable.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-number">4</span>
+    <h4>P2 uptime &mdash; maintain DPS through Rift Slash movement</h4>
+    <p>P2 DPS averages 61.4K vs 234.7K in P1 (a 74% drop). Even accounting for fewer targets, this drop is excessive. On fight 19 (140s alive in P2), DPS was only 28.6K. MM Hunter can maintain DPS during movement using Arcane Shot (instant), Volley, and Rapid Fire while repositioning for Rift Slash (fires every 12s). Practice the P2 movement pattern to minimize GCD gaps during Rift Slash repositioning.</p>
+    <div class="impact">Impact: Improving P2 DPS from 61K to even 80K on a 2.5-minute P2 phase adds ~2.9M total damage to the raid.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-number">5</span>
+    <h4>Use Moonlight Chakram more consistently (Sentinel talent)</h4>
+    <p>Only 1 Moonlight Chakram cast on fight 25 (the longest pull). Per the Sentinel hero tree guide, Moonlight Chakram should be used regularly and specifically at the end of Trueshot windows to extend value. It is an instant-cast ability that can be woven between other casts and used during movement.</p>
+    <div class="impact">Impact: Minor DPS gain per cast, but adds up over 6+ minute fights. Low effort improvement.</div>
+  </div>
+</div>
+
+<!-- Context Footer -->
+<div class="section">
+  <h2>Summary</h2>
+
+  <div class="callout success">
+    <h4>What's working well</h4>
+    <p>
+      <strong>P1 DPS is strong</strong> &mdash; 234.7K average across 11 pulls with low variance (194K&ndash;286K). This is a cleave-heavy phase that plays to MM Hunter strengths with Trick Shots and multi-dotting via Aimed Shot.
+      <br><br>
+      <strong>Cooldown discipline is good</strong> &mdash; Trueshot used 1.6x per pull average, Blood Fury tracked with Trueshot, Volley used frequently for Double Tap activation.
+      <br><br>
+      <strong>Slight improvement trend</strong> &mdash; late-session pulls averaged 4.4% higher active DPS than early-session, suggesting fight learning is happening.
+    </p>
+  </div>
+
+  <div class="callout">
+    <h4>The core issue</h4>
+    <p>
+      <strong>Survival, not rotation, is the bottleneck.</strong> Darthurg survived 1 out of 11 pulls (9%). The single survival was a short P1-only pull. The intermission is the primary wall: 3 deaths from Orbiting Matter and Silverstrike Barrage, all avoidable with proper Aspect of the Turtle timing. An additional 2 deaths at the P2 entrance to Cosmic Barrier suggest entering P2 at low health.
+      <br><br>
+      Once intermission survival is solved, P2 uptime needs work &mdash; the 74% DPS drop from P1 to P2 is excessive even with the target count reduction.
+      <br><br>
+      <strong>P3 experience is minimal</strong> (3 pulls, 1 death, minimal DPS). More P3 time requires solving intermission and P2 survival first.
+    </p>
+  </div>
+
+  <div style="font-size:13px;color:var(--dim);margin-top:16px;">
+    <strong>Item level gap:</strong> 288 vs reference 291 (&minus;3 ilvl). This is a minor factor and does not explain the survival issues.
+    <br>
+    <strong>Talent delta:</strong> 5 node differences vs #2 reference (Punisherinho-Kazzak). Some differences may affect survivability or DPS profile.
+    <br>
+    <strong>Raid context:</strong> Darthurg joined mid-session (fight 14 of 25). Prior pulls (fights 5-13) were without Darthurg in the roster, meaning they had fewer reps on this boss than teammates who were present from pull 1.
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>
+    Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a>
+    &middot; Reference: Top 5 MM Hunter rankings on Mythic Crown of the Cosmos
+    &middot; Primary reference: Punisherinho-Kazzak (116.9K DPS, 7:04 kill, 291 ilvl, 5 talent diffs)
+    <br>
+    Phase timings verified from fight 25 enemy casts: Silversunder Catastrophe at 2:14, Empowering Darkness at 2:53, Cosmic Radiation at 5:26.
+  </p>
+</div>
+
+</body>
+</html>

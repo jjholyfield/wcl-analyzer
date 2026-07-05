@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silencio (Resto Druid) — Crown of the Cosmos Mythic — Prog Night 4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --druid: #ff7c0a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.header { margin-bottom:24px; }
+.header h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+.header h1 .name { color:var(--druid); }
+.header .subtitle { color:var(--dim); font-size:14px; }
+.prog-tag { display:inline-block; background:rgba(248,81,73,0.15); color:var(--red); padding:2px 10px; border-radius:4px; font-size:12px; font-weight:600; margin-left:12px; letter-spacing:0.5px; }
+.summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+.summary-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; text-align:center; }
+.summary-card .label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.summary-card .value { font-size:24px; font-weight:700; }
+.summary-card .sub { font-size:11px; color:var(--dim); margin-top:2px; }
+.verdict { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 20px; margin-bottom:24px; border-left:4px solid var(--yellow); }
+.verdict .title { font-weight:600; margin-bottom:6px; font-size:15px; }
+.verdict p { font-size:14px; color:var(--dim); line-height:1.7; }
+section { margin-bottom:32px; }
+section h2 { font-size:18px; font-weight:600; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+section h3 { font-size:15px; font-weight:600; margin-bottom:12px; color:var(--accent); }
+table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:16px; }
+th { background:var(--surface); color:var(--dim); font-weight:600; text-align:left; padding:8px 12px; border-bottom:2px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:8px 12px; border-bottom:1px solid var(--border); }
+tr:hover td { background:rgba(88,166,255,0.04); }
+.highlight-row td { background:rgba(255,124,10,0.08); }
+.bar-chart { display:flex; flex-direction:column; gap:4px; margin-bottom:16px; }
+.bar-row { display:flex; align-items:center; gap:8px; }
+.bar-label { width:48px; font-size:11px; color:var(--dim); text-align:right; flex-shrink:0; }
+.bar-container { flex:1; height:24px; background:var(--surface); border-radius:4px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:8px; font-size:11px; font-weight:600; min-width:fit-content; }
+.bar-value { position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--dim); }
+.pill { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:500; }
+.pill-green { background:rgba(63,185,80,0.15); color:var(--green); }
+.pill-red { background:rgba(248,81,73,0.15); color:var(--red); }
+.pill-yellow { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.pill-blue { background:rgba(88,166,255,0.15); color:var(--accent); }
+.pill-dim { background:rgba(139,148,158,0.15); color:var(--dim); }
+.pill-druid { background:rgba(255,125,10,0.15); color:#ff7d0a; }
+.pill-priest { background:rgba(255,255,255,0.1); color:#e0e0e0; }
+.pill-paladin { background:rgba(244,140,186,0.15); color:#f48cba; }
+.pill-monk { background:rgba(0,255,150,0.15); color:#00ff96; }
+.cd-grid { display:grid; grid-template-columns:160px repeat(4,1fr); gap:1px; background:var(--border); border-radius:8px; overflow:hidden; margin-bottom:16px; }
+.cd-grid .cell { background:var(--surface); padding:8px 10px; font-size:12px; }
+.cd-grid .cell-header { font-weight:600; color:var(--dim); font-size:11px; text-transform:uppercase; }
+.cd-grid .cell-highlight { background:rgba(255,124,10,0.08); }
+.phase-bar { display:flex; height:32px; border-radius:6px; overflow:hidden; margin-bottom:8px; border:1px solid var(--border); }
+.phase-segment { display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.action-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+.action-card.critical { border-left:4px solid var(--red); }
+.action-card.important { border-left:4px solid var(--accent); }
+.action-card.positive { border-left:4px solid var(--green); }
+.action-card .action-title { font-weight:600; font-size:14px; margin-bottom:6px; }
+.action-card p { font-size:13px; color:var(--dim); line-height:1.6; }
+.death-timeline { font-family:'JetBrains Mono','Consolas',monospace; font-size:12px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; overflow-x:auto; }
+.death-timeline .line { padding:2px 0; white-space:nowrap; }
+.death-timeline .dmg { color:var(--red); }
+.death-timeline .heal { color:var(--green); }
+.death-timeline .abs { color:var(--cyan); }
+.death-timeline .dead { color:var(--red); font-weight:700; }
+.footer { margin-top:40px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); }
+.stat-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px; text-align:center; }
+.stat-card .stat-label { font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; }
+.stat-card .stat-value { font-size:20px; font-weight:700; margin-top:4px; }
+.oh-bar { display:inline-block; height:8px; border-radius:4px; vertical-align:middle; }
+@media (max-width:768px) {
+  .summary-grid { grid-template-columns:repeat(2,1fr); }
+  .two-col { grid-template-columns:1fr; }
+  .stat-cards { grid-template-columns:1fr; }
+  .cd-grid { grid-template-columns:100px repeat(4,1fr); font-size:10px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1><span class="name">Silencio</span> &mdash; Restoration Druid <span class="prog-tag">PROGRESSION NIGHT 4</span></h1>
+  <div class="subtitle">Crown of the Cosmos &bull; Mythic &bull; June 25, 2026 &bull; 19 pulls analyzed &bull; No kill &bull; Report: XYtJ3R1qjdFpM4cT</div>
+  <div class="subtitle" style="margin-top:4px;">4-heal comp: Senssay (MW) &bull; Dueche (HPal) &bull; Silencio (RDruid) &bull; Voidheart (Disc)</div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Avg HPS</div>
+    <div class="value" style="color:var(--druid);">139.1K</div>
+    <div class="sub">Range: 115.9K &ndash; 167.4K</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">289</div>
+    <div class="sub">15 valid gear slots</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--yellow);">0/19</div>
+    <div class="sub">Died every pull (all cascade)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Avg Overheal</div>
+    <div class="value" style="color:var(--yellow);">46.0%</div>
+    <div class="sub">Best: 37.6% &bull; Worst: 61.9%</div>
+  </div>
+</div>
+
+<!-- Bottom Line Verdict -->
+<div class="verdict" style="border-left-color:var(--yellow);">
+  <div class="title">Bottom Line</div>
+  <p>Solid mechanical play &mdash; Silencio was one of the last players alive in the deepest pulls (died 21st of 22 in fight 14 at 7:09), meaning every death was cascade from the raid collapsing, not individual mistakes. Tranquility usage is highly disciplined with a consistent P1 opener at 0:10-0:11 in every pull. The main areas for improvement are: (1) overheal management at 46% average, elevated in P1 and Intermission where damage is lighter, (2) very low DPS contribution during downtime windows &mdash; only 2 filler casts across the entire best pull, (3) Swiftmend underuse at 42% below reference CPM, and (4) inconsistent 2nd Tranquility usage in P2 pulls. Convoke the Spirits on cooldown every ~60s is excellent CD discipline.</p>
+</div>
+
+<!-- Phase Reach -->
+<section>
+  <h2>Phase Reach &amp; Pull Overview</h2>
+
+  <div style="margin-bottom:16px;">
+    <div class="phase-bar">
+      <div class="phase-segment" style="width:25%; background:rgba(63,185,80,0.2); color:var(--green);">P1: 19/19</div>
+      <div class="phase-segment" style="width:20%; background:rgba(88,166,255,0.2); color:var(--accent);">Int: 11/19</div>
+      <div class="phase-segment" style="width:25%; background:rgba(188,140,255,0.2); color:var(--purple);">P2: 11/19</div>
+      <div class="phase-segment" style="width:30%; background:rgba(248,81,73,0.2); color:var(--red);">P3: 8/19</div>
+    </div>
+    <div style="font-size:12px; color:var(--dim);">P1 Sentinels: 0:00&ndash;2:14 &bull; Intermission: 2:14&ndash;2:53 &bull; P2 Rift: 2:53&ndash;~5:04 &bull; P3 Devouring Cosmos: 5:04+</div>
+    <div style="font-size:12px; color:var(--dim); margin-top:4px;">Deepest pulls: Fight 14 (7:12), Fight 6 (7:03), Fight 28 (6:59) &mdash; all deep P3</div>
+  </div>
+
+  <h3>HPS Across All Pulls</h3>
+  <div class="bar-chart">
+    <div class="bar-row"><div class="bar-label">F1</div><div class="bar-container"><div class="bar-fill" style="width:92.8%;background:linear-gradient(90deg,rgba(188,140,255,0.6),rgba(188,140,255,0.3));"><span style="color:var(--text);">155.4K</span></div><div class="bar-value">5:00 P2</div></div></div>
+    <div class="bar-row"><div class="bar-label">F2</div><div class="bar-container"><div class="bar-fill" style="width:81.3%;background:linear-gradient(90deg,rgba(248,81,73,0.5),rgba(248,81,73,0.3));"><span style="color:var(--text);">136.1K</span></div><div class="bar-value">6:54 P3</div></div></div>
+    <div class="bar-row"><div class="bar-label">F3</div><div class="bar-container"><div class="bar-fill" style="width:83.1%;background:linear-gradient(90deg,rgba(63,185,80,0.5),rgba(63,185,80,0.3));"><span style="color:var(--text);">139.1K</span></div><div class="bar-value">1:51 P1</div></div></div>
+    <div class="bar-row"><div class="bar-label">F5</div><div class="bar-container"><div class="bar-fill" style="width:85.4%;background:linear-gradient(90deg,rgba(63,185,80,0.5),rgba(63,185,80,0.3));"><span style="color:var(--text);">143.0K</span></div><div class="bar-value">1:51 P1</div></div></div>
+    <div class="bar-row"><div class="bar-label">F6</div><div class="bar-container"><div class="bar-fill" style="width:76.7%;background:linear-gradient(90deg,rgba(248,81,73,0.5),rgba(248,81,73,0.3));"><span style="color:var(--text);">128.4K</span></div><div class="bar-value">7:03 P3</div></div></div>
+    <div class="bar-row"><div class="bar-label">F8</div><div class="bar-container"><div class="bar-fill" style="width:76.9%;background:linear-gradient(90deg,rgba(63,185,80,0.5),rgba(63,185,80,0.3));"><span style="color:var(--text);">128.7K</span></div><div class="bar-value">1:12 P1</div></div></div>
+    <div class="bar-row"><div class="bar-label">F12</div><div class="bar-container"><div class="bar-fill" style="width:83.8%;background:linear-gradient(90deg,rgba(63,185,80,0.5),rgba(63,185,80,0.3));"><span style="color:var(--text);">140.4K</span></div><div class="bar-value">2:10 P1</div></div></div>
+    <div class="bar-row"><div class="bar-label">F13</div><div class="bar-container"><div class="bar-fill" style="width:76.2%;background:linear-gradient(90deg,rgba(63,185,80,0.5),rgba(63,185,80,0.3));"><span style="color:var(--text);">127.5K</span></div><div class="bar-value">1:22 P1</div></div></div>
+    <div class="bar-row"><div class="bar-label" style="color:var(--green);font-weight:600;">F14</div><div class="bar-container" style="border:1px solid var(--green);"><div class="bar-fill" style="width:82.9%;background:linear-gradient(90deg,rgba(248,81,73,0.5),rgba(248,81,73,0.3));"><span style="color:var(--text);">138.9K</span></div><div class="bar-value" style="color:var(--green);">7:13 P3 (best)</div></div></div>
+    <div class="bar-row"><div class="bar-label">F17</div><div class="bar-container"><div class="bar-fill" style="width:86.9%;background:linear-gradient(90deg,rgba(248,81,73,0.5),rgba(248,81,73,0.3));"><span style="color:var(--text);">145.5K</span></div><div class="bar-value">6:58 P3</div></div></div>
+    <div class="bar-row"><div class="bar-label">F18</div><div class="bar-container"><div class="bar-fill" style="width:78.6%;background:linear-gradient(90deg,rgba(188,140,255,0.5),rgba(188,140,255,0.3));"><span style="color:var(--text);">131.5K</span></div><div class="bar-value">5:06 P2</div></div></div>
+    <div class="bar-row"><div class="bar-label">F19</div><div class="bar-container"><div class="bar-fill" style="width:69.2%;background:linear-gradient(90deg,rgba(63,185,80,0.5),rgba(63,185,80,0.3));"><span style="color:var(--text);">115.9K</span></div><div class="bar-value">1:19 P1</div></div></div>
+    <div class="bar-row"><div class="bar-label">F21</div><div class="bar-container"><div class="bar-fill" style="width:83.4%;background:linear-gradient(90deg,rgba(63,185,80,0.5),rgba(63,185,80,0.3));"><span style="color:var(--text);">139.7K</span></div><div class="bar-value">1:31 P1</div></div></div>
+    <div class="bar-row"><div class="bar-label">F22</div><div class="bar-container"><div class="bar-fill" style="width:93.3%;background:linear-gradient(90deg,rgba(63,185,80,0.5),rgba(63,185,80,0.3));"><span style="color:var(--text);">156.3K</span></div><div class="bar-value">1:17 P1</div></div></div>
+    <div class="bar-row"><div class="bar-label">F23</div><div class="bar-container"><div class="bar-fill" style="width:77.5%;background:linear-gradient(90deg,rgba(188,140,255,0.5),rgba(188,140,255,0.3));"><span style="color:var(--text);">129.8K</span></div><div class="bar-value">5:14 P2</div></div></div>
+    <div class="bar-row"><div class="bar-label">F24</div><div class="bar-container"><div class="bar-fill" style="width:82.2%;background:linear-gradient(90deg,rgba(248,81,73,0.5),rgba(248,81,73,0.3));"><span style="color:var(--text);">137.7K</span></div><div class="bar-value">5:36 P3</div></div></div>
+    <div class="bar-row"><div class="bar-label">F26</div><div class="bar-container"><div class="bar-fill" style="width:88.7%;background:linear-gradient(90deg,rgba(248,81,73,0.5),rgba(248,81,73,0.3));"><span style="color:var(--text);">148.4K</span></div><div class="bar-value">6:58 P3</div></div></div>
+    <div class="bar-row"><div class="bar-label" style="color:var(--yellow);font-weight:600;">F27</div><div class="bar-container" style="border:1px solid var(--yellow);"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,rgba(248,81,73,0.5),rgba(248,81,73,0.3));"><span style="color:var(--text);">167.4K</span></div><div class="bar-value" style="color:var(--yellow);">5:36 P3 (peak HPS)</div></div></div>
+    <div class="bar-row"><div class="bar-label">F28</div><div class="bar-container"><div class="bar-fill" style="width:79.7%;background:linear-gradient(90deg,rgba(248,81,73,0.5),rgba(248,81,73,0.3));"><span style="color:var(--text);">133.4K</span></div><div class="bar-value">6:59 P3</div></div></div>
+  </div>
+  <div style="font-size:12px; color:var(--dim);">Bar color indicates deepest phase reached: <span style="color:var(--green);">P1</span> <span style="color:var(--accent);">Intermission</span> <span style="color:var(--purple);">P2</span> <span style="color:var(--red);">P3</span>. Average HPS line: 139.1K.</div>
+</section>
+
+<!-- Per-Phase Performance -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">Phase stats from Fight 14 (best pull, 7:13). Phase reach rates calculated across all 19 pulls.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>HPS (F14)</th>
+        <th>Overheal (F14)</th>
+        <th>Key CDs Used (F14)</th>
+        <th>Deaths in Phase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="pill pill-green">P1 Sentinels</span></td>
+        <td>19/19</td>
+        <td>109,063</td>
+        <td><span style="color:var(--red);">55.6%</span></td>
+        <td>Tranq @ 0:11, Convoke x2 (0:39, 1:39)</td>
+        <td style="color:var(--dim);">0 early (all cascade)</td>
+      </tr>
+      <tr>
+        <td><span class="pill pill-blue">Intermission</span></td>
+        <td>11/19</td>
+        <td>69,721</td>
+        <td><span style="color:var(--red);">54.6%</span></td>
+        <td>Convoke @ 2:52</td>
+        <td style="color:var(--dim);">0 early (all cascade)</td>
+      </tr>
+      <tr>
+        <td><span class="pill" style="background:rgba(188,140,255,0.15);color:var(--purple);">P2 Rift</span></td>
+        <td>11/19</td>
+        <td style="color:var(--green);">175,411</td>
+        <td><span style="color:var(--red);">57.4%</span></td>
+        <td>Tranq @ 3:11, Convoke x2 (3:55, 4:56)</td>
+        <td style="color:var(--dim);">0 early (all cascade)</td>
+      </tr>
+      <tr>
+        <td><span class="pill pill-red">P3 Cosmos</span></td>
+        <td>8/19</td>
+        <td>135,229</td>
+        <td><span style="color:var(--yellow);">48.3%</span></td>
+        <td>Convoke @ 5:57, Tranq @ 6:12</td>
+        <td style="color:var(--dim);">0 early (all cascade)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col">
+    <div class="action-card" style="border-left-color:var(--yellow);">
+      <div class="action-title">P1 &amp; Intermission Overheal Elevated</div>
+      <p>55.6% overheal in P1 and 54.6% in Intermission means mana and globals are being spent on healing that does not land. In P1, damage is lower and more predictable &mdash; consider shifting some Rejuvenation blanket casts to DPS fillers (Wrath/Moonfire) during low-damage windows and saving mana for the P2/P3 ramp where healing demands spike dramatically (HPS jumps 61% from P1 to P2).</p>
+    </div>
+    <div class="action-card" style="border-left-color:var(--green);">
+      <div class="action-title">P2 HPS Spike: Correct Output Scaling</div>
+      <p>HPS increases from 109K in P1 to 175K in P2 &mdash; a 61% jump that matches the increased damage profile of the Rift phase. This demonstrates good awareness of when to push healing output. Overheal is still elevated at 57.4% in P2, which may indicate HoTs being refreshed unnecessarily on healthy targets. P3 overheal drops to 48.3%, showing better targeting when damage is constant.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CD Discipline -->
+<section>
+  <h2>CD Discipline Analysis</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Cooldown</th>
+        <th>Used In</th>
+        <th>Total Uses</th>
+        <th>Primary Phase</th>
+        <th>Timing Pattern</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--druid);font-weight:600;">Tranquility</td>
+        <td>19/19</td>
+        <td>29</td>
+        <td><span class="pill pill-green">P1</span> (19), <span class="pill" style="background:rgba(188,140,255,0.15);color:var(--purple);">P2</span> (5), <span class="pill pill-red">P3</span> (5)</td>
+        <td>Always at 0:10-0:14 in P1. P2 at ~3:11-3:33. P3 at ~5:38-6:34.</td>
+        <td><span class="pill pill-green">Excellent</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);font-weight:600;">Convoke the Spirits</td>
+        <td>19/19</td>
+        <td>67</td>
+        <td><span class="pill pill-green">P1</span> (33), <span class="pill" style="background:rgba(188,140,255,0.15);color:var(--purple);">P2</span> (22), <span class="pill pill-blue">Int</span> (6), <span class="pill pill-red">P3</span> (6)</td>
+        <td>~60s intervals. First at 0:14-0:39, then on CD.</td>
+        <td><span class="pill pill-green">Excellent</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);font-weight:600;">Ironbark</td>
+        <td>16/19</td>
+        <td>26</td>
+        <td><span class="pill pill-green">P1</span> (15), <span class="pill" style="background:rgba(188,140,255,0.15);color:var(--purple);">P2</span> (8), <span class="pill pill-red">P3</span> (3)</td>
+        <td>Used on tanks/vulnerable targets. Consistent usage.</td>
+        <td><span class="pill pill-green">Good</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);font-weight:600;">Innervate</td>
+        <td>15/19</td>
+        <td>24</td>
+        <td><span class="pill pill-green">P1</span> (15), <span class="pill" style="background:rgba(188,140,255,0.15);color:var(--purple);">P2</span> (9)</td>
+        <td>First use ~0:30-1:10 (P1). Second ~4:09-4:38 (P2).</td>
+        <td><span class="pill pill-yellow">Acceptable</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);font-weight:600;">Barkskin</td>
+        <td>14/19</td>
+        <td>34</td>
+        <td><span class="pill pill-green">P1</span> (13), <span class="pill" style="background:rgba(188,140,255,0.15);color:var(--purple);">P2</span> (15), <span class="pill pill-red">P3</span> (6)</td>
+        <td>Defensive used proactively during high-damage phases.</td>
+        <td><span class="pill pill-green">Good</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);font-weight:600;">Nature's Swiftness</td>
+        <td>19/19</td>
+        <td>66</td>
+        <td>All phases</td>
+        <td>Paired with Convoke for instant Regrowth. ~60s intervals.</td>
+        <td><span class="pill pill-green">Excellent</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="action-card positive">
+    <div class="action-title">Tranquility &amp; Convoke Discipline is Outstanding</div>
+    <p>Tranquility is cast at exactly 0:10-0:14 in P1 across all 19 pulls with near-zero variation &mdash; Silencio has this timing locked in. Convoke the Spirits is used on near-perfect ~60s intervals in every pull (67 total uses across 19 pulls = 3.5 per pull average), ensuring maximum throughput from this powerful ability. Nature's Swiftness is paired with every Convoke for instant Regrowth during the channel &mdash; correct technique.</p>
+  </div>
+</section>
+
+<!-- Death Pattern Analysis -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">Silencio died in all 19 pulls. Under the 2-death threshold rule, <strong style="color:var(--green);">zero deaths are counted as early/individual failures</strong> &mdash; every single death occurred after 2+ other players had already died (cascade wipe). Silencio was consistently among the last players alive.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Fight</th>
+        <th>Duration</th>
+        <th>Death Time</th>
+        <th>Alive %</th>
+        <th>Death #</th>
+        <th>Killing Ability</th>
+        <th>Phase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>F1</td><td>5:00</td><td>4:57</td><td style="color:var(--green);">99%</td><td>#19</td><td>Void Barrage</td><td>P2</td></tr>
+      <tr><td>F2</td><td>6:54</td><td>6:41</td><td style="color:var(--green);">97%</td><td>#21</td><td>Gravity Collapse</td><td>P3</td></tr>
+      <tr><td>F3</td><td>1:51</td><td>1:39</td><td>89%</td><td>#4</td><td>Cascade</td><td>P1</td></tr>
+      <tr><td>F5</td><td>1:51</td><td>1:36</td><td>86%</td><td>#5</td><td>Cascade</td><td>P1</td></tr>
+      <tr><td>F6</td><td>7:03</td><td>6:46</td><td style="color:var(--green);">96%</td><td>#14</td><td>Grasp of Emptiness</td><td>P3</td></tr>
+      <tr><td>F8</td><td>1:12</td><td>1:08</td><td style="color:var(--green);">94%</td><td>#11</td><td>Cascade</td><td>P1</td></tr>
+      <tr><td>F12</td><td>2:10</td><td>2:03</td><td style="color:var(--green);">94%</td><td>#4</td><td>Cascade</td><td>P1</td></tr>
+      <tr><td>F13</td><td>1:22</td><td>1:00</td><td>73%</td><td>#5</td><td>Bursting Emptiness</td><td>P1</td></tr>
+      <tr class="highlight-row"><td>F14</td><td>7:13</td><td>7:09</td><td style="color:var(--green);">99%</td><td><strong>#21</strong></td><td>Melee (wipe)</td><td>P3</td></tr>
+      <tr><td>F17</td><td>6:58</td><td>6:32</td><td style="color:var(--green);">94%</td><td>#15</td><td>Bursting Emptiness</td><td>P3</td></tr>
+      <tr><td>F18</td><td>5:06</td><td>4:58</td><td style="color:var(--green);">97%</td><td>#20</td><td>Void Barrage</td><td>P2</td></tr>
+      <tr><td>F19</td><td>1:19</td><td>1:06</td><td>84%</td><td>#8</td><td>Cascade</td><td>P1</td></tr>
+      <tr><td>F21</td><td>1:31</td><td>1:13</td><td>80%</td><td>#6</td><td>Cascade</td><td>P1</td></tr>
+      <tr><td>F22</td><td>1:17</td><td>1:13</td><td style="color:var(--green);">95%</td><td>#16</td><td>Cascade</td><td>P1</td></tr>
+      <tr><td>F23</td><td>5:14</td><td>5:04</td><td style="color:var(--green);">96%</td><td>#11</td><td>Cascade</td><td>P2</td></tr>
+      <tr><td>F24</td><td>5:36</td><td>5:20</td><td style="color:var(--green);">95%</td><td>#11</td><td>Void Remnants</td><td>P3</td></tr>
+      <tr><td>F26</td><td>6:58</td><td>5:13</td><td>75%</td><td>#7</td><td>Cascade</td><td>P2</td></tr>
+      <tr><td>F27</td><td>5:36</td><td>5:24</td><td style="color:var(--green);">96%</td><td>#13</td><td>Cascade</td><td>P3</td></tr>
+      <tr><td>F28</td><td>6:59</td><td>6:38</td><td style="color:var(--green);">95%</td><td>#9</td><td>Gravity Collapse</td><td>P3</td></tr>
+    </tbody>
+  </table>
+
+  <div class="action-card positive">
+    <div class="action-title">Survivability is Excellent</div>
+    <p>In the 11 pulls that reached Intermission or beyond, Silencio averaged 94% alive time. In the best pull (F14, 7:13), Silencio was the 21st of 22 deaths &mdash; the second-to-last player alive at 7:09. This is outstanding for a healer who is actively healing through cascading deaths rather than dying early. Zero early deaths across 19 pulls under the 2-death threshold. No survivability improvements needed.</p>
+  </div>
+</section>
+
+<!-- Death Forensics for Fight 14 -->
+<section>
+  <h2>Death Forensics &mdash; Fight 14 (Best Pull)</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:12px;">Silencio died at 7:09 (P3), the 21st death. The raid was already in full collapse &mdash; 13 players died between 6:36 and 7:06 before Silencio fell. This is a cascade wipe, not an individual failure.</p>
+
+  <div class="death-timeline">
+    <div class="line" style="color:var(--dim);">Last 20s of damage taken:</div>
+    <div class="line dmg">6:49  Voidstalker Sting    49,993</div>
+    <div class="line dmg">6:50  Voidstalker Sting    53,184</div>
+    <div class="line dmg">6:51  Voidstalker Sting    58,502</div>
+    <div class="line dmg">6:52  Voidstalker Sting    46,146 <span class="abs">(abs: 17,675)</span></div>
+    <div class="line dmg">6:53  Voidstalker Sting    69,140</div>
+    <div class="line dmg">6:54  Voidstalker Sting    74,457</div>
+    <div class="line dmg" style="color:var(--orange);">6:54  Interrupting Tremor  132,627  <span style="color:var(--dim);">&larr; spike</span></div>
+    <div class="line dmg">6:55  Voidstalker Sting    79,776</div>
+    <div class="line dmg">6:56  Voidstalker Sting    74,457</div>
+    <div class="line dmg">6:57  Voidstalker Sting    69,139</div>
+    <div class="line" style="color:var(--dim);">      + Cosmic Barrier ticks every ~1.2s (25-27K each)</div>
+    <div class="line dmg">7:00  Voidstalker Sting    17,224 <span class="abs">(abs: 32,769)</span></div>
+    <div class="line" style="color:var(--dim);">7:01&ndash;7:06  Sting ~50K/tick + Barrier ~25K/tick sustained</div>
+    <div class="line dmg">7:07&ndash;7:08  Cosmic Barrier 26&ndash;27K</div>
+    <div class="line dead">7:09  Melee 322,227 (overkill: 593,326) &mdash; DEAD</div>
+    <div class="line" style="color:var(--dim); margin-top:8px;">Cause: Raid collapse. Voidstalker Sting + Cosmic Barrier sustained damage overwhelmed remaining healers.</div>
+    <div class="line" style="color:var(--dim);">Final melee hit for 322K with 593K overkill &mdash; no defensive could have saved this.</div>
+  </div>
+
+  <h3 style="margin-top:16px;">Fight 14 Death Order (All Players)</h3>
+  <p style="font-size:12px; color:var(--dim); margin-bottom:8px;">First 2 deaths at 2:36 and 3:17 (P2). Remaining 20 deaths between 5:41 and 7:12 (P3 collapse). Silencio was 21st.</p>
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;">
+    <span class="pill pill-dim">2:36 #1</span>
+    <span class="pill pill-dim">3:17 #2</span>
+    <span class="pill pill-dim">5:41 #3-4</span>
+    <span class="pill pill-dim">5:44 #5</span>
+    <span class="pill pill-dim">5:53 #6</span>
+    <span class="pill pill-dim">6:36 #7-9</span>
+    <span class="pill pill-dim">6:38 #10</span>
+    <span class="pill pill-dim">6:40 #11-13</span>
+    <span class="pill pill-dim">6:41 #14</span>
+    <span class="pill pill-dim">6:48 #15</span>
+    <span class="pill pill-dim">7:02 #16</span>
+    <span class="pill pill-dim">7:03 #17-18</span>
+    <span class="pill pill-monk">7:06 Senssay #19</span>
+    <span class="pill pill-paladin">7:03 Dueche #17</span>
+    <span class="pill pill-druid">7:09 Silencio #21</span>
+    <span class="pill pill-priest">7:12 Voidheart #22</span>
+  </div>
+</section>
+
+<!-- Team CD Coordination -->
+<section>
+  <h2>Team CD Coordination &mdash; Fight 14</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">All 4 healers' major CDs mapped to fight phases. Silencio highlighted.</p>
+
+  <div class="cd-grid">
+    <div class="cell cell-header">Healer</div>
+    <div class="cell cell-header">P1 (0:00&ndash;2:14)</div>
+    <div class="cell cell-header">Intermission</div>
+    <div class="cell cell-header">P2 (2:54&ndash;5:10)</div>
+    <div class="cell cell-header">P3 (5:10+)</div>
+
+    <div class="cell cell-highlight" style="color:var(--druid);font-weight:600;">Silencio (RDruid)</div>
+    <div class="cell cell-highlight"><span class="pill pill-druid">Tranq 0:11</span> <span class="pill pill-druid">Conv 0:39</span> <span class="pill pill-druid">Conv 1:39</span></div>
+    <div class="cell cell-highlight"><span class="pill pill-druid">Conv 2:52</span></div>
+    <div class="cell cell-highlight"><span class="pill pill-druid">Tranq 3:11</span> <span class="pill pill-druid">Conv 3:55</span> <span class="pill pill-druid">Conv 4:56</span></div>
+    <div class="cell cell-highlight"><span class="pill pill-druid">Conv 5:57</span> <span class="pill pill-druid">Tranq 6:12</span></div>
+
+    <div class="cell" style="color:#e0e0e0;">Voidheart (Disc)</div>
+    <div class="cell"><span class="pill pill-priest">Evang 0:02</span> <span class="pill pill-priest">UltPen 0:53</span> <span class="pill pill-priest">Evang 1:43</span></div>
+    <div class="cell"><span class="pill pill-dim">No CD</span></div>
+    <div class="cell"><span class="pill pill-priest">Evang 3:16</span> <span class="pill pill-priest">Evang 4:54</span></div>
+    <div class="cell"><span class="pill pill-dim">No CD after 4:54</span></div>
+
+    <div class="cell" style="color:#f48cba;">Dueche (HPal)</div>
+    <div class="cell"><span class="pill pill-paladin">AW 0:03</span> <span class="pill pill-paladin">AM 0:58</span></div>
+    <div class="cell"><span class="pill pill-dim">No CD</span></div>
+    <div class="cell"><span class="pill pill-paladin">AW 4:55</span></div>
+    <div class="cell"><span class="pill pill-paladin">AM 6:18</span></div>
+
+    <div class="cell" style="color:#00ff96;">Senssay (MW)</div>
+    <div class="cell"><span class="pill pill-monk">Yu'lon 0:55</span> <span class="pill pill-monk">Rev 1:41</span> <span class="pill pill-monk">CC 2:00</span></div>
+    <div class="cell"><span class="pill pill-dim">No CD</span></div>
+    <div class="cell"><span class="pill pill-monk">Yu'lon 3:56</span> <span class="pill pill-monk">CC 4:32</span></div>
+    <div class="cell"><span class="pill pill-monk">Rev 5:39</span> <span class="pill pill-monk">CC 6:19</span> <span class="pill pill-monk">Yu'lon 6:37</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="action-card" style="border-left-color:var(--yellow);">
+      <div class="action-title">Intermission CD Gap</div>
+      <p>The Intermission (Stellar Emission + Silverstrike Barrage) is a pure survival phase, but only Silencio uses a CD there (Convoke at 2:52). Three healers have no major CDs in the Intermission. This is likely intentional &mdash; Intermission is short (39s) and CDs need to be saved for P2 &mdash; but worth discussing if Intermission deaths become a pattern.</p>
+    </div>
+    <div class="action-card" style="border-left-color:var(--green);">
+      <div class="action-title">P1 Coverage is Strong</div>
+      <p>All 4 healers deploy major CDs in P1. Silencio opens with Tranquility at 0:11 (consistent across all pulls), then Convoke at 0:39 and 1:39. The staggered timing with Voidheart's Evangelism (0:02, 1:43), Dueche's AW/AM (0:03, 0:58), and Senssay's Yu'lon/Revival (0:55, 1:41) provides continuous coverage through P1.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Cast Profile Comparison -->
+<section>
+  <h2>Cast Profile Comparison &mdash; Fight 14 vs Reference Kill</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">Silencio (7:09 alive in 7:13 pull) vs Asdfqwerzxcv (8:19 kill, 4-heal comp, 10 talent diffs). CPM adjusted for alive time.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Silencio CPM</th>
+        <th>Silencio Casts</th>
+        <th>Ref CPM</th>
+        <th>Ref Casts</th>
+        <th>Delta</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">Rejuvenation</td>
+        <td>16.78</td>
+        <td>120</td>
+        <td>16.24</td>
+        <td>135</td>
+        <td style="color:var(--green);">+3%</td>
+        <td><span class="pill pill-green">Match</span></td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Regrowth</td>
+        <td>13.29</td>
+        <td>95</td>
+        <td>17.81</td>
+        <td>148</td>
+        <td style="color:var(--red);">-25%</td>
+        <td><span class="pill pill-yellow">Under</span></td>
+      </tr>
+      <tr>
+        <td>Rejuvenation (Germ)</td>
+        <td>6.01</td>
+        <td>43</td>
+        <td>6.26</td>
+        <td>52</td>
+        <td style="color:var(--green);">-4%</td>
+        <td><span class="pill pill-green">Match</span></td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Wild Growth</td>
+        <td>4.06</td>
+        <td>29</td>
+        <td>3.85</td>
+        <td>32</td>
+        <td style="color:var(--green);">+5%</td>
+        <td><span class="pill pill-green">Match</span></td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Swiftmend</td>
+        <td>2.66</td>
+        <td>19</td>
+        <td>4.57</td>
+        <td>38</td>
+        <td style="color:var(--red);">-42%</td>
+        <td><span class="pill pill-red">Low</span></td>
+      </tr>
+      <tr>
+        <td>Tranquility</td>
+        <td colspan="2">3 channels</td>
+        <td colspan="2">3 channels</td>
+        <td style="color:var(--green);">=</td>
+        <td><span class="pill pill-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Lifebloom</td>
+        <td>1.96</td>
+        <td>14</td>
+        <td>1.08</td>
+        <td>9</td>
+        <td style="color:var(--green);">+81%</td>
+        <td><span class="pill pill-green">Good uptime</span></td>
+      </tr>
+      <tr>
+        <td>Convoke the Spirits</td>
+        <td>0.84</td>
+        <td>6</td>
+        <td>0.84</td>
+        <td>7</td>
+        <td style="color:var(--green);">0%</td>
+        <td><span class="pill pill-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Nature's Swiftness</td>
+        <td>0.84</td>
+        <td>6</td>
+        <td>0.36</td>
+        <td>3</td>
+        <td style="color:var(--green);">+133%</td>
+        <td><span class="pill pill-green">Good usage</span></td>
+      </tr>
+      <tr>
+        <td>Innervate</td>
+        <td>0.28</td>
+        <td>2</td>
+        <td>0.36</td>
+        <td>3</td>
+        <td style="color:var(--dim);">~</td>
+        <td><span class="pill pill-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Nature's Cure</td>
+        <td>0.98</td>
+        <td>7</td>
+        <td>0.12</td>
+        <td>1</td>
+        <td>&mdash;</td>
+        <td><span class="pill pill-blue">Dispel duty</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--yellow);">Wrath</td>
+        <td style="color:var(--red);">0.14</td>
+        <td style="color:var(--red);">1</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td><span class="pill pill-red">Near-zero filler</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--yellow);">Moonfire</td>
+        <td style="color:var(--red);">0.14</td>
+        <td style="color:var(--red);">1</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td><span class="pill pill-red">Near-zero filler</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top:16px;">
+    <div class="action-card important">
+      <div class="action-title">Swiftmend Underuse: 2.66 vs 4.57 CPM (-42%)</div>
+      <p>Swiftmend is a core rotational ability that feeds mastery stacking, Soul of the Forest procs, and Verdancy HoTs. The reference casts Swiftmend 72% more frequently. Swiftmend should be pressed nearly on cooldown &mdash; it is the most efficient single-target heal in the kit and each cast amplifies the next Wild Growth or Regrowth via Soul of the Forest.</p>
+    </div>
+    <div class="action-card important">
+      <div class="action-title">Regrowth Underuse: 13.29 vs 17.81 CPM (-25%)</div>
+      <p>Regrowth is the Abundance cycle payoff &mdash; after blanketing Rejuvenation, Regrowth becomes nearly free and crits often. The reference casts 25% more Regrowth per minute. This gap directly impacts the Abundance cycle efficiency. More Swiftmend and Soul of the Forest procs would naturally lead to more empowered Regrowth casts.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Healing Breakdown -->
+<section>
+  <h2>Healing Breakdown &mdash; Fight 14</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Silencio Effective</th>
+        <th>Silencio OH%</th>
+        <th style="width:80px;">OH Bar</th>
+        <th>Ref Effective</th>
+        <th>Ref OH%</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Regrowth</td>
+        <td>7.78M (13.6%)</td>
+        <td style="color:var(--red);">56.7%</td>
+        <td><span class="oh-bar" style="width:57px;background:var(--red);"></span></td>
+        <td>13.90M (13.1%)</td>
+        <td>48.6%</td>
+      </tr>
+      <tr>
+        <td>Wild Growth</td>
+        <td>7.76M (13.5%)</td>
+        <td style="color:var(--yellow);">47.3%</td>
+        <td><span class="oh-bar" style="width:47px;background:var(--yellow);"></span></td>
+        <td>13.22M (12.4%)</td>
+        <td>38.9%</td>
+      </tr>
+      <tr>
+        <td>Everbloom</td>
+        <td>7.72M (13.5%)</td>
+        <td style="color:var(--green);">23.0%</td>
+        <td><span class="oh-bar" style="width:23px;background:var(--green);"></span></td>
+        <td>18.34M (17.3%)</td>
+        <td>21.4%</td>
+      </tr>
+      <tr>
+        <td>Rejuvenation</td>
+        <td>5.71M (10.0%)</td>
+        <td style="color:var(--yellow);">48.7%</td>
+        <td><span class="oh-bar" style="width:49px;background:var(--yellow);"></span></td>
+        <td>10.33M (9.7%)</td>
+        <td>47.7%</td>
+      </tr>
+      <tr>
+        <td>Tranquility</td>
+        <td>4.01M (7.0%)</td>
+        <td style="color:var(--red);">84.7%</td>
+        <td><span class="oh-bar" style="width:80px;background:var(--red);"></span></td>
+        <td>6.57M (6.2%)</td>
+        <td>76.7%</td>
+      </tr>
+      <tr>
+        <td>Rejuv (Germination)</td>
+        <td>3.12M (5.4%)</td>
+        <td style="color:var(--red);">52.0%</td>
+        <td><span class="oh-bar" style="width:52px;background:var(--red);"></span></td>
+        <td>5.66M (5.3%)</td>
+        <td>49.2%</td>
+      </tr>
+      <tr>
+        <td>Symbiotic Blooms</td>
+        <td>2.48M (4.3%)</td>
+        <td style="color:var(--yellow);">42.5%</td>
+        <td><span class="oh-bar" style="width:43px;background:var(--yellow);"></span></td>
+        <td>3.80M (3.6%)</td>
+        <td>43.5%</td>
+      </tr>
+      <tr>
+        <td>Lifebloom</td>
+        <td>2.34M (4.1%)</td>
+        <td style="color:var(--red);">73.7%</td>
+        <td><span class="oh-bar" style="width:74px;background:var(--red);"></span></td>
+        <td>4.68M (4.4%)</td>
+        <td>74.7%</td>
+      </tr>
+      <tr>
+        <td>Efflorescence</td>
+        <td>2.23M (3.9%)</td>
+        <td style="color:var(--green);">27.6%</td>
+        <td><span class="oh-bar" style="width:28px;background:var(--green);"></span></td>
+        <td>3.02M (2.8%)</td>
+        <td>32.4%</td>
+      </tr>
+      <tr>
+        <td>Nature's Bounty</td>
+        <td>2.16M (3.8%)</td>
+        <td style="color:var(--red);">54.9%</td>
+        <td><span class="oh-bar" style="width:55px;background:var(--red);"></span></td>
+        <td>4.37M (4.1%)</td>
+        <td>52.1%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col">
+    <div class="summary-card" style="text-align:left;">
+      <div class="label">Silencio Total</div>
+      <div style="font-size:16px;font-weight:600;">57.35M effective &bull; <span style="color:var(--red);">54.6% OH</span></div>
+      <div class="sub">HPS: 138,872 over 433s fight (alive 429s)</div>
+    </div>
+    <div class="summary-card" style="text-align:left;">
+      <div class="label">Reference Total (Asdfqwerzxcv)</div>
+      <div style="font-size:16px;font-weight:600;">106.17M effective &bull; <span style="color:var(--yellow);">48.8% OH</span></div>
+      <div class="sub">HPS: 221,294 over 499s kill</div>
+    </div>
+  </div>
+
+  <div class="action-card" style="border-left-color:var(--yellow); margin-top:12px;">
+    <div class="action-title">Tranquility Overheal: 84.7% (vs 76.7% ref)</div>
+    <p>Tranquility is Silencio's most overhealed ability at 84.7%. While Tranquility naturally has high overheal because it extends HoTs that may tick on full-health targets, the P1 Tranquility at 0:10-0:11 consistently fires when the raid is still near full health. The primary value of the early Tranquility is HoT extension via the talent, but the raw healing component is largely wasted. Consider whether delaying by 5-10 seconds to align with the first Void Expulsion damage spike would reduce overheal without losing the HoT extension benefit.</p>
+  </div>
+</section>
+
+<!-- DPS Contribution -->
+<section>
+  <h2>DPS Contribution</h2>
+
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-label">DPS (Fight 14)</div>
+      <div class="stat-value" style="color:var(--red);">2,388</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Damage</div>
+      <div class="stat-value">1.02M</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">DPS Filler Casts</div>
+      <div class="stat-value" style="color:var(--red);">2</div>
+      <div style="font-size:11px;color:var(--dim);">1 Wrath + 1 Moonfire</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Damage</th><th>% of Total</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Moonfire</td><td>0.47M</td><td>46.1%</td><td>DoT damage from 1 application (passive ticking)</td></tr>
+      <tr><td>Wrath</td><td>0.38M</td><td>36.8%</td><td style="color:var(--red);">Only 1 cast in 7:09</td></tr>
+      <tr><td>Rotbloom / Thorn Bloom</td><td>0.08M</td><td>8.0%</td><td>Passive talent damage</td></tr>
+      <tr><td>Other (passives)</td><td>0.09M</td><td>9.1%</td><td>Rake, trinket procs, Bursting Growth</td></tr>
+    </tbody>
+  </table>
+
+  <div style="font-size:12px; color:var(--dim); margin-bottom:12px;">Across all 19 pulls, Silencio cast Wrath 53 times total (2.8 per pull). DPS only appears in pulls that reached P2+ (fights 1,2,6,14,17,18,23,24,26,27,28).</div>
+
+  <div class="action-card critical">
+    <div class="action-title">Near-Zero DPS Filler is a Significant Waste</div>
+    <p>Across 7 minutes and 9 seconds of the best pull, Silencio cast exactly 1 Wrath and 1 Moonfire. In P1 (0:00-2:14) where overheal is 55.6%, there are clear windows between Void Expulsion and Echoing Darkness casts where the raid is at or near full health. These are free DPS globals being left on the table. Apply and maintain Moonfire/Sunfire on primary targets, and cast Wrath during any 2+ second healing downtime. Even modest DPS filler during P1 downtime could add 3-5K overall DPS without sacrificing healing output, since that healing was overhealing anyway.</p>
+  </div>
+</section>
+
+<!-- Ramp Analysis -->
+<section>
+  <h2>Ramp Analysis &mdash; Tranquility Timing</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">Resto Druid ramps by pre-hotting with Rejuvenation, then casting Tranquility to extend all HoTs by 10 seconds and enable Abundance-powered Regrowth spam.</p>
+
+  <h3>Tranquility Timing Across All Pulls</h3>
+  <table>
+    <thead>
+      <tr><th>Cast #</th><th>Phase</th><th>Avg Timing</th><th>Pulls Used</th><th>Timing Range</th><th>Consistency</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1st Tranquility</td>
+        <td><span class="pill pill-green">P1</span></td>
+        <td>0:10</td>
+        <td>19/19</td>
+        <td>0:10 &ndash; 0:14</td>
+        <td><span class="pill pill-green">Locked in</span></td>
+      </tr>
+      <tr>
+        <td>2nd Tranquility</td>
+        <td><span class="pill" style="background:rgba(188,140,255,0.15);color:var(--purple);">P2</span></td>
+        <td>3:25</td>
+        <td>5/11 P2 pulls</td>
+        <td>3:11 &ndash; 3:33</td>
+        <td><span class="pill pill-yellow">Inconsistent</span></td>
+      </tr>
+      <tr>
+        <td>3rd Tranquility</td>
+        <td><span class="pill pill-red">P3</span></td>
+        <td>6:05</td>
+        <td>5/8 P3 pulls</td>
+        <td>5:13 &ndash; 6:34</td>
+        <td><span class="pill pill-yellow">Variable</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="action-card important">
+    <div class="action-title">2nd Tranquility Missing in 6/11 P2 Pulls</div>
+    <p>Tranquility has a 3-minute cooldown. After the P1 cast at 0:10, it should be available again at ~3:10 (early P2). In the 11 pulls that reached P2, Silencio only used a 2nd Tranquility in 5 of them. In 6 pulls, this major CD sat unused during the highest-damage phase. The reference (Asdfqwerzxcv) uses Tranquility at 3:32 in their kill. Making this 2nd Tranquility consistent &mdash; targeting it at 3:10-3:30 in every P2 pull &mdash; would be a direct HPS increase in the phase that matters most.</p>
+  </div>
+
+  <h3>Convoke the Spirits Timing</h3>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:12px;">Convoke is used on ~60s cooldown across all pulls &mdash; excellent discipline. In longer pulls reaching P3, Silencio achieves 5-6 Convoke casts, matching the reference's 7 casts over 8:19 (same rate). Nature's Swiftness is paired with every Convoke for instant Regrowth during the channel &mdash; correct technique.</p>
+
+  <table>
+    <thead><tr><th>Pull</th><th>Convoke Timings</th><th>Count</th></tr></thead>
+    <tbody>
+      <tr><td>F14 (7:13, P3)</td><td>0:39, 1:39, 2:52, 3:55, 4:56, 5:57</td><td style="color:var(--green);">6</td></tr>
+      <tr><td>F2 (6:54, P3)</td><td>0:18, 1:41, 2:45, 3:53, 4:54, 5:54</td><td style="color:var(--green);">6</td></tr>
+      <tr><td>F6 (7:03, P3)</td><td>0:17, 1:18, 2:20, 3:37, 4:39, 5:58</td><td style="color:var(--green);">6</td></tr>
+      <tr><td>F17 (6:58, P3)</td><td>0:17, 1:20, 2:59, 3:59, 5:12, 6:23</td><td style="color:var(--green);">6</td></tr>
+      <tr><td>F26 (6:58, P3)</td><td>0:15, 1:21, 2:35, 3:46, 4:48, 5:50</td><td style="color:var(--green);">6</td></tr>
+      <tr><td>Ref kill (8:19)</td><td>1:05, 2:16, 3:24, 4:25, 5:48, 6:50, 7:51</td><td style="color:var(--green);">7</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Reference Comparison -->
+<section>
+  <h2>Reference Comparison (De-Emphasized)</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">Top 5 Restoration Druid kills with 4-heal comps from US/EU regions. This is prog vs kill &mdash; direct HPS comparison is not meaningful. Talent diffs and playstyle patterns are the focus.</p>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Diffs</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Yavakhue</td><td>228,583</td><td>8:33</td><td>291.6</td><td>12</td></tr>
+      <tr><td>2</td><td>Babulyazh</td><td>226,075</td><td>8:17</td><td>289.1</td><td>12</td></tr>
+      <tr class="highlight-row"><td>*</td><td style="font-weight:600;">Asdfqwerzxcv</td><td>221,294</td><td>8:19</td><td>291.1</td><td style="color:var(--green);">10 (primary ref)</td></tr>
+      <tr><td>4</td><td>Spamrejuv</td><td>214,258</td><td>7:42</td><td>289.7</td><td>15</td></tr>
+      <tr><td>5</td><td>Voltiges</td><td>212,395</td><td>7:21</td><td>271.8</td><td>15</td></tr>
+      <tr style="border-top:2px solid var(--border);">
+        <td>&mdash;</td>
+        <td style="color:var(--druid);font-weight:600;">Silencio (prog)</td>
+        <td>138,872*</td>
+        <td>7:13 (best)</td>
+        <td>289</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size:11px; color:var(--dim);">* Silencio's HPS is from a prog wipe (no kill), not directly comparable to reference kill HPS. References have longer fights with more P3 damage to heal and the boss dies, meaning maximum damage intake.</div>
+  <div style="font-size:11px; color:var(--dim); margin-top:4px;">Primary reference (Asdfqwerzxcv) selected for fewest talent diffs (10). All references are kill logs with fundamentally different fight dynamics than prog wipes.</div>
+</section>
+
+<!-- Healer Team Ranking -->
+<section>
+  <h2>Healer Team Ranking &mdash; Fight 14 (Best Pull)</h2>
+  <table>
+    <thead>
+      <tr><th>Rank</th><th>Healer</th><th>Spec</th><th>HPS</th><th>Total Healing</th><th>Overheal</th><th>Death Time</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td style="color:#00ff96;">Senssay</td><td>Mistweaver</td><td>159,881</td><td>69.15M</td><td style="color:var(--green);">32.1%</td><td>7:06 (#19)</td></tr>
+      <tr><td>2</td><td style="color:#f48cba;">Dueche</td><td>Holy Paladin</td><td>158,323</td><td>68.48M</td><td style="color:var(--green);">35.5%</td><td>7:03 (#17)</td></tr>
+      <tr class="highlight-row"><td>3</td><td style="color:var(--druid);font-weight:600;">Silencio</td><td>Resto Druid</td><td>138,872</td><td>60.07M</td><td style="color:var(--yellow);">48.0%</td><td>7:09 (#21)</td></tr>
+      <tr><td>4</td><td style="color:#e0e0e0;">Voidheart</td><td>Discipline</td><td>130,217</td><td>56.32M</td><td style="color:var(--green);">31.4%</td><td>7:12 (#22)</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size:12px; color:var(--dim); margin-top:8px;">All 4 healers died within 9 seconds of each other (7:03&ndash;7:12) during the raid collapse. Silencio was the 2nd-to-last healer alive. The 48% overheal is the main metric gap vs the other 3 healers (avg 33%).</div>
+</section>
+
+<!-- Actionable Items -->
+<section>
+  <h2>Actionable Items</h2>
+
+  <div class="action-card critical">
+    <div class="action-title">1. Increase DPS Filler During P1 Downtime</div>
+    <p>2 total DPS filler casts (1 Wrath, 1 Moonfire) across 7:09 is the biggest efficiency gap. In P1 (0:00-2:14) where overheal is 55.6%, there are clear windows between Void Expulsion and Echoing Darkness casts where the raid is at or near full health. Apply and maintain Moonfire/Sunfire on primary targets, and cast Wrath during any 2+ second healing downtime. Even modest DPS filler during P1 would add 3-5K overall DPS without sacrificing healing output, since that healing was overhealing anyway. Across all 19 pulls, only 53 total Wrath casts &mdash; averaging less than 3 per pull.</p>
+  </div>
+
+  <div class="action-card important">
+    <div class="action-title">2. Cast Swiftmend on Cooldown (2.66 vs 4.57 CPM, -42%)</div>
+    <p>Swiftmend is 42% lower CPM than the reference. Each Swiftmend triggers Soul of the Forest (+40% to next cast), Verdancy (HoT on nearby targets), and mastery stacking. Missing Swiftmend casts cascades into lower throughput from all associated talent synergies. The fix is straightforward: press Swiftmend on cooldown (~every 12-15 seconds), consuming a Rejuvenation or Wild Growth HoT. More Swiftmend casts will naturally increase Regrowth usage as well, since empowered Regrowths become the optimal follow-up.</p>
+  </div>
+
+  <div class="action-card important">
+    <div class="action-title">3. Use 2nd Tranquility in P2 Consistently</div>
+    <p>Tranquility was only used a 2nd time in 5 of 11 pulls that reached P2. After the P1 cast at 0:10, Tranquility comes off cooldown at ~3:10 &mdash; right as P2 Rift damage ramps up with Void Barrage and Voidstalker Sting. In the best pull (F14), the 2nd Tranquility landed at 3:11 and P2 HPS was 175K (61% higher than P1). In the 6 pulls without a 2nd Tranquility, this major CD sat unused during the highest-damage phase. Target 3:10-3:30 in every P2+ pull.</p>
+  </div>
+
+  <div class="action-card important">
+    <div class="action-title">4. Increase Regrowth Usage (13.29 vs 17.81 CPM, -25%)</div>
+    <p>Regrowth is the Abundance cycle payoff &mdash; after blanketing Rejuvenation, Regrowth becomes nearly free and crits frequently. The reference casts 25% more Regrowth per minute, which directly converts Rejuvenation blanket investment into effective healing. This improvement should come naturally from casting more Swiftmend (item #2 above) &mdash; each Soul of the Forest proc makes the next Regrowth significantly stronger, creating a natural incentive to cast it more.</p>
+  </div>
+
+  <div class="action-card positive">
+    <div class="action-title">5. Strengths to Maintain</div>
+    <p><strong>Tranquility P1 discipline</strong> &mdash; 0:10-0:14 in every pull, near-zero variance. <strong>Convoke on CD</strong> &mdash; used in 19/19 pulls at consistent ~60s intervals with Nature's Swiftness pairing. <strong>Survivability</strong> &mdash; always among the last alive, zero early deaths across 19 pulls. <strong>Rejuvenation/Wild Growth/Germination CPM</strong> all match reference levels. <strong>Lifebloom maintenance</strong> &mdash; higher CPM than reference, showing consistent uptime awareness. <strong>Barkskin usage</strong> &mdash; 14/19 pulls with proactive personal defensive. <strong>Ironbark</strong> &mdash; 16/19 pulls, used on tanks and vulnerable targets.</p>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Data source: <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">Report XYtJ3R1qjdFpM4cT</a> &bull; 19 pulls analyzed (fights 1,2,3,5,6,8,12,13,14,17,18,19,21,22,23,24,26,27,28)</p>
+  <p>Primary reference: Asdfqwerzxcv (report AGZy76BV8kvFChDL fight 13, 8:19 kill, 221K HPS, 10 talent diffs, ilvl 291.1, 4-heal comp)</p>
+  <p>5 comp-matched references (4-heal, US/EU only): Yavakhue, Babulyazh, Asdfqwerzxcv, Spamrejuv, Voltiges</p>
+  <p>Analysis mode: PROG &mdash; aggregate across all pulls with per-phase breakdown. 2-death threshold applied: 0 early deaths, 19 cascade deaths.</p>
+  <p style="margin-top:8px;">Generated June 26, 2026</p>
+</div>
+
+</body>
+</html>

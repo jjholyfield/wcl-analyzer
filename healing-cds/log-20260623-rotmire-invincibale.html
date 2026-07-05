@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invincibale - Elemental Shaman - Mythic Rotmire Kill Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --shaman: #0070dd;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 16px; font-weight: 600; margin: 20px 0 10px; color: var(--accent); }
+.header-meta { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+.header-meta span { margin-right: 16px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.tag-kill { background: rgba(63,185,80,0.15); color: var(--green); }
+.tag-wipe { background: rgba(248,81,73,0.15); color: var(--red); }
+.tag-mythic { background: rgba(188,140,255,0.15); color: var(--purple); }
+
+/* Summary Cards */
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.card-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 28px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88,166,255,0.04); }
+.highlight-row { background: rgba(88,166,255,0.08); }
+.ref-row { color: var(--purple); }
+
+/* Bars */
+.bar-container { width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.bar-player { background: var(--shaman); }
+.bar-ref { background: var(--purple); }
+
+/* Status badges */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.badge-good { background: rgba(63,185,80,0.15); color: var(--green); }
+.badge-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.badge-bad { background: rgba(248,81,73,0.15); color: var(--red); }
+.badge-neutral { background: rgba(139,148,158,0.15); color: var(--dim); }
+.badge-same { background: rgba(63,185,80,0.15); color: var(--green); }
+
+/* Timeline */
+.timeline-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; overflow-x: auto; }
+.timeline-row { display: flex; align-items: center; margin: 6px 0; }
+.timeline-label { width: 130px; flex-shrink: 0; font-size: 12px; color: var(--dim); font-weight: 500; }
+.timeline-track { flex: 1; height: 24px; position: relative; background: rgba(48,54,61,0.3); border-radius: 4px; }
+.timeline-marker { position: absolute; width: 10px; height: 10px; border-radius: 50%; top: 7px; transform: translateX(-50%); cursor: default; }
+.timeline-marker:hover::after { content: attr(data-tooltip); position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); background: #1c2128; color: var(--text); font-size: 11px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; z-index: 10; border: 1px solid var(--border); }
+.marker-bloom { background: var(--red); }
+.marker-vines { background: var(--yellow); }
+.marker-adds { background: var(--cyan); }
+.marker-death { background: #fff; }
+.timeline-time-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--dim); padding-left: 130px; }
+
+/* Mechanic cards */
+.mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.mechanic-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.cps-comparison { display: flex; gap: 24px; align-items: center; }
+.cps-bar { display: flex; align-items: center; gap: 8px; }
+.cps-label { font-size: 12px; color: var(--dim); width: 80px; }
+.cps-value { font-size: 14px; font-weight: 600; width: 50px; text-align: right; }
+.cps-track { width: 200px; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+
+/* Callout boxes */
+.callout { background: var(--surface); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0; font-size: 14px; }
+.callout-warn { border-left-color: var(--yellow); }
+.callout-bad { border-left-color: var(--red); }
+.callout-good { border-left-color: var(--green); }
+.callout-title { font-weight: 600; margin-bottom: 4px; }
+
+/* Action items */
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.action-num { display: inline-block; width: 28px; height: 28px; background: var(--accent); color: var(--bg); border-radius: 50%; text-align: center; line-height: 28px; font-weight: 700; font-size: 14px; margin-right: 12px; vertical-align: top; }
+.action-content { display: inline-block; width: calc(100% - 48px); vertical-align: top; }
+.action-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.action-detail { font-size: 13px; color: var(--dim); }
+
+/* Chart bars */
+.chart-bar-container { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.chart-bar-label { width: 60px; font-size: 12px; color: var(--dim); text-align: right; }
+.chart-bar { height: 28px; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 12px; font-weight: 600; min-width: 40px; }
+.chart-bar-kill { background: var(--green); color: var(--bg); }
+.chart-bar-wipe { background: var(--red); color: #fff; opacity: 0.8; }
+
+/* Footer */
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); text-align: center; }
+
+/* Grid layouts */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  body { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23, 2026 Log Analysis</a>
+
+<h1><span style="color: var(--shaman);">Invincibale</span> &mdash; Elemental Shaman</h1>
+<div class="header-meta">
+  <span><span class="tag tag-mythic">MYTHIC</span> Rotmire</span>
+  <span><span class="tag tag-kill">KILL</span> 8:09</span>
+  <span>June 23, 2026</span>
+  <span>Report: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC</a></span>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">DPS (Kill)</div>
+    <div class="card-value" style="color: var(--shaman);">111K</div>
+    <div class="card-sub">110,627 exact</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">292</div>
+    <div class="card-sub">15 slots equipped</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Kill Status</div>
+    <div class="card-value" style="color: var(--green);">Survived</div>
+    <div class="card-sub">0 deaths in kill</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Rotational CPM</div>
+    <div class="card-value">47.9</div>
+    <div class="card-sub">vs 52.0 reference</div>
+  </div>
+</div>
+
+<!-- Reference Comparison -->
+<h2>Reference Comparison</h2>
+<div class="callout callout-warn">
+  <div class="callout-title">Large Talent Divergence</div>
+  All top-ranked Elemental Shamans on Mythic Rotmire run builds with 46-50 talent node differences from Invincibale. The reference player uses a Stormbringer build with heavy Lava Burst and Chain Lightning focus, while Invincibale runs a different hero talent tree. DPS gaps reflect both execution and build differences.
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>DPS</th>
+      <th>Kill Time</th>
+      <th>Item Level</th>
+      <th>Talent Delta</th>
+      <th>Rot. CPM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="highlight-row">
+      <td><strong style="color: var(--shaman);">Invincibale</strong> <span class="badge badge-neutral">Analyzed</span></td>
+      <td>110,627</td>
+      <td>8:09</td>
+      <td>292</td>
+      <td>&mdash;</td>
+      <td>47.9</td>
+    </tr>
+    <tr class="ref-row">
+      <td>&#20170;&#26202;&#21507;&#20160;&#20040;&#21602; <span class="badge" style="background:rgba(188,140,255,0.15);color:var(--purple);">Primary Ref</span></td>
+      <td>228,583</td>
+      <td>8:19</td>
+      <td>292</td>
+      <td><span class="badge badge-bad">46 diffs</span></td>
+      <td>52.0</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">Sural</td>
+      <td>224,841</td>
+      <td>6:46</td>
+      <td>291</td>
+      <td><span class="badge badge-bad">49 diffs</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">&#25226;&#27882;&#23492;&#32102;&#28023;</td>
+      <td>220,202</td>
+      <td>6:44</td>
+      <td>291</td>
+      <td><span class="badge badge-bad">50 diffs</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">Toumakauzsa</td>
+      <td>214,801</td>
+      <td>7:08</td>
+      <td>291</td>
+      <td><span class="badge badge-bad">47 diffs</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">Kaelacheight</td>
+      <td>210,276</td>
+      <td>6:50</td>
+      <td>291</td>
+      <td><span class="badge badge-bad">48 diffs</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">Build Context</div>
+  Every top-5 Elemental Shaman on Mythic Rotmire runs a fundamentally different talent build. The DPS gap (111K vs 210-229K) is primarily driven by <strong>talent/build selection</strong>, not execution alone. The reference player's Stormbringer build with heavy Lava Burst (24% of damage) and Chain Lightning cleave (19.5%) generates dramatically more damage on Rotmire's frequent add spawns. Invincibale's build distributes damage more evenly across Lightning Bolt, overloads, Tempest, and Elemental Blast.
+</div>
+
+<!-- Boss Mechanic Timeline -->
+<h2>Boss Mechanic Timeline</h2>
+<p style="font-size:14px;color:var(--dim);margin-bottom:12px;">Rotmire is a single-phase boss with repeating mechanic cycles. No phase transitions.</p>
+
+<div class="timeline-container">
+  <div class="timeline-row">
+    <div class="timeline-label" style="color:var(--red);">Fungal Bloom</div>
+    <div class="timeline-track">
+      <div class="timeline-marker marker-bloom" style="left:24.5%" data-tooltip="Bloom #1 @ 2:00"></div>
+      <div class="timeline-marker marker-bloom" style="left:52.4%" data-tooltip="Bloom #2 @ 4:16"></div>
+      <div class="timeline-marker marker-bloom" style="left:80.2%" data-tooltip="Bloom #3 @ 6:32"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color:var(--yellow);">Festering Vines</div>
+    <div class="timeline-track">
+      <div class="timeline-marker marker-vines" style="left:8.8%" data-tooltip="Vines #1 @ 0:43"></div>
+      <div class="timeline-marker marker-vines" style="left:18.8%" data-tooltip="Vines #2 @ 1:32"></div>
+      <div class="timeline-marker marker-vines" style="left:36.6%" data-tooltip="Vines #3 @ 2:59"></div>
+      <div class="timeline-marker marker-vines" style="left:46.6%" data-tooltip="Vines #4 @ 3:48"></div>
+      <div class="timeline-marker marker-vines" style="left:64.5%" data-tooltip="Vines #5 @ 5:15"></div>
+      <div class="timeline-marker marker-vines" style="left:74.5%" data-tooltip="Vines #6 @ 6:04"></div>
+      <div class="timeline-marker marker-vines" style="left:92.3%" data-tooltip="Vines #7 @ 7:31"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color:var(--cyan);">Awaken Fungi</div>
+    <div class="timeline-track">
+      <div class="timeline-marker marker-adds" style="left:3.1%" data-tooltip="Adds #1 @ 0:15"></div>
+      <div class="timeline-marker marker-adds" style="left:13.1%" data-tooltip="Adds #2 @ 1:04"></div>
+      <div class="timeline-marker marker-adds" style="left:30.9%" data-tooltip="Adds #3 @ 2:31"></div>
+      <div class="timeline-marker marker-adds" style="left:40.9%" data-tooltip="Adds #4 @ 3:20"></div>
+      <div class="timeline-marker marker-adds" style="left:58.7%" data-tooltip="Adds #5 @ 4:47"></div>
+      <div class="timeline-marker marker-adds" style="left:68.8%" data-tooltip="Adds #6 @ 5:36"></div>
+      <div class="timeline-marker marker-adds" style="left:86.6%" data-tooltip="Adds #7 @ 7:03"></div>
+      <div class="timeline-marker marker-adds" style="left:96.6%" data-tooltip="Adds #8 @ 7:52"></div>
+    </div>
+  </div>
+  <div class="timeline-row">
+    <div class="timeline-label" style="color:var(--dim);">Deaths</div>
+    <div class="timeline-track">
+      <span style="position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--dim);">No deaths on kill</span>
+    </div>
+  </div>
+  <div class="timeline-time-labels">
+    <span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span><span>5:00</span><span>6:00</span><span>7:00</span><span>8:09</span>
+  </div>
+</div>
+
+<div style="font-size:13px;color:var(--dim);margin-top:8px;">
+  <strong>Raid State:</strong> 21/21 alive for the entire kill &mdash; clean kill, no deaths.
+</div>
+
+<!-- Damage Breakdown by Ability -->
+<h2>Damage Profile Comparison</h2>
+<div class="two-col">
+  <div>
+    <h3 style="color:var(--shaman);">Invincibale (111K DPS)</h3>
+    <table>
+      <thead><tr><th>Ability</th><th>Damage</th><th>%</th></tr></thead>
+      <tbody>
+        <tr><td>Lightning Bolt</td><td>6.0M</td><td>11.1%</td></tr>
+        <tr><td>Chain Lightning Overload</td><td>5.2M</td><td>9.6%</td></tr>
+        <tr><td>Lightning Bolt Overload</td><td>5.1M</td><td>9.4%</td></tr>
+        <tr><td>Tempest</td><td>4.2M</td><td>7.8%</td></tr>
+        <tr><td>Elemental Blast</td><td>4.2M</td><td>7.8%</td></tr>
+        <tr><td>Lava Burst</td><td>3.8M</td><td>7.0%</td></tr>
+        <tr><td>Lightning Rod</td><td>3.8M</td><td>7.0%</td></tr>
+        <tr><td>Tempest Overload</td><td>3.5M</td><td>6.6%</td></tr>
+        <tr><td>Stormfury</td><td>2.9M</td><td>5.3%</td></tr>
+        <tr><td>Chain Lightning</td><td>2.7M</td><td>5.0%</td></tr>
+        <tr><td>Lava Burst Overload</td><td>2.6M</td><td>4.8%</td></tr>
+        <tr><td>Earthquake</td><td>2.5M</td><td>4.6%</td></tr>
+        <tr><td>Fire Blast</td><td>2.1M</td><td>3.9%</td></tr>
+        <tr><td>Flame Shock</td><td>1.4M</td><td>2.5%</td></tr>
+        <tr><td>Elemental Blast Overload</td><td>1.3M</td><td>2.3%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h3 style="color:var(--purple);">Reference (229K DPS)</h3>
+    <table>
+      <thead><tr><th>Ability</th><th>Damage</th><th>%</th></tr></thead>
+      <tbody>
+        <tr><td>Lava Burst</td><td>27.7M</td><td style="color:var(--green);">24.0%</td></tr>
+        <tr><td>Chain Lightning</td><td>22.5M</td><td style="color:var(--green);">19.5%</td></tr>
+        <tr><td>Earthquake</td><td>11.2M</td><td>9.7%</td></tr>
+        <tr><td>Lava Burst Overload</td><td>9.8M</td><td>8.5%</td></tr>
+        <tr><td>Chain Lightning Overload</td><td>8.5M</td><td>7.4%</td></tr>
+        <tr><td>Stormfury</td><td>7.8M</td><td>6.8%</td></tr>
+        <tr><td>Voltaic Blaze</td><td>4.8M</td><td>4.1%</td></tr>
+        <tr><td>Earth Shock</td><td>3.6M</td><td>3.2%</td></tr>
+        <tr><td>Earthquake Overload</td><td>3.3M</td><td>2.8%</td></tr>
+        <tr><td>Lightning Bolt</td><td>3.1M</td><td>2.7%</td></tr>
+        <tr><td>Flame Shock</td><td>3.0M</td><td>2.6%</td></tr>
+        <tr><td>Fire Blast</td><td>2.3M</td><td>2.0%</td></tr>
+        <tr><td>Meteor</td><td>2.0M</td><td>1.7%</td></tr>
+        <tr><td>Lightning Bolt Overload</td><td>1.6M</td><td>1.4%</td></tr>
+        <tr><td>Earth Shock Overload</td><td>1.1M</td><td>0.9%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="callout callout-bad">
+  <div class="callout-title">Key Damage Profile Differences</div>
+  <ul style="margin-top:8px;padding-left:20px;font-size:14px;">
+    <li><strong>Lava Burst:</strong> Reference does 27.7M (24%) vs Invincibale's 3.8M (7%). Reference casts Lava Burst at 13.1 CPM vs 9.5 CPM and the Stormbringer build amplifies Lava Burst damage enormously.</li>
+    <li><strong>Chain Lightning:</strong> Reference does 22.5M (19.5%) vs Invincibale's 2.7M (5%). Reference casts Chain Lightning at 8.9 CPM vs 4.7 CPM &mdash; Stormbringer makes CL a primary filler.</li>
+    <li><strong>Voltaic Blaze:</strong> Reference casts 58 Voltaic Blazes (7.0 CPM). Invincibale does not use this ability &mdash; it is part of the Stormbringer hero talent tree.</li>
+    <li><strong>Earthquake:</strong> Reference uses Earthquake much more aggressively (45 casts, 5.4 CPM vs 17 casts, 2.1 CPM) for add cleave.</li>
+  </ul>
+</div>
+
+<!-- Ability Usage Comparison -->
+<h2>Ability Usage Comparison (CPM)</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Lightning Bolt</td>
+      <td>121</td>
+      <td>14.9</td>
+      <td>90</td>
+      <td style="color:var(--purple);">10.8</td>
+      <td><span class="badge badge-warn">+4.1</span></td>
+    </tr>
+    <tr>
+      <td>Lava Burst</td>
+      <td>77</td>
+      <td>9.5</td>
+      <td>109</td>
+      <td style="color:var(--purple);">13.1</td>
+      <td><span class="badge badge-bad">-3.6</span></td>
+    </tr>
+    <tr>
+      <td>Flame Shock</td>
+      <td>64</td>
+      <td>7.9</td>
+      <td>&mdash;</td>
+      <td style="color:var(--purple);">&mdash;</td>
+      <td><span class="badge badge-warn">high</span></td>
+    </tr>
+    <tr>
+      <td>Chain Lightning</td>
+      <td>38</td>
+      <td>4.7</td>
+      <td>74</td>
+      <td style="color:var(--purple);">8.9</td>
+      <td><span class="badge badge-bad">-4.2</span></td>
+    </tr>
+    <tr>
+      <td>Voltaic Blaze</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>58</td>
+      <td style="color:var(--purple);">7.0</td>
+      <td><span class="badge badge-bad">-7.0</span></td>
+    </tr>
+    <tr>
+      <td>Earthquake</td>
+      <td>17</td>
+      <td>2.1</td>
+      <td>45</td>
+      <td style="color:var(--purple);">5.4</td>
+      <td><span class="badge badge-bad">-3.3</span></td>
+    </tr>
+    <tr>
+      <td>Elemental Blast</td>
+      <td>35</td>
+      <td>4.3</td>
+      <td>&mdash;</td>
+      <td style="color:var(--purple);">&mdash;</td>
+      <td><span class="badge badge-neutral">build diff</span></td>
+    </tr>
+    <tr>
+      <td>Earth Shock</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>30</td>
+      <td style="color:var(--purple);">3.6</td>
+      <td><span class="badge badge-neutral">build diff</span></td>
+    </tr>
+    <tr>
+      <td>Tempest</td>
+      <td>29</td>
+      <td>3.6</td>
+      <td>&mdash;</td>
+      <td style="color:var(--purple);">&mdash;</td>
+      <td><span class="badge badge-neutral">build diff</span></td>
+    </tr>
+    <tr>
+      <td>Stormkeeper</td>
+      <td>9</td>
+      <td>1.1</td>
+      <td>11</td>
+      <td style="color:var(--purple);">1.3</td>
+      <td><span class="badge badge-good">-0.2</span></td>
+    </tr>
+    <tr>
+      <td>Ancestral Swiftness</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>14</td>
+      <td style="color:var(--purple);">1.7</td>
+      <td><span class="badge badge-neutral">build diff</span></td>
+    </tr>
+    <tr>
+      <td>Ascendance</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td>3</td>
+      <td style="color:var(--purple);">0.4</td>
+      <td><span class="badge badge-good">+0.1</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <div class="callout-title">Flame Shock Over-Casting</div>
+  64 Flame Shocks in 8:09 (7.9 CPM) is extremely high. Flame Shock has a 18-second duration with pandemic refresh at ~6 seconds remaining. At 7.9 CPM, a new Flame Shock is being applied roughly every 7.6 seconds, meaning either constant target-switching to apply Flame Shock to adds, or significantly over-refreshing on the boss. Each unnecessary Flame Shock is a GCD that could be Lava Burst, Lightning Bolt, or a Maelstrom spender.
+</div>
+
+<!-- Per-Mechanic Analysis -->
+<h2>Per-Mechanic Window Analysis</h2>
+
+<h3>Fungal Bloom (Raid-Wide Damage)</h3>
+<p style="font-size:13px;color:var(--dim);margin-bottom:8px;">10-second analysis windows around each Bloom. Full raid AoE at 100 energy &mdash; healing CD check.</p>
+<table>
+  <thead>
+    <tr><th>Event</th><th>Time</th><th>Player CPS</th><th>Player Casts</th><th>Ref CPS</th><th>Ref Casts</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bloom #1</td><td>2:00</td>
+      <td>0.80</td><td>8</td>
+      <td style="color:var(--purple);">0.80</td><td style="color:var(--purple);">8</td>
+      <td><span class="badge badge-good">Match</span></td>
+    </tr>
+    <tr>
+      <td>Bloom #2</td><td>4:16</td>
+      <td>0.80</td><td>8</td>
+      <td style="color:var(--purple);">1.10</td><td style="color:var(--purple);">11</td>
+      <td><span class="badge badge-warn">-27%</span></td>
+    </tr>
+    <tr>
+      <td>Bloom #3</td><td>6:32</td>
+      <td>0.70</td><td>7</td>
+      <td style="color:var(--purple);">1.30</td><td style="color:var(--purple);">13</td>
+      <td><span class="badge badge-bad">-46%</span></td>
+    </tr>
+  </tbody>
+</table>
+<div class="callout callout-warn">
+  <div class="callout-title">Bloom Uptime Degrades Over Time</div>
+  Bloom #1 matches the reference exactly (8 casts each), but performance drops to -27% on Bloom #2 and -46% on Bloom #3. This pattern suggests either fatigue-related slower reactions in later Blooms or poor cooldown alignment with late-fight Bloom windows.
+</div>
+
+<h3>Festering Vines (Movement)</h3>
+<p style="font-size:13px;color:var(--dim);margin-bottom:8px;">12-second windows. Roots players &mdash; movement required to break free. Expect some uptime loss.</p>
+<table>
+  <thead>
+    <tr><th>Event</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Vines #1</td><td>0:43</td><td>0.67</td><td style="color:var(--purple);">1.08</td><td>-38%</td><td><span class="badge badge-bad">Low</span></td></tr>
+    <tr><td>Vines #2</td><td>1:32</td><td>0.25</td><td style="color:var(--purple);">0.75</td><td>-67%</td><td><span class="badge badge-bad">Very Low</span></td></tr>
+    <tr><td>Vines #3</td><td>2:59</td><td>0.33</td><td style="color:var(--purple);">0.83</td><td>-60%</td><td><span class="badge badge-bad">Very Low</span></td></tr>
+    <tr><td>Vines #4</td><td>3:48</td><td>0.33</td><td style="color:var(--purple);">0.83</td><td>-60%</td><td><span class="badge badge-bad">Very Low</span></td></tr>
+    <tr><td>Vines #5</td><td>5:15</td><td>0.67</td><td style="color:var(--purple);">0.75</td><td>-11%</td><td><span class="badge badge-warn">OK</span></td></tr>
+    <tr><td>Vines #6</td><td>6:04</td><td>0.42</td><td style="color:var(--purple);">0.67</td><td>-37%</td><td><span class="badge badge-bad">Low</span></td></tr>
+    <tr><td>Vines #7</td><td>7:31</td><td>0.67</td><td style="color:var(--purple);">0.75</td><td>-11%</td><td><span class="badge badge-warn">OK</span></td></tr>
+  </tbody>
+</table>
+<div class="callout callout-bad">
+  <div class="callout-title">Consistent Uptime Loss During Festering Vines</div>
+  This is the single biggest execution gap. Invincibale averages 0.48 CPS during Vines windows vs the reference's 0.81 CPS &mdash; a <strong>41% uptime deficit during movement</strong>. Vines #2 (0.25 CPS, only 3 casts in 12 seconds) is the worst. Spiritwalker's Grace (6 uses during the fight) should be timed to cover Vines windows for casting while moving. The reference maintains near-normal casting during Vines by using instant casts (Lava Burst procs, Voltaic Blaze, Earth Shock) and Spiritwalker's Grace.
+</div>
+
+<h3>Awaken Fungi (Add Spawn)</h3>
+<p style="font-size:13px;color:var(--dim);margin-bottom:8px;">20-second windows. Spawns Shroomlings/Funglings/Sporecaps &mdash; target switching expected.</p>
+<table>
+  <thead>
+    <tr><th>Event</th><th>Time</th><th>Player CPS</th><th>Ref CPS</th><th>Delta</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Adds #1</td><td>0:15</td><td>1.15</td><td style="color:var(--purple);">0.85</td><td>+35%</td><td><span class="badge badge-good">Strong</span></td></tr>
+    <tr><td>Adds #2</td><td>1:04</td><td>0.85</td><td style="color:var(--purple);">0.85</td><td>0%</td><td><span class="badge badge-good">Match</span></td></tr>
+    <tr><td>Adds #3</td><td>2:31</td><td>1.10</td><td style="color:var(--purple);">0.75</td><td>+47%</td><td><span class="badge badge-good">Strong</span></td></tr>
+    <tr><td>Adds #4</td><td>3:20</td><td>0.85</td><td style="color:var(--purple);">0.90</td><td>-6%</td><td><span class="badge badge-good">Match</span></td></tr>
+    <tr><td>Adds #5</td><td>4:47</td><td>0.90</td><td style="color:var(--purple);">0.85</td><td>+6%</td><td><span class="badge badge-good">Match</span></td></tr>
+    <tr><td>Adds #6</td><td>5:36</td><td>0.85</td><td style="color:var(--purple);">0.85</td><td>0%</td><td><span class="badge badge-good">Match</span></td></tr>
+    <tr><td>Adds #7</td><td>7:03</td><td>0.80</td><td style="color:var(--purple);">1.05</td><td>-24%</td><td><span class="badge badge-warn">-24%</span></td></tr>
+    <tr><td>Adds #8</td><td>7:52</td><td>0.60</td><td style="color:var(--purple);">0.85</td><td>-29%</td><td><span class="badge badge-warn">-29%</span></td></tr>
+  </tbody>
+</table>
+<div class="callout callout-good">
+  <div class="callout-title">Add Handling Is Solid Through Mid-Fight</div>
+  Invincibale matches or beats the reference on add phases #1-6. CPS drops in the final two add phases (#7 at -24%, #8 at -29%) likely reflect fight-end fatigue or Maelstrom management issues late in the fight. Overall add handling is one of Invincibale's strengths.
+</div>
+
+<!-- Boss vs Add Damage Split -->
+<h3>Boss vs Add Damage Split</h3>
+<div class="two-col">
+  <div class="mechanic-card">
+    <div style="font-weight:600;margin-bottom:8px;color:var(--shaman);">Invincibale</div>
+    <div style="display:flex;gap:4px;height:24px;border-radius:4px;overflow:hidden;">
+      <div style="width:61.7%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">Boss 61.7%</div>
+      <div style="width:38.3%;background:var(--cyan);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--bg);">Adds 38.3%</div>
+    </div>
+    <div style="font-size:12px;color:var(--dim);margin-top:4px;">34.7M boss / 21.5M adds</div>
+  </div>
+  <div class="mechanic-card">
+    <div style="font-weight:600;margin-bottom:8px;color:var(--purple);">Reference</div>
+    <div style="display:flex;gap:4px;height:24px;border-radius:4px;overflow:hidden;">
+      <div style="width:43.8%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">Boss 43.8%</div>
+      <div style="width:56.2%;background:rgba(188,140,255,0.4);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">Adds 56.2%</div>
+    </div>
+    <div style="font-size:12px;color:var(--dim);margin-top:4px;">50.5M boss / 64.9M adds</div>
+  </div>
+</div>
+<div class="callout">
+  <div class="callout-title">Add Cleave Gap</div>
+  The reference allocates 56% of damage to adds vs Invincibale's 38%. This is a major factor in the DPS gap &mdash; the Stormbringer build's Chain Lightning cleave and Earthquake spam generate enormous passive add damage. Even with fewer adds targeted, Invincibale does significantly less total add damage (21.5M vs 64.9M). More aggressive use of Chain Lightning and Earthquake during add phases would help close this gap.
+</div>
+
+<!-- Quiet Window Uptime -->
+<h2>Quiet Window Uptime</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:8px;">Gaps between mechanic windows where full uptime is expected.</p>
+<table>
+  <thead>
+    <tr><th>Window</th><th>Duration</th><th>Player CPS</th><th>Ref CPS</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0:00-0:15</td><td>15s</td><td>1.07</td><td style="color:var(--purple);">1.00</td><td><span class="badge badge-good">Good</span></td></tr>
+    <tr><td>0:35-0:43</td><td>8s</td><td>1.38</td><td style="color:var(--purple);">0.63</td><td><span class="badge badge-good">Strong</span></td></tr>
+    <tr><td>0:55-1:04</td><td>9s</td><td>0.77</td><td style="color:var(--purple);">0.77</td><td><span class="badge badge-good">Match</span></td></tr>
+    <tr><td>1:24-1:32</td><td>8s</td><td>0.63</td><td style="color:var(--purple);">1.01</td><td><span class="badge badge-bad">-38%</span></td></tr>
+    <tr><td>1:44-2:00</td><td>16s</td><td>0.94</td><td style="color:var(--purple);">0.75</td><td><span class="badge badge-good">Strong</span></td></tr>
+    <tr><td>2:10-2:31</td><td>21s</td><td>0.71</td><td style="color:var(--purple);">0.95</td><td><span class="badge badge-warn">-25%</span></td></tr>
+    <tr><td>2:51-2:59</td><td>8s</td><td>0.50</td><td style="color:var(--purple);">1.12</td><td><span class="badge badge-bad">-55%</span></td></tr>
+    <tr><td>3:11-3:20</td><td>9s</td><td>0.66</td><td style="color:var(--purple);">0.77</td><td><span class="badge badge-warn">-14%</span></td></tr>
+    <tr><td>3:40-3:48</td><td>8s</td><td>0.76</td><td style="color:var(--purple);">0.88</td><td><span class="badge badge-warn">-14%</span></td></tr>
+    <tr><td>4:00-4:16</td><td>16s</td><td>0.56</td><td style="color:var(--purple);">0.75</td><td><span class="badge badge-warn">-25%</span></td></tr>
+    <tr><td>4:26-4:47</td><td>21s</td><td>0.95</td><td style="color:var(--purple);">0.86</td><td><span class="badge badge-good">Good</span></td></tr>
+    <tr><td>5:07-5:15</td><td>8s</td><td>1.00</td><td style="color:var(--purple);">0.88</td><td><span class="badge badge-good">Good</span></td></tr>
+    <tr><td>5:27-5:36</td><td>9s</td><td>0.99</td><td style="color:var(--purple);">0.77</td><td><span class="badge badge-good">Strong</span></td></tr>
+    <tr><td>5:56-6:04</td><td>8s</td><td>1.01</td><td style="color:var(--purple);">0.76</td><td><span class="badge badge-good">Strong</span></td></tr>
+    <tr><td>6:16-6:32</td><td>16s</td><td>0.69</td><td style="color:var(--purple);">0.87</td><td><span class="badge badge-warn">-21%</span></td></tr>
+    <tr><td>6:42-7:03</td><td>21s</td><td>0.95</td><td style="color:var(--purple);">0.95</td><td><span class="badge badge-good">Match</span></td></tr>
+    <tr><td>7:23-7:31</td><td>8s</td><td>1.13</td><td style="color:var(--purple);">0.75</td><td><span class="badge badge-good">Strong</span></td></tr>
+    <tr><td>7:43-7:52</td><td>9s</td><td>0.66</td><td style="color:var(--purple);">0.77</td><td><span class="badge badge-warn">-14%</span></td></tr>
+  </tbody>
+</table>
+<div class="callout">
+  <div class="callout-title">Quiet Window Pattern</div>
+  Invincibale matches or beats the reference in 10 of 18 quiet windows. The worst drops are pre-Vines positioning windows (2:51-2:59 at -55%, 1:24-1:32 at -38%) where the player appears to stop casting in anticipation of upcoming movement. Pre-positioning is good, but casting should continue until the mechanic actually fires.
+</div>
+
+<!-- Cast Gap Analysis -->
+<h2>Cast Gap Analysis</h2>
+<div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="card">
+    <div class="card-label">Gaps &gt;2.5s</div>
+    <div class="card-value" style="color: var(--yellow);">40</div>
+    <div class="card-sub">total casting gaps</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Total Dead Time</div>
+    <div class="card-value" style="color: var(--red);">145s</div>
+    <div class="card-sub">29.7% of fight</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Est. Lost Casts</div>
+    <div class="card-value" style="color: var(--orange);">116</div>
+    <div class="card-sub">at avg 0.80 CPS</div>
+  </div>
+</div>
+
+<h3>Gap Pattern by Preceding Ability</h3>
+<table>
+  <thead><tr><th>Last Ability Before Gap</th><th>Count</th><th>% of Gaps</th></tr></thead>
+  <tbody>
+    <tr><td>Lightning Bolt</td><td>12</td><td>30%</td></tr>
+    <tr><td>Flame Shock</td><td>12</td><td>30%</td></tr>
+    <tr><td>Lava Burst</td><td>7</td><td>17.5%</td></tr>
+    <tr><td>Elemental Blast</td><td>4</td><td>10%</td></tr>
+    <tr><td>Chain Lightning</td><td>3</td><td>7.5%</td></tr>
+    <tr><td>Earthquake</td><td>1</td><td>2.5%</td></tr>
+    <tr><td>Tempest</td><td>1</td><td>2.5%</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-bad">
+  <div class="callout-title">30% of Gaps Follow Flame Shock</div>
+  12 of 40 casting gaps (30%) immediately follow a Flame Shock cast. This strongly suggests Flame Shock is being used as a "filler" when target switching or repositioning, followed by a pause rather than continuing the rotation. Combined with the 64 total Flame Shock casts (7.9 CPM), this is a clear over-application pattern. Flame Shock should only be refreshed when it has fewer than 6 seconds remaining &mdash; never as a gap-filler.
+</div>
+
+<!-- Damage Taken -->
+<h2>Damage Taken</h2>
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th><th>Avoidability</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td>12.5M</td><td>478</td><td>26K</td>
+      <td><span class="badge badge-neutral">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>3.3M</td><td>51</td><td>65K</td>
+      <td><span class="badge badge-neutral">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2.8M</td><td>46</td><td>61K</td>
+      <td><span class="badge badge-neutral">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Festering Vines</td>
+      <td>1.9M</td><td>36</td><td>54K</td>
+      <td><span class="badge badge-warn">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>760K</td><td>3</td><td>253K</td>
+      <td><span class="badge badge-warn">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Poison Burst</td>
+      <td>328K</td><td>3</td><td>109K</td>
+      <td><span class="badge badge-bad">Avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Writhing Vines</td>
+      <td>137K</td><td>1</td><td>137K</td>
+      <td><span class="badge badge-warn">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Blightshot</td>
+      <td>118K</td><td>3</td><td>39K</td>
+      <td><span class="badge badge-warn">Positioning</span></td>
+    </tr>
+  </tbody>
+</table>
+<div class="callout callout-good">
+  <div class="callout-title">Damage Intake Is Clean</div>
+  No avoidable mechanic deaths. The vast majority of damage taken is unavoidable (Rotting Pustules passive ticks, Fungal Bloom raid-wide, Bursting Pustules soft enrage). 3 Poison Burst hits (328K) suggest one missed interrupt on a Sporecap &mdash; minor. 3 Blightshot hits (118K) are occasional Sporecap targeting &mdash; also minor. Festering Vines damage (1.9M, 36 hits) is expected as players get rooted and break free.
+</div>
+
+<!-- Wipe Progression -->
+<h2>Wipe Progression</h2>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0;">
+  <div class="chart-bar-container">
+    <div class="chart-bar-label">Pull 1</div>
+    <div class="chart-bar chart-bar-wipe" style="width: calc(112067 / 1150 * 1px); min-width:120px;">112K DPS &mdash; 6:54, wipe 22.5%</div>
+  </div>
+  <div class="chart-bar-container">
+    <div class="chart-bar-label">Pull 2</div>
+    <div class="chart-bar chart-bar-wipe" style="width: calc(107498 / 1150 * 1px); min-width:120px;">107K DPS &mdash; 8:25, wipe 11.6%</div>
+  </div>
+  <div class="chart-bar-container">
+    <div class="chart-bar-label">Pull 3</div>
+    <div class="chart-bar chart-bar-kill" style="width: calc(110627 / 1150 * 1px); min-width:120px;">111K DPS &mdash; 8:09, KILL</div>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">Consistent Performance Across Pulls</div>
+  DPS variance across all 3 pulls is only 4.2% (107K-112K). This is very consistent &mdash; no outlier pulls, no wild swings. The slightly lower DPS on pull 2 (107K) despite the longest duration (8:25) may indicate the fight going longer due to raid-wide issues rather than individual performance drops. The kill pull (111K) was between the two wipe numbers, confirming steady, repeatable output.
+</div>
+
+<!-- External Buffs -->
+<h2>External Buffs Received</h2>
+<div class="two-col">
+  <div class="mechanic-card">
+    <div style="font-weight:600;margin-bottom:8px;color:var(--shaman);">Invincibale</div>
+    <table style="margin:0;">
+      <tr><td style="color:var(--dim);">Time Warp (Lust)</td><td>0:02</td><td><span class="badge badge-good">Pull</span></td></tr>
+      <tr><td style="color:var(--dim);">Power Infusion #1</td><td>0:27</td><td></td></tr>
+      <tr><td style="color:var(--dim);">Power Infusion #2</td><td>2:31</td><td></td></tr>
+      <tr><td style="color:var(--dim);">Power Infusion #3</td><td>4:33</td><td></td></tr>
+      <tr><td style="color:var(--dim);">Power Infusion #4</td><td>6:37</td><td></td></tr>
+      <tr><td style="color:var(--dim);">Ebon Might</td><td colspan="2">10 applications throughout</td></tr>
+      <tr><td style="color:var(--dim);">Prescience</td><td>1:39</td><td>1 application</td></tr>
+    </table>
+  </div>
+  <div class="mechanic-card">
+    <div style="font-weight:600;margin-bottom:8px;color:var(--purple);">Reference</div>
+    <table style="margin:0;">
+      <tr><td style="color:var(--dim);">Heroism (Lust)</td><td>6:28</td><td><span class="badge badge-warn">Late</span></td></tr>
+      <tr><td style="color:var(--dim);">Power Infusion #1</td><td>0:05</td><td></td></tr>
+      <tr><td style="color:var(--dim);">Power Infusion #2</td><td>4:13</td><td></td></tr>
+      <tr><td style="color:var(--dim);">Power Infusion #3</td><td>6:18</td><td></td></tr>
+      <tr><td style="color:var(--dim);">Ebon Might</td><td colspan="2">8 applications throughout</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title">Buff Context</div>
+  Invincibale received 4 Power Infusions (one more than reference) and lust on pull (vs reference's lust at 6:28). Both had Aug Evoker Ebon Might throughout. Invincibale had slightly more external buff uptime overall, meaning the DPS gap is <strong>not</strong> explained by buff differences &mdash; if anything, Invincibale's buff situation was slightly more favorable.
+</div>
+
+<!-- Defensive Usage -->
+<h2>Defensive Usage</h2>
+<table>
+  <thead><tr><th>Ability</th><th>Uses</th><th>Timings</th><th>Context</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Spiritwalker's Grace</td>
+      <td>6</td>
+      <td>0:25, 1:51, 2:33, 4:58, 5:44, 7:18</td>
+      <td>Movement casting &mdash; good frequency</td>
+    </tr>
+    <tr>
+      <td>Astral Shift</td>
+      <td>4</td>
+      <td>1:36, 3:54, 6:09, 7:51</td>
+      <td>Personal DR &mdash; well-spaced, covers Blooms/Vines</td>
+    </tr>
+    <tr>
+      <td>Ghost Wolf</td>
+      <td>4</td>
+      <td>Various</td>
+      <td>Movement &mdash; normal</td>
+    </tr>
+    <tr>
+      <td>Healthstone</td>
+      <td>1</td>
+      <td>Late fight</td>
+      <td>Self-heal</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-good">
+  <div class="callout-title">Good Defensive Management</div>
+  6 uses of Spiritwalker's Grace (roughly every 80s, matching the cooldown) and 4 Astral Shifts (roughly every 2 minutes) show consistent defensive usage. The key optimization is aligning Spiritwalker's Grace specifically with Festering Vines windows to maintain casting uptime during root mechanics.
+</div>
+
+<!-- Cooldown Usage -->
+<h2>Major Cooldown Timing</h2>
+<table>
+  <thead><tr><th>Cooldown</th><th>Uses</th><th>Expected</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Ascendance</td>
+      <td>4</td>
+      <td>~4 (2min CD, 8:09 fight)</td>
+      <td><span class="badge badge-good">On Track</span></td>
+    </tr>
+    <tr>
+      <td>Stormkeeper</td>
+      <td>9</td>
+      <td>~9 (1min CD roughly)</td>
+      <td><span class="badge badge-good">On Track</span></td>
+    </tr>
+    <tr>
+      <td>Nature's Swiftness</td>
+      <td>8</td>
+      <td>&mdash;</td>
+      <td><span class="badge badge-good">Used Actively</span></td>
+    </tr>
+    <tr>
+      <td>Emberwing Heatwave</td>
+      <td>4</td>
+      <td>&mdash;</td>
+      <td><span class="badge badge-neutral">Build-specific</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-good">
+  <div class="callout-title">Cooldown Discipline</div>
+  Both Ascendance (4 uses) and Stormkeeper (9 uses) are used on cooldown throughout the fight. No wasted cooldown charges sitting idle. This is a strength.
+</div>
+
+<!-- Consumables -->
+<h2>Consumables</h2>
+<table>
+  <thead><tr><th>Item</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>Flask</td><td><span class="badge badge-good">Flask of the Magisters</span></td></tr>
+    <tr><td>Food</td><td><span class="badge badge-good">Hearty Well Fed</span></td></tr>
+    <tr><td>Pre-pot</td><td><span class="badge badge-bad">Not Used</span></td></tr>
+    <tr><td>Second Pot</td><td><span class="badge badge-bad">Not Used</span></td></tr>
+    <tr><td>Healthstone</td><td><span class="badge badge-good">1 use</span></td></tr>
+  </tbody>
+</table>
+<div class="callout callout-warn">
+  <div class="callout-title">No Combat Potions</div>
+  No pre-pot or second pot was used. The reference player used a Silvermoon Health Potion. Depending on the available potions for the current tier, a DPS potion aligned with Ascendance + Bloodlust on pull could add 3-5K DPS over the fight.
+</div>
+
+<!-- Actionable Improvements -->
+<h2>Actionable Improvements</h2>
+
+<div class="action-item">
+  <span class="action-num">1</span>
+  <div class="action-content">
+    <div class="action-title">Talent Build: Switch to Stormbringer</div>
+    <div class="action-detail">
+      The single largest DPS improvement available. Every top-5 Elemental Shaman on Mythic Rotmire runs Stormbringer (46-50 talent differences from current build). The Stormbringer build with Voltaic Blaze, heavy Lava Burst, and Chain Lightning cleave does 90-107% more DPS on this boss. Rotmire's frequent add spawns (every ~65 seconds) make Chain Lightning cleave and Earthquake spam extremely valuable. The current build lacks Voltaic Blaze entirely and under-uses Chain Lightning (4.7 CPM vs 8.9 CPM reference). Switching builds is the single change that would bring performance from the ~111K range into the ~180K+ range.
+      <br><strong>Impact:</strong> Estimated +80-100K DPS based on the build's inherent strength on this encounter.
+    </div>
+  </div>
+</div>
+
+<div class="action-item">
+  <span class="action-num">2</span>
+  <div class="action-content">
+    <div class="action-title">Movement Uptime: Cast Through Festering Vines</div>
+    <div class="action-detail">
+      Average CPS during Vines windows is 0.48 vs reference's 0.81 &mdash; a 41% deficit. This is ~116 seconds of fight time (7 Vines events x 12s each = 84 seconds) where significant casts are being lost. <strong>Specific fix:</strong> Pre-plan Spiritwalker's Grace for every other Vines (alternate with Astral Shift for defensive ones), and prioritize instant casts during Vines &mdash; Lava Burst procs, Tempest, Earth Shock/Elemental Blast as Maelstrom dumps, Flame Shock refresh only if needed. The worst window (Vines #2 at 1:32, only 3 casts in 12 seconds) should have been 8-10 casts.
+      <br><strong>Impact:</strong> ~30 additional casts during Vines windows, equivalent to roughly +3-5K DPS.
+    </div>
+  </div>
+</div>
+
+<div class="action-item">
+  <span class="action-num">3</span>
+  <div class="action-content">
+    <div class="action-title">Reduce Flame Shock Over-Application</div>
+    <div class="action-detail">
+      64 Flame Shocks in 8:09 (7.9 CPM) is far too many. With an 18-second duration, you should only need a Flame Shock refresh roughly every 14 seconds on a single target (accounting for pandemic), which would be ~35 applications over 8 minutes. The 30% of casting gaps that follow a Flame Shock cast confirm this is a habitual pattern &mdash; Flame Shock is being used as a "something to press" during transitions rather than being reserved for when it is actually expiring. <strong>Specific fix:</strong> Only refresh Flame Shock when the debuff has 6 seconds or less remaining. On target switches to adds, apply it once then switch to damage abilities. Never use Flame Shock as a gap-filler.
+      <br><strong>Impact:</strong> ~29 GCDs reclaimed (64 casts - 35 needed = 29 excess), each one a potential Lava Burst, Lightning Bolt, or spender.
+    </div>
+  </div>
+</div>
+
+<div class="action-item">
+  <span class="action-num">4</span>
+  <div class="action-content">
+    <div class="action-title">Reduce Dead Time Between Casts</div>
+    <div class="action-detail">
+      145 seconds of total dead time (29.7% of the fight) across 40 gaps longer than 2.5 seconds. This is substantial &mdash; nearly 2.5 minutes of the 8:09 fight where no rotational ability was pressed. The gap pattern is evenly distributed across abilities (12 after Lightning Bolt, 12 after Flame Shock, 7 after Lava Burst) rather than concentrated after one spell, suggesting general "thinking time" between casts rather than a specific rotation confusion point. <strong>Specific fix:</strong> Practice the ABC rule &mdash; Always Be Casting. If uncertain what to press next, Lightning Bolt is always correct as a filler. Pre-plan the next GCD during the current cast. The goal is to keep gaps under 1.5 seconds (one GCD delay at most).
+      <br><strong>Impact:</strong> Recovering even half of the 116 estimated lost casts would add ~58 casts, equivalent to +5-8K DPS.
+    </div>
+  </div>
+</div>
+
+<div class="action-item">
+  <span class="action-num">5</span>
+  <div class="action-content">
+    <div class="action-title">Use Combat Potions</div>
+    <div class="action-detail">
+      No pre-pot and no second potion were used. A DPS potion on pull (aligned with Time Warp + Ascendance) and a second potion during a late Ascendance window would provide a small but free DPS increase. This is the lowest-effort improvement available.
+      <br><strong>Impact:</strong> ~2-3K DPS depending on potion type.
+    </div>
+  </div>
+</div>
+
+<!-- Context Footer -->
+<h2>Summary Verdict</h2>
+<div class="callout callout-warn">
+  <div class="callout-title">The DPS gap is primarily build-based, with execution improvements available</div>
+  <p style="margin-top:8px;">Invincibale's 111K DPS vs the 210-229K range of top Elemental Shamans is a 48-52% gap. The dominant factor is <strong>talent build selection</strong> &mdash; every top player runs Stormbringer with a fundamentally different ability priority that generates dramatically more damage from Rotmire's constant add spawns. Within the current build, execution is reasonable: cooldowns are used on CD, add handling is solid through most of the fight, defensive usage is clean, damage intake is minimal, and DPS variance across pulls is very low (4.2%).</p>
+  <p style="margin-top:8px;">The execution improvements (movement uptime during Vines, Flame Shock reduction, dead time reduction, potions) would add an estimated 10-15K DPS within the current build. The build switch to Stormbringer is the transformative change that would close the remaining ~90-100K gap.</p>
+</div>
+
+<div class="callout callout-good">
+  <div class="callout-title">What Invincibale Does Well</div>
+  <ul style="margin-top:8px;padding-left:20px;font-size:14px;">
+    <li><strong>Consistency:</strong> 107K-112K across 3 pulls, only 4.2% variance. Very repeatable.</li>
+    <li><strong>Survivability:</strong> Zero deaths across the kill, clean damage intake, no avoidable mechanic failures.</li>
+    <li><strong>Cooldown discipline:</strong> Ascendance and Stormkeeper used on cooldown throughout. No wasted charges.</li>
+    <li><strong>Add handling (early-mid fight):</strong> Matches or beats reference on add phases #1-6.</li>
+    <li><strong>Defensive usage:</strong> 6 Spiritwalker's Grace and 4 Astral Shifts well-spaced throughout the fight.</li>
+    <li><strong>Pull opener:</strong> Strong first 35 seconds &mdash; 1.07-1.38 CPS in opening quiet windows.</li>
+  </ul>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a></p>
+  <p>Primary reference: &#20170;&#26202;&#21507;&#20160;&#20040;&#21602;-&#38108;&#40857;&#20891;&#22242; (228,583 DPS, 8:19 kill, ilvl 292, 46 talent diffs)</p>
+  <p style="margin-top:4px;">Analysis accounts for talent build differences, external buffs, and boss mechanic timing.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alitheria — Retribution Paladin — Mythic Crown of the Cosmos Prog</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .boss-pct-label { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; white-space: nowrap; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Alitheria <span class="dim">&mdash; Retribution Paladin</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (No Kill &mdash; 26 Wipes) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value yellow">231.7K</div>
+    <div class="stat-label">DPS (Alive Time)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">290.3</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">0.01%</div>
+    <div class="stat-label">Best Pull (Boss %)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">77.5</div>
+    <div class="stat-label">Total CPM (Alive)</div>
+  </div>
+</div>
+
+<div class="card" style="font-size: 13px; margin-top: -4px;">
+  <span class="dim">Best pull:</span> Fight 8 &mdash; 0.01% boss remaining (2:22) &middot; <span class="dim">Longest pull:</span> Fight 23 &mdash; 4:53 (77.31% boss) &middot; <span class="dim">Primary analysis fight:</span> Fight 23 &middot; <span class="red">Alitheria died at 2:31</span> to Silverstrike Barrage
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">On the longest pull (Fight 23, 4:53), Alitheria dealt <strong class="yellow">231.7K DPS</strong> across 2:31 of alive time before dying to Silverstrike Barrage in the Phase 1 transition. During that alive window, rotational CPM was <strong class="red">77.5 vs 96.6</strong> compared to Bilaevropa (#2 ranked, 99.2K DPS full-fight kill) in the same 0&ndash;2:31 window &mdash; a <strong class="red">20% CPM deficit</strong>. The gap is distributed across nearly every ability: <strong class="red">Divine Hammer &minus;32%</strong>, <strong class="red">Crusading Strikes &minus;21%</strong>, <strong class="red">Hammer of Wrath &minus;36%</strong>, and <strong class="red">Empyrean Hammer &minus;15%</strong>. With <strong class="green">6 talent differences</strong> and nearly identical ilvl (290.3 vs 290.0), the gap is execution-based. The early death at 2:31 is the biggest DPS loss &mdash; dying mid-fight on prog eliminates any contribution to the later phases entirely. Staying alive through the Silverstrike Barrage transition would immediately add 50%+ to effective fight DPS.</p>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;"><strong>Prog context:</strong> The reference (Bilaevropa) is from a full 8:16 kill. Alitheria is on prog with no kill &mdash; DPS will naturally improve as the raid learns the fight and survives longer. The rotation-level comparison (first 151s, same time window) is valid regardless of kill status.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Retribution Paladins on Mythic Crown of the Cosmos. Primary reference: <strong class="purple">Bilaevropa</strong> (closest talent match at 6 diffs, 99.2K DPS, 8:16 kill). All references are from kills; Alitheria is on prog.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Fight Time</th><th>ilvl</th><th>Talent Delta</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Alitheria</strong></td>
+      <td>231,729 <span class="dim" style="font-size:11px;">(alive)</span></td>
+      <td>2:31 alive <span class="dim">/4:53</span></td>
+      <td>290.3</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-crit">Prog &mdash; Died F23</span></td>
+    </tr>
+    <tr>
+      <td>&#26411;&#19999;&#27931; <span class="ref-badge">#1</span></td>
+      <td class="green">106,901</td>
+      <td>8:33 (kill)</td>
+      <td>291.5</td>
+      <td><span class="tag tag-diff">36 diff</span></td>
+      <td>Different hero talent tree</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Bilaevropa <span class="ref-badge">#2 PRIMARY</span></td>
+      <td class="green">99,193</td>
+      <td>8:16 (kill)</td>
+      <td>290.0</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td>Templar hero tree, closest match</td>
+    </tr>
+    <tr>
+      <td>Artia <span class="ref-badge">#3</span></td>
+      <td class="green">97,713</td>
+      <td>7:36 (kill)</td>
+      <td>273.6</td>
+      <td><span class="tag tag-diff">35 diff</span></td>
+      <td>Different hero talent tree</td>
+    </tr>
+    <tr>
+      <td>Jery <span class="ref-badge">#4</span></td>
+      <td class="green">94,135</td>
+      <td>8:58 (kill)</td>
+      <td>290.9</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td>Close talent match</td>
+    </tr>
+    <tr>
+      <td>&#24433;&#28193;&#23506;&#39569; <span class="ref-badge">#5</span></td>
+      <td class="green">94,066</td>
+      <td>8:24 (kill)</td>
+      <td>290.3</td>
+      <td><span class="tag tag-warn">16 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong>Important context:</strong> Reference DPS numbers are from full 7&ndash;9 minute kills. Alitheria's 231.7K is alive-time DPS from a 2:31 window on prog &mdash; early-fight DPS is naturally higher due to cooldown alignment and lust. A fair comparison requires looking at the reference's first 151s, where Bilaevropa did <strong class="purple">280.8K DPS</strong>. Alitheria's 231.7K represents an <strong class="yellow">17.5% gap</strong> in the same time window.</p>
+
+<!-- DEATH ANALYSIS -->
+<h2>Death Analysis &mdash; Fight 23</h2>
+<p class="section-intro">Alitheria died at <strong class="red">2:31</strong> (151s) to Silverstrike Barrage during what appears to be the Phase 1 sentinel transition. This is the single biggest performance factor &mdash; dying mid-fight eliminates all contribution from later phases.</p>
+
+<div class="card" style="border-left: 3px solid var(--red);">
+  <div class="card-header red">Cause of Death: Silverstrike Barrage</div>
+  <div class="cd-timeline">
+    <div><span class="dim">2:22.9</span> <span class="cast neutral">Stellar Emission &mdash; 15.5K damage</span></div>
+    <div><span class="dim">2:24.4</span> <span class="cast bad">Silverstrike Barrage &mdash; 92.1K damage</span></div>
+    <div><span class="dim">2:28.9</span> <span class="cast neutral">Stellar Emission &mdash; 0 (13.8K absorbed)</span></div>
+    <div><span class="dim">2:30.6</span> <span class="cast bad">Silverstrike Barrage &mdash; 364.8K damage (KILLING BLOW)</span></div>
+  </div>
+  <p style="font-size: 13px; margin-top: 8px;">The second Silverstrike Barrage hit for <strong>364.8K</strong> &mdash; a massive burst that requires a defensive cooldown. Alitheria had already used Divine Protection at 1:19 and Divine Shield was used at 1:55 (too early &mdash; it was likely consumed before the Barrage hit). <strong>Having a defensive available for this Barrage hit is the #1 survival priority.</strong></p>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid Deaths &mdash; Fight 23</div>
+  <p>2:31 &mdash; <span class="death-marker">Alitheria</span> <span class="death-marker">Smokinthisza</span> (Silverstrike Barrage) &middot; 2:42 &mdash; <span class="death-marker">Invincibale</span> &middot; 3:46 &mdash; <span class="death-marker">Son&igrave;c</span> &middot; 3:56 &mdash; <span class="death-marker">Invincibale</span> &middot; 4:01 &mdash; <span class="death-marker">Orichamaru</span> <span class="death-marker">Starfighter</span> &middot; 4:03 &mdash; <span class="death-marker">Moistbear</span> &middot; 4:06 &mdash; <span class="death-marker">Zinnks</span> &middot; 4:12&ndash;4:24 &mdash; <span class="death-marker">8 more deaths</span> (raid collapse) &middot; 4:42 &mdash; <span class="death-marker">Nucke</span> &middot; 4:53 &mdash; <span class="death-marker">Glazedwhole</span></p>
+  <p style="margin-top: 4px; color: var(--yellow);">22 total deaths. The raid began collapsing at ~3:46 after losing multiple players in the transition. Alitheria was among the first to die at 2:31.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Alitheria vs Bilaevropa, both measured over the <strong>first 151 seconds</strong> (Alitheria's alive time). Retribution Paladin rotation: generate Holy Power with Crusading Strikes, Blade of Justice, Judgment, and Hammer of Wrath, then spend with Final Verdict (ST) or Divine Storm (AoE). Wake of Ashes triggers Avenging Wrath via Radiant Glory. Empyrean Hammer and Hammer of Light are Templar hero talent abilities.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Divine Hammer</strong></td>
+      <td>40</td>
+      <td class="red">15.9</td>
+      <td>59</td>
+      <td>23.4</td>
+      <td class="red">&minus;32%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Crusading Strikes</strong></td>
+      <td>41</td>
+      <td class="yellow">16.3</td>
+      <td>52</td>
+      <td>20.7</td>
+      <td class="red">&minus;21%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Empyrean Hammer</strong></td>
+      <td>28</td>
+      <td class="yellow">11.1</td>
+      <td>33</td>
+      <td>13.1</td>
+      <td class="yellow">&minus;15%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Final Verdict</strong></td>
+      <td>29</td>
+      <td class="yellow">11.5</td>
+      <td>33</td>
+      <td>13.1</td>
+      <td class="yellow">&minus;12%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Blade of Justice</td>
+      <td>15</td>
+      <td>6.0</td>
+      <td>18</td>
+      <td>7.2</td>
+      <td class="yellow">&minus;17%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Judgment</td>
+      <td>14</td>
+      <td>5.6</td>
+      <td>13</td>
+      <td>5.2</td>
+      <td class="green">+8%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Hammer of Wrath</strong></td>
+      <td>7</td>
+      <td class="red">2.8</td>
+      <td>11</td>
+      <td>4.4</td>
+      <td class="red">&minus;36%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Hammer of Light</td>
+      <td>6</td>
+      <td>2.4</td>
+      <td>7</td>
+      <td>2.8</td>
+      <td class="yellow">&minus;14%</td>
+      <td><span class="tag tag-warn">Slightly Low</span></td>
+    </tr>
+    <tr>
+      <td>Sacrosanct Crusade</td>
+      <td>4</td>
+      <td>1.6</td>
+      <td>5</td>
+      <td>2.0</td>
+      <td class="yellow">&minus;20%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Wake of Ashes</td>
+      <td>4</td>
+      <td>1.6</td>
+      <td>4</td>
+      <td>1.6</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Divine Toll</td>
+      <td>4</td>
+      <td>1.6</td>
+      <td>4</td>
+      <td>1.6</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Execution Sentence</td>
+      <td>2</td>
+      <td>0.8</td>
+      <td>2</td>
+      <td>0.8</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Divine Storm</td>
+      <td>1</td>
+      <td>0.4</td>
+      <td>2</td>
+      <td>0.8</td>
+      <td class="dim">&minus;50%</td>
+      <td><span class="tag tag-info">Minor</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 4px;">
+  <div class="card-header">Total Rotational CPM: <span class="red">77.5</span> vs <span class="purple">96.6</span> <span class="dim">(&minus;20%)</span></div>
+  <p style="font-size: 14px;">The CPM deficit is broad &mdash; nearly every ability is lower, not just one or two. This points to a <strong>global uptime issue</strong> rather than a priority problem. The 12.6-second gap from 1:22&ndash;1:34 (a phase transition where Divine Steed was used to reposition) accounts for roughly 10 lost GCDs. The reference also has a large gap (16.1s around 2:09&ndash;2:25 in the same part of the fight), but still achieves higher CPM because their filler usage between mechanics is tighter. Divine Hammer at <strong class="red">15.9 vs 23.4 CPM (&minus;32%)</strong> is the single biggest delta. Since Divine Hammer fires passively off Consecration, lower uptime suggests Consecration is dropping during movement phases. Crusading Strikes at <strong class="red">16.3 vs 20.7 CPM (&minus;21%)</strong> indicates auto-attack downtime from being out of melee range.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability, compared against Bilaevropa's first 151 seconds. Total: Alitheria 35.0M vs Bilaevropa 42.4M in the same time window (&minus;17.5%).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Gap</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Final Verdict</strong></td>
+      <td>6,507K</td>
+      <td>18.6%</td>
+      <td class="purple">7,437K</td>
+      <td>17.5%</td>
+      <td class="red">&minus;930K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Empyrean Hammer</strong></td>
+      <td>2,838K</td>
+      <td>8.1%</td>
+      <td class="purple">4,549K</td>
+      <td>10.7%</td>
+      <td class="red">&minus;1,711K</td>
+    </tr>
+    <tr>
+      <td><strong>Hammer of Light</strong></td>
+      <td>3,868K</td>
+      <td>11.1%</td>
+      <td class="purple">3,993K</td>
+      <td>9.4%</td>
+      <td class="dim">&minus;125K</td>
+    </tr>
+    <tr>
+      <td>Crusading Strikes</td>
+      <td>3,386K</td>
+      <td>9.7%</td>
+      <td class="purple">3,513K</td>
+      <td>8.3%</td>
+      <td class="dim">&minus;127K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Divine Hammer</strong></td>
+      <td>2,957K</td>
+      <td>8.5%</td>
+      <td class="purple">3,481K</td>
+      <td>8.2%</td>
+      <td class="red">&minus;524K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Highlord's Judgment</strong></td>
+      <td>817K</td>
+      <td>2.3%</td>
+      <td class="purple">3,000K</td>
+      <td>7.1%</td>
+      <td class="red">&minus;2,183K</td>
+    </tr>
+    <tr>
+      <td>Hammer of Wrath</td>
+      <td>2,539K</td>
+      <td>7.3%</td>
+      <td class="purple">2,877K</td>
+      <td>6.8%</td>
+      <td class="dim">&minus;338K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Expurgation</td>
+      <td>1,703K</td>
+      <td>4.9%</td>
+      <td class="purple">2,258K</td>
+      <td>5.3%</td>
+      <td class="red">&minus;555K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Light Within</td>
+      <td>1,615K</td>
+      <td>4.6%</td>
+      <td class="purple">2,181K</td>
+      <td>5.1%</td>
+      <td class="red">&minus;566K</td>
+    </tr>
+    <tr>
+      <td>Execution Sentence</td>
+      <td>2,148K</td>
+      <td>6.1%</td>
+      <td class="purple">1,550K</td>
+      <td>3.7%</td>
+      <td class="green">+598K</td>
+    </tr>
+    <tr>
+      <td>Judgment</td>
+      <td>1,642K</td>
+      <td>4.7%</td>
+      <td class="purple">2,117K</td>
+      <td>5.0%</td>
+      <td class="dim">&minus;475K</td>
+    </tr>
+    <tr>
+      <td>Wake of Ashes</td>
+      <td>1,393K</td>
+      <td>4.0%</td>
+      <td class="purple">865K</td>
+      <td>2.0%</td>
+      <td class="green">+528K</td>
+    </tr>
+    <tr>
+      <td>Blade of Justice</td>
+      <td>1,090K</td>
+      <td>3.1%</td>
+      <td class="purple">1,190K</td>
+      <td>2.8%</td>
+      <td class="dim">&minus;100K</td>
+    </tr>
+    <tr>
+      <td>Truth's Wake</td>
+      <td>719K</td>
+      <td>2.1%</td>
+      <td class="purple">899K</td>
+      <td>2.1%</td>
+      <td class="dim">&minus;180K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Shield of Vengeance</td>
+      <td>0K</td>
+      <td>0.0%</td>
+      <td class="purple">735K</td>
+      <td>1.7%</td>
+      <td class="red">&minus;735K</td>
+    </tr>
+    <tr>
+      <td>Consecration</td>
+      <td>434K</td>
+      <td>1.2%</td>
+      <td class="purple">466K</td>
+      <td>1.1%</td>
+      <td class="dim">&minus;32K</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Where the 7.4M Damage Gap Comes From</div>
+  <p style="font-size: 14px;">The biggest contributors to the gap: <strong class="red">Highlord's Judgment (&minus;2.2M)</strong> &mdash; this is a passive proc from Judgment and Holy Power spenders, suggesting lower overall cast volume is reducing proc frequency. <strong class="red">Empyrean Hammer (&minus;1.7M)</strong> &mdash; procs from Holy Power spending, same root cause. <strong class="red">Shield of Vengeance (&minus;735K)</strong> &mdash; the reference used Shield of Vengeance offensively for its damage-reflected component; Alitheria did not use it at all. <strong class="red">Light Within (&minus;566K)</strong> and <strong class="red">Expurgation (&minus;555K)</strong> are passive effects that scale with Blade of Justice usage and cast volume respectively. The common thread: <strong>lower global CPM reduces every passive and proc-based damage source simultaneously</strong>.</p>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown Usage</h2>
+<p class="section-intro">Major cooldown timing in Fight 23 (151s alive). Ret Paladin uses Radiant Glory &mdash; Wake of Ashes triggers Avenging Wrath automatically. Execution Sentence should align with every AW window for maximum burst.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="yellow">Alitheria</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:03</span> <span class="cast good">Avenging Wrath + Execution Sentence</span></div>
+      <div><span class="dim">0:05</span> <span class="cast good">Wake of Ashes</span></div>
+      <div><span class="dim">0:07</span> <span class="cast good">Hammer of Light + Divine Toll</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">0:37</span> <span class="cast good">Wake of Ashes &rarr; Hammer of Light</span></div>
+      <div><span class="dim">0:40</span> <span class="cast good">Divine Toll</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:09</span> <span class="cast good">AW + Execution Sentence</span></div>
+      <div><span class="dim">1:10</span> <span class="cast good">Divine Toll</span></div>
+      <div><span class="dim">1:13</span> <span class="cast good">Wake of Ashes &rarr; Hammer of Light</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:42</span> <span class="cast good">Divine Toll</span></div>
+      <div><span class="dim">1:47</span> <span class="cast good">Wake of Ashes &rarr; Hammer of Light</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div style="margin-top: 6px;"><strong class="green">Good CD discipline &mdash; 4 Wake, 4 Divine Toll, 2 AW+ES combos in 151s</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="purple">Bilaevropa</span> <span class="ref-badge">Reference (first 151s)</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:02</span> <span class="cast good">AW + Execution Sentence</span></div>
+      <div><span class="dim">0:03</span> <span class="cast good">Wake of Ashes</span></div>
+      <div><span class="dim">0:05</span> <span class="cast good">Divine Toll</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">0:36</span> <span class="cast good">Wake of Ashes &rarr; Divine Toll</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:05</span> <span class="cast good">AW + ES + Wake + DT (full burst)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:38</span> <span class="cast good">Wake of Ashes + Divine Toll</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div style="margin-top: 6px;"><strong class="purple">4 Wake, 4 Divine Toll, 2 AW+ES combos in 151s &mdash; identical</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--green);">
+  <div class="card-header green">Cooldowns Are Well-Timed</div>
+  <p style="font-size: 14px;">Alitheria's major cooldown usage is <strong>nearly identical</strong> to the reference &mdash; same number of Wake of Ashes (4), Divine Toll (4), Avenging Wrath (2), and Execution Sentence (2) casts in 151 seconds. AW and Execution Sentence are paired correctly. Wake of Ashes is used on cooldown. The performance gap is <strong>not</strong> from cooldown misuse &mdash; it is from GCD efficiency between cooldown windows.</p>
+</div>
+
+<!-- CASTING GAP ANALYSIS -->
+<h2>Casting Gap Analysis</h2>
+<p class="section-intro">Periods where Alitheria pressed no buttons for 2+ seconds during alive time. Total dead time: <strong class="red">25.2 seconds</strong> across 6 gaps. At 77.5 CPM (1.29 casts/sec), this represents approximately <strong>32 lost GCDs</strong>.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Time Range</th><th>Duration</th><th>Before</th><th>After</th><th>Likely Cause</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0:21 &rarr; 0:24</td>
+      <td class="yellow">3.4s</td>
+      <td>Final Verdict</td>
+      <td>Crusading Strikes</td>
+      <td><span class="tag tag-info">Movement / Void Expulsion dodge</span></td>
+    </tr>
+    <tr>
+      <td>0:57 &rarr; 0:59</td>
+      <td>2.3s</td>
+      <td>Judgment</td>
+      <td>Final Verdict</td>
+      <td><span class="tag tag-info">Target swap / positioning</span></td>
+    </tr>
+    <tr>
+      <td>1:01 &rarr; 1:03</td>
+      <td>2.5s</td>
+      <td>Final Verdict</td>
+      <td>Blade of Justice</td>
+      <td><span class="tag tag-info">Mechanic dodge</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>1:22 &rarr; 1:34</td>
+      <td class="red">12.6s</td>
+      <td>Blade of Justice</td>
+      <td>Divine Steed</td>
+      <td><span class="tag tag-crit">Phase transition / movement</span></td>
+    </tr>
+    <tr>
+      <td>1:53 &rarr; 1:55</td>
+      <td>2.4s</td>
+      <td>Judgment</td>
+      <td>Divine Shield</td>
+      <td><span class="tag tag-info">Defensive reaction</span></td>
+    </tr>
+    <tr>
+      <td>1:55 &rarr; 1:57</td>
+      <td>2.1s</td>
+      <td>Divine Shield</td>
+      <td>Blade of Justice</td>
+      <td><span class="tag tag-info">Post-defensive resume</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Gap Context</div>
+  <p style="font-size: 14px;">The <strong class="red">12.6-second gap at 1:22&ndash;1:34</strong> is the main issue, accounting for half the total dead time. This aligns with a phase transition (sentinel mechanics) where the raid needed to reposition. The reference (Bilaevropa) also has a similar gap around the same fight time (16.1s at 2:09&ndash;2:25 in their kill), suggesting this is a mechanic-forced gap. The difference is that the reference is more active between gaps &mdash; their filler GCDs (Divine Hammer, Crusading Strikes) fill tighter between mechanics. The remaining 5 gaps total 12.7s and are mostly short positional adjustments common on Crown of the Cosmos.</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Alitheria during 2:31 alive. Crown of the Cosmos has significant unavoidable raid damage from Echoing Darkness ticks and Grasp of Emptiness beams.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>2,013K</td>
+      <td>118</td>
+      <td><span class="tag tag-same">No &mdash; passive raid ticks</span></td>
+    </tr>
+    <tr>
+      <td><strong>Void Expulsion</strong></td>
+      <td>678K</td>
+      <td>16</td>
+      <td><span class="tag tag-warn">Partially &mdash; puddle placement</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Silverstrike Barrage</strong></td>
+      <td>457K</td>
+      <td>2</td>
+      <td><span class="tag tag-crit">Requires defensive &mdash; KILLED</span></td>
+    </tr>
+    <tr>
+      <td>Corrupting Essence</td>
+      <td>458K</td>
+      <td>3</td>
+      <td><span class="tag tag-warn">Partially &mdash; add explosion</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>289K</td>
+      <td>8</td>
+      <td><span class="tag tag-warn">Partially &mdash; beam positioning</span></td>
+    </tr>
+    <tr>
+      <td>Interrupting Tremor</td>
+      <td>260K</td>
+      <td>2</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>196K</td>
+      <td>1</td>
+      <td><span class="tag tag-diff">Yes &mdash; platform mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>156K</td>
+      <td>2</td>
+      <td><span class="tag tag-same">No &mdash; mechanic hit</span></td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td>
+      <td>150K</td>
+      <td>1</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Most damage is unavoidable (Echoing Darkness ticks, Interrupting Tremor). The <strong class="red">196K falling damage</strong> indicates a platform mechanics issue &mdash; this should be avoidable with feather pickup or Divine Steed. The <strong>Silverstrike Barrage</strong> hits were the killing blows &mdash; a defensive cooldown (Shield of Vengeance, or saving Divine Protection) was needed here.</p>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during Fight 23.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player</th><th>Reference</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Bloodlust / Time Warp</strong></td>
+      <td class="red">Not received</td>
+      <td>2:55</td>
+      <td><span class="tag tag-diff">Player died before lust</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>3 applications</td>
+      <td>12 applications</td>
+      <td><span class="tag tag-warn">Low &mdash; died early</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>1 application</td>
+      <td>3 applications</td>
+      <td><span class="tag tag-warn">Low &mdash; died early</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td>None</td>
+      <td><span class="tag tag-same">Neither received PI</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">The reference received Bloodlust at 2:55 and had far more Ebon Might uptime (12 vs 3 applications) over the full kill. In the first 151s window, the reference had more Aug Evoker support. For a fair alive-time comparison, note that the reference likely had more external buffs even in the first 151s due to Aug Evoker prioritization.</p>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs primary reference. Both are ilvl 290, but stat distributions differ.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Alitheria</th><th>Bilaevropa</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>290.3</td>
+      <td>290.0</td>
+      <td><span class="tag tag-same">+0.3 &mdash; identical</span></td>
+    </tr>
+    <tr>
+      <td>Strength</td>
+      <td>2,108</td>
+      <td>2,135</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="yellow">874</td>
+      <td>1,163</td>
+      <td>Player has <strong>&minus;25%</strong> Crit</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="yellow">715</td>
+      <td>464</td>
+      <td>Player has <strong>+54%</strong> Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td>1,831</td>
+      <td>1,865</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>116</td>
+      <td>60</td>
+      <td><span class="dim">Both very low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Alitheria has significantly more Haste (+54%) but less Crit (&minus;25%). Both are stacking Mastery as primary secondary (1,831 vs 1,865). For Ret Paladin, Haste increases GCD speed, which should actually give Alitheria a <strong>higher</strong> CPM ceiling &mdash; making the &minus;20% CPM gap entirely execution-based, not stat-limited. The Crit deficit may reduce proc rates for Art of War (Blade of Justice reset) and Empyrean Hammer critical strikes.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Alitheria's DPS across all 26 Crown of the Cosmos pulls. Boss % shown on each bar (lower = deeper into the fight). DPS is calculated over <strong>full fight duration</strong> (not alive time), so deaths reduce the number significantly.</p>
+
+<div class="card">
+  <div class="progression-chart" style="height: 160px; padding-bottom: 24px;">
+    <!-- F1: 0 DPS, 28s, 99.45% - skip, near-instant wipe -->
+    <div class="prog-bar" style="height: 2%; background: var(--red);" data-tooltip="F1: 0 DPS (0:28, 99% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">99%</span>
+    </div>
+    <div class="prog-bar" style="height: 91%; background: var(--red);" data-tooltip="F2: 243K DPS (1:03, 52% boss)">
+      <span class="boss-pct-label" style="color: var(--yellow);">52%</span>
+    </div>
+    <div class="prog-bar" style="height: 23%; background: var(--orange);" data-tooltip="F3: 61K DPS (1:57, 55% boss)">
+      <span class="boss-pct-label" style="color: var(--yellow);">55%</span>
+    </div>
+    <div class="prog-bar" style="height: 50%; background: var(--red);" data-tooltip="F4: 135K DPS (1:16, 55% boss)">
+      <span class="boss-pct-label" style="color: var(--yellow);">55%</span>
+    </div>
+    <div class="prog-bar" style="height: 50%; background: var(--red);" data-tooltip="F5: 135K DPS (1:00, 74% boss)">
+      <span class="boss-pct-label" style="color: var(--orange);">74%</span>
+    </div>
+    <div class="prog-bar" style="height: 73%; background: var(--green);" data-tooltip="F6: 195K DPS (2:23, 19% boss)">
+      <span class="boss-pct-label" style="color: var(--green);">19%</span>
+    </div>
+    <div class="prog-bar" style="height: 47%; background: var(--yellow);" data-tooltip="F7: 126K DPS (1:29, 42% boss)">
+      <span class="boss-pct-label" style="color: var(--yellow);">42%</span>
+    </div>
+    <div class="prog-bar" style="height: 83%; background: var(--green);" data-tooltip="F8: 222K DPS (2:22, 0.01% boss) BEST">
+      <span class="boss-pct-label" style="color: var(--green);">0%</span>
+    </div>
+    <div class="prog-bar" style="height: 99%; background: var(--green);" data-tooltip="F9: 266K DPS (2:32, 7% boss)">
+      <span class="boss-pct-label" style="color: var(--green);">7%</span>
+    </div>
+    <div class="prog-bar" style="height: 45%; background: var(--orange);" data-tooltip="F10: 120K DPS (3:40, 98% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">98%</span>
+    </div>
+    <div class="prog-bar" style="height: 61%; background: var(--yellow);" data-tooltip="F11: 163K DPS (2:02, 30% boss)">
+      <span class="boss-pct-label" style="color: var(--yellow);">30%</span>
+    </div>
+    <div class="prog-bar" style="height: 35%; background: var(--orange);" data-tooltip="F12: 94K DPS (3:54, 92% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">92%</span>
+    </div>
+    <div class="prog-bar" style="height: 47%; background: var(--yellow);" data-tooltip="F13: 126K DPS (1:15, 61% boss)">
+      <span class="boss-pct-label" style="color: var(--orange);">61%</span>
+    </div>
+    <div class="prog-bar" style="height: 42%; background: var(--orange);" data-tooltip="F14: 113K DPS (3:51, 95% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">95%</span>
+    </div>
+    <div class="prog-bar" style="height: 84%; background: var(--green);" data-tooltip="F15: 224K DPS (2:29, 9% boss)">
+      <span class="boss-pct-label" style="color: var(--green);">9%</span>
+    </div>
+    <div class="prog-bar" style="height: 68%; background: var(--green);" data-tooltip="F16: 182K DPS (2:10, 21% boss)">
+      <span class="boss-pct-label" style="color: var(--green);">21%</span>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F17: 267K DPS (2:24, 0.01% boss) BEST TIE">
+      <span class="boss-pct-label" style="color: var(--green);">0%</span>
+    </div>
+    <div class="prog-bar" style="height: 48%; background: var(--orange);" data-tooltip="F18: 129K DPS (3:56, 96% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">96%</span>
+    </div>
+    <div class="prog-bar" style="height: 31%; background: var(--yellow);" data-tooltip="F19: 84K DPS (1:54, 35% boss)">
+      <span class="boss-pct-label" style="color: var(--yellow);">35%</span>
+    </div>
+    <div class="prog-bar" style="height: 48%; background: var(--yellow);" data-tooltip="F20: 127K DPS (2:00, 35% boss)">
+      <span class="boss-pct-label" style="color: var(--yellow);">35%</span>
+    </div>
+    <div class="prog-bar" style="height: 82%; background: var(--green);" data-tooltip="F21: 220K DPS (2:27, 0.22% boss)">
+      <span class="boss-pct-label" style="color: var(--green);">0.2%</span>
+    </div>
+    <div class="prog-bar" style="height: 2%; background: var(--red);" data-tooltip="F22: 0 DPS (0:25, 100% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">100%</span>
+    </div>
+    <div class="prog-bar" style="height: 40%; background: var(--orange); border: 1px solid var(--accent);" data-tooltip="F23: 106K DPS (4:53, 77% boss) LONGEST">
+      <span class="boss-pct-label" style="color: var(--accent);">77%</span>
+    </div>
+    <div class="prog-bar" style="height: 49%; background: var(--orange);" data-tooltip="F24: 132K DPS (3:49, 93% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">93%</span>
+    </div>
+    <div class="prog-bar" style="height: 64%; background: var(--red);" data-tooltip="F25: 170K DPS (3:08, 100% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">100%</span>
+    </div>
+    <div class="prog-bar" style="height: 62%; background: var(--orange);" data-tooltip="F26: 166K DPS (3:40, 97% boss)">
+      <span class="boss-pct-label" style="color: var(--red);">97%</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px; margin-top: 20px;">
+    <span>Fight 1</span>
+    <span style="color: var(--dim);">Boss % color: <span class="green">&lt;10%</span> &bull; <span class="yellow">10-50%</span> &bull; <span class="orange">50-90%</span> &bull; <span class="red">&gt;90%</span></span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Alitheria's best DPS came on shorter pulls where they survived &mdash; <strong class="green">F9 (266K, 2:32, 7% boss)</strong> and <strong class="green">F17 (267K, 2:24, 0.01% boss)</strong> were the standout performances. On longer pulls (F10, F12, F14, F18, F23&ndash;26), DPS drops to 94&ndash;170K &mdash; often because Alitheria died early and the fight continued without them. The pattern shows strong Phase 1 execution on shorter attempts (where the fight ends before the deadly transition), but consistent death around the 2:00&ndash;2:30 mark when longer pulls reach the transition mechanics. <strong>Survival through transitions is the bottleneck</strong>, not rotational throughput.</p>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">Fights 10, 12, 14, 18, 23&ndash;26 are longer (3:40&ndash;4:53) but show high boss % remaining (77&ndash;100%) &mdash; these are pulls where the raid reached later phases but struggled. Alitheria's full-fight DPS on these pulls is suppressed by death, not by poor play while alive.</p>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Survive the Silverstrike Barrage transition (2:00&ndash;2:40 mark).</strong> This is the single biggest DPS improvement available. Alitheria dies at 2:31 in Fight 23 and shows a pattern of dying around the same time in other long pulls. The Silverstrike Barrage hits for <strong>365K in one tick</strong>. Fix: save Divine Protection or Shield of Vengeance specifically for this mechanic. Divine Shield was used at 1:55 &mdash; 36 seconds before death &mdash; consider holding it for the Barrage window. Also ensure you are not taking the 196K falling damage, which reduces your health buffer. Estimated gain: <strong>surviving to fight end would double effective fight DPS from ~106K to ~200K+</strong>.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Increase GCD efficiency between cooldown windows (77.5 CPM &rarr; target 90+ CPM).</strong> The 20% CPM gap vs the reference is across every ability, not concentrated in one spell. Divine Hammer at <strong>15.9 vs 23.4 CPM (&minus;32%)</strong> suggests Consecration is dropping during movement. Crusading Strikes at <strong>16.3 vs 20.7 CPM (&minus;21%)</strong> means auto-attack / melee downtime. Between major cooldowns, keep Consecration active (refreshes Divine Hammer) and stay in melee range to generate Crusading Strikes procs. The 12.6-second gap at 1:22&ndash;1:34 is a phase transition, but the ref still manages better filler around transitions. Estimated gain: <strong>closing to 90+ CPM would add ~20K to alive-time DPS</strong>.
+</div>
+
+<div class="action-item">
+  <strong>3. Use Shield of Vengeance offensively.</strong> The reference dealt <strong>735K damage</strong> from Shield of Vengeance reflected damage in the same time window. Alitheria never used it. Shield of Vengeance absorbs damage and then explodes for the absorbed amount &mdash; on a fight with heavy sustained raid damage (Echoing Darkness ticks), it deals significant free damage. Use it before major damage events. If you need to save it as a defensive for Silverstrike Barrage (see item 1), that is the higher priority &mdash; but if another defensive covers Barrage, Shield of Vengeance should be used offensively.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Hammer of Wrath usage (2.8 CPM &rarr; target 4.0+ CPM).</strong> Alitheria used Hammer of Wrath <strong>7 times vs the reference's 11</strong> in 151 seconds (&minus;36%). During Avenging Wrath, Judgment becomes Hammer of Wrath (via Radiant Glory), giving access to this powerful ability for 24 seconds per AW window. The reference fires more Hammers by using Art of War procs (which reset Blade of Justice, which enables more Holy Power, which enables more Final Verdicts, which trigger more Empyrean Hammers). Weaving Hammer of Wrath during AW windows and whenever targets are below 20% is a direct throughput gain.
+</div>
+
+<div class="action-item">
+  <strong>5. Avoid falling damage (196K taken).</strong> This is a Crown-specific mechanic &mdash; likely falling between platforms or missing a feather during Devouring Cosmos. Taking 196K unnecessary damage reduces the health buffer needed to survive transition mechanics like Silverstrike Barrage. Use Divine Steed or feather pickups to avoid falling, and position for platform transitions early.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Cooldown discipline:</strong> Wake of Ashes, Divine Toll, and Execution Sentence are all used on cooldown with proper AW alignment. 4 Wake of Ashes casts in 151 seconds matches the reference exactly. Execution Sentence paired with AW on both uses. This is solid burst execution.<br><br>
+    <strong>Holy Power management:</strong> Final Verdict at 11.5 CPM shows consistent spending without overcapping. No obvious Holy Power waste patterns.<br><br>
+    <strong>Best pulls show strong DPS:</strong> Fights 8, 9, 15, 17, and 21 all show excellent alive-time DPS (220&ndash;267K range), reaching sub-10% boss with strong Phase 1 contributions. The ceiling is clearly there &mdash; it is survival, not damage output, that is the limiting factor.<br><br>
+    <strong>Judgment usage:</strong> The one ability where Alitheria exceeds the reference (+8% CPM). Good Judgment prioritization is important for Sanctification stacking and Holy Power generation.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">Alitheria's <strong>alive-time DPS (231.7K)</strong> is competitive with ranked players' early-fight output. The 17.5% gap vs Bilaevropa in the same 0&ndash;2:31 window comes from <strong>~60% GCD efficiency</strong> (20% lower CPM across all abilities) and <strong>~20% proc/passive reduction</strong> (Highlord's Judgment, Empyrean Hammer) that cascades from lower cast volume, with <strong>~20% from external buff differences</strong> (fewer Ebon Might/Prescience applications). However, the <strong>dominant issue is death at 2:31</strong> &mdash; full-fight DPS drops to 106K because Alitheria is dead for 48% of the fight. Crown of the Cosmos is a 8+ minute fight. Surviving to the end is worth more than any rotation optimization. Priority: (1) survive through transitions with proper defensive timing, (2) tighten GCD usage between mechanics, (3) use Shield of Vengeance offensively.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (Wipe, 4:53, 77.31% boss). Reference: Bilaevropa (#2 ranked Retribution Paladin, report <code>Dfxv9aXNMJP7bR2n</code>, Fight 34, 8:16 kill). All times relative to fight start. CPM comparison uses first 151s of both fights (Alitheria's alive time). This is <strong>progression analysis</strong> &mdash; no kill yet on this boss.</p>
+  <p style="margin-top: 4px;">Talent delta: 6 differences between Alitheria and Bilaevropa. Item level: 290.3 vs 290.0 (effectively identical). Both use Templar hero tree. External buffs: Alitheria died before Bloodlust; reference had Bloodlust at 2:55 and more Aug Evoker uptime.</p>
+</div>
+
+</body>
+</html>

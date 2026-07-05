@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tank Audit — Unholyftw (Blood DK) — Mythic LBV — June 2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 960px; margin: 0 auto; line-height: 1.6; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: #c41e3a; margin-top: 40px; margin-bottom: 16px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; color: #fff; margin-top: 24px; margin-bottom: 10px; }
+  .teach { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; font-size: 14px; color: #bbb; line-height: 1.8; }
+  .teach p { margin-bottom: 12px; }
+  .teach p:last-child { margin-bottom: 0; }
+  .teach strong { color: #e0e0e0; }
+  .teach .spell { color: #c41e3a; font-weight: 600; }
+  .teach .key { color: #ffa940; font-weight: 600; }
+  .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .overview-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 16px; text-align: center; }
+  .overview-label { font-size: 11px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .overview-value { font-size: 28px; font-weight: 700; }
+  .overview-sub { font-size: 12px; color: #555; margin-top: 4px; }
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  .compare-table th { text-align: left; padding: 8px 12px; background: #141414; color: #888; font-weight: 600; border-bottom: 1px solid #222; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .compare-table td { padding: 6px 12px; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+  .compare-table tr:hover { background: #161616; }
+  .bad { color: #ff6b6b; font-weight: 600; }
+  .warn { color: #ffa940; font-weight: 600; }
+  .ok { color: #4caf50; font-weight: 600; }
+  .finding { background: #141414; border-radius: 6px; padding: 16px 20px; margin-bottom: 12px; font-size: 14px; color: #bbb; line-height: 1.7; }
+  .finding-bad { border-left: 3px solid #ff6b6b; background: #1a1212; }
+  .finding-warn { border-left: 3px solid #ffa940; background: #1a1710; }
+  .finding-good { border-left: 3px solid #4caf50; background: #121a14; }
+  .finding strong { color: #fff; }
+  .action { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 18px 22px; margin-bottom: 12px; }
+  .action-num { font-size: 28px; font-weight: 700; color: #333; float: left; margin-right: 16px; font-family: 'Courier New', monospace; line-height: 1; }
+  .action-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+  .action-body { font-size: 13px; color: #999; line-height: 1.7; }
+  .action-body strong { color: #ccc; }
+  .cd-timeline { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 0; font-size: 13px; margin-bottom: 20px; }
+  .cd-timeline .cd-header { background: #141414; color: #888; font-weight: 600; padding: 8px 12px; border-bottom: 1px solid #222; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .cd-timeline .cd-cell { padding: 6px 12px; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+  .cd-timeline .cd-label { font-weight: 600; color: #ccc; }
+  details { margin-top: 36px; }
+  summary { font-size: 14px; font-weight: 600; color: #666; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #999; }
+  .details-inner { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #888; line-height: 1.7; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Tank Audit &mdash; <span style="color:#c41e3a">Unholyftw</span></h1>
+<p class="subtitle">Blood Death Knight &mdash; Mythic Lightblinded Vanguard &mdash; June 2, 2026 &mdash; 26 pulls analyzed</p>
+
+<div class="overview-grid">
+  <div class="overview-card">
+    <div class="overview-label">Avg DPS</div>
+    <div class="overview-value" style="color:#ffa940">92K</div>
+    <div class="overview-sub">#1 BDK: 164K (57%)</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Avg DTPS</div>
+    <div class="overview-value" style="color:#ffa940">127K</div>
+    <div class="overview-sub">#1: 117K</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Early Deaths</div>
+    <div class="overview-value" style="color:#4caf50">1/26</div>
+    <div class="overview-sub">4% &mdash; excellent</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-label">Pre-Pot</div>
+    <div class="overview-value" style="color:#4caf50">26/26</div>
+    <div class="overview-sub">100%</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Defensives &amp; Survivability</h2>
+
+<table class="compare-table">
+  <tr><th>Consumable</th><th>Across 26 Pulls</th><th>Verdict</th></tr>
+  <tr>
+    <td><strong>Pre-Pot</strong></td>
+    <td class="ok">26/26 pulls (100%)</td>
+    <td class="ok">Pots every pull</td>
+  </tr>
+  <tr>
+    <td><strong>Healthstone</strong></td>
+    <td class="warn">12/26 pulls (46%)</td>
+    <td class="warn">Less than half</td>
+  </tr>
+  <tr>
+    <td><strong>Health Potion</strong></td>
+    <td class="warn">10/26 pulls (38%)</td>
+    <td class="warn">Separate CD from pre-pot &mdash; should be used when needed</td>
+  </tr>
+</table>
+
+<h3>Early Deaths (1/26 pulls)</h3>
+<table class="compare-table">
+  <tr><th>Pull</th><th>Died At</th><th>Killed By</th></tr>
+  <tr><td>#28</td><td>4:42</td><td>Final Verdict</td></tr>
+</table>
+
+<table class="compare-table" style="margin-top:16px;">
+  <tr><th>Defensive CD</th><th>Avg/min (26 pulls)</th><th>Top Avg</th><th>Verdict</th></tr>
+  <tr>
+    <td><strong>Vampiric Blood</strong></td>
+    <td>1.2/min</td>
+    <td>0.7/min</td>
+    <td class="ok">Pressing frequently (~40-50s gaps)</td>
+  </tr>
+  <tr>
+    <td><strong>Icebound Fortitude</strong></td>
+    <td>0.3/min</td>
+    <td>0.2/min</td>
+    <td class="ok">Normal usage</td>
+  </tr>
+  <tr>
+    <td><strong>Anti-Magic Shell</strong></td>
+    <td>0.3/min</td>
+    <td>0.7/min</td>
+    <td class="warn">Top players use AMS 2x more</td>
+  </tr>
+  <tr>
+    <td><strong>Anti-Magic Zone</strong></td>
+    <td>~1/long pull</td>
+    <td>&mdash;</td>
+    <td class="ok">Normal usage</td>
+  </tr>
+  <tr>
+    <td><strong>Dancing Rune Weapon</strong></td>
+    <td>0.7/min</td>
+    <td>0.7/min</td>
+    <td class="ok">Matches top players</td>
+  </tr>
+</table>
+
+<div class="finding finding-good">
+  <strong>Only 1 early death in 26 pulls (4%).</strong> Excellent tank survivability &mdash; stays alive when others don&rsquo;t.
+</div>
+
+<div class="finding finding-warn">
+  <strong>AMS at 0.3/min vs top players at 0.7/min.</strong> Anti-Magic Shell prevents magic debuff application if it fully absorbs the hit. Using it more on Sacred Toll and other magic damage would reduce healing pressure.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>How Blood DK Works</h2>
+
+<div class="teach">
+  <p>Blood DK is a self-healing tank that uses Runes and Runic Power to stay alive. You have 6 runes that recharge based on Haste, and every rune you spend generates Runic Power. Your survivability comes from spending that Runic Power on <span class="spell">Death Strike</span> &mdash; which heals you based on damage taken in the last 5 seconds and generates a damage absorption shield.</p>
+
+  <p>The core loop: <span class="spell">Heart Strike</span> generates Runic Power (your main filler &mdash; spam it). <span class="spell">Marrowrend</span> maintains Bone Shield (keep 5+ stacks, provides armor and haste). <span class="spell">Death Strike</span> spends Runic Power to heal and shield. <span class="spell">Blood Boil</span> generates threat and triggers procs.</p>
+
+  <p><span class="key">The key skill expression is knowing WHEN to Death Strike.</span> It heals based on damage taken in the last 5 seconds &mdash; so using it immediately after a big hit maximizes the heal. But you also can&rsquo;t let Runic Power cap (125 max), so you need to spend it efficiently.</p>
+
+  <p><span class="spell">Dancing Rune Weapon</span> is your main offensive CD &mdash; use it on cooldown. It doubles your Heart Strike RP generation and Marrowrend stack application for 12 seconds. Top players treat it as a DPS button, not a defensive.</p>
+
+  <p><span class="spell">Vampiric Blood</span> increases your max health by 30% and healing received by 30%. Use it proactively before predictable damage. <span class="spell">Icebound Fortitude</span> is 30% DR for 8 seconds &mdash; save for known burst. <span class="spell">Anti-Magic Shell</span> absorbs magic damage and prevents debuff application if it fully absorbs.</p>
+
+  <p>The difference between good and great Blood DKs is <span class="spell">Heart Strike</span> volume. Top players spam Heart Strike to generate maximum Runic Power, then spend it efficiently on Death Strike. Over-casting <span class="spell">Marrowrend</span> wastes runes that should go to Heart Strike.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>Defensive CD Timing vs Boss Abilities</h2>
+
+<div class="teach">
+  <p>This section maps when Unholyftw pressed each defensive against when boss abilities hit. Data from best pull (#30, 6:40 duration).</p>
+
+  <p><strong>Boss ability timeline (LBV):</strong> Sacred Toll (Lightblood) every ~18s throughout &mdash; constant magic damage. Searing Radiance (Senn) at 0:11, 1:03, 1:55, 3:02, 3:54, 5:41 &mdash; 15s ramping DoT. Mass Avenger&rsquo;s Shield (Bellamy) at ~1:12, ~3:54 &mdash; raid-wide. Aura of Peace + Tyr&rsquo;s Wrath at ~2:17 &mdash; prog wall. Light Infusion &mdash; constant stacking raid damage.</p>
+</div>
+
+<h3>Dancing Rune Weapon</h3>
+<table class="compare-table">
+  <tr><th>Unholyftw</th><th>Top #1 (Dicedmeatf)</th></tr>
+  <tr><td>0:01</td><td>0:02</td></tr>
+  <tr><td>1:43</td><td>1:41</td></tr>
+  <tr><td>3:14</td><td>3:11</td></tr>
+  <tr><td>4:46</td><td>4:43</td></tr>
+  <tr><td>&mdash;</td><td>6:16</td></tr>
+</table>
+<div class="finding finding-good">
+  <strong>Nearly identical DRW timing.</strong> Unholyftw presses DRW within 2-3 seconds of the #1 Blood DK on every usage. Good.
+</div>
+
+<h3>Vampiric Blood</h3>
+<table class="compare-table">
+  <tr><th>Unholyftw (11 uses)</th><th>Top #1 (7 uses)</th></tr>
+  <tr><td>0:05</td><td>0:01</td></tr>
+  <tr><td>0:43</td><td>1:57</td></tr>
+  <tr><td>1:18</td><td>2:51</td></tr>
+  <tr><td>2:04</td><td>3:20</td></tr>
+  <tr><td>2:43</td><td>4:39</td></tr>
+  <tr><td>3:19</td><td>5:06</td></tr>
+  <tr><td>3:45</td><td>5:34</td></tr>
+  <tr><td>4:19</td><td>&mdash;</td></tr>
+  <tr><td>5:02</td><td>&mdash;</td></tr>
+  <tr><td>5:37</td><td>&mdash;</td></tr>
+  <tr><td>6:07</td><td>&mdash;</td></tr>
+</table>
+<div class="finding finding-good">
+  <strong>VB pressed proactively and consistently.</strong> Unholyftw presses VB almost on CD (~40s gaps). Top player is more selective (~30-116s gaps). VB may have a shorter CD with talents.
+</div>
+
+<h3>Icebound Fortitude</h3>
+<table class="compare-table">
+  <tr><th>Unholyftw</th><th>Top #1 (Dicedmeatf)</th></tr>
+  <tr><td>2:10</td><td>2:12</td></tr>
+  <tr><td>4:35</td><td>4:50</td></tr>
+</table>
+<div class="finding finding-good">
+  <strong>Near-identical IBF timing.</strong> Both use IBF around the same boss ability windows.
+</div>
+
+<h3>Anti-Magic Shell</h3>
+<table class="compare-table">
+  <tr><th>Unholyftw (5 uses)</th><th>Top #1 (2 uses)</th></tr>
+  <tr><td>0:56</td><td>1:33</td></tr>
+  <tr><td>2:35</td><td>6:37</td></tr>
+  <tr><td>4:04</td><td>&mdash;</td></tr>
+  <tr><td>5:15</td><td>&mdash;</td></tr>
+  <tr><td>5:58</td><td>&mdash;</td></tr>
+</table>
+<div class="finding finding-good">
+  <strong>Unholyftw uses AMS more frequently than the #1.</strong> Top player barely uses AMS on this fight. AMS prevents debuff application if it fully absorbs &mdash; there may be opportunities to use it more strategically on Sacred Toll windows.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What the Best Blood DKs Do on LBV</h2>
+
+<h3>Top 3 Blood Death Knights</h3>
+<table class="compare-table">
+  <tr><th>Player</th><th>DPS</th><th>DTPS</th><th>Duration</th></tr>
+  <tr><td><strong>#1 Dicedmeatf</strong></td><td>163,694</td><td>116,915</td><td>6:40</td></tr>
+  <tr><td><strong>#2 &#1060;&#1101;&#1082;&#1089;&#1086;&#1088;&#1082;&#1072;</strong></td><td>160,201</td><td>134,515</td><td>6:40</td></tr>
+  <tr><td><strong>#3 Jeyle</strong></td><td>159,475</td><td>148,487</td><td>6:29</td></tr>
+</table>
+
+<h3>Top Avg Spell Rates</h3>
+<table class="compare-table">
+  <tr><th>Spell</th><th>Top Avg/min</th></tr>
+  <tr><td>Death Strike</td><td><strong>20.8</strong></td></tr>
+  <tr><td>Heart Strike</td><td><strong>15.7</strong></td></tr>
+  <tr><td>Blood Boil</td><td><strong>9.3</strong></td></tr>
+  <tr><td>Marrowrend</td><td><strong>1.1</strong></td></tr>
+  <tr><td>Dancing Rune Weapon</td><td><strong>0.7</strong></td></tr>
+  <tr><td>Vampiric Blood</td><td><strong>0.7</strong></td></tr>
+  <tr><td>Icebound Fortitude</td><td><strong>0.2</strong></td></tr>
+  <tr><td>Anti-Magic Shell</td><td><strong>0.7</strong></td></tr>
+</table>
+
+<div class="teach">
+  <p><strong>Dicedmeatf</strong> (#1, 163,694 DPS) runs Death Strike at 20.8/min and Heart Strike at 15.7/min. Marrowrend at just 1.1/min &mdash; the #2 player casts <span class="key">zero Marrowrend</span> and maintains Bone Shield entirely through Dancing Rune Weapon&rsquo;s double application. DRW is pressed on cooldown at 0.7/min. The pattern is clear: maximum Heart Strike, minimum Marrowrend, spend all RP on Death Strike.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What You Did (26 Pull Average)</h2>
+
+<table class="compare-table">
+  <tr><th>Spell</th><th>Your Avg/min</th><th>Top Avg/min</th><th>% of Top</th><th>Verdict</th></tr>
+  <tr>
+    <td>Death Strike</td>
+    <td>14.1</td>
+    <td>20.8</td>
+    <td class="warn">68%</td>
+    <td class="warn">WARN</td>
+  </tr>
+  <tr>
+    <td>Heart Strike</td>
+    <td>6.3</td>
+    <td>15.7</td>
+    <td class="bad">40%</td>
+    <td class="bad">BAD &mdash; biggest gap</td>
+  </tr>
+  <tr>
+    <td>Blood Boil</td>
+    <td>10.8</td>
+    <td>9.3</td>
+    <td class="ok">116%</td>
+    <td class="ok">OK</td>
+  </tr>
+  <tr>
+    <td>Marrowrend</td>
+    <td>5.9</td>
+    <td>1.1</td>
+    <td class="bad">537%</td>
+    <td class="bad">BAD &mdash; 6x more than top</td>
+  </tr>
+  <tr>
+    <td>Dancing Rune Weapon</td>
+    <td>0.7</td>
+    <td>0.7</td>
+    <td class="ok">100%</td>
+    <td class="ok">OK</td>
+  </tr>
+  <tr>
+    <td>Vampiric Blood</td>
+    <td>1.2</td>
+    <td>0.7</td>
+    <td class="ok">&mdash;</td>
+    <td class="ok">Using more (may have shorter CD with talents)</td>
+  </tr>
+  <tr>
+    <td>Icebound Fortitude</td>
+    <td>0.3</td>
+    <td>0.2</td>
+    <td class="ok">&mdash;</td>
+    <td class="ok">OK</td>
+  </tr>
+  <tr>
+    <td>Anti-Magic Shell</td>
+    <td>0.3</td>
+    <td>0.7</td>
+    <td class="warn">43%</td>
+    <td class="warn">WARN &mdash; could use more</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>How This Is Affecting Your Performance</h2>
+
+<div class="finding finding-bad">
+  <strong>Heart Strike at 40% of top is the core issue.</strong> Heart Strike is your main Runic Power generator. At 6.3/min vs 15.7/min, you&rsquo;re generating roughly 60% less Runic Power than top players. Less RP = fewer Death Strikes = less self-healing AND less DPS.
+</div>
+
+<div class="finding finding-bad">
+  <strong>Marrowrend at 537% of top.</strong> You&rsquo;re spending 5.9 Marrowrend casts per minute &mdash; top players cast 0-2.9. Every Marrowrend costs a rune that could be Heart Strike instead. Top Blood DK #2 literally casts zero Marrowrend and maintains Bone Shield through Dancing Rune Weapon&rsquo;s double application. You&rsquo;re over-maintaining Bone Shield at massive DPS and RP cost.
+</div>
+
+<div class="finding finding-warn">
+  <strong>Death Strike at 68% of top is a consequence of the Heart Strike gap.</strong> Fewer Heart Strikes = less RP = fewer Death Strikes = less self-healing. Fixing Heart Strike fixes Death Strike.
+</div>
+
+<div class="finding finding-warn">
+  <strong>DPS at 57% of top &mdash; 92K vs 164K.</strong> Almost entirely from the Heart Strike/Marrowrend imbalance. Your defensive CD timing is actually solid.
+</div>
+
+<div class="finding finding-good">
+  <strong>Survivability is excellent &mdash; 1/26 early deaths.</strong> You&rsquo;re staying alive. The issue isn&rsquo;t dying &mdash; it&rsquo;s doing it inefficiently. You can maintain the same survivability with far fewer Marrowrend casts and far more Heart Strikes.
+</div>
+
+<div class="finding finding-good">
+  <strong>DRW timing matches #1 almost exactly.</strong> Defensive CD usage is proactive and well-timed. Pots every pull (26/26).
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>What You Need to Change</h2>
+
+<div class="action">
+  <span class="action-num" style="color:#ff6b6b;">1</span>
+  <div class="action-title">Replace Marrowrend casts with Heart Strike &mdash; drop from 5.9/min to under 2/min</div>
+  <div class="action-body">
+    Only press Marrowrend when Bone Shield is at 5 or fewer stacks. Every other rune goes to Heart Strike. Top players maintain Bone Shield through DRW&rsquo;s double application and minimal Marrowrend. <strong>This is the single biggest change you can make &mdash; it fixes both your DPS and your Death Strike rate simultaneously.</strong>
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ff6b6b;">2</span>
+  <div class="action-title">More Death Strike &mdash; target 18+/min</div>
+  <div class="action-body">
+    Currently at 14.1/min vs top avg 20.8/min. With more Heart Strikes generating more Runic Power, you&rsquo;ll naturally have more RP to spend on Death Strike. <strong>Don&rsquo;t let RP cap at 125 &mdash; spend it on Death Strike before it overflows.</strong>
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ffa940;">3</span>
+  <div class="action-title">Use AMS more often &mdash; 0.3/min vs top avg 0.7/min</div>
+  <div class="action-body">
+    Sacred Toll hits every 18s as magic damage. Anti-Magic Shell prevents debuff application if it fully absorbs &mdash; use it proactively on Sacred Toll windows. <strong>More AMS usage = less magic damage taken = less healing pressure on the team.</strong>
+  </div>
+</div>
+
+<div class="action">
+  <span class="action-num" style="color:#ffa940;">4</span>
+  <div class="action-title">Use healthstone and health potion more consistently</div>
+  <div class="action-body">
+    Healthstone in 46% of pulls, health potion in 38%. Both are available on separate cooldowns from your pre-pot. <strong>As a tank, these are free survivability &mdash; use them every pull where you take meaningful damage.</strong>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+
+<details>
+  <summary>Raw Data &amp; Sources</summary>
+  <div class="details-inner">
+    <strong>Report:</strong> by6mKkdwXGcqQtRW &mdash; Mythic Pallys Prog 06.02.26<br>
+    <strong>Pulls:</strong> 26 (all Mythic LBV wipes)<br>
+    <strong>Player:</strong> Unholyftw, Blood Death Knight<br><br>
+
+    <strong>Night Averages:</strong><br>
+    DPS: 92,000 | DTPS: 127,000<br>
+    Death Strike/min: 14.1 | Heart Strike/min: 6.3 | Blood Boil/min: 10.8 | Marrowrend/min: 5.9<br>
+    DRW/min: 0.7 | VB/min: 1.2 | IBF/min: 0.3 | AMS/min: 0.3<br><br>
+
+    <strong>Consumables:</strong> Pre-pot 26/26 (100%), Healthstone 12/26 (46%), Health pot 10/26 (38%)<br>
+    <strong>Early Deaths:</strong> 1/26 (4%) &mdash; Final Verdict 1x (pull #28 at 4:42)<br><br>
+
+    <strong>Top Blood DKs (#1-#3 on Mythic LBV):</strong><br>
+    Dicedmeatf &mdash; 163,694 DPS, 116,915 DTPS (6:40 kill)<br>
+    &#1060;&#1101;&#1082;&#1089;&#1086;&#1088;&#1082;&#1072; &mdash; 160,201 DPS, 134,515 DTPS (6:40 kill)<br>
+    Jeyle &mdash; 159,475 DPS, 148,487 DTPS (6:29 kill)<br><br>
+
+    <strong>Defensive CD timing comparison:</strong> Best pull #30 (6:40 duration) vs Dicedmeatf kill<br>
+    <strong>Rotation research:</strong> Icy Veins Blood Death Knight guide (12.0.5)<br>
+  </div>
+</details>
+
+<div class="footer">
+  Data from WCL v2 API &mdash; 26 pulls analyzed &mdash; top 3 Blood DKs on Mythic LBV as benchmark &mdash; June 2, 2026
+</div>
+
+</body>
+</html>

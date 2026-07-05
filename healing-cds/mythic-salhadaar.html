@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mythic Salhadaar — Healing CD Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 900px; margin: 0 auto; line-height: 1.5; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: #c4a1ff; margin-top: 36px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  .cycle-header { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-top: 28px; margin-bottom: 12px; text-align: center; }
+  .event { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; padding: 14px 18px; margin-bottom: 10px; }
+  .event-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .event-time { font-size: 13px; font-weight: 700; color: #888; font-family: 'Courier New', monospace; min-width: 42px; }
+  .event-name { font-size: 14px; font-weight: 600; }
+  .event-note { font-size: 12px; color: #666; margin-left: auto; }
+  .event-orb .event-name { color: #5b9bd5; }
+  .event-beams .event-name { color: #ffd966; }
+  .event-beams { border-left: 3px solid #ffd966; background: #1a1710; }
+  .event-beams.hardest { border-left: 3px solid #ff6b6b; background: #1a1212; }
+  .cd-list { display: grid; grid-template-columns: 72px 1fr; gap: 2px 12px; font-size: 13px; padding-left: 52px; }
+  .cd-role { color: #888; font-weight: 500; text-align: right; }
+  .cd-role.hpal { color: #f48cba; }
+  .cd-role.rsham { color: #0070dd; }
+  .cd-role.mw { color: #00ff98; }
+  .cd-role.pevo { color: #33937f; }
+  .cd-role.raid { color: #a0a0a0; }
+  .cd-ability { color: #ddd; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+  .tag-danger { background: #3d0011; color: #ff6b6b; }
+  .tag-warn { background: #3d2200; color: #ffa940; }
+  .reactive { background: #111; border: 1px dashed #333; border-radius: 6px; padding: 14px 18px; margin-top: 16px; }
+  .reactive-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 8px; }
+  .copy-block { background: #0d0d0d; border: 1px solid #222; border-radius: 6px; padding: 16px 20px; margin-top: 24px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: #ccc; position: relative; }
+  .copy-block .label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif; }
+  .copy-btn { position: absolute; top: 12px; right: 12px; background: #222; border: 1px solid #333; color: #aaa; font-size: 12px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .copy-btn:hover { background: #333; color: #fff; }
+  .mrt-section { margin-top: 36px; }
+  .mrt-block { background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px 20px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; color: #ccc; position: relative; margin-top: 8px; }
+  .mrt-block .copy-btn { position: absolute; top: 8px; right: 8px; }
+  .mrt-hint { color: #888; font-size: 13px; margin-bottom: 8px; }
+  .pattern { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 14px 20px; margin-bottom: 24px; font-size: 13px; color: #999; }
+  .pattern strong { color: #ccc; }
+  details { margin-top: 36px; }
+  summary { font-size: 14px; font-weight: 600; color: #666; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #999; }
+  .details-inner { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #888; line-height: 1.7; }
+  .details-inner a { color: #7cacf8; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Mythic Salhadaar &mdash; Healing CD Plan</h1>
+<p class="subtitle">Four Dads One Pizza &mdash; HPal / RSham / MW / PEvo &mdash; 5 teams analyzed (302s&ndash;350s)</p>
+
+<div class="pattern">
+  <strong>Pattern:</strong> 2 orb sets &rarr; beams &rarr; repeat &times;3. Orb kill = Dark Radiation (8s raid DoT). Beams = Entropic Unraveling (20s) + rotating Umbral Beams. <strong>Beams 2 is the hardest check.</strong>
+</div>
+
+<!-- ─── CD ASSIGNMENTS ─── -->
+
+<div class="cycle-header">&mdash;&mdash;&mdash; Cycle 1 &mdash;&mdash;&mdash;</div>
+
+<div class="event event-orb">
+  <div class="event-header">
+    <span class="event-time">0:28</span>
+    <span class="event-name">Orb Sets 1 &amp; 2</span>
+    <span class="event-note">opener throughput</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight</span>
+  </div>
+</div>
+
+<div class="event event-beams">
+  <div class="event-header">
+    <span class="event-time">1:43</span>
+    <span class="event-name">Beams 1</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Revival</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Rewind</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Zephyr</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Vampiric Embrace</span>
+  </div>
+</div>
+
+<div class="cycle-header">&mdash;&mdash;&mdash; Cycle 2 &mdash;&mdash;&mdash;</div>
+
+<div class="event event-orb">
+  <div class="event-header">
+    <span class="event-time">2:34</span>
+    <span class="event-name">Orb Sets 3 &amp; 4</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight</span>
+  </div>
+</div>
+
+<div class="event event-beams hardest">
+  <div class="event-header">
+    <span class="event-time">3:43</span>
+    <span class="event-name">Beams 2</span>
+    <span class="tag tag-danger">HARDEST</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Aura Mastery</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Zephyr</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Darkness</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Rallying Cry</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Vampiric Embrace</span>
+  </div>
+</div>
+
+<div class="cycle-header">&mdash;&mdash;&mdash; Cycle 3 / Kill Push &mdash;&mdash;&mdash;</div>
+
+<div class="event event-orb">
+  <div class="event-header">
+    <span class="event-time">4:41</span>
+    <span class="event-name">Orb Set 5 + Kill</span>
+    <span class="tag tag-warn">LAST PUSH</span>
+    <span class="event-note">kills 5:02&ndash;5:50</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Revival</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Rewind</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+  </div>
+</div>
+
+<div class="reactive">
+  <div class="reactive-title">Reactive &mdash; use on the fly</div>
+  <div class="cd-list" style="padding-left: 16px;">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Blessing of Sacrifice, Lay on Hands</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Life Cocoon</span>
+  </div>
+</div>
+
+<!-- ─── DISCORD COPY BLOCK ─── -->
+<h2>Discord Copy/Paste</h2>
+<div class="copy-block" id="discord-block">
+<span class="label">Click to copy</span>
+<button class="copy-btn" onclick="copyDiscord()">Copy</button>
+MYTHIC SALHADAAR — HEALING CDs
+HPal / RSham / MW / PEvo
+
+━━━ CYCLE 1 ━━━
+
+ORB SETS 1+2 (0:28)
+  HPal   — Avenging Wrath
+  RSham  — Ascendance
+  MW     — Yu'lon
+  PEvo   — Dream Flight
+
+BEAMS 1 (1:43)
+  RSham  — Spirit Link Totem
+  MW     — Revival
+  PEvo   — Rewind
+  PEvo   — Zephyr
+  MW     — Celestial Conduit
+  Raid   — Vampiric Embrace
+
+━━━ CYCLE 2 ━━━
+
+ORB SETS 3+4 (2:34)
+  HPal   — Avenging Wrath
+  MW     — Yu'lon
+  PEvo   — Dream Flight
+
+BEAMS 2 (3:43) !! HARDEST !!
+  RSham  — Ascendance
+  HPal   — Aura Mastery
+  MW     — Celestial Conduit
+  PEvo   — Zephyr
+  Raid   — Darkness
+  Raid   — Rallying Cry
+  Raid   — Vampiric Embrace
+
+━━━ CYCLE 3 / KILL ━━━
+
+ORB 5 + KILL PUSH (4:41)
+  HPal   — Avenging Wrath
+  MW     — Yu'lon
+  PEvo   — Dream Flight
+  MW     — Revival
+  PEvo   — Rewind
+  RSham  — Spirit Link Totem
+
+Reactive: BoSac / LoH / Life Cocoon</div>
+
+<!-- ─── MRT NOTE ─── -->
+<div class="mrt-section">
+<h2>MRT Note</h2>
+<p class="mrt-hint">Paste into MRT &rarr; Note &rarr; Edit</p>
+<div class="mrt-block" id="mrt-block">
+<button class="copy-btn" onclick="copyMRT()">Copy</button>
+|cffFFFFFFMYTHIC SALHADAAR - HEALING CDs|r
+
+{time:0:28} |cffFF8800ORB SETS 1+2|r
+  |cffF48CBAHPal|r Avenging Wrath  |cff0070DDRSham|r Ascendance  |cff00FF98MW|r Yu'lon  |cff33937FPEvo|r Dream Flight
+
+{time:1:43} |cffFF3333BEAMS 1|r
+  |cff0070DDRSham|r Spirit Link Totem  |cff00FF98MW|r Revival  |cff33937FPEvo|r Rewind  |cff33937FPEvo|r Zephyr  |cff00FF98MW|r Celestial Conduit  |cffAAAAAARaid|r Vampiric Embrace
+
+{time:2:34} |cffFF8800ORB SETS 3+4|r
+  |cffF48CBAHPal|r Avenging Wrath  |cff00FF98MW|r Yu'lon  |cff33937FPEvo|r Dream Flight
+
+{time:3:43} |cffFF3333BEAMS 2|r |cffFF0000!! HARDEST !!|r
+  |cff0070DDRSham|r Ascendance  |cffF48CBAHPal|r Aura Mastery  |cff00FF98MW|r Celestial Conduit  |cff33937FPEvo|r Zephyr  |cffAAAAAARaid|r Darkness + Rallying Cry + Vampiric Embrace
+
+{time:4:41} |cffFF8800ORB 5 + KILL|r
+  |cffF48CBAHPal|r Avenging Wrath  |cff00FF98MW|r Yu'lon  |cff33937FPEvo|r Dream Flight
+  |cff00FF98MW|r Revival  |cff33937FPEvo|r Rewind  |cff0070DDRSham|r Spirit Link Totem
+
+|cff888888Reactive: Blessing of Sacrifice / Lay on Hands / Life Cocoon|r
+</div>
+
+<!-- ─── LOGS + FINDINGS ─── -->
+<details>
+  <summary>Logs analyzed + condensed findings</summary>
+  <div class="details-inner">
+    <strong>5 teams analyzed</strong> (302s&ndash;350s kill times), all running HPal/RSham/MW/PEvo. Per-player sourceID queries pulled every healer's complete cast timeline. CDs discovered from data, not assumed.<br><br>
+    <a href="https://www.warcraftlogs.com/reports/kWtChn3w6r9LKcFZ#fight=2" target="_blank">Gordunni (EU) &mdash; 302s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/dycaw2tk1FrPHG9v#fight=17" target="_blank">Archimonde (EU) &mdash; 304s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/JYky1AzQqVxdfrPg#fight=35" target="_blank">Area 52 (NA) &mdash; 310s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/vrFCKRW9VHfpnjMJ#fight=30" target="_blank">Sargeras (NA) &mdash; 321s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/mCMvAhy4xVN68Zwf#fight=17" target="_blank">Frostmourne (OCE) &mdash; 350s</a><br>
+    <br>
+    <strong>Key findings:</strong><br>
+    &bull; Beams 2 (~3:43) is the hardest check &mdash; all teams stack Ascendance + Aura Mastery + raid CDs here<br>
+    &bull; AW on strict 2min rotation: orbs 1+2 (0:28) &rarr; orbs 3+4 (2:34) &rarr; orbs 5+kill (4:41)<br>
+    &bull; Yu'lon + Dream Flight follow same 2min orb rotation (3 uses each)<br>
+    &bull; SLT, Revival, Rewind all saved for beams (1:43 + 4:41)<br>
+    &bull; Zephyr at both beams windows (1:43 + 3:43) &mdash; 2min CD fits cleanly<br>
+    &bull; CC covers beams only (90s CD, 2 uses at 1:43 + 3:43)<br>
+    &bull; 0/5 RSham run HTT. Ascendance universal.<br>
+    <br>
+    <strong>Guides:</strong>
+    <a href="https://www.wowhead.com/guide/midnight/raids/the-voidspire-salhadaar-boss-strategy-abilities" target="_blank">Wowhead</a> &middot;
+    <a href="https://www.mythictrap.com/en/vs-dr-mqd/salhadaar" target="_blank">Mythic Trap</a> &middot;
+    <a href="https://www.icy-veins.com/wow/salhadaar-raid-guide" target="_blank">Icy Veins</a>
+  </div>
+</details>
+
+<div class="footer">
+  Data from WCL v2 API &mdash; per-player sourceID queries, all CD timers verified.
+</div>
+
+<script>
+function copyMRT() {
+  const block = document.getElementById('mrt-block');
+  const text = block.innerText.replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+function copyDiscord() {
+  const block = document.getElementById('discord-block');
+  const text = block.innerText.replace('Click to copy', '').replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#discord-block .copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+
+</body>
+</html>

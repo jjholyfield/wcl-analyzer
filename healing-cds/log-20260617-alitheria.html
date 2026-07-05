@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alitheria — Retribution Paladin — Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .death-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; }
+  .death-timeline .dmg { color: var(--red); }
+  .death-timeline .heal { color: var(--green); }
+  .death-timeline .absorb { color: var(--cyan); }
+  .death-timeline .ts { color: var(--dim); display: inline-block; width: 50px; }
+  .dmg-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .dmg-bar-fill { height: 14px; border-radius: 3px; min-width: 2px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Alitheria <span class="dim">&mdash; Retribution Paladin</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:57) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value yellow">138.9K</div>
+    <div class="stat-label">DPS (Kill Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">290.3</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">113.1</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Alitheria finished the kill at <strong class="yellow">138,907 DPS</strong>, a <strong class="red">19.6% gap</strong> behind the primary reference (Apr, 172,731 DPS). Both players are within 0.3 ilvl of each other (290.3 vs 290.6) with only <strong class="accent">4 talent differences</strong>, meaning this gap is almost entirely execution. The core issue is <strong class="red">CPM &mdash; 113.1 vs 129.3</strong> (12.5% fewer button presses per minute), driven by <strong class="red">Divine Storm at 5.4/min vs 9.7/min (-44%)</strong> and <strong class="yellow">Divine Hammer at 13.1/min vs 17.9/min (-27%)</strong>. Alitheria had <strong class="red">38.1 seconds of dead time</strong> (11 gaps &gt;2.5s) compared to the reference's 14.3s (5 gaps) &mdash; that alone accounts for an estimated <strong class="red">~47 lost casts</strong> over the fight.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 4 non-anonymous ranked Retribution Paladins on Mythic Rotmire (Difficulty 5). Primary reference: <strong>Apr</strong> (fewest talent differences at 4, closest ilvl at 290.6, 172,731 DPS, 7:18 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(210,153,34,0.06);">
+      <td><strong>Alitheria</strong></td>
+      <td class="yellow">138,907</td>
+      <td>7:57</td>
+      <td>290.3</td>
+      <td>&mdash;</td>
+      <td>113.1</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Apr <span class="ref-badge">#4 PRIMARY</span></td>
+      <td class="green">172,731</td>
+      <td>7:18</td>
+      <td>290.6</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td class="green">129.3</td>
+    </tr>
+    <tr>
+      <td>&#32039;&#33268;&#30340;&#39068; <span class="ref-badge">#1</span></td>
+      <td class="green">173,625</td>
+      <td>7:29</td>
+      <td>290.0</td>
+      <td><span class="tag tag-diff">7 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#26411;&#19998;&#27931; <span class="ref-badge">#2</span></td>
+      <td class="green">173,308</td>
+      <td>7:16</td>
+      <td>273.1</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Apollonwings <span class="ref-badge">#3</span></td>
+      <td class="green">172,860</td>
+      <td>7:53</td>
+      <td>291.2</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Apr has the closest talent build (4 differences) and nearly identical item level (290.6 vs 290.3). All 4 references survived their kills. The performance gap between Alitheria and the top references is consistent at ~19-20%, and with talent/gear being nearly equal, the gap is execution-based: cast frequency, ability prioritization, and uptime during mechanics.</p>
+
+<!-- BOSS TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major mechanics on a fixed timer. Blooms (raid-wide damage) fire every ~136s, Festering Vines (root + movement) every ~68s, Awaken Fungi (add spawns) every ~65s. Alitheria survived the entire fight.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left: 39.3%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Tiareynna (3:07)</span>
+  </div>
+  <div class="timeline-marker" style="left: 76.3%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 18px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 3 deaths (6:07)</span>
+  </div>
+  <div class="timeline-marker" style="left: 83.2%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Zinnks (6:40)</span>
+  </div>
+  <!-- Alive zone -->
+  <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(63,185,80,0.03);"></div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:57</span>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header dim">Raid State</div>
+  <p style="font-size: 13px; color: var(--dim);">0:00&ndash;3:07 = 19/19 alive &bull; 3:07&ndash;6:07 = 18/19 (lost Tiareynna) &bull; 6:07&ndash;6:40 = 15/19 (3 more deaths) &bull; 6:40&ndash;7:38 = 14/19 &bull; 7:38&ndash;7:57 = 12/19 (3 more deaths in final 20s). Alitheria played the entire fight with degrading raid conditions in the last 2 minutes.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Alitheria (7:57 fight) vs Apr (7:18 fight). Abilities sorted by total cast count. Only rotational and major abilities shown.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Alitheria Casts</th>
+      <th>Alitheria CPM</th>
+      <th>Apr Casts</th>
+      <th>Apr CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Crusading Strikes</strong></td>
+      <td>242</td>
+      <td>30.4</td>
+      <td>254</td>
+      <td class="purple">34.7</td>
+      <td class="yellow">&minus;12%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Empyrean Hammer</td>
+      <td>139</td>
+      <td>17.5</td>
+      <td>144</td>
+      <td class="purple">19.7</td>
+      <td class="yellow">&minus;11%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Divine Hammer</strong></td>
+      <td>104</td>
+      <td class="yellow">13.1</td>
+      <td>131</td>
+      <td class="purple">17.9</td>
+      <td class="red"><strong>&minus;27%</strong></td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Final Verdict</td>
+      <td>95</td>
+      <td>11.9</td>
+      <td>88</td>
+      <td class="purple">12.0</td>
+      <td class="dim">&minus;1%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Divine Storm</strong></td>
+      <td class="red">43</td>
+      <td class="red"><strong>5.4</strong></td>
+      <td>71</td>
+      <td class="purple">9.7</td>
+      <td class="red"><strong>&minus;44%</strong></td>
+      <td><span class="tag tag-crit">CRITICAL</span></td>
+    </tr>
+    <tr>
+      <td>Blade of Justice</td>
+      <td>62</td>
+      <td>7.8</td>
+      <td>67</td>
+      <td class="purple">9.2</td>
+      <td class="yellow">&minus;15%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Judgment</td>
+      <td>55</td>
+      <td>6.9</td>
+      <td>39</td>
+      <td class="purple">5.3</td>
+      <td class="green">+30%</td>
+      <td><span class="tag tag-info">High</span></td>
+    </tr>
+    <tr>
+      <td>Hammer of Wrath</td>
+      <td>46</td>
+      <td>5.8</td>
+      <td>37</td>
+      <td class="purple">5.1</td>
+      <td class="green">+14%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Hammer of Light</td>
+      <td>29</td>
+      <td>3.6</td>
+      <td>29</td>
+      <td class="purple">4.0</td>
+      <td class="dim">&minus;8%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Sacrosanct Crusade</td>
+      <td>14</td>
+      <td>1.8</td>
+      <td>17</td>
+      <td class="purple">2.3</td>
+      <td class="yellow">&minus;24%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Wake of Ashes</td>
+      <td>15</td>
+      <td>1.9</td>
+      <td>14</td>
+      <td class="purple">1.9</td>
+      <td class="dim">&minus;2%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Divine Toll</td>
+      <td>15</td>
+      <td>1.9</td>
+      <td>14</td>
+      <td class="purple">1.9</td>
+      <td class="dim">&minus;2%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Avenging Wrath</td>
+      <td>8</td>
+      <td>1.0</td>
+      <td>7</td>
+      <td class="purple">1.0</td>
+      <td class="dim">+5%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Execution Sentence</td>
+      <td>8</td>
+      <td>1.0</td>
+      <td>7</td>
+      <td class="purple">1.0</td>
+      <td class="dim">+5%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Divine Storm: 44% Below Reference</div>
+    <p style="font-size: 14px;">Divine Storm is a core AoE spender and the single biggest CPM gap. Alitheria cast it <strong>43 times (5.4/min)</strong> vs Apr's <strong>71 times (9.7/min)</strong> &mdash; that is 28 missing casts. Divine Storm accounted for 8.7% of Apr's total damage (6.60M) but only 6.4% of Alitheria's (4.26M). This suggests under-utilization of the AoE spender during add phases and cleave opportunities, or incorrect priority during Holy Power spending decisions.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Divine Hammer: 27% Below Reference</div>
+    <p style="font-size: 14px;">Divine Hammer is a passive proc ability &mdash; its frequency correlates directly with how many GCDs the player is pressing overall. At <strong>13.1/min vs 17.9/min</strong>, the shortfall parallels the total CPM gap (113.1 vs 129.3). This is not a prioritization issue but a symptom of downtime &mdash; when you stop pressing buttons, Divine Hammer stops generating procs.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Total damage by ability for both players. Alitheria's 7:57 fight vs Apr's 7:18 fight. Abilities sorted by player damage contribution.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Alitheria Dmg</th><th>% of Total</th><th>Apr Dmg</th><th>% of Total</th><th>Comparison</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Hammer of Light</strong></td>
+      <td>8.56M</td>
+      <td>12.9%</td>
+      <td class="purple">9.90M</td>
+      <td>13.1%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 86px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 100px; background: var(--purple); opacity: 0.5;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Crusading Strikes</td>
+      <td>6.73M</td>
+      <td>10.1%</td>
+      <td class="purple">7.09M</td>
+      <td>9.4%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 67px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 71px; background: var(--purple); opacity: 0.5;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Empyrean Hammer</td>
+      <td>5.78M</td>
+      <td>8.7%</td>
+      <td class="purple">6.56M</td>
+      <td>8.7%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 58px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 66px; background: var(--purple); opacity: 0.5;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Final Verdict</td>
+      <td>5.65M</td>
+      <td>8.5%</td>
+      <td class="purple">5.71M</td>
+      <td>7.5%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 57px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 57px; background: var(--purple); opacity: 0.5;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Light Within</td>
+      <td>5.55M</td>
+      <td>8.4%</td>
+      <td class="purple">6.34M</td>
+      <td>8.4%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 56px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 63px; background: var(--purple); opacity: 0.5;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Divine Storm</strong></td>
+      <td class="yellow">4.26M</td>
+      <td class="yellow">6.4%</td>
+      <td class="purple">6.60M</td>
+      <td>8.7%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 43px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 66px; background: var(--purple); opacity: 0.5;"></div>
+          <span class="red" style="font-size: 11px; font-weight: 600;">&minus;2.34M</span>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Hammer of Wrath</td>
+      <td>3.91M</td>
+      <td>5.9%</td>
+      <td class="purple">5.17M</td>
+      <td>6.8%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 39px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 52px; background: var(--purple); opacity: 0.5;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Highlord's Judgment</td>
+      <td>3.55M</td>
+      <td>5.4%</td>
+      <td class="purple">3.15M</td>
+      <td>4.2%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 36px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 32px; background: var(--purple); opacity: 0.5;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Expurgation</td>
+      <td>3.51M</td>
+      <td>5.3%</td>
+      <td class="purple">3.83M</td>
+      <td>5.1%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 35px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 38px; background: var(--purple); opacity: 0.5;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Execution Sentence</strong></td>
+      <td class="yellow">3.50M</td>
+      <td>5.3%</td>
+      <td class="purple">5.58M</td>
+      <td>7.4%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 35px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 56px; background: var(--purple); opacity: 0.5;"></div>
+          <span class="red" style="font-size: 11px; font-weight: 600;">&minus;2.08M</span>
+        </div>
+      </td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Divine Hammer</strong></td>
+      <td class="yellow">3.27M</td>
+      <td>4.9%</td>
+      <td class="purple">4.72M</td>
+      <td>6.2%</td>
+      <td>
+        <div class="dmg-bar-wrap">
+          <div class="dmg-bar-fill" style="width: 33px; background: var(--accent);"></div>
+          <div class="dmg-bar-fill" style="width: 47px; background: var(--purple); opacity: 0.5;"></div>
+          <span class="red" style="font-size: 11px; font-weight: 600;">&minus;1.45M</span>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Damage Gap Summary</div>
+  <p style="font-size: 14px;">Total damage: <strong>66.3M</strong> (Alitheria) vs <strong>75.8M</strong> (Apr) &mdash; a <strong class="red">9.4M gap</strong> despite Alitheria having a 39-second longer fight. The three biggest individual ability gaps: <strong>Divine Storm</strong> (&minus;2.34M), <strong>Execution Sentence</strong> (&minus;2.08M), and <strong>Divine Hammer</strong> (&minus;1.45M). These three abilities alone account for 5.87M of the 9.4M total gap (62%).</p>
+</div>
+
+<!-- CASTING GAP ANALYSIS -->
+<h2>Casting Gap Analysis</h2>
+<p class="section-intro">Periods where no ability was cast for &gt;2.5 seconds. Each gap represents lost GCDs &mdash; time where no damage or utility was being generated. Reference comparison: Alitheria had 11 gaps totaling 38.1s vs Apr's 5 gaps totaling 14.3s.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Time</th><th>Duration</th><th>Before Gap</th><th>After Gap</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1:50&ndash;1:53</td>
+      <td class="yellow">3.0s</td>
+      <td>Divine Hammer</td>
+      <td>Judgment</td>
+      <td><span class="dim">Pre-Bloom positioning</span></td>
+    </tr>
+    <tr>
+      <td>2:59&ndash;3:02</td>
+      <td class="yellow">2.9s</td>
+      <td>Final Verdict</td>
+      <td>Crusading Strikes</td>
+      <td><span class="dim">Vines window</span></td>
+    </tr>
+    <tr>
+      <td>3:30&ndash;3:34</td>
+      <td class="orange">3.9s</td>
+      <td>Crusading Strikes</td>
+      <td>Judgment</td>
+      <td><span class="dim">Movement / repositioning</span></td>
+    </tr>
+    <tr>
+      <td>4:04&ndash;4:07</td>
+      <td class="yellow">3.3s</td>
+      <td>Blade of Justice</td>
+      <td>Algeth'ar Puzzle</td>
+      <td><span class="dim">Trinket usage</span></td>
+    </tr>
+    <tr>
+      <td>4:26&ndash;4:30</td>
+      <td class="orange">3.7s</td>
+      <td>Final Verdict</td>
+      <td>Hammer of Wrath</td>
+      <td><span class="dim">Post-Bloom movement</span></td>
+    </tr>
+    <tr>
+      <td>4:56&ndash;5:00</td>
+      <td class="red">4.1s</td>
+      <td>Crusading Strikes</td>
+      <td>Crusading Strikes</td>
+      <td><span class="tag tag-crit">Uptime loss</span></td>
+    </tr>
+    <tr>
+      <td>5:24&ndash;5:28</td>
+      <td class="orange">3.7s</td>
+      <td>Blade of Justice</td>
+      <td>Hammer of Wrath</td>
+      <td><span class="dim">Movement / repositioning</span></td>
+    </tr>
+    <tr>
+      <td>5:48&ndash;5:51</td>
+      <td class="yellow">2.6s</td>
+      <td>Crusading Strikes</td>
+      <td>Final Verdict</td>
+      <td><span class="dim">Minor gap</span></td>
+    </tr>
+    <tr>
+      <td>6:44&ndash;6:47</td>
+      <td class="orange">3.6s</td>
+      <td>Crusading Strikes</td>
+      <td>Hammer of Wrath</td>
+      <td><span class="dim">Post-Bloom movement</span></td>
+    </tr>
+    <tr>
+      <td>7:15&ndash;7:19</td>
+      <td class="orange">3.8s</td>
+      <td>Blessing of Freedom</td>
+      <td>Divine Steed</td>
+      <td><span class="dim">Vines escape</span></td>
+    </tr>
+    <tr>
+      <td>7:39&ndash;7:42</td>
+      <td class="orange">3.5s</td>
+      <td>Final Verdict</td>
+      <td>Blade of Justice</td>
+      <td><span class="dim">Late fight chaos</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card">
+    <div class="card-header">Dead Time Summary</div>
+    <p style="font-size: 14px;">
+      <strong class="red">38.1 seconds</strong> total dead time across 11 gaps (avg 3.5s each).<br>
+      <span class="dim">Reference: 14.3s across 5 gaps (avg 2.9s each).</span><br><br>
+      At Alitheria's average CPM of 113.1 (1.89 casts/sec), 38.1s of dead time represents approximately <strong class="red">~47 lost casts</strong>.<br>
+      At the reference's CPM of 129.3 (2.16 casts/sec), 14.3s = ~31 lost casts.<br><br>
+      <strong>Net impact: ~16 additional lost casts from excess downtime.</strong>
+    </p>
+  </div>
+  <div class="card">
+    <div class="card-header">Gap Patterns</div>
+    <p style="font-size: 14px;">
+      <strong>No single ability pattern dominates.</strong> Unlike the reference (where all 5 gaps follow Crusading Strikes, suggesting natural auto-attack timing), Alitheria's gaps follow various abilities: Final Verdict (3), Crusading Strikes (3), Blade of Justice (2), and others.<br><br>
+      <strong class="yellow">3 of 11 gaps</strong> correlate with Bloom/Vines mechanics (movement-related), which is expected. The remaining <strong class="red">8 gaps appear to be pure uptime loss</strong> &mdash; moments where no mechanic required movement or defensive play.
+    </p>
+  </div>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">All damage sources that hit Alitheria during the kill fight. Categorized by avoidability.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rotting Pustules</strong></td>
+      <td>12,295K</td>
+      <td>467</td>
+      <td>26.3K</td>
+      <td><span class="dim">Unavoidable (stacking soft enrage)</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2,702K</td>
+      <td>44</td>
+      <td>61.4K</td>
+      <td><span class="dim">Unavoidable (periodic burst)</span></td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>2,469K</td>
+      <td>37</td>
+      <td>66.7K</td>
+      <td><span class="dim">Unavoidable (raid-wide, needs CDs)</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>1,502K</td>
+      <td>69</td>
+      <td>21.8K</td>
+      <td><span class="tag tag-warn">Partially &mdash; add proximity</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>263K</td>
+      <td>1</td>
+      <td>263K</td>
+      <td><span class="tag tag-warn">Partially &mdash; add death proximity</span></td>
+    </tr>
+    <tr>
+      <td>Writhing Vines</td>
+      <td>262K</td>
+      <td>2</td>
+      <td>131K</td>
+      <td><span class="tag tag-diff">Avoidable &mdash; positioning</span></td>
+    </tr>
+    <tr>
+      <td>Festering Vines</td>
+      <td>126K</td>
+      <td>1</td>
+      <td>126K</td>
+      <td><span class="tag tag-diff">Avoidable &mdash; positioning</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Alitheria took <strong>388K avoidable damage</strong> from Festering/Writhing Vines (3 hits). While this did not result in death (unlike Tiareynna and others), the Vines hits at 7:15&ndash;7:19 correspond directly to the 3.8s casting gap in that window. The 69 melee hits (1,502K) suggest regular add contact during Awaken Fungi phases, which is expected for melee DPS.</p>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">Key buffs received by Alitheria during the kill fight.</p>
+
+<div class="grid-3">
+  <div class="card">
+    <div class="card-header cyan">Bloodlust / Time Warp</div>
+    <p style="font-size: 14px;"><strong class="green">0:01</strong> &mdash; Lust on pull (Time Warp). Correctly aligned with opener burst window + Avenging Wrath.</p>
+  </div>
+  <div class="card">
+    <div class="card-header dim">Power Infusion</div>
+    <p style="font-size: 14px;"><span class="dim">Not received.</span> No Shadow Priest PI was directed to Alitheria during this fight.</p>
+  </div>
+  <div class="card">
+    <div class="card-header cyan">Augmentation Evoker</div>
+    <p style="font-size: 14px;"><strong class="green">12 Ebon Might</strong> applications throughout the fight. Prescience received once at 6:15. Consistent Aug support from Zinnks.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header dim">Buff Context Note</div>
+  <p style="font-size: 14px;">The reference player (Apr) likely had different external buff timings. Alitheria received 12 Ebon Might applications and lust on pull, which is standard for a raid with an Augmentation Evoker. The DPS comparison should be viewed with this context &mdash; external buff differences may account for 3-5% of the gap, but the 19.6% total gap is primarily execution.</p>
+</div>
+
+<!-- DEFENSIVE USAGE -->
+<h2>Defensive Usage</h2>
+<p class="section-intro">Defensive and utility abilities used during the fight.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Uses</th><th>Ref Uses</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Divine Protection</td>
+      <td>5</td>
+      <td class="purple">6</td>
+      <td><span class="tag tag-same">Good</span> &mdash; on cooldown for Bloom/heavy damage windows</td>
+    </tr>
+    <tr>
+      <td>Divine Shield</td>
+      <td>1</td>
+      <td class="purple">1</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Lay on Hands</td>
+      <td>1</td>
+      <td class="purple">1</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Blessing of Freedom</td>
+      <td>2</td>
+      <td class="purple">1</td>
+      <td><span class="tag tag-info">Vine escape attempts</span></td>
+    </tr>
+    <tr>
+      <td>Divine Steed</td>
+      <td>2</td>
+      <td class="purple">5</td>
+      <td><span class="tag tag-warn">Under-used</span> &mdash; could help maintain melee uptime during movement</td>
+    </tr>
+    <tr>
+      <td>Healthstone</td>
+      <td>1</td>
+      <td class="purple">0</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Rebuke</td>
+      <td>2</td>
+      <td class="purple">2</td>
+      <td><span class="tag tag-same">Match</span> &mdash; interrupt responsibility covered</td>
+    </tr>
+    <tr>
+      <td>Hammer of Justice</td>
+      <td>2</td>
+      <td class="purple">1</td>
+      <td><span class="dim">Add control</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Defensive usage is solid. Divine Protection on near-cooldown, full use of survivability toolkit. The one notable difference: <strong>Divine Steed used 2 times vs reference's 5</strong>. Divine Steed is the primary tool for maintaining melee uptime during movement phases &mdash; using it more frequently would help close casting gaps during Vines and Bloom repositioning.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Alitheria's DPS across all pulls on Mythic Rotmire. Note: Alitheria was not present for pulls 2&ndash;13 (joined the roster at pull 14). Showing pulls 14&ndash;22 only.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 51%; background: var(--red);" data-tooltip="F14: 86.5K DPS (1:15 wipe)"></div>
+    <div class="prog-bar" style="height: 67%; background: var(--orange);" data-tooltip="F15: 112.4K DPS (5:04 wipe)"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--red);" data-tooltip="F16: 168.9K DPS (0:53 wipe) [burst-inflated]"></div>
+    <div class="prog-bar" style="height: 62%; background: var(--orange);" data-tooltip="F17: 105.2K DPS (5:45 wipe)"></div>
+    <div class="prog-bar" style="height: 70%; background: var(--yellow);" data-tooltip="F18: 118.0K DPS (6:51 wipe)"></div>
+    <div class="prog-bar" style="height: 74%; background: var(--orange);" data-tooltip="F19: 124.8K DPS (5:01 wipe)"></div>
+    <div class="prog-bar" style="height: 83%; background: var(--red);" data-tooltip="F20: 139.5K DPS (0:54 wipe) [burst-inflated]"></div>
+    <div class="prog-bar" style="height: 70%; background: var(--yellow);" data-tooltip="F21: 118.0K DPS (7:14 wipe)"></div>
+    <div class="prog-bar" style="height: 80%; background: var(--green);" data-tooltip="F22 KILL: 135.7K DPS (7:57)"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 14 (joined)</span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">
+    <strong>Short wipes are misleading.</strong> Fights 16 (53s, 168.9K DPS) and 20 (54s, 139.5K DPS) show inflated numbers due to burst phase bias &mdash; all damage is opener cooldowns with no sustained phase.<br><br>
+    <strong>Meaningful comparison (pulls &gt;3 min):</strong><br>
+    F15: 112.4K &rarr; F17: 105.2K &rarr; F18: 118.0K &rarr; F19: 124.8K &rarr; F21: 118.0K &rarr; <strong class="green">F22 (Kill): 135.7K</strong><br><br>
+    The kill was the highest sustained DPS pull, showing clear improvement over the session. The jump from 118K (F21, 7:14 wipe) to 135.7K on the kill suggests execution tightened when it mattered. The 19.6% gap to the reference is large, but the upward trend is positive.
+  </p>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Divine Storm usage &mdash; 28 missing casts, 2.34M damage gap.</strong> Divine Storm was used 43 times (5.4/min) vs the reference's 71 (9.7/min). This is the single largest individual ability deficit and accounts for 25% of the total damage gap. Ret Paladin's AoE spender should be used more aggressively during add phases (Awaken Fungi every ~65s) and whenever 2+ targets are stacked. During Rotmire, adds are active for ~60% of the fight &mdash; Divine Storm should be the primary Holy Power spender during those windows, not Final Verdict.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Reduce dead time &mdash; 38.1s lost vs 14.3s reference (23.8s excess).</strong> Alitheria had 11 casting gaps exceeding 2.5 seconds, compared to Apr's 5. Eight of these gaps were not mechanic-related, representing pure uptime loss. At 1.89 casts/second, 23.8 seconds of excess dead time = ~45 lost GCDs. Focus on always having the next ability queued &mdash; if moving, use instant-cast abilities (Judgment, Hammer of Wrath, Divine Toll, Wake of Ashes) rather than stopping output entirely.
+</div>
+
+<div class="action-item">
+  <strong>3. Use Divine Steed for uptime, not just escape.</strong> Apr used Divine Steed 5 times vs Alitheria's 2. Divine Steed is a movement tool that lets melee stay on the boss during repositioning phases. Use it proactively when you know movement is coming (pre-Bloom, pre-Vines) to maintain melee range and keep casting, rather than reactively after already losing uptime.
+</div>
+
+<div class="action-item">
+  <strong>4. Execution Sentence alignment &mdash; 2.08M damage gap.</strong> Both players used Execution Sentence 8 vs 7 times (similar frequency), but Apr got 5.58M damage out of it vs Alitheria's 3.50M. This suggests Alitheria is not aligning Execution Sentence with burst windows (Avenging Wrath + Hammer of Light). The damage window where Execution Sentence detonates should overlap with the highest damage output period to maximize its stored damage conversion.
+</div>
+
+<div class="action-item">
+  <strong>5. Maintain overall CPM through mechanics.</strong> Total CPM was 113.1 vs 129.3 (&minus;12.5%). The gap is distributed across nearly every ability, suggesting a systemic issue rather than one missing button. Crusading Strikes (&minus;12%), Empyrean Hammer (&minus;11%), Blade of Justice (&minus;15%), and Sacrosanct Crusade (&minus;24%) are all below reference. The common thread: when a mechanic forces movement or attention, Alitheria stops pressing buttons. Ret Paladin has excellent instant-cast options during movement &mdash; use them.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--accent);">
+  <div class="card-header accent">Context</div>
+  <p style="font-size: 14px;">
+    The <strong>19.6% DPS gap is execution-based</strong>, not gear or talent. Alitheria (290.3 ilvl) and the reference (290.6 ilvl) are virtually identical in gear, and only 4 talent differences exist. The gap breaks down roughly as: <strong>~40% Divine Storm under-usage</strong> (2.34M of 9.4M gap), <strong>~22% Execution Sentence alignment</strong> (2.08M), <strong>~15% Divine Hammer/CPM loss</strong> (1.45M), and <strong>~23% distributed across all other abilities</strong> from general downtime.<br><br>
+    <strong class="green">What is already good:</strong> Final Verdict usage is nearly identical to reference (11.9 vs 12.0/min). Cooldown usage (Avenging Wrath, Wake of Ashes, Divine Toll, Execution Sentence) is on-point for frequency. Defensive play is solid &mdash; survived the kill while 7 raiders died. Lust alignment was correct. The kill was the best DPS pull of the session, showing improvement across wipes.
+  </p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: Apr (#4 ranked Ret Paladin, report <code>P1NHJYB9jyQ7d6pr</code>, Fight 1, 7:18 kill). All times relative to fight start. Talent delta: 4 differences.</p>
+  <p style="margin-top: 4px;">Data pulled via WCL v2 GraphQL API. Event types: Casts (903 events), DamageDone (4,525 events), DamageTaken (621 events), Buffs (3,346 events), CombatantInfo, Deaths (8 events). Rankings: top 4 non-anonymous Ret Paladins on Mythic Rotmire.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starfighter (Fury Warrior) - Crown of the Cosmos - June 25, 2026</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x2694;</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --warrior: #c69b6d;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+h2 { font-size:20px; font-weight:600; margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+h3 { font-size:16px; font-weight:600; margin:20px 0 10px; color:var(--accent); }
+
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.tag { display:inline-block; padding:3px 10px; border-radius:12px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+.tag-prog { background:rgba(210,153,34,0.15); color:var(--yellow); border:1px solid rgba(210,153,34,0.3); }
+.tag-night { background:rgba(88,166,255,0.1); color:var(--accent); border:1px solid rgba(88,166,255,0.2); margin-left:8px; }
+
+.header-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:4px; }
+.player-name { color:var(--warrior); font-size:28px; font-weight:700; }
+.spec-label { color:var(--dim); font-size:15px; }
+.boss-info { color:var(--dim); font-size:14px; margin-bottom:24px; }
+
+.card-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; }
+.card-label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+.card-value { font-size:28px; font-weight:700; }
+.card-sub { font-size:12px; color:var(--dim); margin-top:4px; }
+.card-value.green { color:var(--green); }
+.card-value.yellow { color:var(--yellow); }
+.card-value.red { color:var(--red); }
+.card-value.warrior { color:var(--warrior); }
+
+.chart-container { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:24px; }
+.bar-chart { display:flex; align-items:flex-end; gap:4px; height:200px; padding:0; }
+.bar-wrapper { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; }
+.bar { width:100%; border-radius:3px 3px 0 0; min-height:2px; position:relative; cursor:default; transition:opacity 0.2s; }
+.bar:hover { opacity:0.85; }
+.bar-label { font-size:9px; color:var(--dim); writing-mode:horizontal-tb; text-align:center; white-space:nowrap; }
+.bar-value { font-size:10px; font-weight:600; text-align:center; }
+.bar.survived { background:var(--green); }
+.bar.died { background:var(--red); }
+.bar.no-data { background:var(--border); }
+
+table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:14px; }
+th { color:var(--dim); font-weight:500; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; background:rgba(22,27,34,0.8); }
+td { color:var(--text); }
+tr:hover td { background:rgba(88,166,255,0.03); }
+
+.phase-table td:first-child { font-weight:600; }
+.callout { background:rgba(248,81,73,0.08); border:1px solid rgba(248,81,73,0.25); border-radius:8px; padding:16px 20px; margin:16px 0; }
+.callout-green { background:rgba(63,185,80,0.08); border:1px solid rgba(63,185,80,0.25); }
+.callout-yellow { background:rgba(210,153,34,0.08); border:1px solid rgba(210,153,34,0.25); }
+.callout h4 { font-size:14px; font-weight:600; margin-bottom:6px; }
+.callout p { font-size:13px; color:var(--dim); }
+
+.ref-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.ref-badge.same { background:rgba(63,185,80,0.15); color:var(--green); }
+.ref-badge.diff { background:rgba(248,81,73,0.15); color:var(--red); }
+.ref-badge.hero { background:rgba(188,140,255,0.15); color:var(--purple); }
+
+.action-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 20px; margin-bottom:12px; }
+.action-item .number { display:inline-block; width:28px; height:28px; line-height:28px; text-align:center; border-radius:50%; font-size:13px; font-weight:700; margin-right:10px; }
+.action-item .number.surv { background:rgba(63,185,80,0.15); color:var(--green); }
+.action-item .number.mech { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.action-item .number.perf { background:rgba(88,166,255,0.15); color:var(--accent); }
+.action-item h4 { display:inline; font-size:14px; font-weight:600; }
+.action-item p { font-size:13px; color:var(--dim); margin-top:6px; }
+
+.legend { display:flex; gap:16px; margin-top:12px; font-size:12px; color:var(--dim); }
+.legend-dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:middle; }
+
+.footer { margin-top:48px; padding-top:24px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); }
+
+.phase-pill { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; margin-right:4px; }
+.phase-p1 { background:rgba(88,166,255,0.12); color:var(--accent); }
+.phase-inter { background:rgba(139,148,158,0.15); color:var(--dim); }
+.phase-p2 { background:rgba(188,140,255,0.12); color:var(--purple); }
+.phase-p3 { background:rgba(248,81,73,0.12); color:var(--red); }
+
+.stat-row { display:flex; gap:24px; flex-wrap:wrap; margin:8px 0; }
+.stat-item { font-size:13px; }
+.stat-label { color:var(--dim); }
+.stat-value { font-weight:600; }
+
+.death-timeline { display:flex; flex-direction:column; gap:6px; margin:12px 0; }
+.death-row { display:flex; align-items:center; gap:8px; font-size:13px; padding:6px 10px; background:rgba(22,27,34,0.5); border-radius:6px; border-left:3px solid var(--red); }
+.death-row.cascade { border-left-color:var(--border); opacity:0.7; }
+.death-row .fight-id { color:var(--dim); min-width:40px; }
+.death-row .time { color:var(--yellow); min-width:50px; font-family:monospace; }
+.death-row .ability { color:var(--text); }
+.death-row .phase { margin-left:auto; }
+
+.progress-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; margin-top:6px; }
+.progress-fill { height:100%; border-radius:3px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25, 2026 Log Analysis</a>
+
+<div class="header-row">
+  <span class="player-name">Starfighter</span>
+  <span class="spec-label">Fury Warrior (Mountain Thane)</span>
+  <span class="tag tag-prog">PROGRESSION</span>
+  <span class="tag tag-night">NIGHT 4</span>
+</div>
+<div class="boss-info">
+  Mythic Crown of the Cosmos &middot; 19 pulls analyzed &middot; June 25, 2026 &middot; Report: <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">XYtJ3R1qjdFpM4cT</a>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+  <div class="card">
+    <div class="card-label">Avg DPS (11 pulls)</div>
+    <div class="card-value warrior">46.6K</div>
+    <div class="card-sub">Median: 48.2K &middot; StdDev: 5.5K</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">291</div>
+    <div class="card-sub">4pc Tier Set (1990) &middot; Haste/Mastery</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Actionable Deaths</div>
+    <div class="card-value green">1 / 19</div>
+    <div class="card-sub">Only 1 early death (fight 1). 20 cascade.</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value warrior">54.0K</div>
+    <div class="card-sub">Fight 26 (6:58) &middot; Deep P3</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<h2>Performance Across All Pulls</h2>
+<div class="chart-container">
+  <div class="bar-chart" id="dps-chart">
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">51.0K</div>
+      <div class="bar died" style="height:88%" title="Fight 1 | 5:00 | 51,042 DPS | Died"></div>
+      <div class="bar-label">F1<br>5:00</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">52.8K</div>
+      <div class="bar died" style="height:91%" title="Fight 2 | 6:54 | 52,793 DPS | Died"></div>
+      <div class="bar-label">F2<br>6:54</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--dim)">--</div>
+      <div class="bar no-data" style="height:5%" title="Fight 3 | 1:51 | No data"></div>
+      <div class="bar-label">F3<br>1:51</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--dim)">--</div>
+      <div class="bar no-data" style="height:5%" title="Fight 5 | 1:51 | No data"></div>
+      <div class="bar-label">F5<br>1:51</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">39.3K</div>
+      <div class="bar died" style="height:68%" title="Fight 6 | 7:03 | 39,269 DPS | Died"></div>
+      <div class="bar-label">F6<br>7:03</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--dim)">--</div>
+      <div class="bar no-data" style="height:5%" title="Fight 8 | 1:12 | No data"></div>
+      <div class="bar-label">F8<br>1:12</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--dim)">--</div>
+      <div class="bar no-data" style="height:5%" title="Fight 12 | 2:10 | No data"></div>
+      <div class="bar-label">F12<br>2:10</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--dim)">--</div>
+      <div class="bar no-data" style="height:5%" title="Fight 13 | 1:22 | No data"></div>
+      <div class="bar-label">F13<br>1:22</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">44.2K</div>
+      <div class="bar died" style="height:76%" title="Fight 14 | 7:13 | 44,155 DPS | Died | DEEPEST PULL"></div>
+      <div class="bar-label">F14<br>7:13</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">44.8K</div>
+      <div class="bar died" style="height:77%" title="Fight 17 | 6:58 | 44,842 DPS | Died"></div>
+      <div class="bar-label">F17<br>6:58</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">50.1K</div>
+      <div class="bar died" style="height:86%" title="Fight 18 | 5:06 | 50,114 DPS | Died"></div>
+      <div class="bar-label">F18<br>5:06</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--dim)">--</div>
+      <div class="bar no-data" style="height:5%" title="Fight 19 | 1:19 | No data"></div>
+      <div class="bar-label">F19<br>1:19</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--dim)">--</div>
+      <div class="bar no-data" style="height:5%" title="Fight 21 | 1:31 | No data"></div>
+      <div class="bar-label">F21<br>1:31</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--dim)">--</div>
+      <div class="bar no-data" style="height:5%" title="Fight 22 | 1:17 | No data"></div>
+      <div class="bar-label">F22<br>1:17</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">35.1K</div>
+      <div class="bar died" style="height:61%" title="Fight 23 | 5:14 | 35,141 DPS | Died"></div>
+      <div class="bar-label">F23<br>5:14</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">48.2K</div>
+      <div class="bar died" style="height:83%" title="Fight 24 | 5:36 | 48,170 DPS | Died"></div>
+      <div class="bar-label">F24<br>5:36</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">54.0K</div>
+      <div class="bar died" style="height:93%" title="Fight 26 | 6:58 | 54,008 DPS | BEST DPS"></div>
+      <div class="bar-label">F26<br>6:58</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">48.3K</div>
+      <div class="bar died" style="height:83%" title="Fight 27 | 5:36 | 48,342 DPS | Died"></div>
+      <div class="bar-label">F27<br>5:36</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar-value" style="color:var(--red)">44.5K</div>
+      <div class="bar died" style="height:77%" title="Fight 28 | 6:59 | 44,475 DPS | Died"></div>
+      <div class="bar-label">F28<br>6:59</div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="legend-dot" style="background:var(--red)"></span> Died before wipe</span>
+    <span><span class="legend-dot" style="background:var(--border)"></span> No data (log gap)</span>
+    <span style="color:var(--dim)">Avg: 46.6K (11 qualifying pulls)</span>
+  </div>
+</div>
+
+<div class="stat-row">
+  <div class="stat-item"><span class="stat-label">Average: </span><span class="stat-value" style="color:var(--warrior)">46,577</span></div>
+  <div class="stat-item"><span class="stat-label">Median: </span><span class="stat-value">48,170</span></div>
+  <div class="stat-item"><span class="stat-label">Best: </span><span class="stat-value" style="color:var(--green)">54,008</span> <span class="stat-label">(F26)</span></div>
+  <div class="stat-item"><span class="stat-label">Worst: </span><span class="stat-value" style="color:var(--red)">35,141</span> <span class="stat-label">(F23)</span></div>
+  <div class="stat-item"><span class="stat-label">StdDev: </span><span class="stat-value">5,473</span></div>
+</div>
+
+<div class="callout callout-yellow">
+  <h4>8 of 19 pulls have no DPS data (log gaps)</h4>
+  <p>Fights 3, 5, 8, 12, 13, 19, 21, 22 returned empty damage tables from WCL. These were all short P1 wipes (1:12 - 2:10). The combat log likely dropped during these pulls. Stats are calculated from the 11 qualifying pulls with data that exceeded 60 seconds.</p>
+</div>
+
+<!-- Death Pattern Analysis -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="callout callout-green">
+  <h4>Starfighter is NOT a death problem</h4>
+  <p>Died in 19/19 pulls, but only <strong>1 death was actionable</strong> (among the first 2 deaths in the raid). The remaining 20 deaths were cascade deaths that occurred after 2+ raid members were already dead. Starfighter consistently survives deep into the fight and only dies when the pull is already compromised.</p>
+</div>
+
+<div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="card">
+    <div class="card-label">Actionable Deaths</div>
+    <div class="card-value green">1</div>
+    <div class="card-sub">Fight 1, 0:10 into pull (Echoing Darkness)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Cascade Deaths</div>
+    <div class="card-value" style="color:var(--dim)">20</div>
+    <div class="card-sub">All after 2+ raid members already dead</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Avg Death Timing</div>
+    <div class="card-value" style="color:var(--dim)">Late pull</div>
+    <div class="card-sub">Most deaths in final 30s of each pull</div>
+  </div>
+</div>
+
+<h3>Death Cause Breakdown</h3>
+<table>
+  <thead>
+    <tr><th>Killing Ability</th><th>Actionable</th><th>Cascade</th><th>Total</th><th>Phase</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td style="color:var(--green)">0</td>
+      <td>6</td>
+      <td>6</td>
+      <td><span class="phase-pill phase-p2">P2</span><span class="phase-pill phase-p3">P3</span></td>
+      <td style="color:var(--dim)">DoT damage during cascade wipes</td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td style="color:var(--green)">0</td>
+      <td>6</td>
+      <td>6</td>
+      <td><span class="phase-pill phase-p1">P1</span><span class="phase-pill phase-p2">P2</span></td>
+      <td style="color:var(--dim)">Boss melee finishing low-HP player</td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td style="color:var(--green)">0</td>
+      <td>3</td>
+      <td>3</td>
+      <td><span class="phase-pill phase-p2">P2</span><span class="phase-pill phase-p3">P3</span></td>
+      <td style="color:var(--dim)">Raid-wide AoE during wipe</td>
+    </tr>
+    <tr>
+      <td>Bursting Emptiness</td>
+      <td style="color:var(--green)">0</td>
+      <td>2</td>
+      <td>2</td>
+      <td><span class="phase-pill phase-p2">P2</span></td>
+      <td style="color:var(--dim)">3rd+ death in pull</td>
+    </tr>
+    <tr>
+      <td style="color:var(--yellow)">Echoing Darkness</td>
+      <td style="color:var(--red)">1</td>
+      <td>0</td>
+      <td>1</td>
+      <td><span class="phase-pill phase-p1">P1</span></td>
+      <td style="color:var(--yellow)">0:10 into F1 -- early mechanic fail</td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td style="color:var(--green)">0</td>
+      <td>1</td>
+      <td>1</td>
+      <td><span class="phase-pill phase-p3">P3</span></td>
+      <td style="color:var(--dim)">P3 cascade (F28)</td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td style="color:var(--green)">0</td>
+      <td>1</td>
+      <td>1</td>
+      <td><span class="phase-pill phase-p1">P1</span></td>
+      <td style="color:var(--dim)">End-of-pull cleanup (F21)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Death Timeline (All 21 Deaths)</h3>
+<div class="death-timeline">
+  <div class="death-row">
+    <span class="fight-id">F1</span>
+    <span class="time">0:10</span>
+    <span class="ability">Echoing Darkness</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+    <span class="ref-badge diff" style="margin-left:8px">1st death in raid</span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F1</span>
+    <span class="time">4:45</span>
+    <span class="ability">Void Expulsion</span>
+    <span class="phase"><span class="phase-pill phase-p2">P2</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F2</span>
+    <span class="time">6:40</span>
+    <span class="ability">Void Expulsion</span>
+    <span class="phase"><span class="phase-pill phase-p3">P3</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F3</span>
+    <span class="time">1:48</span>
+    <span class="ability">Melee</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F5</span>
+    <span class="time">1:40</span>
+    <span class="ability">Void Expulsion</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F6</span>
+    <span class="time">6:05</span>
+    <span class="ability">Voidstalker Sting</span>
+    <span class="phase"><span class="phase-pill phase-p3">P3</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F8</span>
+    <span class="time">1:09</span>
+    <span class="ability">Melee</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F12</span>
+    <span class="time">2:07</span>
+    <span class="ability">Melee</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F13</span>
+    <span class="time">1:17</span>
+    <span class="ability">Melee</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F14</span>
+    <span class="time">6:48</span>
+    <span class="ability">Voidstalker Sting</span>
+    <span class="phase"><span class="phase-pill phase-p3">P3</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F17</span>
+    <span class="time">6:37</span>
+    <span class="ability">Voidstalker Sting</span>
+    <span class="phase"><span class="phase-pill phase-p3">P3</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F18</span>
+    <span class="time">5:02</span>
+    <span class="ability">Melee</span>
+    <span class="phase"><span class="phase-pill phase-p2">P2</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F19</span>
+    <span class="time">1:07</span>
+    <span class="ability">Unknown</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F21</span>
+    <span class="time">1:30</span>
+    <span class="ability">Grasp of Emptiness</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F22</span>
+    <span class="time">1:11</span>
+    <span class="ability">Melee</span>
+    <span class="phase"><span class="phase-pill phase-p1">P1</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F23</span>
+    <span class="time">4:32</span>
+    <span class="ability">Bursting Emptiness</span>
+    <span class="phase"><span class="phase-pill phase-p2">P2</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F24</span>
+    <span class="time">5:20</span>
+    <span class="ability">Voidstalker Sting</span>
+    <span class="phase"><span class="phase-pill phase-p2">P2</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F26</span>
+    <span class="time">6:26</span>
+    <span class="ability">Voidstalker Sting</span>
+    <span class="phase"><span class="phase-pill phase-p3">P3</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F27</span>
+    <span class="time">4:34</span>
+    <span class="ability">Bursting Emptiness</span>
+    <span class="phase"><span class="phase-pill phase-p2">P2</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F27</span>
+    <span class="time">5:21</span>
+    <span class="ability">Voidstalker Sting</span>
+    <span class="phase"><span class="phase-pill phase-p2">P2</span></span>
+  </div>
+  <div class="death-row cascade">
+    <span class="fight-id">F28</span>
+    <span class="time">6:40</span>
+    <span class="ability">Cosmic Barrier</span>
+    <span class="phase"><span class="phase-pill phase-p3">P3</span></span>
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<h2>Per-Phase Performance Breakdown</h2>
+
+<h3>Phase Reach Rate</h3>
+<div class="card-grid" style="grid-template-columns: repeat(4, 1fr);">
+  <div class="card">
+    <div class="card-label">P1: Sentinels</div>
+    <div class="card-value green">19 / 19</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div>
+    <div class="card-sub">0:00 - 2:14</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Intermission</div>
+    <div class="card-value yellow">11 / 19</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:57.9%;background:var(--yellow)"></div></div>
+    <div class="card-sub">2:14 - 2:53</div>
+  </div>
+  <div class="card">
+    <div class="card-label">P2: Rift</div>
+    <div class="card-value yellow">11 / 19</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:57.9%;background:var(--yellow)"></div></div>
+    <div class="card-sub">2:53 - ~5:09</div>
+  </div>
+  <div class="card">
+    <div class="card-label">P3: Cosmos</div>
+    <div class="card-value red">8 / 19</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:42.1%;background:var(--red)"></div></div>
+    <div class="card-sub">5:09+</div>
+  </div>
+</div>
+
+<h3>Per-Phase DPS (Deep Pulls Reaching P3)</h3>
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">P2 and P3 DPS from WCL table API. P1 data unavailable due to API limitation on this log (see note below).</p>
+<table class="phase-table">
+  <thead>
+    <tr><th>Fight</th><th>Duration</th><th>Overall DPS</th><th>P2 DPS</th><th>P3 DPS</th><th>P3 Duration</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>F2</td><td>6:54</td><td>52,793</td>
+      <td style="color:var(--purple)">116,479</td>
+      <td style="color:var(--red)">41,900</td>
+      <td>1:22</td>
+      <td style="color:var(--dim)">Strong P2, died at 6:40 (cascade)</td>
+    </tr>
+    <tr>
+      <td>F6</td><td>7:03</td><td>39,269</td>
+      <td style="color:var(--purple)">100,898</td>
+      <td style="color:var(--red)">12,314</td>
+      <td>1:37</td>
+      <td style="color:var(--dim)">Low P3 -- died at 6:05, limited uptime</td>
+    </tr>
+    <tr>
+      <td>F14</td><td>7:13</td><td>44,155</td>
+      <td style="color:var(--purple)">103,376</td>
+      <td style="color:var(--red)">40,987</td>
+      <td>2:03</td>
+      <td style="color:var(--dim)">Deepest pull. Solid throughout.</td>
+    </tr>
+    <tr>
+      <td>F17</td><td>6:58</td><td>44,842</td>
+      <td style="color:var(--purple)">98,296</td>
+      <td style="color:var(--red)">44,281</td>
+      <td>1:37</td>
+      <td style="color:var(--dim)">Consistent P2/P3 performance</td>
+    </tr>
+    <tr style="background:rgba(63,185,80,0.05)">
+      <td style="color:var(--green)">F26</td><td>6:58</td><td style="color:var(--green)">54,008</td>
+      <td style="color:var(--green)">129,833</td>
+      <td style="color:var(--green)">45,538</td>
+      <td>1:48</td>
+      <td style="color:var(--dim)">Best DPS pull. Peak P2 performance.</td>
+    </tr>
+    <tr>
+      <td>F28</td><td>6:59</td><td>44,475</td>
+      <td style="color:var(--purple)">98,504</td>
+      <td style="color:var(--cyan)">48,024</td>
+      <td>1:49</td>
+      <td style="color:var(--dim)">Best P3 DPS. Last pull of night.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="stat-row">
+  <div class="stat-item"><span class="stat-label">Avg P2 DPS: </span><span class="stat-value" style="color:var(--purple)">107,266</span> <span class="stat-label">(11 pulls)</span></div>
+  <div class="stat-item"><span class="stat-label">Avg P3 DPS: </span><span class="stat-value" style="color:var(--red)">38,841</span> <span class="stat-label">(6 pulls with meaningful P3 uptime)</span></div>
+</div>
+
+<div class="callout callout-yellow">
+  <h4>P2 DPS is 2-3x higher than P3 -- this is expected</h4>
+  <p>P2 (Rift phase) features Rift Simulacrum, Undying Voidspawn, and Silver Simulacrum as add targets alongside Alleria. Mountain Thane Fury's Thunder Clap cleave excels here, inflating DPS from multi-target damage. P3 (Devouring Cosmos) is more single-target focused with overlapping raid mechanics forcing movement and defensives. The DPS drop from P2 to P3 is structural, not a rotation failure.</p>
+</div>
+
+<div class="callout callout-yellow">
+  <h4>P1 data unavailable from WCL API for this log</h4>
+  <p>The WCL table endpoint returns empty results for P1 (0:00-2:14) time windows on this specific report. Damage event queries confirm Starfighter was active during P1 (859+ damage events in fight 14 alone), but the table aggregation does not return entries for this time range. Overall fight DPS correctly includes P1 contribution. This is a known WCL API edge case and does not affect the analysis conclusions.</p>
+</div>
+
+<!-- Ability Profile -->
+<h2>Ability Damage Profile</h2>
+<table>
+  <thead>
+    <tr><th>Ability</th><th>F1 (51K)</th><th>F2 (53K)</th><th>F14 (44K)</th><th>F26 (54K)</th><th>F28 (45K)</th><th>Role</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight:600;color:var(--warrior)">Rampage</td>
+      <td>3.6M</td><td>5.4M</td><td>4.4M</td><td>5.2M</td><td>4.4M</td>
+      <td style="color:var(--green)">Primary spender, Enrage trigger</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--warrior)">Thunder Clap</td>
+      <td>3.2M</td><td>4.1M</td><td>3.4M</td><td>4.2M</td><td>3.0M</td>
+      <td style="color:var(--green)">MT Thane filler + cleave</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Bloodthirst</td>
+      <td>1.8M</td><td>2.4M</td><td>1.9M</td><td>2.8M</td><td>1.9M</td>
+      <td style="color:var(--dim)">Rage generator</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Bloodbath</td>
+      <td>1.6M</td><td>--</td><td>1.7M</td><td>2.0M</td><td>2.0M</td>
+      <td style="color:var(--dim)">Recklessness Bloodthirst</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Melee</td>
+      <td>1.2M</td><td>1.9M</td><td>1.5M</td><td>1.8M</td><td>1.7M</td>
+      <td style="color:var(--dim)">Auto-attacks</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600">Odyn's Fury</td>
+      <td>--</td><td>1.6M</td><td>--</td><td>--</td><td>--</td>
+      <td style="color:var(--dim)">Burst + Enrage trigger</td>
+    </tr>
+  </tbody>
+</table>
+<p style="font-size:13px;color:var(--dim);margin-bottom:24px;">Rampage and Thunder Clap are the top two damage sources, consistent with Mountain Thane Fury's priorities. Thunder Clap as the primary filler is correct for Mountain Thane (replaces Whirlwind and synergizes with Avatar/Thunder Blast).</p>
+
+<!-- Target Damage Split -->
+<h2>Target Damage Split</h2>
+<table>
+  <thead>
+    <tr><th>Target</th><th>F14 (7:13)</th><th>F26 (6:58)</th><th>F28 (6:59)</th><th>Avg %</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight:600">Alleria Windrunner</td>
+      <td>13.8M (72%)</td>
+      <td>16.0M (71%)</td>
+      <td>14.4M (77%)</td>
+      <td style="color:var(--accent)">73%</td>
+    </tr>
+    <tr>
+      <td>Undying Voidspawn</td>
+      <td>2.7M (14%)</td>
+      <td>3.8M (17%)</td>
+      <td>2.8M (15%)</td>
+      <td>15%</td>
+    </tr>
+    <tr>
+      <td>Vorelus</td>
+      <td>1.5M (8%)</td>
+      <td>2.4M (10%)</td>
+      <td>1.3M (7%)</td>
+      <td>8%</td>
+    </tr>
+    <tr>
+      <td>Silver Simulacrum</td>
+      <td>344K (2%)</td>
+      <td>356K (2%)</td>
+      <td>127K (1%)</td>
+      <td>2%</td>
+    </tr>
+    <tr>
+      <td>Rift Simulacrum</td>
+      <td>734K (4%)</td>
+      <td>52K (&lt;1%)</td>
+      <td>--</td>
+      <td>1%</td>
+    </tr>
+  </tbody>
+</table>
+<p style="font-size:13px;color:var(--dim);margin-bottom:24px;">Healthy boss priority (70-77% on Alleria) with passive cleave handling adds via Thunder Clap without sacrificing boss uptime.</p>
+
+<!-- Consistency Analysis -->
+<h2>Consistency Analysis</h2>
+<div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="card">
+    <div class="card-label">DPS Range</div>
+    <div class="card-value warrior">18.9K</div>
+    <div class="card-sub">35.1K (F23) to 54.0K (F26)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Session Trend</div>
+    <div class="card-value yellow">Flat</div>
+    <div class="card-sub">Early avg: 47.0K &middot; Late avg: 46.0K</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best 5 vs Worst 5</div>
+    <div class="card-value">51.3K / 41.6K</div>
+    <div class="card-sub">~23% spread</div>
+  </div>
+</div>
+
+<h3>DPS by Pull Duration</h3>
+<table>
+  <thead>
+    <tr><th>Duration Bracket</th><th>Pulls</th><th>Avg DPS</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>5:00 - 5:36 (P2 wipes)</td>
+      <td>5</td>
+      <td style="color:var(--warrior)">46,562</td>
+      <td style="color:var(--dim)">F1, F18, F23, F24, F27</td>
+    </tr>
+    <tr>
+      <td>6:54 - 7:13 (Deep P3)</td>
+      <td>6</td>
+      <td style="color:var(--warrior)">46,590</td>
+      <td style="color:var(--dim)">F2, F6, F14, F17, F26, F28</td>
+    </tr>
+  </tbody>
+</table>
+<p style="font-size:13px;color:var(--dim);margin-bottom:24px;">DPS is consistent across pull lengths. The P2 wipe bracket (46.6K) and deep P3 bracket (46.6K) are virtually identical, meaning Starfighter maintains output through the full encounter without falloff.</p>
+
+<div class="callout callout-yellow">
+  <h4>Fight 23 is a clear outlier</h4>
+  <p>At 35.1K DPS, fight 23 is 11.4K below average. This was a 5:14 pull where Starfighter died at 4:32 to Bursting Emptiness in P2 (3rd death). The low DPS suggests possible early downtime or positioning issues during that specific pull's P2. Excluding this outlier, the remaining 10 pulls average 47.7K with a tighter 5.0K range.</p>
+</div>
+
+<!-- Reference Comparison -->
+<h2>Reference Comparison</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Top Fury Warriors on Mythic Crown of the Cosmos, filtered to 4-heal comp kills (US/EU only). All 8 matched references run Slayer hero talents; Starfighter runs Mountain Thane.</p>
+
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Hero Tree</th><th>Talent Delta</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background:rgba(198,155,109,0.06)">
+      <td style="color:var(--warrior);font-weight:600">Starfighter (you)</td>
+      <td style="color:var(--warrior)">46.6K avg</td>
+      <td style="color:var(--dim)">Prog (no kill)</td>
+      <td>291</td>
+      <td><span class="ref-badge hero">Mountain Thane</span></td>
+      <td>--</td>
+    </tr>
+    <tr>
+      <td style="color:var(--purple)">Evandar</td>
+      <td style="color:var(--purple)">94,257</td>
+      <td>7:21</td>
+      <td>291</td>
+      <td><span class="ref-badge diff">Slayer</span></td>
+      <td><span class="ref-badge diff">40 diffs</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--purple)">Hdawar</td>
+      <td style="color:var(--purple)">87,473</td>
+      <td>8:31</td>
+      <td>291</td>
+      <td><span class="ref-badge diff">Slayer</span></td>
+      <td><span class="ref-badge diff">41 diffs</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--purple)">Scolpi</td>
+      <td style="color:var(--purple)">86,994</td>
+      <td>7:55</td>
+      <td>275</td>
+      <td><span class="ref-badge diff">Slayer</span></td>
+      <td><span class="ref-badge diff">38 diffs</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--purple)">Loraineeclap</td>
+      <td style="color:var(--purple)">86,563</td>
+      <td>8:30</td>
+      <td>290</td>
+      <td><span class="ref-badge diff">Slayer</span></td>
+      <td><span class="ref-badge diff">36 diffs</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--purple)">Lepzed</td>
+      <td style="color:var(--purple)">86,309</td>
+      <td>8:38</td>
+      <td>291</td>
+      <td><span class="ref-badge diff">Slayer</span></td>
+      <td><span class="ref-badge diff">40 diffs</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  <h4>Reference comparison is limited by hero tree and context differences</h4>
+  <p>All 8 matched references run <strong>Slayer</strong> while Starfighter runs <strong>Mountain Thane</strong>. The ~40 talent node differences (out of 76) are dominated by the hero tree split. Slayer emphasizes Bladestorm and Execute burst; Mountain Thane emphasizes Thunder Clap/Thunder Blast with Avatar synergy. These are fundamentally different rotational profiles.</p>
+  <p style="margin-top:8px">Additionally, references are <strong>kill logs</strong> (7-9 minute kills with full raid alive) while Starfighter's data is from <strong>prog pulls</strong> where cascade deaths compress performance. The reference DPS serves as a ceiling for the eventual kill, not a direct performance benchmark during progression.</p>
+</div>
+
+<!-- Gear & Consumables -->
+<h2>Gear &amp; Consumables</h2>
+<div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">291</div>
+    <div class="card-sub">Range: 285-298</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Tier Set</div>
+    <div class="card-value green">4pc</div>
+    <div class="card-sub">Set 1990 (Helm/Shoulder/Chest/Legs)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Enchants</div>
+    <div class="card-value green">9 / 9</div>
+    <div class="card-sub">All applicable slots enchanted</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Gems</div>
+    <div class="card-value green">6 / 6</div>
+    <div class="card-sub">All sockets filled (ilvl 295)</div>
+  </div>
+</div>
+
+<h3>Secondary Stats</h3>
+<div class="stat-row">
+  <div class="stat-item"><span class="stat-label">Strength: </span><span class="stat-value">2,409</span></div>
+  <div class="stat-item"><span class="stat-label">Haste: </span><span class="stat-value" style="color:var(--green)">1,129</span></div>
+  <div class="stat-item"><span class="stat-label">Mastery: </span><span class="stat-value" style="color:var(--green)">1,141</span></div>
+  <div class="stat-item"><span class="stat-label">Crit: </span><span class="stat-value">591</span></div>
+  <div class="stat-item"><span class="stat-label">Versatility: </span><span class="stat-value" style="color:var(--dim)">36</span></div>
+</div>
+
+<h3>Consumables &amp; Buffs</h3>
+<table>
+  <thead>
+    <tr><th>Type</th><th>Active</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Flask</td><td>Flask of the Magisters</td><td style="color:var(--green)">Active</td></tr>
+    <tr><td>Food</td><td>Hearty Well Fed</td><td style="color:var(--green)">Active</td></tr>
+    <tr><td>Augment Rune</td><td>Draconic Augmentation</td><td style="color:var(--green)">Active</td></tr>
+    <tr><td>Vantus Rune</td><td>Crown of the Cosmos</td><td style="color:var(--green)">Active</td></tr>
+    <tr><td>Weapon Oil</td><td>Temp Enchant (both weapons)</td><td style="color:var(--green)">Active</td></tr>
+  </tbody>
+</table>
+
+<!-- Actionable Items -->
+<h2>Actionable Items</h2>
+
+<div class="action-item">
+  <span class="number surv">1</span>
+  <h4>Survival is not the issue -- focus is on raid-wide death reduction</h4>
+  <p>Starfighter had only 1 actionable death across 19 pulls (fight 1, 10 seconds in, to Echoing Darkness). Every other death was cascade after 2+ raid members were already dead. The raid's collective survival is the bottleneck. Only 8/19 pulls reached P3 -- reducing early deaths across the roster gives everyone more time to execute.</p>
+</div>
+
+<div class="action-item">
+  <span class="number mech">2</span>
+  <h4>Echoing Darkness awareness in P1 opener</h4>
+  <p>The single actionable death was to Echoing Darkness at 0:10 in fight 1. This is a P1 mechanic that caught Starfighter during the opening GCD sequence. It only happened once (1/19 pulls) and did not repeat for the rest of the session, suggesting a one-time lapse rather than a pattern.</p>
+</div>
+
+<div class="action-item">
+  <span class="number perf">3</span>
+  <h4>Investigate fight 23 performance dip</h4>
+  <p>Fight 23 produced 35.1K DPS -- 11.4K below average and 30% below the best pull. The pull lasted 5:14 and Starfighter died at 4:32 (cascade, 3rd death). Something specific to this pull's P2 caused reduced output. Reviewing the VOD or replay for this pull could identify the cause. Excluding F23, the remaining 10 pulls average 47.7K with much tighter variance.</p>
+</div>
+
+<div class="action-item">
+  <span class="number perf">4</span>
+  <h4>Consider evaluating Slayer hero tree for this boss</h4>
+  <p>All 8 matched top-ranking Fury Warriors on Mythic Crown run Slayer. Mountain Thane's Thunder Clap cleave excels in P1 (multiple Sentinels) and P2 (add spawns), but Slayer's Bladestorm and Execute synergies may provide higher single-target value in P3 where the fight is largely boss-only. This is data showing current top kills favor Slayer on this specific boss, not a blanket recommendation. Testing both in a controlled environment before switching is advised.</p>
+</div>
+
+<div class="action-item">
+  <span class="number perf">5</span>
+  <h4>Session consistency is strong -- maintain through kill night</h4>
+  <p>The session trend is flat (early avg 47.0K vs late avg 46.0K) with no fatigue. DPS is identical between P2 wipe pulls (46.6K) and deep P3 pulls (46.6K). Consumables, enchants, gems, and tier set are all correct. On the kill night, with fewer cascade deaths and more complete P3 time, expect DPS in the 48-54K range based on best pull performance.</p>
+</div>
+
+<!-- Summary -->
+<h2>Summary</h2>
+<div class="callout callout-green">
+  <h4>Starfighter is performing well for this stage of progression</h4>
+  <p>Across 19 progression pulls on night 4, Starfighter shows consistent DPS output (46.6K avg, low variance excluding one outlier), excellent survival mechanics (only 1 actionable death in 19 pulls), correct consumable usage, and maintained performance on long pulls. The gap between current output (~47K) and reference kills (~86-94K) is primarily from context differences: prog vs kill, Mountain Thane vs Slayer, and cascade deaths reducing effective uptime.</p>
+  <p style="margin-top:8px"><strong>What is working well:</strong> Target priority (73% boss focus with passive add cleave), ability usage (Rampage/Thunder Clap dominant as expected for Mountain Thane), all consumables optimized, no repeated mechanical failures, and consistent output across the full 19-pull session without regression.</p>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">Warcraft Logs</a></p>
+  <p>Reference players: Evandar (94.3K), Hdawar (87.5K), Scolpi (87.0K), Loraineeclap (86.6K), Lepzed (86.3K) &middot; All Slayer, 4-heal comp, US/EU kills</p>
+  <p>Analysis mode: PROG &middot; 2-death threshold applied &middot; Phase boundaries from cast markers (Silversunder Catastrophe / Empowering Darkness / Cosmic Radiation)</p>
+  <p>Phase timings: P1 0-134s, Intermission 134-173s, P2 173-309s, P3 309+</p>
+</div>
+
+</body>
+</html>

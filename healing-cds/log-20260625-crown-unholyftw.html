@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unholyftw - Unholy DK - Crown of the Cosmos (Prog Night 4)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --dk-color: #c41e3a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 16px; font-weight: 600; margin: 20px 0 12px; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.tag-prog { background: var(--orange); color: #fff; }
+.tag-night { background: var(--purple); color: #fff; }
+.tag-spec { background: var(--dk-color); color: #fff; }
+.subtitle { color: var(--dim); font-size: 14px; margin-top: 4px; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.card-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+.green { color: var(--green); }
+.red { color: var(--red); }
+.yellow { color: var(--yellow); }
+.orange { color: var(--orange); }
+.purple { color: var(--purple); }
+.cyan { color: var(--cyan); }
+.dk { color: var(--dk-color); }
+
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+th { background: var(--surface); color: var(--dim); font-weight: 600; text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: rgba(88, 166, 255, 0.04); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge-purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 200px; padding: 0 4px; }
+.bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 2px; position: relative; transition: opacity 0.2s; cursor: default; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); writing-mode: vertical-rl; transform: rotate(180deg); max-height: 40px; overflow: hidden; }
+.bar-value { font-size: 9px; color: var(--dim); white-space: nowrap; }
+.bar-survived { background: var(--green); }
+.bar-died { background: var(--red); }
+.bar-cascade { background: var(--orange); }
+.chart-legend { display: flex; gap: 16px; margin-top: 12px; font-size: 11px; color: var(--dim); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 4px; vertical-align: middle; }
+
+.phase-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+.phase-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.phase-name { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.phase-stat { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+.phase-stat-label { color: var(--dim); }
+
+.callout { background: var(--surface); border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; padding: 16px; margin: 16px 0; }
+.callout-warn { border-left-color: var(--yellow); }
+.callout-danger { border-left-color: var(--red); }
+.callout-info { border-left-color: var(--accent); }
+.callout-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.callout-body { font-size: 13px; color: var(--dim); line-height: 1.7; }
+
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.action-num { display: inline-block; width: 24px; height: 24px; background: var(--accent); color: var(--bg); border-radius: 50%; text-align: center; line-height: 24px; font-size: 13px; font-weight: 700; margin-right: 8px; }
+.action-title { font-weight: 600; font-size: 14px; display: inline; }
+.action-body { margin-top: 8px; font-size: 13px; color: var(--dim); line-height: 1.7; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+.section-note { font-size: 12px; color: var(--dim); font-style: italic; margin-bottom: 12px; }
+
+@media (max-width: 768px) {
+  .cards, .phase-grid { grid-template-columns: repeat(2, 1fr); }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25, 2026 Log Analysis</a>
+
+<div class="header-row">
+  <h1 style="color: var(--dk-color);">Unholyftw</h1>
+  <span class="tag tag-spec">Unholy Death Knight</span>
+  <span class="tag tag-prog">PROGRESSION</span>
+  <span class="tag tag-night">NIGHT 4</span>
+</div>
+<div class="subtitle">
+  Mythic Crown of the Cosmos &mdash; 19 pulls, deepest 7:12 (fight 14) &mdash; June 25, 2026
+  <br>Report: <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">XYtJ3R1qjdFpM4cT</a>
+  &mdash; 4-heal comp: MW / HPal / RDruid / Disc
+</div>
+
+<!-- ══════════════════════════════════ SUMMARY CARDS ══════════════════════════════════ -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS (Active)</div>
+    <div class="card-value" style="color: var(--dk-color);">206.0K</div>
+    <div class="card-sub">Long pulls (5+ min)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">292</div>
+    <div class="card-sub">15 equipped items</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value green">18/19</div>
+    <div class="card-sub">1 actionable death (95%)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value">F14</div>
+    <div class="card-sub">7:12 &mdash; deep P3</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ PERFORMANCE CHART ══════════════════════════════════ -->
+<h2>Performance Across All Pulls</h2>
+<p class="section-note">DPS shown is "active DPS" (damage / time alive). Bars color-coded by death context. All 19 qualifying pulls shown.</p>
+
+<div class="chart-container">
+  <div class="bar-chart">
+    <div class="bar-wrapper"><div class="bar-value">245K</div><div class="bar bar-survived" style="height: 67%;" title="F1: 245K DPS, 5:00, P2, 98% alive"></div><div class="bar-label">F1</div></div>
+    <div class="bar-wrapper"><div class="bar-value">227K</div><div class="bar bar-died" style="height: 62%;" title="F2: 227K DPS, 6:54, died at 0:17 (actionable)"></div><div class="bar-label">F2</div></div>
+    <div class="bar-wrapper"><div class="bar-value">330K</div><div class="bar bar-cascade" style="height: 90%;" title="F3: 330K DPS, 1:51, P1, cascade death"></div><div class="bar-label">F3</div></div>
+    <div class="bar-wrapper"><div class="bar-value">365K</div><div class="bar bar-cascade" style="height: 100%;" title="F5: 365K DPS, 1:51, P1, cascade death"></div><div class="bar-label">F5</div></div>
+    <div class="bar-wrapper"><div class="bar-value">203K</div><div class="bar bar-survived" style="height: 56%;" title="F6: 203K DPS, 7:03, P3, 96% alive"></div><div class="bar-label">F6</div></div>
+    <div class="bar-wrapper"><div class="bar-value">358K</div><div class="bar bar-cascade" style="height: 98%;" title="F8: 358K DPS, 1:12, P1, cascade death"></div><div class="bar-label">F8</div></div>
+    <div class="bar-wrapper"><div class="bar-value">340K</div><div class="bar bar-cascade" style="height: 93%;" title="F12: 340K DPS, 2:10, P1, cascade death"></div><div class="bar-label">F12</div></div>
+    <div class="bar-wrapper"><div class="bar-value">315K</div><div class="bar bar-cascade" style="height: 86%;" title="F13: 315K DPS, 1:22, P1, cascade death"></div><div class="bar-label">F13</div></div>
+    <div class="bar-wrapper"><div class="bar-value">150K</div><div class="bar bar-survived" style="height: 41%;" title="F14: 150K DPS, 7:12, P3, deepest pull"></div><div class="bar-label">F14</div></div>
+    <div class="bar-wrapper"><div class="bar-value">207K</div><div class="bar bar-survived" style="height: 57%;" title="F17: 207K DPS, 6:58, P3, 94% alive"></div><div class="bar-label">F17</div></div>
+    <div class="bar-wrapper"><div class="bar-value">219K</div><div class="bar bar-survived" style="height: 60%;" title="F18: 219K DPS, 5:06, P2, 96% alive"></div><div class="bar-label">F18</div></div>
+    <div class="bar-wrapper"><div class="bar-value">339K</div><div class="bar bar-cascade" style="height: 93%;" title="F19: 339K DPS, 1:19, P1, cascade death"></div><div class="bar-label">F19</div></div>
+    <div class="bar-wrapper"><div class="bar-value">350K</div><div class="bar bar-cascade" style="height: 96%;" title="F21: 350K DPS, 1:31, P1, cascade death"></div><div class="bar-label">F21</div></div>
+    <div class="bar-wrapper"><div class="bar-value">262K</div><div class="bar bar-cascade" style="height: 72%;" title="F22: 262K DPS, 1:17, P1, cascade death"></div><div class="bar-label">F22</div></div>
+    <div class="bar-wrapper"><div class="bar-value">206K</div><div class="bar bar-survived" style="height: 57%;" title="F23: 206K DPS, 5:14, P2, 95% alive"></div><div class="bar-label">F23</div></div>
+    <div class="bar-wrapper"><div class="bar-value">205K</div><div class="bar bar-survived" style="height: 56%;" title="F24: 205K DPS, 5:36, P3, 97% alive"></div><div class="bar-label">F24</div></div>
+    <div class="bar-wrapper"><div class="bar-value">199K</div><div class="bar bar-survived" style="height: 55%;" title="F26: 199K DPS, 6:58, P3, 93% alive"></div><div class="bar-label">F26</div></div>
+    <div class="bar-wrapper"><div class="bar-value">208K</div><div class="bar bar-survived" style="height: 57%;" title="F27: 208K DPS, 5:36, P3, 98% alive"></div><div class="bar-label">F27</div></div>
+    <div class="bar-wrapper"><div class="bar-value">197K</div><div class="bar bar-cascade" style="height: 54%;" title="F28: 197K DPS, 6:59, P3, cascade death in P3"></div><div class="bar-label">F28</div></div>
+  </div>
+  <div class="chart-legend">
+    <span><span class="legend-dot" style="background: var(--green);"></span> Survived (&gt;95% alive)</span>
+    <span><span class="legend-dot" style="background: var(--orange);"></span> Cascade death (after 2+ raid deaths)</span>
+    <span><span class="legend-dot" style="background: var(--red);"></span> Early individual death (actionable)</span>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="callout-title green">Excellent Survival Profile</div>
+  <div class="callout-body">
+    Only <strong>1 actionable death</strong> across 20 total deaths in 19 pulls.
+    Unholyftw died 20 times total, but 19 of those were cascade deaths (occurring after 2+ raid members were already dead).
+    The single actionable death was fight 2 at <strong>0:17</strong> to <strong>Grasp of Emptiness</strong> &mdash; a P1 mechanic that did not recur as an individual failure.
+    This is an outstanding survival record for mythic progression.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ DEATH ANALYSIS ══════════════════════════════════ -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="card">
+    <div class="card-label">Actionable Deaths</div>
+    <div class="card-value green">1 / 19</div>
+    <div class="card-sub">pulls with early death</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Cascade Deaths</div>
+    <div class="card-value" style="color: var(--dim);">19</div>
+    <div class="card-sub">after 2+ raid members dead</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Total Deaths</div>
+    <div class="card-value">20</div>
+    <div class="card-sub">across 19 pulls</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Fight</th><th>Death Time</th><th>Death #</th><th>Killing Ability</th><th>Phase</th><th>Actionable?</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>F2</td><td class="num">0:17</td><td class="num">#1</td><td>Grasp of Emptiness</td><td>P1</td><td><span class="badge badge-red">YES</span></td></tr>
+    <tr><td>F1</td><td class="num">4:53</td><td class="num">#14</td><td>Void Barrage</td><td>P2</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F3</td><td class="num">1:43</td><td class="num">#14</td><td>Echoing Darkness</td><td>P1</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F5</td><td class="num">1:29</td><td class="num">#3</td><td>Void Remnants</td><td>P1</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F6</td><td class="num">6:45</td><td class="num">#13</td><td>Ravenous Abyss</td><td>P3</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F8</td><td class="num">1:09</td><td class="num">#14</td><td>Unknown</td><td>P1</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F12</td><td class="num">2:07</td><td class="num">#17</td><td>Void Remnants</td><td>P1</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F13</td><td class="num">1:00</td><td class="num">#3</td><td>Bursting Emptiness</td><td>P1</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F14</td><td class="num">6:40</td><td class="num">#13</td><td>Unknown</td><td>P3</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F17</td><td class="num">6:32</td><td class="num">#9</td><td>Gravity Collapse</td><td>P3</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F18</td><td class="num">4:54</td><td class="num">#16</td><td>Void Barrage</td><td>P2</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F19</td><td class="num">1:05</td><td class="num">#3</td><td>Bursting Emptiness</td><td>P1</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F21</td><td class="num">1:07</td><td class="num">#4</td><td>Void Expulsion</td><td>P1</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F22</td><td class="num">1:09</td><td class="num">#7</td><td>Void Remnants</td><td>P1</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F23</td><td class="num">4:59</td><td class="num">#8</td><td>Bursting Emptiness</td><td>P2</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F24</td><td class="num">5:25</td><td class="num">#15</td><td>Void Remnants</td><td>P3</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F26</td><td class="num">6:28</td><td class="num">#13</td><td>Bursting Emptiness</td><td>P3</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F27</td><td class="num">5:29</td><td class="num">#18</td><td>Dimensional Slash</td><td>P3</td><td><span class="badge badge-green">Cascade</span></td></tr>
+    <tr><td>F28</td><td class="num">5:40</td><td class="num">#4</td><td>Unknown</td><td>P3</td><td><span class="badge badge-green">Cascade</span></td></tr>
+  </tbody>
+</table>
+
+<p class="section-note">
+  The 2-death threshold rule counts only deaths where the player was among the first 2 to die in a pull.
+  Deaths occurring after 2+ raid members are already dead are cascade deaths and not counted against individual performance.
+  Fight 2's death at 0:17 was the very first raid death in that pull, making it the only actionable death.
+</p>
+
+<!-- ══════════════════════════════════ PER-PHASE BREAKDOWN ══════════════════════════════════ -->
+<h2>Per-Phase Performance Breakdown</h2>
+
+<h3>Phase Reach Rate (Raid)</h3>
+<div class="cards">
+  <div class="card">
+    <div class="card-label">P1: Sentinels</div>
+    <div class="card-value green">19/19</div>
+    <div class="card-sub">100%</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Intermission</div>
+    <div class="card-value yellow">11/19</div>
+    <div class="card-sub">58%</div>
+  </div>
+  <div class="card">
+    <div class="card-label">P2: Rift</div>
+    <div class="card-value yellow">11/19</div>
+    <div class="card-sub">58%</div>
+  </div>
+  <div class="card">
+    <div class="card-label">P3: Cosmos</div>
+    <div class="card-value red">8/19</div>
+    <div class="card-sub">42%</div>
+  </div>
+</div>
+
+<h3>Per-Phase DPS Table</h3>
+<table>
+  <thead>
+    <tr><th>Phase</th><th>Time Window</th><th class="num">Pulls Seen</th><th class="num">Avg DPS</th><th class="num">Best DPS</th><th class="num">Worst DPS</th><th class="num">Actionable Deaths</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>P1: Sentinels</strong></td><td>0:00 &ndash; 2:14</td>
+      <td class="num">19/19</td><td class="num"><strong>353.4K</strong></td><td class="num green">443.7K</td><td class="num">247.6K</td>
+      <td class="num green">1</td><td>Strong burst; Alleria + Sentinels</td>
+    </tr>
+    <tr>
+      <td><strong>Intermission</strong></td><td>2:14 &ndash; 2:53</td>
+      <td class="num">10/19</td><td class="num"><strong>0</strong></td><td class="num">0</td><td class="num">0</td>
+      <td class="num green">0</td><td>No targets &mdash; pure survival</td>
+    </tr>
+    <tr>
+      <td><strong>P2: Rift</strong></td><td>2:53 &ndash; ~5:04</td>
+      <td class="num">10/19</td><td class="num"><strong>130.6K</strong></td><td class="num green">145.0K</td><td class="num">102.4K</td>
+      <td class="num green">0</td><td>Simulacrum phase, split targets</td>
+    </tr>
+    <tr>
+      <td><strong>P3: Cosmos</strong></td><td>5:04+</td>
+      <td class="num">6/19</td><td class="num"><strong>54.5K</strong></td><td class="num green">88.7K</td><td class="num">2.2K</td>
+      <td class="num green">0</td><td>Heavy movement, overlapping mechanics</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="phase-grid">
+  <div class="phase-card">
+    <div class="phase-name" style="color: var(--green);">P1: Sentinels</div>
+    <div class="phase-stat"><span class="phase-stat-label">Full P1 Avg (134s)</span><span>370.2K</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Best</span><span>F1: 443.7K</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Consistency</span><span class="green">Strong</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Outlier</span><span>F14: 247.6K</span></div>
+  </div>
+  <div class="phase-card">
+    <div class="phase-name" style="color: var(--dim);">Intermission</div>
+    <div class="phase-stat"><span class="phase-stat-label">Duration</span><span>~39s</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">DPS</span><span>0 (no targets)</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Deaths</span><span class="green">0</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Role</span><span>Survive Barrage</span></div>
+  </div>
+  <div class="phase-card">
+    <div class="phase-name" style="color: var(--accent);">P2: Rift</div>
+    <div class="phase-stat"><span class="phase-stat-label">Average</span><span>130.6K</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Best</span><span>F14: 145.0K</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Consistency</span><span class="green">Good</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">DPS Drop</span><span>-63% from P1</span></div>
+  </div>
+  <div class="phase-card">
+    <div class="phase-name" style="color: var(--red);">P3: Cosmos</div>
+    <div class="phase-stat"><span class="phase-stat-label">Average</span><span>54.5K</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Best</span><span>F17: 88.7K</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">Consistency</span><span class="yellow">Volatile</span></div>
+    <div class="phase-stat"><span class="phase-stat-label">DPS Drop</span><span>-58% from P2</span></div>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Phase DPS Context</div>
+  <div class="callout-body">
+    The dramatic DPS drop from P1 (353K) to P2 (131K) to P3 (55K) is <strong>expected and structural</strong>.
+    P1 has consistent uptime on Alleria + Sentinels with all cooldowns available.
+    P2 introduces Rift Simulacrum and heavy movement from Void mechanics.
+    P3 overlaps everything &mdash; Cosmic Radiation, Dimensional Slash, and Gravity Collapse force constant repositioning.
+    The Intermission has 0 DPS because there are no attackable targets during the Stellar Emission channel.
+    <br><br>
+    The P3 average (54.5K) is further depressed by pulls where Unholyftw survived only briefly into P3
+    (F27: only 8s in P3, F28: 31s in P3). On pulls with meaningful P3 time (60+ seconds),
+    the average rises to ~75K.
+  </div>
+</div>
+
+<!-- P1 Detail -->
+<h3>P1 DPS by Pull (Full 134s P1 only)</h3>
+<table>
+  <thead>
+    <tr><th>Fight</th><th class="num">P1 DPS</th><th class="num">P1 Damage</th><th>Reached</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>F1</td><td class="num green"><strong>443,731</strong></td><td class="num">59.5M</td><td>P2</td><td>Best P1 of the night</td></tr>
+    <tr><td>F6</td><td class="num green">418,112</td><td class="num">56.1M</td><td>P3</td><td></td></tr>
+    <tr><td>F17</td><td class="num green">408,940</td><td class="num">54.8M</td><td>P3</td><td></td></tr>
+    <tr><td>F26</td><td class="num">400,143</td><td class="num">53.7M</td><td>P3</td><td></td></tr>
+    <tr><td>F18</td><td class="num">381,382</td><td class="num">51.2M</td><td>P2</td><td></td></tr>
+    <tr><td>F28</td><td class="num">371,613</td><td class="num">49.9M</td><td>P3</td><td></td></tr>
+    <tr><td>F27</td><td class="num">350,846</td><td class="num">47.1M</td><td>P3</td><td></td></tr>
+    <tr><td>F24</td><td class="num">344,475</td><td class="num">46.2M</td><td>P3</td><td></td></tr>
+    <tr><td>F23</td><td class="num">335,506</td><td class="num">45.0M</td><td>P2</td><td></td></tr>
+    <tr><td>F14</td><td class="num red">247,599</td><td class="num">33.2M</td><td>P3</td><td>Worst P1 &mdash; deepest pull</td></tr>
+  </tbody>
+</table>
+<p class="section-note">
+  Fight 14 (deepest pull at 7:12) had the lowest P1 DPS at 247.6K, 33% below the 370.2K average.
+  Every other full P1 was 335K+. Worth reviewing whether cooldowns were held or an early disruption caused the gap.
+</p>
+
+<!-- P2 Detail -->
+<h3>P2 DPS by Pull</h3>
+<table>
+  <thead>
+    <tr><th>Fight</th><th class="num">P2 DPS</th><th class="num">Duration</th><th class="num">Damage</th><th>Outcome</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>F14</td><td class="num green">144,981</td><td class="num">2:16</td><td class="num">19.7M</td><td>P3</td></tr>
+    <tr><td>F27</td><td class="num green">144,501</td><td class="num">2:27</td><td class="num">21.2M</td><td>P3</td></tr>
+    <tr><td>F26</td><td class="num">143,008</td><td class="num">2:16</td><td class="num">19.4M</td><td>P3</td></tr>
+    <tr><td>F6</td><td class="num">141,453</td><td class="num">2:33</td><td class="num">21.6M</td><td>P3</td></tr>
+    <tr><td>F17</td><td class="num">135,645</td><td class="num">2:27</td><td class="num">19.9M</td><td>P3</td></tr>
+    <tr><td>F24</td><td class="num">134,848</td><td class="num">2:31</td><td class="num">20.4M</td><td>P3</td></tr>
+    <tr><td>F23</td><td class="num">133,151</td><td class="num">2:05</td><td class="num">16.7M</td><td>P2 wipe</td></tr>
+    <tr><td>F28</td><td class="num">115,836</td><td class="num">2:16</td><td class="num">15.7M</td><td>P3</td></tr>
+    <tr><td>F18</td><td class="num">110,170</td><td class="num">2:00</td><td class="num">13.3M</td><td>P2 wipe</td></tr>
+    <tr><td>F1</td><td class="num red">102,439</td><td class="num">1:59</td><td class="num">12.2M</td><td>P2 wipe</td></tr>
+  </tbody>
+</table>
+<p class="section-note">
+  P2 DPS is consistent on clean pulls reaching P3 (135K-145K range). The lower P2 numbers (102K-116K) all occur on pulls where the raid fell apart in P2, suggesting raid instability drives the variance.
+</p>
+
+<!-- ══════════════════════════════════ REFERENCE COMPARISON ══════════════════════════════════ -->
+<h2>Reference Comparison (Context Only)</h2>
+<p class="section-note">
+  Top 5 Unholy DK kills on Mythic Crown of the Cosmos from 4-heal comps (US/EU only).
+  Reference DPS reflects full kills (7-8 min). During progression, direct DPS comparison is not meaningful.
+</p>
+
+<table>
+  <thead>
+    <tr><th>Player</th><th>Server</th><th class="num">Kill DPS</th><th class="num">Kill Time</th><th class="num">ilvl</th><th class="num">Talent Diff</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="color: var(--purple);">Finesthour</td><td>Icecrown (US)</td>
+      <td class="num purple"><strong>103.0K</strong></td><td class="num">6:50</td><td class="num">274</td>
+      <td class="num"><span class="badge badge-yellow">6 diffs</span></td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">Myxal</td><td>Antonidas (EU)</td>
+      <td class="num purple"><strong>101.8K</strong></td><td class="num">8:29</td><td class="num">290</td>
+      <td class="num"><span class="badge badge-yellow">4 diffs</span></td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">Cocoadk</td><td>Illidan (US)</td>
+      <td class="num purple"><strong>101.7K</strong></td><td class="num">8:12</td><td class="num">275</td>
+      <td class="num"><span class="badge badge-yellow">4 diffs</span></td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">Lanadk</td><td>Hyjal (EU)</td>
+      <td class="num purple"><strong>101.5K</strong></td><td class="num">8:28</td><td class="num">273</td>
+      <td class="num"><span class="badge badge-yellow">7 diffs</span></td>
+    </tr>
+    <tr style="border-bottom: 2px solid var(--border);">
+      <td style="color: var(--purple);">&#1040;&#1076;&#1100;&#1086;&#1089;&#1090;&#1086;&#1085;&#1090;&#1086;&#1089;</td><td>&#1043;&#1086;&#1088;&#1076;&#1091;&#1085;&#1085;&#1080; (EU)</td>
+      <td class="num purple"><strong>100.8K</strong></td><td class="num">8:33</td><td class="num">291</td>
+      <td class="num"><span class="badge badge-yellow">6 diffs</span></td>
+    </tr>
+    <tr>
+      <td style="color: var(--dk-color);"><strong>Unholyftw</strong></td><td>(Prog Night 4)</td>
+      <td class="num"><strong>206.0K*</strong></td><td class="num">N/A</td><td class="num"><strong>292</strong></td>
+      <td class="num">&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="section-note">
+  *206K is the average active DPS on long pulls (&gt;5 min), which includes P1 burst inflate and does not represent a full-fight average. Reference DPS of ~101K averages over an entire 7-8 minute kill including all phases.
+  <br>At ilvl 292, Unholyftw has a moderate gear advantage over most references (273-291 range). Talent differences of 4-7 nodes indicate moderate variation in builds. All references run 4-heal comps matching the raid composition.
+</p>
+
+<!-- ══════════════════════════════════ GEAR & STATS ══════════════════════════════════ -->
+<h2>Gear &amp; Stats</h2>
+<div class="cards" style="grid-template-columns: repeat(5, 1fr);">
+  <div class="card">
+    <div class="card-label">Strength</div>
+    <div class="card-value" style="font-size: 20px;">2,080</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Mastery</div>
+    <div class="card-value" style="font-size: 20px;">1,149</div>
+    <div class="card-sub">Primary secondary</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Crit</div>
+    <div class="card-value" style="font-size: 20px;">1,130</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Haste</div>
+    <div class="card-value" style="font-size: 20px;">428</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Vers</div>
+    <div class="card-value" style="font-size: 20px;">0</div>
+  </div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">Stat &amp; Gear Notes</div>
+  <div class="callout-body">
+    Mastery/Crit stack with low Haste (428) and zero Versatility. This is consistent with top Unholy DK builds &mdash;
+    references show Mastery 1,099&ndash;1,324, Crit 1,111&ndash;1,197, Haste 281&ndash;407, Vers 0&ndash;7.
+    Mastery (increasing minion and disease damage) is the primary secondary for Unholy in the current patch.
+    <br><br>
+    <strong>Consumables:</strong> Flask of the Shattered Sun, Hearty Well Fed, Vantus Rune: Crown of the Cosmos.
+    <br><strong>Set bonus:</strong> 4pc tier set (1978) equipped.
+    <br><strong>Trinkets:</strong> Two ilvl 298 raid trinkets equipped.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ CONSISTENCY ══════════════════════════════════ -->
+<h2>Consistency Analysis</h2>
+
+<div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+  <div class="card">
+    <div class="card-label">P1 Consistency</div>
+    <div class="card-value" style="font-size: 18px;">370.2K</div>
+    <div class="card-sub">Range: 248K &ndash; 444K</div>
+  </div>
+  <div class="card">
+    <div class="card-label">P2 Consistency</div>
+    <div class="card-value" style="font-size: 18px;">130.6K</div>
+    <div class="card-sub">Range: 102K &ndash; 145K</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Long Pull Avg</div>
+    <div class="card-value" style="font-size: 18px;">206.0K</div>
+    <div class="card-sub">StdDev: 67.5K</div>
+  </div>
+</div>
+
+<h3>Session Trend</h3>
+<table>
+  <thead>
+    <tr><th>Session Half</th><th class="num">Pulls</th><th class="num">Avg Active DPS</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>First half (F1&ndash;F14)</td><td class="num">9</td><td class="num">281,397</td><td>More short P1 wipes, inflated burst DPS</td></tr>
+    <tr><td>Second half (F17&ndash;F28)</td><td class="num">10</td><td class="num">239,212</td><td>More deep pulls reaching P2/P3</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">Trend Context</div>
+  <div class="callout-body">
+    The apparent "decline" (-15%) from first half to second half is <strong>not regression</strong>.
+    The second half had more deep pulls reaching P2 and P3 where DPS is structurally lower (movement, split targets, intermission zero-DPS window).
+    When comparing only the P1 phase across all full-length P1 pulls, the DPS is consistent throughout the session.
+    The team improved as the night went on &mdash; more pulls reached later phases, which naturally lowers the overall DPS average.
+    This is a sign of <strong>raid progress, not individual decline</strong>.
+  </div>
+</div>
+
+<h3>DPS by Pull Duration</h3>
+<table>
+  <thead>
+    <tr><th>Pull Length</th><th class="num">Pulls</th><th class="num">Avg Active DPS</th><th>Phase Context</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>&lt; 2 min</td><td class="num">7</td><td class="num">329,715</td><td>P1 only &mdash; burst phase inflate</td></tr>
+    <tr><td>2 &ndash; 4 min</td><td class="num">1</td><td class="num">244,989</td><td>P1 + Intermission</td></tr>
+    <tr><td>4 &ndash; 6 min</td><td class="num">4</td><td class="num">213,321</td><td>P1 + Inter + P2</td></tr>
+    <tr><td>6+ min</td><td class="num">7</td><td class="num">196,689</td><td>All phases</td></tr>
+  </tbody>
+</table>
+<p class="section-note">
+  DPS naturally scales inversely with pull duration on Crown due to the 0-DPS intermission and movement-heavy P2/P3. This pattern is universal for all DPS on this boss.
+</p>
+
+<!-- ══════════════════════════════════ ACTIONABLE ITEMS ══════════════════════════════════ -->
+<h2>Actionable Items</h2>
+
+<div class="action-item">
+  <span class="action-num">1</span>
+  <span class="action-title">Investigate the F14 P1 DPS Drop</span>
+  <div class="action-body">
+    Fight 14 (the deepest pull at 7:12) had P1 DPS of 247.6K &mdash; <strong>33% below</strong> the 370.2K full-P1 average.
+    Every other full P1 was 335K+. Possible explanations: holding Army of the Dead for P2, an early disruption to the
+    opener sequence, or being displaced by a mechanic before building Festering Wound stacks. The pull still reached
+    deep P3, so this may have been an intentional cooldown management adjustment. Review the opener on that specific pull
+    to determine if cooldowns were delayed or disrupted.
+  </div>
+</div>
+
+<div class="action-item">
+  <span class="action-num">2</span>
+  <span class="action-title">P3 Target Uptime and AMS Usage</span>
+  <div class="action-body">
+    P3 DPS ranges from 2.2K to 88.7K with high variance across 6 pulls. The 88.7K (F17) shows what is achievable;
+    the average of 54.5K has room to climb. Focus areas:
+    <br>&bull; Maintain <strong>Virulent Plague</strong> on all targets during Cosmic Radiation overlaps.
+    <br>&bull; Use <strong>Epidemic</strong> for Runic Power spending during multi-target windows instead of Death Coil.
+    <br>&bull; Use <strong>Anti-Magic Shell</strong> proactively on Cosmic Radiation ticks &mdash; this absorbs damage while generating
+    Runic Power, turning a defensive into a DPS cooldown.
+    <br>&bull; More P3 reps will naturally improve familiarity. The team has only reached P3 in 42% of pulls (8/19).
+  </div>
+</div>
+
+<div class="action-item">
+  <span class="action-num">3</span>
+  <span class="action-title">Cooldown Alignment Through Intermission</span>
+  <div class="action-body">
+    The 39-second intermission (no targets) presents a cooldown alignment opportunity. The ideal pattern:
+    <br>&bull; <strong>Army of the Dead</strong> (90s) early in P1 &rarr; available again for P2 start (~2:53).
+    <br>&bull; <strong>Dark Transformation</strong> (45s) on pull, then ~45s, then ~90s &rarr; naturally realigns for P2.
+    <br>&bull; If cooldowns are being held past their natural timers to "save for later phases," the P1 DPS variance
+    (335K-444K range) could partially explain itself. Prioritize using cooldowns on time &mdash; Unholy DK
+    burst windows (Army + DT + Putrefy) lose significant value when delayed.
+  </div>
+</div>
+
+<div class="action-item">
+  <span class="action-num">4</span>
+  <span class="action-title">Survival Is Already a Strength &mdash; Maintain It</span>
+  <div class="action-body">
+    With only 1 actionable death in 19 pulls, Unholyftw is one of the most mechanically reliable players on the roster.
+    The single early death was Grasp of Emptiness on pull 2 at 17 seconds &mdash; it did not recur.
+    Death Knight defensives (AMS, Icebound Fortitude, Lichborne) are being used effectively.
+    <strong>Do not sacrifice survival for DPS</strong> &mdash; the priority at this stage of progression is clean P3 execution,
+    and staying alive is the prerequisite.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ OVERALL ASSESSMENT ══════════════════════════════════ -->
+<h2>Overall Assessment</h2>
+
+<div class="callout">
+  <div class="callout-title">Verdict</div>
+  <div class="callout-body">
+    <strong>Survival:</strong> Outstanding. 1 actionable death in 19 pulls (95% clean survival) is among the best on the roster. Mechanics execution is strong across all phases.
+    <br><br>
+    <strong>P1 DPS:</strong> Strong. 370K average on full P1 phases with consistent burst windows. F14 outlier (248K) is the only anomaly &mdash; worth reviewing but not a pattern.
+    <br><br>
+    <strong>P2 DPS:</strong> Consistent on clean pulls (134K-145K range). Lower on pulls with raid instability, which is a raid-level problem, not individual.
+    <br><br>
+    <strong>P3 DPS:</strong> This is where the most growth potential exists. Only 8 pulls have reached P3 (42%), and the team needs more reps. The 88.7K best pull (F17) shows the ceiling; the 54.5K average will climb with familiarity.
+    <br><br>
+    <strong>Progression context:</strong> Top-ranked Unholy DK kills average ~101K DPS over a full 7-8 minute fight. As the team pushes into P3 consistently and eventually reaches the kill threshold, Unholyftw's overall DPS will naturally settle into that range. At ilvl 292 (highest of all compared references), there is a gear advantage that should help.
+    <br><br>
+    <strong>Primary focus for next session:</strong> More P3 reps. Cleaning up P2 to reach P3 more consistently will give both Unholyftw and the whole raid the familiarity needed to optimize P3 execution. Individually: AMS timing for RP generation, Epidemic over Death Coil during multi-target windows, and disease uptime on all P3 targets.
+  </div>
+</div>
+
+<!-- ══════════════════════════════════ FOOTER ══════════════════════════════════ -->
+<div class="footer">
+  <p>
+    Generated by WCL DPS Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">Warcraft Logs</a>
+    <br>
+    Reference players: Finesthour (Icecrown-US), Myxal (Antonidas-EU), Cocoadk (Illidan-US), Lanadk (Hyjal-EU), &#1040;&#1076;&#1100;&#1086;&#1089;&#1090;&#1086;&#1085;&#1090;&#1086;&#1089; (&#1043;&#1086;&#1088;&#1076;&#1091;&#1085;&#1085;&#1080;-EU)
+    <br>
+    All references are comp-matched (4-heal, US/EU only). Talent diffs from CombatantInfo data, not guide recommendations.
+    <br>
+    Spec guide reference: <a href="https://www.icy-veins.com/wow/unholy-death-knight-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins Unholy DK 12.0.7</a>,
+    <a href="https://www.wowhead.com/guide/classes/death-knight/unholy/rotation-cooldowns-pve-dps" target="_blank">Wowhead Unholy DK Guide</a>
+  </p>
+</div>
+
+</body>
+</html>

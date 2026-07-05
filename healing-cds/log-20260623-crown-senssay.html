@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Senssay - Crown of the Cosmos (Prog Night 3) - June 23 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --monk: #00ff98;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--monk); }
+.header .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 8px; }
+.header .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.tag { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.tag-prog { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
+.tag-spec { background: rgba(0, 255, 152, 0.15); color: var(--monk); border: 1px solid rgba(0, 255, 152, 0.3); }
+.tag-night { background: rgba(210, 153, 34, 0.15); color: var(--yellow); border: 1px solid rgba(210, 153, 34, 0.3); }
+.tag-healer { background: rgba(57, 210, 192, 0.15); color: var(--cyan); border: 1px solid rgba(57, 210, 192, 0.3); }
+
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+@media (max-width: 800px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.card-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+.section { margin-bottom: 36px; }
+.section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--dim); }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+th { color: var(--dim); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+tr:hover { background: rgba(255,255,255,0.02); }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 200px; margin-bottom: 8px; padding: 0 4px; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; min-width: 8px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s; cursor: pointer; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; text-align: center; white-space: nowrap; }
+.bar-value { font-size: 9px; color: var(--dim); margin-bottom: 2px; text-align: center; }
+.bar-survived { background: var(--green); }
+.bar-died { background: var(--red); }
+.bar-died-early { background: rgba(248, 81, 73, 0.4); }
+.avg-line { width: 100%; height: 1px; border-top: 2px dashed var(--yellow); position: relative; margin-bottom: 8px; }
+.avg-line-label { position: absolute; right: 0; top: -16px; font-size: 10px; color: var(--yellow); }
+
+.callout { background: var(--surface); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 16px; }
+.callout-warning { border-left-color: var(--red); }
+.callout-info { border-left-color: var(--accent); }
+.callout-good { border-left-color: var(--green); }
+.callout h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.callout p { font-size: 13px; color: var(--dim); }
+
+.death-cause-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.death-cause-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.death-cause-name { font-weight: 600; font-size: 15px; }
+.death-count-badge { padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.death-count-high { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.death-count-mid { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.death-count-low { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+
+.phase-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+.phase-p1 { background: rgba(88, 166, 255, 0.25); color: var(--accent); }
+.phase-interm { background: rgba(210, 153, 34, 0.25); color: var(--yellow); }
+.phase-p2 { background: rgba(188, 140, 255, 0.25); color: var(--purple); }
+.phase-p3 { background: rgba(248, 81, 73, 0.25); color: var(--red); }
+
+.phase-reach { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.phase-reach-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; flex: 1; min-width: 120px; }
+.phase-reach-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.phase-reach-value { font-size: 18px; font-weight: 700; }
+
+.improvement-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.improvement-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.improvement-item .priority { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 8px; }
+.priority-critical { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.priority-high { background: rgba(219, 109, 40, 0.2); color: var(--orange); }
+.priority-medium { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.improvement-item p { font-size: 13px; color: var(--dim); line-height: 1.5; }
+.improvement-item .impact { font-size: 12px; color: var(--accent); margin-top: 6px; }
+
+.ref-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+.ref-section h3 { margin-bottom: 12px; color: var(--purple); }
+
+.cd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.cd-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.cd-card-name { font-size: 13px; font-weight: 600; color: var(--monk); margin-bottom: 6px; }
+.cd-card-stat { font-size: 12px; color: var(--dim); margin-bottom: 2px; }
+.cd-card-stat strong { color: var(--text); }
+
+.healer-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin: 1px 2px; }
+.pill-monk { background: rgba(0,255,152,0.15); color: #00ff98; }
+.pill-paladin { background: rgba(244,140,186,0.15); color: #f48cba; }
+.pill-druid { background: rgba(255,125,10,0.15); color: #ff7d0a; }
+.pill-shaman { background: rgba(0,112,222,0.15); color: #0070de; }
+.pill-dead { background: rgba(248,81,73,0.15); color: var(--red); }
+.pill-none { background: rgba(139,148,158,0.1); color: var(--dim); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+.oh-bar-container { display: flex; align-items: center; gap: 6px; }
+.oh-bar { height: 8px; border-radius: 4px; display: flex; overflow: hidden; width: 80px; }
+.oh-bar-eff { background: var(--green); }
+.oh-bar-oh { background: var(--red); }
+
+.tooltip { position: relative; }
+.tooltip .tooltip-text { visibility: hidden; background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 10; }
+.tooltip:hover .tooltip-text { visibility: visible; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--dim); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23 Crown of the Cosmos Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Senssay</span> &mdash; Crown of the Cosmos</h1>
+  <div class="subtitle">Mythic Progression Night 3 &middot; June 23, 2026 &middot; 20 pulls &middot; Best: 26.51% (Fight 25)</div>
+  <div class="tags">
+    <span class="tag tag-prog">PROGRESSION</span>
+    <span class="tag tag-spec">Mistweaver Monk</span>
+    <span class="tag tag-night">Night 3</span>
+    <span class="tag tag-healer">Healer</span>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+  <div class="card">
+    <div class="card-label">Avg HPS (>60s pulls)</div>
+    <div class="card-value" style="color: var(--green);">139.4K</div>
+    <div class="card-sub">Best: 170.0K (F9) / Worst: 43.8K (F25)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">291</div>
+    <div class="card-sub">Crit 841 / Haste 1253 / Mast 529</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value" style="color: var(--red);">1 / 20</div>
+    <div class="card-sub">5% &mdash; survived only Fight 8 (81s)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Avg Overheal</div>
+    <div class="card-value" style="color: var(--yellow);">26.5%</div>
+    <div class="card-sub">Fight 23 (best pull) &mdash; healthy range</div>
+  </div>
+</div>
+
+<!-- Bottom Line Verdict -->
+<div class="callout callout-warning">
+  <h4>Bottom Line: Survival is the #1 issue &mdash; died in 19 of 20 pulls</h4>
+  <p>Senssay died in every pull except Fight 8 (an 81-second wipe). Average death time: 194.7s. 7 deaths in P1, 1 in Intermission, 9 in P2, 2 in P3. Only reached P3 twice across the entire night. HPS is competitive when alive (139.4K avg vs 148.7K team avg), and CD discipline is solid with Yu'lon/Celestial Conduit deployed consistently. But the 5% survival rate means zero healing contribution for the final 50-75% of most pulls. That wipes the raid. Until survival improves, nothing else matters.</p>
+</div>
+
+<!-- Phase Structure -->
+<div class="section">
+  <h2>Phase Structure</h2>
+  <div class="phase-bar">
+    <div class="phase-segment phase-p1" style="width:33%">P1: Sentinels (0:00&ndash;2:14)</div>
+    <div class="phase-segment phase-interm" style="width:10%">Inter (2:14&ndash;2:53)</div>
+    <div class="phase-segment phase-p2" style="width:33%">P2: Rift (2:53&ndash;5:09)</div>
+    <div class="phase-segment phase-p3" style="width:24%">P3: Devouring (5:09+)</div>
+  </div>
+  <div class="phase-reach">
+    <div class="phase-reach-item">
+      <div class="phase-reach-label">P1: Sentinels</div>
+      <div class="phase-reach-value" style="color: var(--accent);">20/20</div>
+    </div>
+    <div class="phase-reach-item">
+      <div class="phase-reach-label">Intermission</div>
+      <div class="phase-reach-value" style="color: var(--yellow);">12/20</div>
+    </div>
+    <div class="phase-reach-item">
+      <div class="phase-reach-label">P2: Rift</div>
+      <div class="phase-reach-value" style="color: var(--purple);">11/20</div>
+    </div>
+    <div class="phase-reach-item">
+      <div class="phase-reach-label">P3: Devouring</div>
+      <div class="phase-reach-value" style="color: var(--red);">2/20</div>
+    </div>
+  </div>
+</div>
+
+<!-- Per-Phase Performance -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">Based on Fight 23 (best pull, 384.7s, died at 377.6s &mdash; reached P3)</p>
+  <table>
+    <tr>
+      <th>Phase</th>
+      <th>Duration</th>
+      <th>HPS</th>
+      <th>Overheal %</th>
+      <th>Key Abilities</th>
+      <th>Assessment</th>
+    </tr>
+    <tr>
+      <td><span style="color: var(--accent); font-weight: 600;">P1: Sentinels</span></td>
+      <td>0:00 &ndash; 2:14</td>
+      <td>129.3K</td>
+      <td>
+        <div class="oh-bar-container">
+          <div class="oh-bar"><div class="oh-bar-eff" style="width:65.9%"></div><div class="oh-bar-oh" style="width:34.1%"></div></div>
+          <span>34.1%</span>
+        </div>
+      </td>
+      <td>Yu'lon x1, Celestial Conduit x0, Revival x0</td>
+      <td style="color: var(--yellow);">High OH &mdash; mana wasted before hard phases</td>
+    </tr>
+    <tr>
+      <td><span style="color: var(--yellow); font-weight: 600;">Intermission</span></td>
+      <td>2:14 &ndash; 2:53</td>
+      <td>107.6K</td>
+      <td>
+        <div class="oh-bar-container">
+          <div class="oh-bar"><div class="oh-bar-eff" style="width:69.4%"></div><div class="oh-bar-oh" style="width:30.6%"></div></div>
+          <span>30.6%</span>
+        </div>
+      </td>
+      <td>Stellar Emission sustained AoE</td>
+      <td style="color: var(--yellow);">Acceptable for pure survival phase</td>
+    </tr>
+    <tr>
+      <td><span style="color: var(--purple); font-weight: 600;">P2: Rift</span></td>
+      <td>2:53 &ndash; 5:09</td>
+      <td style="color: var(--green); font-weight: 600;">210.2K</td>
+      <td>
+        <div class="oh-bar-container">
+          <div class="oh-bar"><div class="oh-bar-eff" style="width:77.7%"></div><div class="oh-bar-oh" style="width:22.3%"></div></div>
+          <span style="color: var(--green);">22.3%</span>
+        </div>
+      </td>
+      <td>Yu'lon x1, Revival x1, Conduit x1</td>
+      <td style="color: var(--green);">Strong &mdash; HPS scales to match heavy damage</td>
+    </tr>
+    <tr>
+      <td><span style="color: var(--red); font-weight: 600;">P3: Devouring</span></td>
+      <td>5:09+</td>
+      <td>145.0K</td>
+      <td>
+        <div class="oh-bar-container">
+          <div class="oh-bar"><div class="oh-bar-eff" style="width:78.8%"></div><div class="oh-bar-oh" style="width:21.2%"></div></div>
+          <span style="color: var(--green);">21.2%</span>
+        </div>
+      </td>
+      <td>Yu'lon x1, Revival x1 (died at 6:18)</td>
+      <td style="color: var(--yellow);">Low sample &mdash; only saw P3 twice</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-info">
+    <h4>Phase Healing Analysis</h4>
+    <p>HPS jumps 63% from P1 (129K) to P2 (210K) &mdash; good scaling to match incoming damage. Overheal drops from 34.1% in P1 to 22.3% in P2, indicating efficient spell selection under pressure. P1 overheal at 34.1% is slightly elevated but not critical &mdash; some of this is unavoidable HoT ticking on topped-off raid members during sentinel kills. The real opportunity is conserving mana for the P2/P3 healing check by being more selective with Vivify/Enveloping Mist casts in P1.</p>
+  </div>
+</div>
+
+<!-- HPS Across All Pulls -->
+<div class="section">
+  <h2>HPS Across All Pulls</h2>
+  <div style="position: relative;">
+    <div style="position:absolute; bottom: 84px; left:0; right:0; border-top: 2px dashed var(--yellow); z-index:1;">
+      <span style="position:absolute; right:0; top:-16px; font-size:10px; color:var(--yellow);">Avg: 139.4K</span>
+    </div>
+    <div class="bar-chart">
+      <div class="bar-wrapper"><div class="bar-value">151K</div><div class="bar bar-died" style="height:70%" title="F5: 151.1K HPS, 228s, 50.4% boss, DIED 219s (P2)"></div><div class="bar-label">5</div></div>
+      <div class="bar-wrapper"><div class="bar-value">168K</div><div class="bar bar-died" style="height:78%" title="F6: 168.3K HPS, 233s, 47.1% boss, DIED 219s (P2)"></div><div class="bar-label">6</div></div>
+      <div class="bar-wrapper"><div class="bar-value">130K</div><div class="bar bar-died-early" style="height:61%" title="F7: 130.3K HPS, 77s, 84.1% boss, DIED 65s (P1)"></div><div class="bar-label">7</div></div>
+      <div class="bar-wrapper"><div class="bar-value">163K</div><div class="bar bar-survived" style="height:76%" title="F8: 163.5K HPS, 81s, 82.2% boss, SURVIVED"></div><div class="bar-label">8</div></div>
+      <div class="bar-wrapper"><div class="bar-value">170K</div><div class="bar bar-died" style="height:79%" title="F9: 170.0K HPS, 315s, 32.9% boss, DIED 301s (P2)"></div><div class="bar-label">9</div></div>
+      <div class="bar-wrapper"><div class="bar-value">131K</div><div class="bar bar-died-early" style="height:61%" title="F10: 130.8K HPS, 120s, 71.1% boss, DIED 101s (P1)"></div><div class="bar-label">10</div></div>
+      <div class="bar-wrapper"><div class="bar-value">100K</div><div class="bar bar-died" style="height:47%" title="F11: 100.4K HPS, 227s, 50% boss, DIED 159s (Inter)"></div><div class="bar-label">11</div></div>
+      <div class="bar-wrapper"><div class="bar-value">148K</div><div class="bar bar-died" style="height:69%" title="F12: 148.5K HPS, 287s, 42.5% boss, DIED 262s (P2)"></div><div class="bar-label">12</div></div>
+      <div class="bar-wrapper"><div class="bar-value">154K</div><div class="bar bar-died" style="height:72%" title="F13: 153.5K HPS, 361s, 32.3% boss, DIED 298s (P2)"></div><div class="bar-label">13</div></div>
+      <div class="bar-wrapper"><div class="bar-value">159K</div><div class="bar bar-died-early" style="height:74%" title="F14: 159.3K HPS, 86s, 81.2% boss, DIED 75s (P1)"></div><div class="bar-label">14</div></div>
+      <div class="bar-wrapper"><div class="bar-value">143K</div><div class="bar bar-died" style="height:67%" title="F15: 142.7K HPS, 185s, 61.8% boss, DIED 178s (P2)"></div><div class="bar-label">15</div></div>
+      <div class="bar-wrapper"><div class="bar-value">124K</div><div class="bar bar-died" style="height:58%" title="F16: 123.6K HPS, 186s, 61.6% boss, DIED 182s (P2)"></div><div class="bar-label">16</div></div>
+      <div class="bar-wrapper"><div class="bar-value">157K</div><div class="bar bar-died" style="height:73%" title="F17: 157.1K HPS, 235s, 47.9% boss, DIED 231s (P2)"></div><div class="bar-label">17</div></div>
+      <div class="bar-wrapper"><div class="bar-value">76K</div><div class="bar bar-died-early" style="height:36%" title="F18: 76.4K HPS, 263s, 43.4% boss, DIED 122s (P1)"></div><div class="bar-label">18</div></div>
+      <div class="bar-wrapper"><div class="bar-value">142K</div><div class="bar bar-died" style="height:66%" title="F19: 142.2K HPS, 369s, 36.4% boss, DIED 314s (P3)"></div><div class="bar-label">19</div></div>
+      <div class="bar-wrapper"><div class="bar-value">157K</div><div class="bar bar-died" style="height:73%" title="F20: 157.3K HPS, 315s, 34.8% boss, DIED 300s (P2)"></div><div class="bar-label">20</div></div>
+      <div class="bar-wrapper"><div class="bar-value">144K</div><div class="bar bar-died-early" style="height:67%" title="F21: 143.9K HPS, 123s, 67.1% boss, DIED 114s (P1)"></div><div class="bar-label">21</div></div>
+      <div class="bar-wrapper"><div class="bar-value">161K</div><div class="bar bar-died-early" style="height:75%" title="F22: 161.0K HPS, 92s, 74.6% boss, DIED 84s (P1)"></div><div class="bar-label">22</div></div>
+      <div class="bar-wrapper"><div class="bar-value">164K</div><div class="bar bar-died" style="height:76%" title="F23: 164.1K HPS, 385s, 31.1% boss, DIED 378s (P3)"></div><div class="bar-label">23</div></div>
+      <div class="bar-wrapper"><div class="bar-value">44K</div><div class="bar bar-died-early" style="height:20%" title="F25: 43.8K HPS, 404s, 26.5% boss, DIED 100s (P1)"></div><div class="bar-label">25</div></div>
+    </div>
+  </div>
+  <div style="display: flex; gap: 16px; font-size: 11px; color: var(--dim); margin-top: 4px;">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Survived</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Died (reached P2+)</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:rgba(248,81,73,0.4);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Died early (P1/Inter)</span>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">19 deaths across 20 pulls. Average death time: 194.7s (3:15). Only survived Fight 8 (81s wipe).</p>
+
+  <h3>Deaths by Phase</h3>
+  <div class="two-col" style="margin-bottom: 16px;">
+    <div>
+      <table>
+        <tr><th>Phase</th><th>Deaths</th><th>% of All Deaths</th></tr>
+        <tr><td style="color: var(--accent);">P1: Sentinels</td><td><strong style="color: var(--red);">7</strong></td><td>36.8%</td></tr>
+        <tr><td style="color: var(--yellow);">Intermission</td><td>1</td><td>5.3%</td></tr>
+        <tr><td style="color: var(--purple);">P2: Rift</td><td><strong style="color: var(--red);">9</strong></td><td>47.4%</td></tr>
+        <tr><td style="color: var(--red);">P3: Devouring</td><td>2</td><td>10.5%</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="callout callout-warning">
+        <h4>P1 Deaths Are the Problem</h4>
+        <p>7 deaths in P1 (0:00&ndash;2:14) means Senssay dies before the fight even starts 35% of the time. P1 is the lowest-damage phase with mostly single-target sentinel kills. Dying here is avoidable and costs the raid a healer for the entire Intermission, P2, and P3.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>Death Causes (Ranked)</h3>
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">Unknown / Environment</span>
+      <span class="death-count-badge death-count-high">8x</span>
+    </div>
+    <p style="font-size: 12px; color: var(--dim);">Fights 10, 11, 14, 16, 18, 19, 21, 22. Likely caused by failing to heal through overlapping DoTs, standing in avoidable ground effects, or environmental damage not attributed to a specific ability in logs.</p>
+  </div>
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">Cosmic Barrier</span>
+      <span class="death-count-badge death-count-mid">2x</span>
+    </div>
+    <p style="font-size: 12px; color: var(--dim);">Fights 6, 17. P2 mechanic from Rift Simulacrum &mdash; raid-wide damage on barrier break. Suggests positioning too close or missing a defensive.</p>
+  </div>
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">Bursting Emptiness</span>
+      <span class="death-count-badge death-count-mid">2x</span>
+    </div>
+    <p style="font-size: 12px; color: var(--dim);">Fights 7, 9. Void Droplet detonation &mdash; failing to kill droplets or being in range when they explode.</p>
+  </div>
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">Other Mechanics</span>
+      <span class="death-count-badge death-count-mid">7x</span>
+    </div>
+    <p style="font-size: 12px; color: var(--dim);">Simulacrum Backlash (F5), Void Remnants (F12), Grasp of Emptiness (F13), Falling (F15), Void Barrage (F20), Gravity Collapse (F23), Void Expulsion (F25). Diverse causes suggest general mechanic execution issues rather than one repeated failure.</p>
+  </div>
+</div>
+
+<!-- CD Discipline -->
+<div class="section">
+  <h2>CD Discipline Analysis</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">Major CD usage tracked across all 20 pulls.</p>
+
+  <div class="cd-grid">
+    <div class="cd-card">
+      <div class="cd-card-name">Invoke Yu'lon</div>
+      <div class="cd-card-stat">Used in: <strong>20/20 pulls</strong></div>
+      <div class="cd-card-stat">Avg first use: <strong>~5s into pull</strong></div>
+      <div class="cd-card-stat">Total casts: <strong>35</strong></div>
+      <div class="cd-card-stat" style="color: var(--green);">Consistent opener &mdash; good discipline</div>
+    </div>
+    <div class="cd-card">
+      <div class="cd-card-name">Celestial Conduit</div>
+      <div class="cd-card-stat">Used in: <strong>19/20 pulls</strong></div>
+      <div class="cd-card-stat">Avg first use: <strong>~48s into pull</strong></div>
+      <div class="cd-card-stat">Total casts: <strong>23</strong></div>
+      <div class="cd-card-stat" style="color: var(--green);">Good usage rate for 90s CD</div>
+    </div>
+    <div class="cd-card">
+      <div class="cd-card-name">Revival</div>
+      <div class="cd-card-stat">Used in: <strong>14/20 pulls</strong></div>
+      <div class="cd-card-stat">Avg first use: <strong>~100s into pull</strong></div>
+      <div class="cd-card-stat">Total casts: <strong>17</strong></div>
+      <div class="cd-card-stat" style="color: var(--yellow);">Missed in 6 pulls (died before CD ready)</div>
+    </div>
+    <div class="cd-card">
+      <div class="cd-card-name">Thunder Focus Tea</div>
+      <div class="cd-card-stat">Used in: <strong>20/20 pulls</strong></div>
+      <div class="cd-card-stat">Avg gap: <strong>~24s</strong></div>
+      <div class="cd-card-stat">Total casts: <strong>197</strong></div>
+      <div class="cd-card-stat" style="color: var(--green);">Excellent uptime on 30s CD</div>
+    </div>
+    <div class="cd-card">
+      <div class="cd-card-name">Life Cocoon</div>
+      <div class="cd-card-stat">Used in: <strong>15/20 pulls</strong></div>
+      <div class="cd-card-stat">Reactive external &mdash; no fixed timing</div>
+      <div class="cd-card-stat">Total casts: <strong>17</strong></div>
+      <div class="cd-card-stat" style="color: var(--green);">Used appropriately as emergency save</div>
+    </div>
+    <div class="cd-card">
+      <div class="cd-card-name">Mana Tea</div>
+      <div class="cd-card-stat">Used in: <strong>10/20 pulls</strong></div>
+      <div class="cd-card-stat">Avg first use: <strong>varies widely</strong></div>
+      <div class="cd-card-stat">Total casts: <strong>22</strong></div>
+      <div class="cd-card-stat" style="color: var(--yellow);">Only on longer pulls &mdash; dies before needed on short pulls</div>
+    </div>
+  </div>
+
+  <div class="callout callout-good">
+    <h4>CD Discipline is Not the Issue</h4>
+    <p>Senssay opens every pull with Yu'lon, uses Celestial Conduit within 48s, and chains Thunder Focus Tea on cooldown (197 total casts across 20 pulls at ~24s gaps). Revival is used when available, missed only in pulls where Senssay died before the 3-minute mark. The CD usage pattern is disciplined and consistent.</p>
+  </div>
+</div>
+
+<!-- Team CD Coordination -->
+<div class="section">
+  <h2>Team CD Coordination (Fight 23 &mdash; Best Pull)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">All healers' major CDs across the 384.7s pull. Phase boundaries marked.</p>
+
+  <table>
+    <tr>
+      <th>Healer</th>
+      <th>P1 (0:00&ndash;2:14)</th>
+      <th>Intermission (2:14&ndash;2:53)</th>
+      <th>P2 (2:53&ndash;5:09)</th>
+      <th>P3 (5:09+)</th>
+    </tr>
+    <tr style="background: rgba(0,255,152,0.05);">
+      <td><span class="healer-pill pill-monk">Senssay (MW)</span></td>
+      <td>
+        <span class="healer-pill pill-monk">Yu'lon 0:54</span>
+        <span class="healer-pill pill-monk">Revival 1:41</span>
+      </td>
+      <td>&mdash;</td>
+      <td>
+        <span class="healer-pill pill-monk">Yu'lon 3:11</span>
+        <span class="healer-pill pill-monk">Conduit 4:23</span>
+        <span class="healer-pill pill-monk">Revival 4:48</span>
+      </td>
+      <td>
+        <span class="healer-pill pill-monk">Yu'lon 6:02</span>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="healer-pill pill-paladin">Dueche (HPal)</span></td>
+      <td>
+        <span class="healer-pill pill-paladin">AvWrath 0:05</span>
+        <span class="healer-pill pill-paladin">LoH 0:43</span>
+        <span class="healer-pill pill-paladin">DiProt 1:19</span>
+      </td>
+      <td>&mdash;</td>
+      <td>
+        <span class="healer-pill pill-paladin">AvWrath 2:58</span>
+        <span class="healer-pill pill-paladin">DiProt 3:42</span>
+        <span class="healer-pill pill-paladin">BoSac 4:19</span>
+        <span class="healer-pill pill-paladin">AuraMast 4:23</span>
+        <span class="healer-pill pill-paladin">DiProt 4:43</span>
+      </td>
+      <td>
+        <span class="healer-pill pill-paladin">AvWrath 5:02</span>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="healer-pill pill-druid">Silencio (RDruid)</span></td>
+      <td>
+        <span class="healer-pill pill-druid">Convoke 0:00</span>
+        <span class="healer-pill pill-druid">Tranq 0:10</span>
+        <span class="healer-pill pill-druid">Convoke 1:07</span>
+      </td>
+      <td>
+        <span class="healer-pill pill-druid">Convoke 2:16</span>
+      </td>
+      <td>
+        <span class="healer-pill pill-druid">Convoke 3:24</span>
+        <span class="healer-pill pill-druid">Tranq 3:34</span>
+        <span class="healer-pill pill-druid">Convoke 4:26</span>
+      </td>
+      <td>
+        <span class="healer-pill pill-druid">Convoke 5:43</span>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="healer-pill pill-shaman">Brewtote (RSham)</span></td>
+      <td>
+        <span class="healer-pill pill-shaman">Asc 0:06</span>
+        <span class="healer-pill pill-shaman">SLT 0:26</span>
+      </td>
+      <td>&mdash;</td>
+      <td>
+        <span class="healer-pill pill-shaman">Asc 3:08</span>
+        <span class="healer-pill pill-shaman">SLT 4:22</span>
+      </td>
+      <td>&mdash;</td>
+    </tr>
+  </table>
+
+  <div class="callout callout-info">
+    <h4>Coordination Notes</h4>
+    <p><strong>P1 has heavy early CD usage</strong> from all healers &mdash; Yu'lon, Convoke, Ascendance, and Avenging Wrath all deployed in the first minute. This is normal for openers but may leave the team light on CDs for the P1&rarr;Intermission transition at 2:14.</p>
+    <p style="margin-top: 6px;"><strong>P2 CD stacking at 4:22-4:23:</strong> Senssay's Celestial Conduit (4:23), Dueche's Aura Mastery (4:23), and Brewtote's Spirit Link Totem (4:22) all fire within 1 second. This is likely intentional for a major damage event but represents significant CD overlap. Consider staggering to cover more ground.</p>
+  </div>
+</div>
+
+<!-- Cast Profile -->
+<div class="section">
+  <h2>Cast Profile (Fight 23 &mdash; 6:18 alive)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">Cast-per-minute breakdown. Based on 377.6s alive time in Fight 23.</p>
+
+  <table>
+    <tr>
+      <th>Ability</th>
+      <th>Casts</th>
+      <th>CPM</th>
+      <th>Role</th>
+      <th>Assessment</th>
+    </tr>
+    <tr>
+      <td style="color: var(--monk); font-weight: 600;">Vivify</td>
+      <td>70</td>
+      <td>11.1</td>
+      <td>Primary heal</td>
+      <td style="color: var(--green);">Core rotation &mdash; heavy usage expected</td>
+    </tr>
+    <tr>
+      <td style="color: var(--monk);">Renewing Mist</td>
+      <td>51</td>
+      <td>8.1</td>
+      <td>HoT maintenance</td>
+      <td style="color: var(--green);">Good uptime, maintaining charges</td>
+    </tr>
+    <tr>
+      <td style="color: var(--cyan);">Rushing Wind Kick</td>
+      <td>50</td>
+      <td>7.9</td>
+      <td>DPS filler / mobility</td>
+      <td style="color: var(--green);">Used as movement + damage</td>
+    </tr>
+    <tr>
+      <td style="color: var(--monk);">Enveloping Mist</td>
+      <td>35</td>
+      <td>5.6</td>
+      <td>Single-target HoT</td>
+      <td style="color: var(--green);">Strong Conduit of Celestials synergy</td>
+    </tr>
+    <tr>
+      <td style="color: var(--yellow);">Thunder Focus Tea</td>
+      <td>15</td>
+      <td>2.4</td>
+      <td>CD modifier</td>
+      <td style="color: var(--green);">On cooldown &mdash; 24s avg gap</td>
+    </tr>
+    <tr>
+      <td>Roll</td>
+      <td>14</td>
+      <td>2.2</td>
+      <td>Movement</td>
+      <td style="color: var(--dim);">Normal mobility usage</td>
+    </tr>
+    <tr>
+      <td style="color: var(--yellow);">Mana Tea</td>
+      <td>10</td>
+      <td>1.6</td>
+      <td>Mana management</td>
+      <td style="color: var(--green);">Active mana management</td>
+    </tr>
+    <tr>
+      <td style="color: var(--green);">Invoke Yu'lon</td>
+      <td>3</td>
+      <td>0.5</td>
+      <td>Major CD</td>
+      <td style="color: var(--green);">3 uses in 6:18 = near-perfect usage</td>
+    </tr>
+    <tr>
+      <td style="color: var(--accent);">Revival</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td>Raid CD</td>
+      <td style="color: var(--green);">2 uses &mdash; good for 3min CD</td>
+    </tr>
+    <tr>
+      <td style="color: var(--cyan);">Celestial Conduit</td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>Major CD</td>
+      <td style="color: var(--yellow);">Only 1 use &mdash; 90s CD should allow 3+ uses in 6min</td>
+    </tr>
+    <tr>
+      <td>Fortifying Brew</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td>Personal defensive</td>
+      <td style="color: var(--green);">Used when needed</td>
+    </tr>
+    <tr>
+      <td>Detox</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td>Dispel</td>
+      <td style="color: var(--dim);">Normal</td>
+    </tr>
+  </table>
+
+  <div class="two-col">
+    <div class="callout callout-good">
+      <h4>Rotation Fundamentals Are Solid</h4>
+      <p>Vivify (11.1 CPM) and Renewing Mist (8.1 CPM) dominate the cast profile as expected for Mistweaver. Enveloping Mist at 5.6 CPM indicates good Conduit of the Celestials talent usage. Thunder Focus Tea on cooldown. The core healing rotation is executed well.</p>
+    </div>
+    <div class="callout callout-info">
+      <h4>Celestial Conduit Under-Used</h4>
+      <p>Only 1 Celestial Conduit cast in 6:18 of alive time. With a 90-second cooldown, this should be cast at least 3 times. Across all 20 pulls, Conduit averages ~1.2 casts per pull. Each missed Conduit is a significant chunk of burst AoE healing lost during damage peaks.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Healing Breakdown -->
+<div class="section">
+  <h2>Healing Breakdown (Fight 23)</h2>
+  <table>
+    <tr>
+      <th>Source</th>
+      <th>Effective Healing</th>
+      <th>% of Total</th>
+      <th>Overheal %</th>
+      <th style="width: 120px;">OH Visual</th>
+      <th>Hits</th>
+    </tr>
+    <tr>
+      <td style="color: var(--monk); font-weight: 600;">Renewing Mist</td>
+      <td>13.6M</td>
+      <td>22.6%</td>
+      <td>25.5%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:74.5%"></div><div class="oh-bar-oh" style="width:25.5%"></div></div></td>
+      <td>3,097</td>
+    </tr>
+    <tr>
+      <td style="color: var(--monk);">Invigorating Mists</td>
+      <td>9.2M</td>
+      <td>15.3%</td>
+      <td>23.2%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:76.8%"></div><div class="oh-bar-oh" style="width:23.2%"></div></div></td>
+      <td>779</td>
+    </tr>
+    <tr>
+      <td style="color: var(--monk);">Enveloping Mist</td>
+      <td>7.7M</td>
+      <td>12.8%</td>
+      <td style="color: var(--yellow);">39.7%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:60.3%"></div><div class="oh-bar-oh" style="width:39.7%"></div></div></td>
+      <td>1,827</td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple);">Litany of Lightblind Wrath</td>
+      <td>4.5M</td>
+      <td>7.6%</td>
+      <td style="color: var(--green);">0.0%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:100%"></div></div></td>
+      <td>412</td>
+    </tr>
+    <tr>
+      <td style="color: var(--monk);">Rushing Wind Kick</td>
+      <td>4.4M</td>
+      <td>7.4%</td>
+      <td>24.0%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:76%"></div><div class="oh-bar-oh" style="width:24%"></div></div></td>
+      <td>250</td>
+    </tr>
+    <tr>
+      <td style="color: var(--cyan);">Chi Cocoon</td>
+      <td>4.0M</td>
+      <td>6.7%</td>
+      <td style="color: var(--green);">0.0%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:100%"></div></div></td>
+      <td>304</td>
+    </tr>
+    <tr>
+      <td>Vivify</td>
+      <td>2.5M</td>
+      <td>4.2%</td>
+      <td style="color: var(--red);">46.0%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:54%"></div><div class="oh-bar-oh" style="width:46%"></div></div></td>
+      <td>70</td>
+    </tr>
+    <tr>
+      <td>Gust of Mists</td>
+      <td>2.3M</td>
+      <td>3.9%</td>
+      <td>33.2%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:66.8%"></div><div class="oh-bar-oh" style="width:33.2%"></div></div></td>
+      <td>248</td>
+    </tr>
+    <tr>
+      <td>Leech</td>
+      <td>1.9M</td>
+      <td>3.1%</td>
+      <td style="color: var(--green);">7.3%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:92.7%"></div><div class="oh-bar-oh" style="width:7.3%"></div></div></td>
+      <td>199</td>
+    </tr>
+    <tr>
+      <td style="color: var(--green);">Revival</td>
+      <td>1.7M</td>
+      <td>2.8%</td>
+      <td>15.3%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:84.7%"></div><div class="oh-bar-oh" style="width:15.3%"></div></div></td>
+      <td>46</td>
+    </tr>
+    <tr>
+      <td>Zen Pulse</td>
+      <td>1.6M</td>
+      <td>2.7%</td>
+      <td style="color: var(--yellow);">39.3%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:60.7%"></div><div class="oh-bar-oh" style="width:39.3%"></div></div></td>
+      <td>274</td>
+    </tr>
+    <tr>
+      <td>Soothing Mist</td>
+      <td>1.2M</td>
+      <td>2.0%</td>
+      <td style="color: var(--green);">3.7%</td>
+      <td><div class="oh-bar"><div class="oh-bar-eff" style="width:96.3%"></div><div class="oh-bar-oh" style="width:3.7%"></div></div></td>
+      <td>552</td>
+    </tr>
+  </table>
+  <div style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    <strong>Total effective:</strong> 60.1M &nbsp;|&nbsp; <strong>Total overheal:</strong> 26.5% &nbsp;|&nbsp; <strong>HPS while alive:</strong> 164.1K
+  </div>
+  <div class="callout callout-info">
+    <h4>Healing Mix Notes</h4>
+    <p>Renewing Mist (22.6%) and Invigorating Mists (15.3%) are the top sources &mdash; expected for MW with Conduit of the Celestials. Enveloping Mist at 39.7% overheal is slightly high, suggesting some casts on targets already being healed. Vivify overheal at 46% is elevated &mdash; on a prog night this is partially expected (panic healing on targets already topped). Litany of Lightblind Wrath and Chi Cocoon at 0% overheal are trinket/absorb effects performing perfectly.</p>
+  </div>
+</div>
+
+<!-- DPS Contribution -->
+<div class="section">
+  <h2>DPS Contribution</h2>
+  <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card">
+      <div class="card-label">Avg DPS (qualifying pulls)</div>
+      <div class="card-value" style="color: var(--dim);">2,463</div>
+      <div class="card-sub">Pulls with >0 DPS: 10/20</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Best DPS Pull</div>
+      <div class="card-value" style="color: var(--cyan);">4,463</div>
+      <div class="card-sub">Fight 23 (384.7s) &mdash; best overall pull</div>
+    </div>
+    <div class="card">
+      <div class="card-label">DPS Sources</div>
+      <div class="card-value" style="color: var(--dim); font-size: 16px;">RSK / Tiger Palm / BK</div>
+      <div class="card-sub">Rushing Wind Kick is primary damage + heal</div>
+    </div>
+  </div>
+  <div class="callout callout-info">
+    <h4>DPS Filler is Present But Not Prioritized</h4>
+    <p>Senssay contributes DPS through Rushing Wind Kick (which doubles as healing via Way of the Crane), Tiger Palm, and Blackout Kick. DPS shows as 0 in 10/20 pulls because those were short-lived pulls where every GCD went to healing. On longer pulls where healing demand stabilizes, DPS contribution emerges. This is appropriate for prog &mdash; survival and healing take priority.</p>
+  </div>
+</div>
+
+<!-- Healer Team Ranking -->
+<div class="section">
+  <h2>Healer Team Ranking (Fight 23)</h2>
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Healer</th>
+      <th>Spec</th>
+      <th>Total Healing</th>
+      <th>HPS</th>
+      <th>Status</th>
+    </tr>
+    <tr style="background: rgba(0,255,152,0.05);">
+      <td>1</td>
+      <td style="color: var(--monk); font-weight: 600;">Senssay</td>
+      <td>Mistweaver Monk</td>
+      <td>63.1M</td>
+      <td style="color: var(--green); font-weight: 600;">164.1K</td>
+      <td><span class="death-count-badge death-count-high" style="font-size: 11px;">DIED 6:18</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td style="color: #ff7d0a;">Silencio</td>
+      <td>Restoration Druid</td>
+      <td>63.2M</td>
+      <td>164.4K</td>
+      <td><span class="death-count-badge" style="background: rgba(63,185,80,0.2); color: var(--green); font-size: 11px;">SURVIVED</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td style="color: #f48cba;">Dueche</td>
+      <td>Holy Paladin</td>
+      <td>58.7M</td>
+      <td>152.5K</td>
+      <td><span class="death-count-badge" style="background: rgba(63,185,80,0.2); color: var(--green); font-size: 11px;">SURVIVED</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td style="color: #0070de;">Brewtote</td>
+      <td>Restoration Shaman</td>
+      <td>54.5M</td>
+      <td>141.8K</td>
+      <td><span class="death-count-badge" style="background: rgba(63,185,80,0.2); color: var(--green); font-size: 11px;">SURVIVED</span></td>
+    </tr>
+  </table>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">On Fight 23, Senssay had the highest HPS while alive (164.1K), effectively tied with Silencio (164.4K). Note: Senssay died 7 seconds before the wipe, so the HPS difference from the other healers is essentially within margin.</div>
+</div>
+
+<!-- Reference Comparison -->
+<div class="ref-section">
+  <h3>Reference Comparison (De-Emphasized for Prog Mode)</h3>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Top 5 Mythic Crown of the Cosmos Mistweaver Monks (kills):</p>
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Player</th>
+      <th>Server</th>
+      <th>HPS</th>
+      <th>Kill Duration</th>
+    </tr>
+    <tr><td>1</td><td>&#27809;&#36947;&#29702;&#30340;</td><td>&#30333;&#38134;&#20043;&#25163;</td><td style="color: var(--green);">264.5K</td><td>7:14</td></tr>
+    <tr><td>2</td><td>&#32546;&#32554;&#23396;&#40511;&#24433;&#19975;</td><td>&#32737;&#32736;&#26790;&#22659;</td><td>259.9K</td><td>7:55</td></tr>
+    <tr><td>3</td><td>Fourteen</td><td>Elune</td><td>257.1K</td><td>6:24</td></tr>
+    <tr><td>4</td><td>&#26178;&#23696;&#29378;&#19977;</td><td>&#29123;&#28903;&#20043;&#21051;</td><td>256.5K</td><td>8:41</td></tr>
+    <tr><td>5</td><td>&#25105;&#36523;&#21518;&#27809;&#23614;&#24052;</td><td>&#34880;&#29615;</td><td>254.9K</td><td>8:11</td></tr>
+  </table>
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    <strong>Context:</strong> These are kill logs with 6:24&ndash;8:41 duration vs. Senssay's best pull of 6:18 alive time on a prog night. Direct HPS comparison is not meaningful at this stage &mdash; kill logs have more P3 damage (sustained high HPS), and Senssay has not yet seen P3 consistently. The gap between Senssay's peak HPS (164K) and reference kills (255-265K) will narrow significantly once the team reaches and practices P3 mechanics.
+  </p>
+</div>
+
+<!-- Wipe Progression Table -->
+<div class="section">
+  <h2>Wipe Progression</h2>
+  <table>
+    <tr>
+      <th>Fight</th>
+      <th>Duration</th>
+      <th>Boss %</th>
+      <th>Senssay HPS</th>
+      <th>Team Avg HPS</th>
+      <th>vs Team</th>
+      <th>Death</th>
+    </tr>
+    <tr><td>5</td><td>3:48</td><td>50.4%</td><td>151.1K</td><td>149.8K</td><td style="color: var(--green);">+0.9%</td><td style="color: var(--red);">219s (P2) &mdash; Simulacrum Backlash</td></tr>
+    <tr><td>6</td><td>3:53</td><td>47.1%</td><td>168.3K</td><td>154.3K</td><td style="color: var(--green);">+9.1%</td><td style="color: var(--red);">219s (P2) &mdash; Cosmic Barrier</td></tr>
+    <tr><td>7</td><td>1:17</td><td>84.1%</td><td>130.3K</td><td>135.3K</td><td style="color: var(--red);">-3.7%</td><td style="color: var(--red);">65s (P1) &mdash; Bursting Emptiness</td></tr>
+    <tr style="background: rgba(63,185,80,0.05);"><td>8</td><td>1:21</td><td>82.2%</td><td>163.5K</td><td>160.1K</td><td style="color: var(--green);">+2.1%</td><td style="color: var(--green);">Survived</td></tr>
+    <tr><td>9</td><td>5:15</td><td>32.9%</td><td>170.0K</td><td>152.7K</td><td style="color: var(--green);">+11.3%</td><td style="color: var(--red);">301s (P2) &mdash; Bursting Emptiness</td></tr>
+    <tr><td>10</td><td>2:00</td><td>71.1%</td><td>130.8K</td><td>145.8K</td><td style="color: var(--red);">-10.3%</td><td style="color: var(--red);">101s (P1) &mdash; Environment</td></tr>
+    <tr><td>11</td><td>3:47</td><td>50.0%</td><td>100.4K</td><td>135.1K</td><td style="color: var(--red);">-25.7%</td><td style="color: var(--red);">159s (Inter) &mdash; Environment</td></tr>
+    <tr><td>12</td><td>4:47</td><td>42.5%</td><td>148.5K</td><td>148.1K</td><td style="color: var(--green);">+0.3%</td><td style="color: var(--red);">262s (P2) &mdash; Void Remnants</td></tr>
+    <tr><td>13</td><td>6:01</td><td>32.3%</td><td>153.5K</td><td>128.5K</td><td style="color: var(--green);">+19.5%</td><td style="color: var(--red);">298s (P2) &mdash; Grasp of Emptiness</td></tr>
+    <tr><td>14</td><td>1:26</td><td>81.2%</td><td>159.3K</td><td>156.6K</td><td style="color: var(--green);">+1.7%</td><td style="color: var(--red);">75s (P1) &mdash; Environment</td></tr>
+    <tr><td>15</td><td>3:05</td><td>61.8%</td><td>142.7K</td><td>134.9K</td><td style="color: var(--green);">+5.8%</td><td style="color: var(--red);">178s (P2) &mdash; Falling</td></tr>
+    <tr><td>16</td><td>3:05</td><td>61.6%</td><td>123.6K</td><td>128.3K</td><td style="color: var(--red);">-3.7%</td><td style="color: var(--red);">182s (P2) &mdash; Environment</td></tr>
+    <tr><td>17</td><td>3:55</td><td>47.9%</td><td>157.1K</td><td>157.8K</td><td style="color: var(--dim);">-0.4%</td><td style="color: var(--red);">231s (P2) &mdash; Cosmic Barrier</td></tr>
+    <tr><td>18</td><td>4:23</td><td>43.4%</td><td style="color: var(--red);">76.4K</td><td>142.6K</td><td style="color: var(--red);">-46.4%</td><td style="color: var(--red);">122s (P1) &mdash; Environment</td></tr>
+    <tr><td>19</td><td>6:09</td><td>36.4%</td><td>142.2K</td><td>137.8K</td><td style="color: var(--green);">+3.2%</td><td style="color: var(--red);">314s (P3) &mdash; Environment</td></tr>
+    <tr><td>20</td><td>5:15</td><td>34.8%</td><td>157.3K</td><td>157.2K</td><td style="color: var(--green);">+0.1%</td><td style="color: var(--red);">300s (P2) &mdash; Void Barrage</td></tr>
+    <tr><td>21</td><td>2:03</td><td>67.1%</td><td>143.9K</td><td>169.2K</td><td style="color: var(--red);">-14.9%</td><td style="color: var(--red);">114s (P1) &mdash; Environment</td></tr>
+    <tr><td>22</td><td>1:32</td><td>74.6%</td><td>161.0K</td><td>151.4K</td><td style="color: var(--green);">+6.3%</td><td style="color: var(--red);">84s (P1) &mdash; Environment</td></tr>
+    <tr><td>23</td><td>6:25</td><td>31.1%</td><td style="color: var(--green);">164.1K</td><td>155.7K</td><td style="color: var(--green);">+5.4%</td><td style="color: var(--red);">378s (P3) &mdash; Gravity Collapse</td></tr>
+    <tr><td>25</td><td>6:44</td><td>26.5%</td><td style="color: var(--red);">43.8K</td><td>133.6K</td><td style="color: var(--red);">-67.2%</td><td style="color: var(--red);">100s (P1) &mdash; Void Expulsion</td></tr>
+  </table>
+  <div class="callout callout-info" style="margin-top: 16px;">
+    <h4>Trend Analysis</h4>
+    <p>No clear upward or downward HPS trend across the session. Senssay outperforms team average HPS in 13/20 pulls (when alive long enough to contribute meaningfully). The three worst pulls (F11: 100K, F18: 76K, F25: 44K) all feature early P1 deaths that tank the HPS average. On pulls where Senssay survives to P2+ (fights 5, 6, 9, 12, 13, 17, 19, 20, 23), HPS consistently ranges 148K-170K, showing stable output when alive.</p>
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Items</h2>
+
+  <div class="improvement-item" style="border-left: 3px solid var(--red);">
+    <h4><span class="priority priority-critical">CRITICAL</span> Survive P1 &mdash; 7 deaths in the lowest-damage phase</h4>
+    <p>Senssay died 7 times in P1 (Sentinels, 0:00-2:14), the phase with the least raid-wide damage. Primary killers: Void Expulsion (dodge the frontal), Bursting Emptiness (kill or avoid Void Droplets), and environment/DoT damage. P1 deaths cost the raid a healer for the entire fight &mdash; Intermission, P2, and P3 healing is all done with 3 healers instead of 4.</p>
+    <div class="impact">Impact: Eliminating P1 deaths alone would improve phase reach rate from 60% to ~90% for Intermission and P2.</div>
+  </div>
+
+  <div class="improvement-item" style="border-left: 3px solid var(--red);">
+    <h4><span class="priority priority-critical">CRITICAL</span> Use Fortifying Brew proactively before heavy damage</h4>
+    <p>Fortifying Brew was cast only 2 times in the best pull (Fight 23). With a 6-minute cooldown and the pull lasting 6:18, there is room for 2 uses, but the timing matters. On pulls where Senssay dies early, Fortifying Brew is often not used at all. Pre-casting Fortifying Brew before known damage events (Void Expulsion at ~27s intervals, Silversunder Catastrophe at 2:14) would prevent many of these deaths.</p>
+    <div class="impact">Impact: Personal defensive CD can be the difference between surviving an overlap and dying to environment damage.</div>
+  </div>
+
+  <div class="improvement-item" style="border-left: 3px solid var(--orange);">
+    <h4><span class="priority priority-high">HIGH</span> Use Celestial Conduit more frequently</h4>
+    <p>Celestial Conduit has a 90-second cooldown but averaged only 1.2 casts per pull across the night. In Fight 23 (6:18 alive), it was cast only once at 4:23. A 90s CD should be cast at minimum 3 times in a 6-minute pull (at ~0:30, ~2:00, ~3:30 or equivalent). Each missed Conduit is a significant burst AoE healing window lost.</p>
+    <div class="impact">Impact: An additional 1-2 Celestial Conduit casts per pull adds ~15-25K effective healing per use during damage peaks.</div>
+  </div>
+
+  <div class="improvement-item" style="border-left: 3px solid var(--yellow);">
+    <h4><span class="priority priority-medium">MEDIUM</span> Reduce P1 overheal to conserve mana for P2/P3</h4>
+    <p>P1 overheal is 34.1% vs P2 at 22.3%. Vivify overheal is 46% fight-wide, and Enveloping Mist overheal is 39.7%. In P1, damage is predictable and spread thin &mdash; Renewing Mist maintenance plus occasional Vivify should suffice. Saving Enveloping Mist casts for P2+ damage events and reducing unnecessary Vivify casts on topped-off targets would preserve mana for the healing-intensive phases.</p>
+    <div class="impact">Impact: Shifting 2-3 Vivify casts per minute from P1 to DPS filler would save ~5% mana for P2/P3 while maintaining HPS through Rushing Wind Kick healing contribution.</div>
+  </div>
+
+  <div class="improvement-item" style="border-left: 3px solid var(--yellow);">
+    <h4><span class="priority priority-medium">MEDIUM</span> P2 positioning awareness (Cosmic Barrier, Void Barrage, Falling)</h4>
+    <p>9 deaths in P2 from varied mechanics: Cosmic Barrier (2x), Void Barrage (1x), Void Remnants (1x), Grasp of Emptiness (1x), Simulacrum Backlash (1x), Falling (1x), plus 2 environment deaths. The diversity of death causes points to general P2 positioning issues rather than one specific mechanic. Rift Slash dodging, Call of the Void awareness, and Voidstalker Sting spread are all P2 movement checks.</p>
+    <div class="impact">Impact: Reducing P2 death rate from 82% (9/11 pulls that reached P2) to under 50% would allow more P3 practice time.</div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Data source: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Report Hz1Lm672dZnBw9YC</a> &middot; Crown of the Cosmos (Mythic) &middot; Fights 5-25 (20 pulls, fight 24 excluded as reset)</p>
+  <p>Healer team: Senssay (Mistweaver Monk, 291 ilvl) &middot; Dueche (Holy Paladin, 291) &middot; Silencio (Restoration Druid, 289) &middot; Brewtote (Restoration Shaman, 288)</p>
+  <p>Reference: Top 5 Mythic Crown MW Monks from WCL rankings. Direct comparison de-emphasized for prog mode.</p>
+  <p>Phase timings: P1 0:00-2:14 &middot; Intermission 2:14-2:53 &middot; P2 2:53-5:09 &middot; P3 5:09+</p>
+  <p style="margin-top: 8px;">Generated June 25, 2026</p>
+</div>
+
+</body>
+</html>

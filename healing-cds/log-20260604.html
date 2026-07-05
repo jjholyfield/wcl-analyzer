@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log Analysis — June 4, 2026 — Mythic LBV Prog</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 960px; margin: 0 auto; line-height: 1.5; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: #c4a1ff; margin-top: 36px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+
+  .summary-box { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 20px 24px; margin-bottom: 24px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .summary-card { background: #0d0d0d; border-radius: 6px; padding: 14px; text-align: center; }
+  .summary-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .summary-value { font-size: 24px; font-weight: 700; color: #fff; }
+  .summary-sub { font-size: 12px; color: #555; margin-top: 2px; }
+
+  .player-card { display: block; background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-bottom: 8px; text-decoration: none; transition: border-color 0.2s, background 0.2s; }
+  .player-card:hover { border-color: #333; background: #151515; }
+  .player-card.disabled { opacity: 0.35; pointer-events: none; }
+  .player-row { display: flex; align-items: center; gap: 14px; }
+  .player-rank { font-size: 16px; font-weight: 700; color: #333; min-width: 28px; text-align: center; font-family: 'Courier New', monospace; }
+  .player-card:hover .player-rank { color: #c4a1ff; }
+  .player-info { flex: 1; }
+  .player-name { font-size: 15px; font-weight: 600; color: #fff; }
+  .player-spec { font-size: 12px; color: #666; }
+  .player-stats { display: flex; gap: 20px; font-size: 12px; color: #888; }
+  .player-stat-bad { color: #ff6b6b; }
+  .player-stat-warn { color: #ffa940; }
+  .player-stat-ok { color: #4caf50; }
+  .player-arrow { font-size: 16px; color: #333; }
+  .player-card:hover .player-arrow { color: #888; }
+
+  .role-header { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 20px; margin-bottom: 10px; }
+
+  .boss-tag { display: inline-block; background: #1a1212; border: 1px solid #332222; color: #ff6b6b; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 16px; }
+
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+
+<h1>Log Analysis &mdash; June 4, 2026</h1>
+<p class="subtitle">Mythic Pallys Prog &mdash; 30 pulls on Mythic Lightblinded Vanguard &mdash; <a href="https://www.warcraftlogs.com/reports/x2jCDbqdvWHwKQFM" target="_blank" style="color:#7cacf8;">WCL Report</a></p>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-label">Pulls</div>
+    <div class="summary-value">30</div>
+    <div class="summary-sub">all wipes</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Best Pull</div>
+    <div class="summary-value">6:51</div>
+    <div class="summary-sub">pull #26</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Boss</div>
+    <div class="summary-value" style="font-size:18px;">M LBV</div>
+    <div class="summary-sub">Lightblinded Vanguard</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Players</div>
+    <div class="summary-value">24</div>
+    <div class="summary-sub">16 DPS / 6 heal / 2 tank</div>
+  </div>
+</div>
+
+<span class="boss-tag">MYTHIC LIGHTBLINDED VANGUARD</span>
+
+<h2>Team Trends</h2>
+
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;">
+  <div style="background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:16px;">
+    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Pre-Pot on Pull (DPS)</div>
+    <div style="font-size:28px;font-weight:700;color:#4caf50;">96%</div>
+    <div style="font-size:12px;color:#666;margin-top:4px;">Critters, Balecoda, Orichamaru, Moistbear all 30/30. Snackznchill lowest at 25/30.</div>
+  </div>
+  <div style="background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:16px;">
+    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Healthstone Usage</div>
+    <div style="font-size:28px;font-weight:700;color:#ffa940;">47%</div>
+    <div style="font-size:12px;color:#666;margin-top:4px;">DPS team avg across 30 pulls. Critters worst at 7%. Zinnks best at 83%. Multiple players below 30%.</div>
+  </div>
+  <div style="background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:16px;">
+    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Health Potion Usage</div>
+    <div style="font-size:28px;font-weight:700;color:#ffa940;">40%</div>
+    <div style="font-size:12px;color:#666;margin-top:4px;">Separate CD from DPS pots. Moistbear best at 67%. Critters 10%, Orichamaru 10%, Youngn 4%.</div>
+  </div>
+  <div style="background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:16px;">
+    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Early Death Rate</div>
+    <div style="font-size:28px;font-weight:700;color:#ffa940;">15%</div>
+    <div style="font-size:12px;color:#666;margin-top:4px;">Down from 22% on June 2. Alitheria worst at 31%. Snackznchill 30%. Critters best at 7%.</div>
+  </div>
+</div>
+
+<div style="background:#141414;border-left:3px solid #4caf50;border-radius:6px;padding:14px 18px;margin-bottom:12px;font-size:13px;color:#bbb;line-height:1.7;">
+  <strong style="color:#fff;">Pre-potting improved from June 2.</strong> DPS team average is 96%. Critters, Balecoda, Orichamaru, and Moistbear all potted every pull. Snackznchill lowest at 25/30.
+</div>
+
+<div style="background:#141414;border-left:3px solid #ffa940;border-radius:6px;padding:14px 18px;margin-bottom:12px;font-size:13px;color:#bbb;line-height:1.7;">
+  <strong style="color:#fff;">Critters has the best rotation on the team (94% of #1) but barely touches consumables.</strong> 7% healthstone and 10% health pot usage. Meanwhile the rotation is near-perfect &mdash; Kill Command at 98%, dead time 5.5%. The gap between Critters&rsquo; mechanical play and consumable discipline is the widest on the roster.
+</div>
+
+<div style="background:#141414;border-left:3px solid #ffa940;border-radius:6px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#bbb;line-height:1.7;">
+  <strong style="color:#fff;">Early death rate dropped from 22% (June 2) to 15%, but Snackznchill is still dying in 30% of pulls.</strong> Was 42% on June 2. Alitheria leads at 31% despite having Divine Shield, Lay on Hands, and Divine Protection. Every early death drops that player&rsquo;s DPS by 40-50% and removes a body for mechanics.
+</div>
+
+<h2>DPS</h2>
+<p style="font-size:13px;color:#888;margin-bottom:16px;">Each player compared against top ranked players of their spec on this boss. Click for full audit.</p>
+
+<a href="/raid/log-20260604-balecoda" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">1</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#33937f;">Balecoda</div>
+      <div class="player-spec">Augmentation Evoker</div>
+    </div>
+    <div class="player-stats">
+      <span>232K avg</span>
+      <span class="player-stat-ok">30/30 pre-pot</span>
+      <span class="player-stat-warn">Eruption 71% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-smokinthisza" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">2</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#aad372;">Smokinthisza</div>
+      <div class="player-spec">Marksmanship Hunter</div>
+    </div>
+    <div class="player-stats">
+      <span>222K avg</span>
+      <span class="player-stat-bad">22.9% dead time</span>
+      <span class="player-stat-warn">Aimed Shot 74% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-snackznchill" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">3</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#3fc7eb;">Snackznchill</div>
+      <div class="player-spec">Frost Mage</div>
+    </div>
+    <div class="player-stats">
+      <span>215K avg</span>
+      <span class="player-stat-bad">9/30 early deaths (30%)</span>
+      <span class="player-stat-warn">Flurry 68% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-critters" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">4</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#aad372;">Critters</div>
+      <div class="player-spec">Survival Hunter</div>
+    </div>
+    <div class="player-stats">
+      <span>215K avg</span>
+      <span class="player-stat-ok">94% of top DPS</span>
+      <span class="player-stat-bad">7% healthstones</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-zinnks" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">5</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#33937f;">Zinnks</div>
+      <div class="player-spec">Augmentation Evoker</div>
+    </div>
+    <div class="player-stats">
+      <span>215K avg</span>
+      <span class="player-stat-ok">83% HS usage (best)</span>
+      <span class="player-stat-warn">off-healing wasting globals</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-alitheria" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">6</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#f48cba;">Alitheria</div>
+      <div class="player-spec">Retribution Paladin &mdash; benched pulls 1&ndash;14</div>
+    </div>
+    <div class="player-stats">
+      <span>214K avg (16 pulls)</span>
+      <span class="player-stat-bad">5/16 early deaths (31%)</span>
+      <span class="player-stat-warn">CPM 79% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-mbaku" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">7</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#aad372;">Mbaku</div>
+      <div class="player-spec">Survival Hunter</div>
+    </div>
+    <div class="player-stats">
+      <span>210K avg</span>
+      <span class="player-stat-bad">6/30 early deaths (20%)</span>
+      <span class="player-stat-ok">Kill Command 96% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-mheeraidon" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">8</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#33937f;">Mheeraidon</div>
+      <div class="player-spec">Augmentation Evoker &mdash; benched pulls 15&ndash;31</div>
+    </div>
+    <div class="player-stats">
+      <span>197K avg (14 pulls)</span>
+      <span class="player-stat-bad">Living Flame 41% of top</span>
+      <span class="player-stat-ok">1/14 deaths (7%)</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-youngn" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">9</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#00ff98;">Youngn</div>
+      <div class="player-spec">Windwalker Monk &mdash; benched pulls 1&ndash;3</div>
+    </div>
+    <div class="player-stats">
+      <span>195K avg (27 pulls)</span>
+      <span class="player-stat-bad">19.1% dead time</span>
+      <span class="player-stat-bad">1/27 health pots (4%)</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-starfighter" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">10</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#c69b6d;">Starfighter</div>
+      <div class="player-spec">Arms Warrior</div>
+    </div>
+    <div class="player-stats">
+      <span>192K avg</span>
+      <span class="player-stat-warn">Mortal Strike 75% of top</span>
+      <span class="player-stat-ok">3.2% dead time</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-orichamaru" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">11</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#8788ee;">Orichamaru</div>
+      <div class="player-spec">Demonology Warlock</div>
+    </div>
+    <div class="player-stats">
+      <span>190K avg</span>
+      <span class="player-stat-ok">30/30 pre-pot</span>
+      <span class="player-stat-warn">HoG 74% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-sonic" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">12</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#8788ee;">Son&igrave;c</div>
+      <div class="player-spec">Demonology Warlock</div>
+    </div>
+    <div class="player-stats">
+      <span>186K avg</span>
+      <span class="player-stat-warn">HoG 76% of top</span>
+      <span class="player-stat-warn">Demonbolt 77% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-mortwo" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">13</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#aad372;">Mortwo</div>
+      <div class="player-spec">Marksmanship Hunter &mdash; benched pulls 15&ndash;31</div>
+    </div>
+    <div class="player-stats">
+      <span>183K avg (14 pulls)</span>
+      <span class="player-stat-bad">24.9% dead time</span>
+      <span class="player-stat-ok">0/14 deaths</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-nurnyx" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">14</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#e0e0e0;">Nurnyx</div>
+      <div class="player-spec">Shadow Priest &mdash; DPS pulls 15&ndash;31</div>
+    </div>
+    <div class="player-stats">
+      <span>169K avg (16 pulls)</span>
+      <span class="player-stat-bad">CPM 72% of top</span>
+      <span class="player-stat-bad">Mind Flay 45% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-moistbear" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">15</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#ff7c0a;">Moistbear</div>
+      <div class="player-spec">Feral Druid</div>
+    </div>
+    <div class="player-stats">
+      <span>155K avg</span>
+      <span class="player-stat-bad">Shred 40% of top (lowest)</span>
+      <span class="player-stat-warn">CPM 73% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-darthurg" class="player-card">
+  <div class="player-row">
+    <span class="player-rank">16</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#aad372;">Darthurg</div>
+      <div class="player-spec">Marksmanship Hunter &mdash; 3 pulls only</div>
+    </div>
+    <div class="player-stats">
+      <span>130K avg (3 pulls)</span>
+      <span class="player-stat-bad">48% of top DPS</span>
+      <span class="player-stat-bad">28.3% dead time</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<h2>Healers</h2>
+
+<a href="/raid/log-20260604-senssay" class="player-card">
+  <div class="player-row">
+    <span class="player-rank" style="color:#00ff98;">&bull;</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#00ff98;">Senssay</div>
+      <div class="player-spec">Mistweaver Monk</div>
+    </div>
+    <div class="player-stats">
+      <span>171K HPS (68%)</span>
+      <span class="player-stat-warn">CPM 80% of top</span>
+      <span class="player-stat-ok">29/30 mana pots</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-brewtote" class="player-card">
+  <div class="player-row">
+    <span class="player-rank" style="color:#0070dd;">&bull;</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#0070dd;">Brewtote</div>
+      <div class="player-spec">Restoration Shaman</div>
+    </div>
+    <div class="player-stats">
+      <span>159K HPS (72%)</span>
+      <span class="player-stat-ok">CPM 98% of top</span>
+      <span class="player-stat-bad">0/30 mana pots</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-dueche" class="player-card">
+  <div class="player-row">
+    <span class="player-rank" style="color:#f48cba;">&bull;</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#f48cba;">Dueche</div>
+      <div class="player-spec">Holy Paladin</div>
+    </div>
+    <div class="player-stats">
+      <span>156K HPS (73%)</span>
+      <span class="player-stat-bad">7/30 early deaths (23%)</span>
+      <span class="player-stat-ok">CPM 100% of top</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-silencio" class="player-card">
+  <div class="player-row">
+    <span class="player-rank" style="color:#ff7c0a;">&bull;</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#ff7c0a;">S&igrave;lencio</div>
+      <div class="player-spec">Restoration Druid</div>
+    </div>
+    <div class="player-stats">
+      <span>153K HPS (59%)</span>
+      <span class="player-stat-bad">0/30 health pots</span>
+      <span class="player-stat-warn">17.2% dead time</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-nurnyx-disc" class="player-card">
+  <div class="player-row">
+    <span class="player-rank" style="color:#e0e0e0;">&bull;</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#e0e0e0;">Nurnyx</div>
+      <div class="player-spec">Discipline Priest &mdash; healer pulls 1&ndash;14</div>
+    </div>
+    <div class="player-stats">
+      <span>133K HPS (56%)</span>
+      <span class="player-stat-bad">0/14 mana pots</span>
+      <span class="player-stat-ok">1/14 deaths (7%)</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-iconserve" class="player-card">
+  <div class="player-row">
+    <span class="player-rank" style="color:#f48cba;">&bull;</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#f48cba;">Iconserve</div>
+      <div class="player-spec">Holy Paladin &mdash; benched pulls 1&ndash;14</div>
+    </div>
+    <div class="player-stats">
+      <span>100K HPS (46%)</span>
+      <span class="player-stat-bad">CPM 74% of top</span>
+      <span class="player-stat-bad">4/16 deaths (25%)</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<h2>Tanks</h2>
+
+<a href="/raid/log-20260604-unholyftw" class="player-card">
+  <div class="player-row">
+    <span class="player-rank" style="color:#c41e3a;">&bull;</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#c41e3a;">Unholyftw</div>
+      <div class="player-spec">Blood Death Knight</div>
+    </div>
+    <div class="player-stats">
+      <span>95K DPS (58% of top)</span>
+      <span class="player-stat-bad">Heart Strike 53% of top</span>
+      <span class="player-stat-ok">2/30 deaths</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<a href="/raid/log-20260604-nucke" class="player-card">
+  <div class="player-row">
+    <span class="player-rank" style="color:#a330c9;">&bull;</span>
+    <div class="player-info">
+      <div class="player-name" style="color:#a330c9;">Nucke</div>
+      <div class="player-spec">Vengeance Demon Hunter</div>
+    </div>
+    <div class="player-stats">
+      <span>81K DPS (58% of top)</span>
+      <span class="player-stat-bad">Soul Cleave 45% of top</span>
+      <span class="player-stat-warn">Demon Spikes 49%</span>
+    </div>
+    <span class="player-arrow">&rarr;</span>
+  </div>
+</a>
+
+<div class="footer">
+  Data from WCL v2 API &mdash; report x2jCDbqdvWHwKQFM &mdash; player audits compare against top ranked players per spec on each boss
+</div>
+
+</body>
+</html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smokinthisza - Crown of the Cosmos (Prog Night 3) - June 23 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --hunter: #aad372;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--hunter); }
+.header .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 8px; }
+.header .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.tag { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.tag-prog { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
+.tag-spec { background: rgba(170, 211, 114, 0.15); color: var(--hunter); border: 1px solid rgba(170, 211, 114, 0.3); }
+.tag-night { background: rgba(210, 153, 34, 0.15); color: var(--yellow); border: 1px solid rgba(210, 153, 34, 0.3); }
+
+.card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+@media (max-width: 800px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.card-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+.section { margin-bottom: 36px; }
+.section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--dim); }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+th { color: var(--dim); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+tr:hover { background: rgba(255,255,255,0.02); }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 200px; margin-bottom: 8px; padding: 0 4px; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; min-width: 8px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; text-align: center; white-space: nowrap; }
+.bar-value { font-size: 9px; color: var(--dim); margin-bottom: 2px; text-align: center; }
+.bar-survived { background: var(--green); }
+.bar-died { background: var(--red); }
+.bar-died-early { background: rgba(248, 81, 73, 0.4); }
+.bar-no-data { background: var(--border); }
+.avg-line { width: 100%; height: 1px; border-top: 2px dashed var(--yellow); position: relative; margin-bottom: 8px; }
+.avg-line-label { position: absolute; right: 0; top: -16px; font-size: 10px; color: var(--yellow); }
+
+.callout { background: var(--surface); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 16px; }
+.callout-warning { border-left-color: var(--red); }
+.callout-info { border-left-color: var(--accent); }
+.callout-good { border-left-color: var(--green); }
+.callout h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.callout p { font-size: 13px; color: var(--dim); }
+
+.death-cause-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.death-cause-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.death-cause-name { font-weight: 600; font-size: 15px; }
+.death-count-badge { padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.death-count-high { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.death-count-mid { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.death-count-low { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+
+.phase-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+.phase-p1 { background: rgba(88, 166, 255, 0.25); color: var(--accent); }
+.phase-interm { background: rgba(210, 153, 34, 0.25); color: var(--yellow); }
+.phase-p2 { background: rgba(188, 140, 255, 0.25); color: var(--purple); }
+.phase-p3 { background: rgba(248, 81, 73, 0.25); color: var(--red); }
+
+.phase-reach { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.phase-reach-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; flex: 1; min-width: 120px; }
+.phase-reach-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.phase-reach-value { font-size: 18px; font-weight: 700; }
+
+.improvement-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.improvement-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.improvement-item .priority { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-right: 8px; }
+.priority-critical { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.priority-high { background: rgba(219, 109, 40, 0.2); color: var(--orange); }
+.priority-medium { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.improvement-item p { font-size: 13px; color: var(--dim); line-height: 1.5; }
+.improvement-item .impact { font-size: 12px; color: var(--accent); margin-top: 6px; }
+
+.ref-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+.ref-section h3 { margin-bottom: 12px; color: var(--purple); }
+
+.footer { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 40px; color: var(--dim); font-size: 12px; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.badge-purple { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
+
+.tooltip { position: relative; cursor: help; }
+.tooltip:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #1c2128; color: var(--text); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; border: 1px solid var(--border); }
+
+.cast-compare-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.cast-compare-name { width: 140px; font-size: 13px; font-weight: 500; }
+.cast-compare-bars { flex: 1; display: flex; gap: 4px; align-items: center; }
+.cast-bar { height: 18px; border-radius: 3px; display: flex; align-items: center; padding: 0 6px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.cast-bar-player { background: var(--hunter); color: #000; }
+.cast-bar-ref { background: var(--purple); color: #000; }
+.cast-compare-values { width: 120px; font-size: 12px; text-align: right; color: var(--dim); }
+
+.trend-arrow { font-size: 16px; }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23 Crown Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Smokinthisza</span> &mdash; Crown of the Cosmos</h1>
+  <div class="subtitle">Mythic Crown of the Cosmos &bull; June 23, 2026 &bull; Report Hz1Lm672dZnBw9YC</div>
+  <div class="tags">
+    <span class="tag tag-prog">PROGRESSION NIGHT 3</span>
+    <span class="tag tag-spec">Marksmanship Hunter</span>
+    <span class="tag tag-night">20 Pulls &bull; Best 26.51%</span>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid">
+  <div class="card">
+    <div class="card-label">Avg DPS</div>
+    <div class="card-value">43.3K</div>
+    <div class="card-sub">Median 42.9K &bull; 12 qualifying pulls</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">273</div>
+    <div class="card-sub">Ref Morganalter: 291 (+18)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value" style="color: var(--red);">0 / 20</div>
+    <div class="card-sub">Died in every pull. Avg survival: 3:37</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value" style="color: var(--green);">55.3K</div>
+    <div class="card-sub">Fight 25 &bull; 6:44 &bull; 26.51% boss</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">DPS per pull. <span style="color: var(--red);">Red</span> = died before wipe. <span style="color: rgba(248, 81, 73, 0.4);">Faded red</span> = died so early no DPS data recorded. Dashed line = average (43.3K). Pulls under 60s excluded from stats.</p>
+
+  <div style="position: relative;">
+    <div style="position: absolute; left: 0; right: 0; bottom: calc(43.3 / 55.3 * 200px + 30px); border-top: 2px dashed var(--yellow); z-index: 1;">
+      <span style="position: absolute; right: 0; top: -16px; font-size: 10px; color: var(--yellow);">Avg 43.3K</span>
+    </div>
+    <div class="bar-chart">
+      <!-- Fight 5: 42.9K, died 3:40 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">42.9K</div>
+        <div class="bar bar-died" style="height: calc(42.9 / 55.3 * 180px);"></div>
+        <div class="bar-label">F5</div>
+      </div>
+      <!-- Fight 6: 42.9K, died 3:43 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">42.9K</div>
+        <div class="bar bar-died" style="height: calc(42.9 / 55.3 * 180px);"></div>
+        <div class="bar-label">F6</div>
+      </div>
+      <!-- Fight 7: no data, died 1:16 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">--</div>
+        <div class="bar bar-died-early" style="height: 12px;"></div>
+        <div class="bar-label">F7</div>
+      </div>
+      <!-- Fight 8: no data, died 1:13 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">--</div>
+        <div class="bar bar-died-early" style="height: 12px;"></div>
+        <div class="bar-label">F8</div>
+      </div>
+      <!-- Fight 9: 45.2K, died 4:52 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">45.2K</div>
+        <div class="bar bar-died" style="height: calc(45.2 / 55.3 * 180px);"></div>
+        <div class="bar-label">F9</div>
+      </div>
+      <!-- Fight 10: no data, died 1:46 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">--</div>
+        <div class="bar bar-died-early" style="height: 12px;"></div>
+        <div class="bar-label">F10</div>
+      </div>
+      <!-- Fight 11: 30.0K, died 3:35 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">30.0K</div>
+        <div class="bar bar-died" style="height: calc(30.0 / 55.3 * 180px);"></div>
+        <div class="bar-label">F11</div>
+      </div>
+      <!-- Fight 12: 40.5K, died 4:45 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">40.5K</div>
+        <div class="bar bar-died" style="height: calc(40.5 / 55.3 * 180px);"></div>
+        <div class="bar-label">F12</div>
+      </div>
+      <!-- Fight 13: 48.4K, died 5:58 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">48.4K</div>
+        <div class="bar bar-died" style="height: calc(48.4 / 55.3 * 180px);"></div>
+        <div class="bar-label">F13</div>
+      </div>
+      <!-- Fight 14: no data, died 1:17 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">--</div>
+        <div class="bar bar-died-early" style="height: 12px;"></div>
+        <div class="bar-label">F14</div>
+      </div>
+      <!-- Fight 15: no data, died 3:00 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">--</div>
+        <div class="bar bar-died-early" style="height: 12px;"></div>
+        <div class="bar-label">F15</div>
+      </div>
+      <!-- Fight 16: no data, died 3:05 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">--</div>
+        <div class="bar bar-died-early" style="height: 12px;"></div>
+        <div class="bar-label">F16</div>
+      </div>
+      <!-- Fight 17: 37.0K, died 3:37 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">37.0K</div>
+        <div class="bar bar-died" style="height: calc(37.0 / 55.3 * 180px);"></div>
+        <div class="bar-label">F17</div>
+      </div>
+      <!-- Fight 18: 45.1K, died 4:17 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">45.1K</div>
+        <div class="bar bar-died" style="height: calc(45.1 / 55.3 * 180px);"></div>
+        <div class="bar-label">F18</div>
+      </div>
+      <!-- Fight 19: 40.3K, died 5:12 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">40.3K</div>
+        <div class="bar bar-died" style="height: calc(40.3 / 55.3 * 180px);"></div>
+        <div class="bar-label">F19</div>
+      </div>
+      <!-- Fight 20: 36.4K, died 4:50 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">36.4K</div>
+        <div class="bar bar-died" style="height: calc(36.4 / 55.3 * 180px);"></div>
+        <div class="bar-label">F20</div>
+      </div>
+      <!-- Fight 21: no data, died 1:55 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">--</div>
+        <div class="bar bar-died-early" style="height: 12px;"></div>
+        <div class="bar-label">F21</div>
+      </div>
+      <!-- Fight 22: no data, died 1:28 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">--</div>
+        <div class="bar bar-died-early" style="height: 12px;"></div>
+        <div class="bar-label">F22</div>
+      </div>
+      <!-- Fight 23: 55.1K, died 6:17 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--green);">55.1K</div>
+        <div class="bar bar-died" style="height: calc(55.1 / 55.3 * 180px);"></div>
+        <div class="bar-label">F23</div>
+      </div>
+      <!-- Fight 25: 55.3K, died 6:19 -->
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--green);">55.3K</div>
+        <div class="bar bar-died" style="height: 180px;"></div>
+        <div class="bar-label">F25</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 24px; flex-wrap: wrap; margin-top: 12px;">
+    <div style="font-size: 13px; color: var(--dim);">
+      <strong>Range:</strong> 30.0K &ndash; 55.3K (25.3K spread)
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">
+      <strong>Std Dev:</strong> 7,073 (moderate volatility)
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">
+      <strong>Session Trend:</strong> <span class="trend-arrow trend-up">&uarr;</span> +7.7% (first half avg 41.6K, second half avg 44.9K)
+    </div>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout callout-warning">
+    <h4>Died in 20 / 20 pulls &mdash; 0% survival rate</h4>
+    <p>Average survival time: 3:37 into each pull. This is the single biggest issue to address. On a 520-second reference kill, dying at 217 seconds on average means missing roughly 58% of the fight.</p>
+  </div>
+
+  <h3>Death Causes Ranked</h3>
+
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">1. Cosmic Barrier</span>
+      <span class="death-count-badge death-count-high">7 deaths</span>
+    </div>
+    <div style="font-size: 13px; color: var(--dim); margin-bottom: 6px;">
+      Fights 5, 6, 11, 13, 15, 16, 17 &mdash; at 3:00, 3:04, 3:35, 3:37, 3:40, 3:43, 5:58
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">
+      <strong>Phase:</strong> P2 (6 deaths) and P3 (1 death). Cosmic Barrier is a ticking damage field that hits repeatedly (24-25K per tick). All P2 deaths happen between 3:00-3:43, which is the opening 10-70 seconds of Phase 2. The consistent timing suggests a failure to position correctly at the P2 transition or handle the Rift Simulacrum mechanics alongside Cosmic Barrier.
+    </div>
+  </div>
+
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">2. Echoing Darkness</span>
+      <span class="death-count-badge death-count-high">4 deaths</span>
+    </div>
+    <div style="font-size: 13px; color: var(--dim); margin-bottom: 6px;">
+      Fights 7, 8, 10, 14 &mdash; at 1:13, 1:13, 1:16, 1:17
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">
+      <strong>Phase:</strong> All P1. Echoing Darkness is Vorelus's periodic AoE that hits every 3 seconds. All four deaths happen in a narrow 1:13-1:17 window, which aligns with Vorelus being active alongside Morium. This is a consistent mechanical failure &mdash; dying to the same ability at the same time four separate pulls. Likely not using a defensive or being out of position for healing during this damage overlap.
+    </div>
+  </div>
+
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">3. Voidstalker Sting</span>
+      <span class="death-count-badge death-count-mid">4 deaths</span>
+    </div>
+    <div style="font-size: 13px; color: var(--dim); margin-bottom: 6px;">
+      Fights 18, 19, 23, 25 &mdash; at 4:17, 5:12, 6:17, 6:19
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">
+      <strong>Phase:</strong> P2 (2 deaths) and P3 (2 deaths). Voidstalker Sting is a debuff that ticks for ~27K per application every second. On fights 19, 23, and 25 (the longest pulls), Voidstalker Sting combined with other overlapping damage (Cosmic Radiation in fight 19) creates lethal pressure. These are the latest deaths in the session, occurring on the better pulls.
+    </div>
+  </div>
+
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">4. Simulacrum Backlash</span>
+      <span class="death-count-badge death-count-low">2 deaths</span>
+    </div>
+    <div style="font-size: 13px; color: var(--dim); margin-bottom: 6px;">
+      Fights 9, 20 &mdash; at 4:50, 4:52
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">
+      <strong>Phase:</strong> Both in late P2 (~4:50). Simulacrum Backlash is triggered by the Rift Simulacrum dying or a mechanic failure. Both deaths at nearly identical timing suggests a specific P2 mechanic wall.
+    </div>
+  </div>
+
+  <div class="death-cause-card">
+    <div class="death-cause-header">
+      <span class="death-cause-name">5. Other (3 deaths)</span>
+      <span class="death-count-badge death-count-low">3 deaths</span>
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">
+      Void Expulsion (fight 12, 4:45 in P2), Bursting Emptiness (fight 21, 1:55 in P1), Grasp of Emptiness (fight 22, 1:28 in P1). One-off deaths to different mechanics &mdash; not a pattern.
+    </div>
+  </div>
+
+  <h3>Death Timing Distribution</h3>
+  <table>
+    <thead>
+      <tr><th>Time Window</th><th>Deaths</th><th>Phase</th><th>Common Cause</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1:13 &ndash; 1:17</td><td style="color: var(--red); font-weight: 600;">4</td><td>P1 (Sentinels)</td><td>Echoing Darkness</td></tr>
+      <tr><td>1:28 &ndash; 1:55</td><td>2</td><td>P1 (Sentinels)</td><td>Grasp / Bursting Emptiness</td></tr>
+      <tr><td>3:00 &ndash; 3:43</td><td style="color: var(--red); font-weight: 600;">6</td><td>P2 (Rift, first min)</td><td>Cosmic Barrier</td></tr>
+      <tr><td>4:17 &ndash; 4:52</td><td>4</td><td>P2 (Rift, mid-late)</td><td>Voidstalker Sting / Backlash</td></tr>
+      <tr><td>5:12 &ndash; 5:58</td><td>2</td><td>P2 late / P3 early</td><td>Voidstalker Sting / Cosmic Barrier</td></tr>
+      <tr><td>6:17 &ndash; 6:19</td><td>2</td><td>P3 (Cosmos)</td><td>Voidstalker Sting</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">This is the core progression analysis. Damage breakdown by fight phase, aggregated across all pulls where Smokinthisza reached each phase.</p>
+
+  <div class="phase-bar">
+    <div class="phase-segment phase-p1" style="width: 26%;">P1: 0:00-2:14</div>
+    <div class="phase-segment phase-interm" style="width: 7%;">Interm</div>
+    <div class="phase-segment phase-p2" style="width: 26%;">P2: 2:53-5:09</div>
+    <div class="phase-segment phase-p3" style="width: 41%;">P3: 5:09+</div>
+  </div>
+
+  <h3>Phase Reach Rate</h3>
+  <div class="phase-reach">
+    <div class="phase-reach-item">
+      <div class="phase-reach-label">Phase 1</div>
+      <div class="phase-reach-value" style="color: var(--green);">20 / 20</div>
+      <div style="font-size: 11px; color: var(--dim);">100%</div>
+    </div>
+    <div class="phase-reach-item">
+      <div class="phase-reach-label">Intermission</div>
+      <div class="phase-reach-value" style="color: var(--yellow);">14 / 20</div>
+      <div style="font-size: 11px; color: var(--dim);">70% &mdash; 6 P1 deaths</div>
+    </div>
+    <div class="phase-reach-item">
+      <div class="phase-reach-label">Phase 2</div>
+      <div class="phase-reach-value" style="color: var(--yellow);">14 / 20</div>
+      <div style="font-size: 11px; color: var(--dim);">70% &mdash; 0 intermission deaths</div>
+    </div>
+    <div class="phase-reach-item">
+      <div class="phase-reach-label">Phase 3</div>
+      <div class="phase-reach-value" style="color: var(--red);">4 / 20</div>
+      <div style="font-size: 11px; color: var(--dim);">20% &mdash; 10 P2 deaths</div>
+    </div>
+  </div>
+
+  <h3>Per-Phase DPS (from DamageDone events, key pulls)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Ref DPS (Morganalter)</th>
+        <th>Delta</th>
+        <th>Deaths in Phase</th>
+        <th>Primary Killer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-green">P1: Sentinels</span></td>
+        <td>20/20</td>
+        <td>318K</td>
+        <td>347K (F9)</td>
+        <td>374K</td>
+        <td style="color: var(--yellow);">-15%</td>
+        <td style="color: var(--red);">6</td>
+        <td>Echoing Darkness (4)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-yellow">Intermission</span></td>
+        <td>14/20</td>
+        <td>~0K</td>
+        <td>~0K</td>
+        <td>6K</td>
+        <td style="color: var(--dim);">N/A</td>
+        <td>0</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-purple">P2: Rift</span></td>
+        <td>14/20</td>
+        <td>121K</td>
+        <td>186K (F5)</td>
+        <td>215K</td>
+        <td style="color: var(--orange);">-44%</td>
+        <td style="color: var(--red);">10</td>
+        <td>Cosmic Barrier (6)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-red">P3: Cosmos</span></td>
+        <td>4/20</td>
+        <td>53K</td>
+        <td>91K (F23)</td>
+        <td>165K</td>
+        <td style="color: var(--red);">-68%</td>
+        <td>4</td>
+        <td>Voidstalker Sting (3)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warning">
+    <h4>Phase 2 is the wall</h4>
+    <p>10 of 20 deaths happen in Phase 2. DPS drops 62% from P1 to P2 (318K to 121K), compared to the reference's 43% drop (374K to 215K). The combination of Cosmic Barrier (7 total deaths), Simulacrum Backlash (2 deaths), and Voidstalker Sting creates overwhelming damage pressure. Early P2 deaths (3:00-3:43) cluster around Cosmic Barrier specifically &mdash; this is the priority mechanic to solve.</p>
+  </div>
+
+  <div class="callout callout-info">
+    <h4>Phase 1 consistency varies</h4>
+    <p>P1 DPS ranges from 264K to 347K across measured pulls. The 4 Echoing Darkness deaths all happen in the 1:13-1:17 window when Vorelus is active alongside other sentinels. When Smokinthisza survives P1, they reliably reach P2 (no intermission deaths). The P1 mechanical issue is isolated to Echoing Darkness handling during the multi-sentinel overlap.</p>
+  </div>
+
+  <div class="callout callout-good">
+    <h4>Session improvement is real</h4>
+    <p>The two best pulls (fights 23 and 25) were the final two pulls of the night. Both reached P3 and posted 55K+ overall DPS. This shows meaningful learning through the session. The Echoing Darkness deaths clustered in the first half (fights 7, 8, 10, 14) and did not recur after fight 14.</p>
+  </div>
+</div>
+
+<!-- Cast Profile Comparison -->
+<div class="section">
+  <h2>Cast Profile &mdash; Fight 25 (Best Pull, 6:44)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">Ability usage compared to the rank-1 reference (Morganalter, 8:40 kill). CPM normalized. Smokinthisza died at 6:19 in this pull, so active time was ~379s.</p>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Smokin Casts</th><th>Smokin CPM</th><th>Ref CPM</th><th>Delta</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight: 500;">Aimed Shot</td>
+        <td>44</td>
+        <td>6.5</td>
+        <td style="color: var(--purple);">8.4</td>
+        <td style="color: var(--red);">-23%</td>
+        <td>Core damage ability. 1.9 CPM gap = ~12 missed Aimed Shots per fight</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Black Arrow</td>
+        <td>39</td>
+        <td>5.8</td>
+        <td style="color: var(--purple);">7.6</td>
+        <td style="color: var(--red);">-24%</td>
+        <td>Dark Ranger key ability. Procs from Aimed Shot/Rapid Fire</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Steady Shot</td>
+        <td>21</td>
+        <td>3.1</td>
+        <td style="color: var(--purple);">7.6</td>
+        <td style="color: var(--red);">-59%</td>
+        <td>Focus generator. Major gap &mdash; not pressing filler between procs</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Arcane Shot</td>
+        <td>24</td>
+        <td>3.6</td>
+        <td style="color: var(--purple);">4.4</td>
+        <td style="color: var(--yellow);">-19%</td>
+        <td>Precise Shots spender. Moderate gap</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Rapid Fire</td>
+        <td>21</td>
+        <td>3.1</td>
+        <td style="color: var(--purple);">4.0</td>
+        <td style="color: var(--yellow);">-23%</td>
+        <td>Should be on cooldown. Gap suggests movement downtime</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Volley</td>
+        <td>7</td>
+        <td>1.0</td>
+        <td style="color: var(--purple);">0.9</td>
+        <td style="color: var(--green);">+11%</td>
+        <td>Good &mdash; on par with reference</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Trueshot</td>
+        <td>3</td>
+        <td>0.4</td>
+        <td style="color: var(--purple);">0.5</td>
+        <td style="color: var(--dim);">-</td>
+        <td>3 uses in 6:44 vs 4 in 8:40. Proportionally similar</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Wailing Arrow</td>
+        <td>3</td>
+        <td>0.4</td>
+        <td style="color: var(--purple);">0.5</td>
+        <td style="color: var(--dim);">-</td>
+        <td>Paired with Trueshot. Correct usage</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Exhilaration</td>
+        <td>4</td>
+        <td>0.6</td>
+        <td style="color: var(--purple);">0.2</td>
+        <td style="color: var(--dim);">+</td>
+        <td>Using self-heal 2x more than ref &mdash; taking more damage</td>
+      </tr>
+      <tr>
+        <td style="font-weight: 500;">Survival of the Fittest</td>
+        <td>4</td>
+        <td>0.6</td>
+        <td style="color: var(--purple);">0.7</td>
+        <td style="color: var(--dim);">-</td>
+        <td>Defensive usage on par</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warning">
+    <h4>Steady Shot gap is the biggest rotation issue</h4>
+    <p>Morganalter casts Steady Shot at 7.6 CPM; Smokinthisza casts it at 3.1 CPM. That is a 59% gap. Steady Shot is the Focus generator filler that should be pressed whenever nothing higher priority is available. A 4.5 CPM gap means Smokinthisza is spending significant time not pressing buttons &mdash; likely due to movement or uncertainty about priority. This directly feeds the Aimed Shot and Black Arrow gaps, because less Focus generated means fewer casts of everything.</p>
+  </div>
+</div>
+
+<!-- Damage Taken -->
+<div class="section">
+  <h2>Damage Taken &mdash; Fight 25 (6:44)</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th><th>Avoidability</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td>2,737K</td>
+        <td>117</td>
+        <td>23.4K</td>
+        <td><span class="badge badge-yellow">Partially</span> &mdash; positioning reduces exposure</td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td>2,111K</td>
+        <td>82</td>
+        <td>25.7K</td>
+        <td><span class="badge badge-yellow">Partially</span> &mdash; raid mechanic, damage shared</td>
+      </tr>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td>1,822K</td>
+        <td>80</td>
+        <td>22.8K</td>
+        <td><span class="badge badge-red">Avoidable</span> &mdash; debuff, move out of soak</td>
+      </tr>
+      <tr>
+        <td>Void Expulsion</td>
+        <td>1,590K</td>
+        <td>40</td>
+        <td>39.8K</td>
+        <td><span class="badge badge-yellow">Partially</span> &mdash; raid-wide, use defensive</td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td>848K</td>
+        <td>40</td>
+        <td>21.2K</td>
+        <td><span class="badge badge-red">Avoidable</span> &mdash; positional, stay out of barrier</td>
+      </tr>
+      <tr>
+        <td>Gravity Collapse</td>
+        <td>429K</td>
+        <td>3</td>
+        <td>143K</td>
+        <td><span class="badge badge-red">Avoidable</span> &mdash; dodge mechanic</td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td>408K</td>
+        <td>6</td>
+        <td>68K</td>
+        <td><span class="badge badge-yellow">Partially</span></td>
+      </tr>
+      <tr>
+        <td>Falling</td>
+        <td>363K</td>
+        <td>2</td>
+        <td>181.5K</td>
+        <td><span class="badge badge-red">Avoidable</span> &mdash; knocked off platform</td>
+      </tr>
+      <tr>
+        <td>Cosmic Radiation</td>
+        <td>350K</td>
+        <td>15</td>
+        <td>23.3K</td>
+        <td><span class="badge badge-yellow">Unavoidable</span> &mdash; P3 raid-wide</td>
+      </tr>
+      <tr>
+        <td>Stellar Emission</td>
+        <td>219K</td>
+        <td>13</td>
+        <td>16.8K</td>
+        <td><span class="badge badge-yellow">Unavoidable</span> &mdash; intermission AoE</td>
+      </tr>
+      <tr>
+        <td>Silverstrike Barrage</td>
+        <td>188K</td>
+        <td>2</td>
+        <td>94K</td>
+        <td><span class="badge badge-yellow">Partially</span> &mdash; intermission soak</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 13px; color: var(--dim);">Cosmic Barrier (848K from 40 hits) and Voidstalker Sting (1,822K from 80 hits) are the two biggest sources of avoidable damage. Combined with 363K from Falling (knocked off platform twice), there is significant avoidable damage intake.</p>
+</div>
+
+<!-- External Buffs -->
+<div class="section">
+  <h2>External Buffs &mdash; Fight 25</h2>
+  <table>
+    <thead>
+      <tr><th>Buff</th><th>Applications</th><th>Timing</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Power Infusion</td>
+        <td>1</td>
+        <td>0:04</td>
+        <td>On pull only. Good alignment with Trueshot opener</td>
+      </tr>
+      <tr>
+        <td>Ebon Might (Aug Evoker)</td>
+        <td>9</td>
+        <td>0:02, 1:37, 2:58, 3:34, 4:02, 4:31, 5:02, 5:32, 6:02</td>
+        <td>Consistent coverage throughout the fight</td>
+      </tr>
+      <tr>
+        <td>Prescience (Aug Evoker)</td>
+        <td>2</td>
+        <td>1:47, 3:31</td>
+        <td>Limited Prescience uptime</td>
+      </tr>
+      <tr>
+        <td>Trueshot</td>
+        <td>3</td>
+        <td>0:03, 2:55, 5:58</td>
+        <td>Good &mdash; opener, P2 start, late P3. 3-min CD used efficiently</td>
+      </tr>
+      <tr>
+        <td>Rallying Cry</td>
+        <td>1</td>
+        <td>4:55</td>
+        <td>Raid defensive in late P2</td>
+      </tr>
+      <tr>
+        <td>Anti-Magic Zone</td>
+        <td>2</td>
+        <td>0:58, 4:49</td>
+        <td>Raid magic DR</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Defensive Usage -->
+<div class="section">
+  <h2>Defensive &amp; Utility Usage &mdash; Fight 25</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Uses</th><th>Timing</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Survival of the Fittest</td>
+        <td>4</td>
+        <td>~every 90s</td>
+        <td><span class="badge badge-green">Good</span> &mdash; On par with reference usage</td>
+      </tr>
+      <tr>
+        <td>Exhilaration</td>
+        <td>4</td>
+        <td>Spread throughout</td>
+        <td><span class="badge badge-yellow">Frequent</span> &mdash; 2x reference rate. Taking excess damage</td>
+      </tr>
+      <tr>
+        <td>Aspect of the Cheetah</td>
+        <td>3</td>
+        <td>1:50, 3:58, 5:54</td>
+        <td><span class="badge badge-green">Good</span> &mdash; Used for movement mechanics</td>
+      </tr>
+      <tr>
+        <td>Disengage</td>
+        <td>2</td>
+        <td>--</td>
+        <td><span class="badge badge-yellow">Low</span> &mdash; Could use more for repositioning</td>
+      </tr>
+      <tr>
+        <td>Counter Shot (Interrupt)</td>
+        <td>2</td>
+        <td>--</td>
+        <td><span class="badge badge-green">Good</span> &mdash; Contributing interrupts</td>
+      </tr>
+      <tr>
+        <td>Healthstone</td>
+        <td>1</td>
+        <td>--</td>
+        <td>Used</td>
+      </tr>
+      <tr>
+        <td>Health Potion</td>
+        <td>1</td>
+        <td>--</td>
+        <td>Used</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">Note: Morganalter also used Aspect of the Turtle (1 cast), which Smokinthisza did not use in any observed pull. Turtle is a full immunity that can completely negate lethal mechanic overlaps &mdash; this is a key missing defensive for the Cosmic Barrier and Voidstalker Sting death causes.</p>
+</div>
+
+<!-- Per-Pull Detail Table -->
+<div class="section">
+  <h2>Per-Pull Detail</h2>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Duration</th><th>Boss %</th><th>DPS</th><th>Death Time</th><th>Death Phase</th><th>Killed By</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>5</td><td>3:48</td><td>50.44%</td><td>42,938</td><td>3:40</td><td>P2</td><td>Cosmic Barrier</td></tr>
+      <tr><td>6</td><td>3:53</td><td>47.14%</td><td>42,909</td><td>3:43</td><td>P2</td><td>Cosmic Barrier</td></tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);"><td>7</td><td>1:17</td><td>84.12%</td><td style="color: var(--dim);">N/A</td><td style="color: var(--red);">1:16</td><td>P1</td><td>Echoing Darkness</td></tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);"><td>8</td><td>1:21</td><td>82.21%</td><td style="color: var(--dim);">N/A</td><td style="color: var(--red);">1:13</td><td>P1</td><td>Echoing Darkness</td></tr>
+      <tr><td>9</td><td>5:15</td><td>32.91%</td><td>45,230</td><td>4:52</td><td>P2</td><td>Simulacrum Backlash</td></tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);"><td>10</td><td>2:00</td><td>71.08%</td><td style="color: var(--dim);">N/A</td><td style="color: var(--red);">1:46</td><td>P1</td><td>Echoing Darkness</td></tr>
+      <tr><td>11</td><td>3:47</td><td>50.00%</td><td style="color: var(--red);">29,955</td><td>3:35</td><td>P2</td><td>Cosmic Barrier</td></tr>
+      <tr><td>12</td><td>4:47</td><td>42.46%</td><td>40,453</td><td>4:45</td><td>P2</td><td>Void Expulsion</td></tr>
+      <tr><td>13</td><td>6:01</td><td>32.29%</td><td>48,379</td><td>5:58</td><td>P3</td><td>Cosmic Barrier</td></tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);"><td>14</td><td>1:26</td><td>81.15%</td><td style="color: var(--dim);">N/A</td><td style="color: var(--red);">1:17</td><td>P1</td><td>Echoing Darkness</td></tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);"><td>15</td><td>3:05</td><td>61.79%</td><td style="color: var(--dim);">N/A</td><td>3:00</td><td>P2</td><td>Cosmic Barrier</td></tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);"><td>16</td><td>3:05</td><td>61.64%</td><td style="color: var(--dim);">N/A</td><td>3:05</td><td>P2</td><td>Cosmic Barrier</td></tr>
+      <tr><td>17</td><td>3:55</td><td>47.92%</td><td>36,984</td><td>3:37</td><td>P2</td><td>Cosmic Barrier</td></tr>
+      <tr><td>18</td><td>4:23</td><td>43.36%</td><td>45,139</td><td>4:17</td><td>P2</td><td>Voidstalker Sting</td></tr>
+      <tr><td>19</td><td>6:09</td><td>36.36%</td><td>40,316</td><td>5:12</td><td>P3</td><td>Voidstalker Sting</td></tr>
+      <tr><td>20</td><td>5:15</td><td>34.78%</td><td>36,354</td><td>4:50</td><td>P2</td><td>Simulacrum Backlash</td></tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);"><td>21</td><td>2:03</td><td>67.14%</td><td style="color: var(--dim);">N/A</td><td style="color: var(--red);">1:55</td><td>P1</td><td>Bursting Emptiness</td></tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);"><td>22</td><td>1:32</td><td>74.57%</td><td style="color: var(--dim);">N/A</td><td style="color: var(--red);">1:28</td><td>P1</td><td>Grasp of Emptiness</td></tr>
+      <tr><td>23</td><td>6:25</td><td>31.14%</td><td style="color: var(--green);">55,147</td><td>6:17</td><td>P3</td><td>Voidstalker Sting</td></tr>
+      <tr><td>25</td><td>6:44</td><td>26.51%</td><td style="color: var(--green);">55,281</td><td>6:19</td><td>P3</td><td>Voidstalker Sting</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Consistency Analysis -->
+<div class="section">
+  <h2>Consistency Analysis</h2>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+    <div class="card">
+      <div class="card-label">DPS on Longer Pulls (5+ min)</div>
+      <div class="card-value">47.4K</div>
+      <div class="card-sub">Fights 9, 13, 19, 20, 23, 25</div>
+    </div>
+    <div class="card">
+      <div class="card-label">DPS on Shorter Pulls (2-4 min)</div>
+      <div class="card-value">39.9K</div>
+      <div class="card-sub">Fights 5, 6, 11, 12, 17, 18</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div class="card">
+      <div class="card-label">Early Session (Fights 5-13)</div>
+      <div class="card-value">41.6K</div>
+      <div class="card-sub">6 qualifying pulls, 4 P1 early deaths</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Late Session (Fights 14-25)</div>
+      <div class="card-value">44.9K</div>
+      <div class="card-sub">6 qualifying pulls, improving trend</div>
+    </div>
+  </div>
+
+  <div class="callout callout-good" style="margin-top: 16px;">
+    <h4>Clear improvement arc through the session</h4>
+    <p>Echoing Darkness deaths stopped after fight 14 (mid-session). The final two pulls (fights 23 and 25) were the best by a wide margin &mdash; both exceeding 55K DPS and reaching P3. DPS on longer pulls is 7.5K higher than shorter pulls, suggesting that when Smokinthisza survives past early death traps, their sustained damage is meaningfully better. The session arc shows fight-to-fight learning.</p>
+  </div>
+</div>
+
+<!-- Reference Context -->
+<div class="ref-section">
+  <h3>Reference Context (De-emphasized for Prog)</h3>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Comparison to the rank-1 Marksmanship Hunter kill for context. During progression, focus on survival and mechanics before optimizing toward these numbers.</p>
+
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Smokinthisza</th><th>Morganalter (Rank 1)</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Overall DPS</td>
+        <td>55,281 (best pull)</td>
+        <td style="color: var(--purple);">123,935</td>
+        <td>45% of reference. Expected gap during prog</td>
+      </tr>
+      <tr>
+        <td>Item Level</td>
+        <td>273</td>
+        <td style="color: var(--purple);">291</td>
+        <td>18 ilvl gap accounts for ~15-20% DPS difference</td>
+      </tr>
+      <tr>
+        <td>Talent Differences</td>
+        <td colspan="2" style="text-align: center;"><span class="badge badge-green">1 node</span></td>
+        <td>Nearly identical build. Gap is execution + gear</td>
+      </tr>
+      <tr>
+        <td>Fight Duration</td>
+        <td>6:44 (died at 6:19)</td>
+        <td style="color: var(--purple);">8:40 (kill)</td>
+        <td>Smokinthisza missing final 2:21 of the fight</td>
+      </tr>
+      <tr>
+        <td>Aimed Shot CPM</td>
+        <td>6.5</td>
+        <td style="color: var(--purple);">8.4</td>
+        <td>23% gap &mdash; movement downtime reduces casts</td>
+      </tr>
+      <tr>
+        <td>Steady Shot CPM</td>
+        <td>3.1</td>
+        <td style="color: var(--purple);">7.6</td>
+        <td>59% gap &mdash; biggest rotation issue</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size: 12px; color: var(--dim); margin-top: 12px;"><strong>Ceiling context:</strong> Morganalter's 124K DPS represents a fully executed 8:40 kill at 291 ilvl. Smokinthisza at 273 ilvl during prog night 3 should not be expected to match this. The actionable takeaway is the 1-talent-diff build validation (correct spec) and the CPM gaps that will close naturally as mechanics become automatic.</p>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="improvement-item">
+    <h4><span class="priority priority-critical">CRITICAL</span> Survive Cosmic Barrier in early P2</h4>
+    <p>7 deaths to Cosmic Barrier, 6 of them in the first 70 seconds of Phase 2 (3:00-3:43). This is a positional mechanic &mdash; the barrier creates a damage field that ticks for 24-25K per second. Use <strong>Survival of the Fittest</strong> at the P2 transition (~2:53) and pre-position away from barrier spawn locations. If a barrier catches you, use <strong>Disengage</strong> or <strong>Aspect of the Cheetah</strong> immediately to escape. The reference player uses <strong>Aspect of the Turtle</strong> for one barrier overlap &mdash; Smokinthisza never used Turtle in any observed pull.</p>
+    <div class="impact">Impact: Eliminating these 6 early-P2 deaths would increase phase reach rate from 20% to potentially 50%+ for P3.</div>
+  </div>
+
+  <div class="improvement-item">
+    <h4><span class="priority priority-critical">CRITICAL</span> Use Aspect of the Turtle</h4>
+    <p>Aspect of the Turtle (full immunity) was not cast in any recorded pull. Morganalter used it once in their kill. For a player dying in every single pull, Turtle is a free extra life that can completely negate Cosmic Barrier ticks, Voidstalker Sting damage, or any other lethal overlap. With a 3-minute cooldown, it should be available at least twice per pull. Map it to a specific danger window: the first Cosmic Barrier in P2 (~3:00) and late P2/early P3 Voidstalker Sting overlap.</p>
+    <div class="impact">Impact: One Turtle per pull could prevent 50%+ of P2 deaths. This is the single highest-value change available.</div>
+  </div>
+
+  <div class="improvement-item">
+    <h4><span class="priority priority-high">HIGH</span> Echoing Darkness positioning in P1 (resolved mid-session)</h4>
+    <p>4 deaths to Echoing Darkness, all between 1:13-1:17 when Vorelus is active alongside other sentinels. This mechanic hits every 3 seconds &mdash; the damage is periodic, not a one-shot. After fight 14, no more Echoing Darkness deaths occurred, suggesting Smokinthisza learned the positioning. Continue to maintain range from Vorelus during the multi-sentinel overlap and pre-use Survival of the Fittest if caught in the AoE.</p>
+    <div class="impact">Impact: Already improving. 0 Echoing Darkness deaths in the final 6 pulls.</div>
+  </div>
+
+  <div class="improvement-item">
+    <h4><span class="priority priority-high">HIGH</span> Press Steady Shot between ability procs</h4>
+    <p>Steady Shot CPM is 3.1 vs the reference's 7.6 &mdash; a 59% gap. Steady Shot is the Focus generator that should be pressed whenever Aimed Shot, Black Arrow, and Rapid Fire are all on cooldown and no Precise Shots procs are available. The gap suggests significant dead time between ability casts. During movement, use Steady Shot as it can be cast while moving with the Steady Focus talent. This is the biggest rotational issue.</p>
+    <div class="impact">Impact: Increasing Steady Shot to 5+ CPM would provide ~30% more Focus generation, enabling more Aimed Shots and Black Arrows.</div>
+  </div>
+
+  <div class="improvement-item">
+    <h4><span class="priority priority-medium">MEDIUM</span> Voidstalker Sting management in P2/P3</h4>
+    <p>4 deaths to Voidstalker Sting across fights 18, 19, 23, and 25. This debuff ticks for ~27K per second and becomes lethal when overlapping with Cosmic Radiation or other P3 damage. Use a personal defensive (Survival of the Fittest or Turtle) when targeted by Voidstalker Sting during high-damage overlap windows. The fact that these deaths occur on the longest, best pulls means this becomes the next progression wall after Cosmic Barrier is solved.</p>
+    <div class="impact">Impact: Addressing this will be critical for P3 progression and eventual kill attempts.</div>
+  </div>
+</div>
+
+<!-- Context Footer -->
+<div class="section">
+  <h2>Overall Assessment</h2>
+  <div class="callout callout-info">
+    <h4>The DPS gap is primarily survival-based, not rotation-based</h4>
+    <p>Dying in every pull means Smokinthisza is missing 40-60% of each fight. The 43K average DPS would be significantly higher if they survived to the end of pulls. The 18-ilvl gear gap with the reference accounts for roughly 15-20% of the raw DPS difference. With only 1 talent difference from the rank-1 player, the build is correct. The priority order is clear: (1) survive Cosmic Barrier in P2, (2) add Aspect of the Turtle to the defensive rotation, (3) fill GCDs with Steady Shot during downtime.</p>
+  </div>
+
+  <div class="callout callout-good">
+    <h4>Positives</h4>
+    <p>
+      <strong>Learning through the session:</strong> Echoing Darkness deaths stopped mid-session. Final two pulls were the best by far.<br>
+      <strong>Correct build:</strong> Only 1 talent node different from the rank-1 MM Hunter. Dark Ranger hero spec is correct for this fight.<br>
+      <strong>Trueshot usage:</strong> 3 uses in 6:44 with good timing (opener, P2 start, late P3).<br>
+      <strong>Defensive awareness:</strong> Uses Survival of the Fittest at reference rate. Uses Exhilaration proactively.<br>
+      <strong>Best pulls show potential:</strong> 55K DPS on fights 23 and 25 demonstrates what is achievable when surviving deeper into the fight.
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &bull; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs report Hz1Lm672dZnBw9YC</a></p>
+  <p>Reference: <a href="https://www.warcraftlogs.com/reports/BzmHXnJTKMPYLN8r#fight=49" target="_blank">Morganalter</a> (Rank 1 MM Hunter, 123,935 DPS, 291 ilvl, 8:40 kill, 1 talent diff)</p>
+  <p>Spec guide sources: <a href="https://www.icy-veins.com/wow/marksmanship-hunter-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins MM Hunter 12.0.7</a>, <a href="https://www.wowhead.com/guide/classes/hunter/marksmanship/rotation-cooldowns-pve-dps" target="_blank">Wowhead MM Hunter Guide</a></p>
+  <p style="margin-top: 8px; color: var(--dim);">Analysis mode: PROG &bull; 20 pulls aggregated &bull; Phase-aware breakdown &bull; June 25, 2026</p>
+</div>
+
+</body>
+</html>

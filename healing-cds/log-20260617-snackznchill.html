@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snackznchill - Frost Mage - Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .timeline { position: relative; height: 80px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17, 2026 Log Analysis</a>
+<h1>Snackznchill <span class="dim">&mdash; Frost Mage</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:57) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<div class="grid-4">
+  <div class="card stat"><div class="stat-value">183K</div><div class="stat-label">Active DPS (6:07 alive)</div></div>
+  <div class="card stat"><div class="stat-value">289.8</div><div class="stat-label">Item Level</div></div>
+  <div class="card stat"><div class="stat-value red">Died 6:07</div><div class="stat-label">Kill Status</div></div>
+  <div class="card stat"><div class="stat-value red">44.3</div><div class="stat-label">Total CPM (while alive)</div></div>
+</div>
+
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 16px;">
+  <div class="card-header red">Bottom Line</div>
+  <p style="font-size: 15px;">Snackznchill died at <strong class="red">6:07</strong> (1:51 before kill) and dealt <strong class="yellow">183K active DPS</strong> across 6:07 of uptime &mdash; a <strong class="red">13.6% gap</strong> behind #1 reference Золтен (212K DPS in 5:51). The most critical issue is <strong class="red">CPM: 44.3 vs 60.8</strong> &mdash; a <strong class="red">27% deficit</strong>. Ice Lance CPM is <strong class="red">18.1 vs 29.5</strong> (&minus;39%), meaning roughly <strong class="red">70 fewer Ice Lance casts</strong> over a normalized fight. In the current Frost Mage rotation, Ice Lance is the primary Freezing stack consumer and Shatter trigger &mdash; every missed Ice Lance is a missed Shatter AoE proc. Frozen Orb CPM is <strong class="red">1.6 vs 2.9</strong> (&minus;45%), further reducing Fingers of Frost generation and Freezing Rain Blizzard windows. With only <strong class="green">2 talent differences</strong> and higher ilvl (289.8 vs 258.2), the gap is execution-based &mdash; GCD efficiency and cooldown usage, not gear or spec.</p>
+</div>
+
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Frost Mages on Mythic Rotmire. Primary reference: <strong>Золтен</strong> (closest talent match at 2 diffs, 212K DPS, 5:51 kill).</p>
+<div class="card">
+<table>
+  <thead><tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Total CPM</th></tr></thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);"><td><strong>Snackznchill</strong></td><td>183,489 <span class="dim">(active)</span></td><td>7:57 <span class="red">(died 6:07)</span></td><td>289.8</td><td>&mdash;</td><td class="red">44.3</td></tr>
+    <tr style="background: rgba(188,140,255,0.04);"><td>Золтен <span class="ref-badge">#1 PRIMARY</span></td><td class="green">209,620</td><td>5:51</td><td>258.2</td><td><span class="tag tag-same">2 diff</span></td><td>60.8</td></tr>
+    <tr style=""><td>Ларросс <span class="ref-badge">#2</span></td><td class="green">193,273</td><td>5:51</td><td>273.3</td><td><span class="tag tag-warn">4 diff</span></td><td>&mdash;</td></tr>
+    <tr style=""><td>Ronm <span class="ref-badge">#3</span></td><td class="green">192,462</td><td>6:00</td><td>273.5</td><td><span class="tag tag-diff">5 diff</span></td><td>&mdash;</td></tr>
+    <tr style=""><td>Kjottmeis <span class="ref-badge">#4</span></td><td class="green">176,202</td><td>6:22</td><td>256.2</td><td><span class="tag tag-same">2 diff</span></td><td>&mdash;</td></tr>
+    <tr style=""><td>Thermophobia <span class="ref-badge">#5</span></td><td class="green">176,107</td><td>7:57</td><td>256.8</td><td><span class="tag tag-diff">12 diff</span></td><td>&mdash;</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Snackznchill has <strong>higher ilvl</strong> (289.8) than the primary reference Золтен (258.2) with only 2 talent differences. The 13.6% active DPS gap cannot be attributed to gear &mdash; it is entirely execution-based.</p>
+
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire major mechanics. Fungal Bloom fires on a ~136s cycle (raid-wide AoE). Festering Vines fire every ~68s (roots). Awaken Fungi spawns adds every ~65s. Snackznchill died at 6:07 during the third Bloom cycle.</p>
+<div class="timeline" style="height: 80px;">
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;"><span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (~2:00)</span></div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;"><span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (~4:16)</span></div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;"><span class="timeline-label" style="top: 18px; left: 6px; color: var(--red);">Bloom #3 (~6:32)</span></div>
+  <div class="timeline-marker" style="left: 76.8%; border-color: var(--orange); width: 3px;"><span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--orange); font-size: 9px;">&#x2620; Snackznchill (6:07)</span></div>
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:57</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State &amp; Deaths</div>
+  <p>
+    <span class="death-marker">3:08 <span class="dim">Tiareynna</span></span>
+    <span class="death-marker">6:07 <span class="dim">Nurnyx</span></span>
+    <span class="death-marker" style="border-color: var(--red); background: rgba(248,81,73,0.25);">6:07 <span class="red">Snackznchill</span></span>
+    <span class="death-marker">6:07 <span class="dim">Sonìc</span></span>
+    <span class="death-marker">6:40 <span class="dim">Zinnks</span></span>
+    <span class="death-marker">7:38 <span class="dim">Invincibale</span></span>
+    <span class="death-marker">7:39 <span class="dim">Unholyftw</span></span>
+    <span class="death-marker">7:40 <span class="dim">Nucke</span></span>
+  </p>
+  <p style="margin-top: 8px; color: var(--red);">Snackznchill was one of 3 players who died simultaneously at 6:07, likely to soft enrage damage (Rotting Pustules + Bursting Pustules stacking). Dying 1:51 before kill = ~20367K lost damage.</p>
+</div>
+
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Snackznchill (6:07 active) vs Золтен (5:51 kill). The CPM gap (44.3 vs 60.8) indicates significant dead GCD time.</p>
+<div class="card">
+<table>
+  <thead><tr><th>Ability</th><th>Player Casts</th><th>Player CPM</th><th>Ref Casts</th><th>Ref CPM</th><th>Delta</th><th>Assessment</th></tr></thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);"><td><strong>Ice Lance</strong></td><td>116</td><td class="red">19</td><td>173</td><td>29.5</td><td class="red">-36%</td><td><span class="tag tag-diff">Very Low</span></td></tr>
+    <tr style="background: rgba(210,153,34,0.05);"><td><strong>Frostbolt</strong></td><td>55</td><td class="yellow">9</td><td>58</td><td>9.9</td><td class="yellow">-9%</td><td><span class="tag tag-warn">Slightly Low</span></td></tr>
+    <tr style="background: rgba(210,153,34,0.05);"><td><strong>Flurry</strong></td><td>45</td><td class="yellow">7.4</td><td>47</td><td>8</td><td class="yellow">-7%</td><td><span class="tag tag-warn">Slightly Low</span></td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td><strong>Glacial Spike</strong></td><td>13</td><td class="red">2.1</td><td>16</td><td>2.7</td><td class="red">-22%</td><td><span class="tag tag-diff">Very Low</span></td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td><strong>Frozen Orb</strong></td><td>10</td><td class="red">1.6</td><td>17</td><td>2.9</td><td class="red">-45%</td><td><span class="tag tag-diff">Very Low</span></td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td><strong>Ray of Frost</strong></td><td>9</td><td class="red">1.5</td><td>12</td><td>2</td><td class="red">-25%</td><td><span class="tag tag-diff">Very Low</span></td></tr>
+    <tr style="background: rgba(210,153,34,0.05);"><td>Counterspell</td><td>2</td><td class="yellow">0.3</td><td>1</td><td>0.2</td><td class="yellow">+50%</td><td><span class="tag tag-warn">Over-casting</span></td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td>Ice Barrier</td><td>8</td><td class="red">1.3</td><td>13</td><td>2.2</td><td class="red">-41%</td><td><span class="tag tag-diff">Very Low</span></td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td>Blizzard</td><td>0</td><td class="red">0</td><td>2</td><td>0.3</td><td class="red">-100%</td><td><span class="tag tag-diff">Very Low</span></td></tr>
+    <tr><td>Shimmer</td><td>1</td><td class="green">0.2</td><td>1</td><td>0.2</td><td class="green">+0%</td><td><span class="tag tag-same">Good</span></td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td>Ice Cold</td><td>0</td><td class="red">0</td><td>4</td><td>0.7</td><td class="red">-100%</td><td><span class="tag tag-diff">Very Low</span></td></tr>
+    <tr><td>Alter Time</td><td>4</td><td class="dim">0.7</td><td>0</td><td>0</td><td class="dim">+inf</td><td><span class="tag tag-info">N/A</span></td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td>Nullsight</td><td>4</td><td class="red">0.7</td><td>6</td><td>1</td><td class="red">-30%</td><td><span class="tag tag-diff">Very Low</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Critical: Ice Lance Deficit (&minus;39% CPM)</div>
+    <p style="font-size: 14px;">Ice Lance at <strong>18.1 CPM vs 29.5 CPM</strong> is the single largest cast gap. In the current Frost Mage rotation (12.0.7), Ice Lance consumes Freezing stacks to trigger Shatter &mdash; which is <strong>38% of total damage</strong> for both players. Every missed Ice Lance at 10+ Freezing stacks (Frostfire build) means a missed Shatter proc. The reference casts Ice Lance roughly <strong>every 2 seconds</strong> while Snackznchill averages <strong>every 3.3 seconds</strong>. This suggests Freezing stacks are capping at 20 and being wasted, or Fingers of Frost procs are being sat on instead of consumed immediately.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Frozen Orb Under-Use (&minus;45% CPM)</div>
+    <p style="font-size: 14px;">Frozen Orb at <strong>1.6 vs 2.9 CPM</strong> means Snackznchill is pressing Frozen Orb roughly <strong>half as often</strong> as the reference. Frozen Orb is a 30-second cooldown that generates Fingers of Frost procs and triggers Freezing Rain (making Blizzard instant). Missing Frozen Orb windows cascades: fewer Fingers of Frost procs means fewer instant Ice Lances, and no Freezing Rain means missing AoE Blizzard windows during Awaken Fungi add phases. Over 6 minutes, this is approximately <strong>5 missed Frozen Orb casts</strong>.</p>
+  </div>
+</div>
+
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Total: Snackznchill 67.3M (183K active DPS over 6:07) vs Золтен 74.6M (212K DPS over 5:51).</p>
+<div class="card">
+<table>
+  <thead><tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Gap</th></tr></thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);"><td><strong>Shatter</strong></td><td>25675K</td><td>38.1%</td><td class="green">29054K</td><td>38.9%</td><td class="red">&minus;3379K</td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td><strong>Frozen Orb</strong></td><td>7231K</td><td>10.7%</td><td class="green">9063K</td><td>12.1%</td><td class="red">&minus;1832K</td></tr>
+    <tr><td>Ray of Frost</td><td>6974K</td><td>10.4%</td><td>6069K</td><td>8.1%</td><td class="green">+905K</td></tr>
+    <tr><td>Frost Splinter</td><td>5739K</td><td>8.5%</td><td class="green">6435K</td><td>8.6%</td><td class="dim">&minus;696K</td></tr>
+    <tr><td>Flurry</td><td>5427K</td><td>8.1%</td><td>4983K</td><td>6.7%</td><td class="dim">+444K</td></tr>
+    <tr><td>Ice Lance</td><td>3461K</td><td>5.1%</td><td class="green">4420K</td><td>5.9%</td><td class="dim">&minus;958K</td></tr>
+    <tr><td>Glacial Spike</td><td>3165K</td><td>4.7%</td><td class="green">3234K</td><td>4.3%</td><td class="dim">&minus;68K</td></tr>
+    <tr><td>Hand of Frost</td><td>2879K</td><td>4.3%</td><td>2859K</td><td>3.8%</td><td class="dim">+20K</td></tr>
+    <tr><td><strong>Frostbolt</strong></td><td>2694K</td><td>4%</td><td>1494K</td><td>2%</td><td class="green">+1199K</td></tr>
+    <tr><td>Controlled Instincts</td><td>2307K</td><td>3.4%</td><td class="green">3255K</td><td>4.4%</td><td class="dim">&minus;948K</td></tr>
+    <tr><td>Glacial Assault</td><td>1007K</td><td>1.5%</td><td class="green">1332K</td><td>1.8%</td><td class="dim">&minus;325K</td></tr>
+    <tr style="background: rgba(248,81,73,0.05);"><td><strong>Splintering Ray</strong></td><td>0K</td><td>0%</td><td class="green">1570K</td><td>2.1%</td><td class="red">&minus;1570K</td></tr>
+    <tr><td>Blizzard</td><td>0K</td><td>0%</td><td class="green">384K</td><td>0.5%</td><td class="dim">&minus;384K</td></tr>
+    <tr><td>Winter's End</td><td>254K</td><td>0.4%</td><td class="green">257K</td><td>0.3%</td><td class="dim">&minus;3K</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Where the 7.3M Total Damage Gap Comes From</div>
+  <p style="font-size: 14px;">The total damage gap is ~7.3M. Snackznchill was alive for 367s vs Золтен 351s, so the raw total is misleading. Per-second: Snackznchill <strong class="red">183K/s</strong> vs Золтен <strong class="green">212K/s</strong>. The biggest per-second deficits trace to <strong class="red">Shatter</strong> (tied to fewer Ice Lance casts consuming Freezing stacks), <strong class="red">Frozen Orb</strong> (fewer casts and less uptime), and <strong class="red">Controlled Instincts</strong> (procs from pet damage, scales with casting activity). Each traces back to the core CPM gap &mdash; more casts means more Freezing stacks, more Shatters, more pet damage, more of everything.</p>
+</div>
+
+<h2>Cooldown Usage</h2>
+<p class="section-intro">Major Frost Mage cooldowns. Frozen Orb (30s CD) and Ray of Frost (60s CD) are the two primary rotational cooldowns.</p>
+<div class="card">
+<table>
+  <thead><tr><th>Cooldown</th><th>Player Uses</th><th>Expected (by time)</th><th>Ref Uses</th><th>Assessment</th></tr></thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);"><td><strong>Frozen Orb</strong></td><td class="red">13</td><td>~13 (6:07 / 30s)</td><td>17</td><td><span class="tag tag-warn">On CD but ref is faster</span></td></tr>
+    <tr><td><strong>Ray of Frost</strong></td><td>12</td><td>~7 (6:07 / 60s)</td><td>12</td><td><span class="tag tag-same">Good</span></td></tr>
+    <tr><td><strong>Glacial Spike</strong></td><td>16</td><td>proc-based</td><td>16</td><td><span class="tag tag-same">Identical</span></td></tr>
+    <tr><td>Counterspell</td><td>4</td><td>&mdash;</td><td>1</td><td><span class="tag tag-same">Good &mdash; interrupts</span></td></tr>
+    <tr><td>Ice Barrier</td><td>12</td><td>&mdash;</td><td>13</td><td><span class="tag tag-same">Similar</span></td></tr>
+    <tr><td>Ice Cold</td><td>2</td><td>&mdash;</td><td>4</td><td><span class="tag tag-info">Defensive</span></td></tr>
+    <tr><td>Alter Time</td><td>6</td><td>&mdash;</td><td>0</td><td><span class="tag tag-info">Different talent</span></td></tr>
+    <tr><td>Time Warp</td><td>1</td><td>1</td><td>&mdash;</td><td><span class="tag tag-same">On pull</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--yellow);">
+  <div class="card-header yellow">Frozen Orb Throughput Gap</div>
+  <p style="font-size: 14px;">Золтен cast Frozen Orb <strong>17 times in 5:51</strong> (2.9 CPM) vs Snackznchill <strong>13 times in 6:07</strong> (2.1 CPM). The reference achieves higher Frozen Orb rate through better overall GCD efficiency (less downtime between Orb windows). Each Frozen Orb deals ~556K average damage and generates 3-5 Fingers of Frost procs. The 4-cast difference represents roughly <strong>2225K</strong> in direct Orb damage plus cascading Ice Lance/Shatter procs.</p>
+</div>
+
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers and self-procs received during the kill fight.</p>
+<div class="card">
+<table>
+  <thead><tr><th>Buff</th><th>Applications</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Time Warp</strong></td><td>1 (0:01)</td><td><span class="tag tag-same">On pull</span></td></tr>
+    <tr><td><strong>Ebon Might</strong></td><td>11 applications</td><td><span class="tag tag-same">Regular Aug uptime</span></td></tr>
+    <tr><td><strong>Prescience</strong></td><td>1</td><td><span class="tag tag-info">Minimal</span></td></tr>
+    <tr><td><strong>Thermal Void</strong></td><td>38 procs</td><td><span class="tag tag-info">Self &mdash; from Brain Freeze</span></td></tr>
+    <tr><td><strong>Brain Freeze</strong></td><td>39 procs</td><td><span class="tag tag-same">Proc generation</span></td></tr>
+    <tr><td><strong>Fingers of Frost</strong></td><td>45 procs</td><td><span class="tag tag-same">Proc generation</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference.</p>
+<div class="card">
+<table>
+  <thead><tr><th>Stat</th><th>Snackznchill</th><th>Золтен</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Item Level</strong></td><td>289.8</td><td>258.2</td><td><span class="tag tag-same">Player is +31.6 higher</span></td></tr>
+    <tr><td>Intellect</td><td>2,604</td><td>2,643</td><td><span class="tag tag-same">Nearly identical</span></td></tr>
+    <tr><td>Crit</td><td class="green">1,357</td><td>1,268</td><td>Player has +7% more Crit</td></tr>
+    <tr><td>Haste</td><td>498</td><td>384</td><td>Player has +30% more Haste</td></tr>
+    <tr><td>Mastery</td><td class="yellow">835</td><td>1,030</td><td>Player has -19% less Mastery</td></tr>
+    <tr><td>Versatility</td><td>0</td><td>0</td><td><span class="dim">Both zero</span></td></tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Snackznchill has more Crit (+7%) but <strong class="yellow">&minus;19% Mastery</strong> (835 vs 1030). For Frost Mages, Mastery (Icicles / Freezing stack damage) directly amplifies Shatter and Ice Lance damage &mdash; the lower Mastery partially explains lower per-hit Shatter damage. However, the 27% CPM deficit is purely execution (dead GCD time), not stat-limited cast speed.</p>
+
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Snackznchill during the kill (6:07 of uptime).</p>
+<div class="card">
+<table>
+  <thead><tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Rotting Pustules</strong></td><td>9310K</td><td>461</td><td>3911K</td><td><span class="tag tag-same">No</span> &mdash; soft enrage ticks</td></tr>
+    <tr><td><strong>Fungal Bloom</strong></td><td>2858K</td><td>51</td><td>420K</td><td><span class="tag tag-same">No</span> &mdash; raid-wide AoE</td></tr>
+    <tr><td><strong>Bursting Pustules</strong></td><td>2489K</td><td>44</td><td>383K</td><td><span class="tag tag-same">No</span> &mdash; environmental</td></tr>
+    <tr><td><strong>Melee</strong></td><td>2467K</td><td>80</td><td>255K</td><td><span class="tag tag-warn">Partially</span> &mdash; add hits (ranged should avoid)</td></tr>
+    <tr><td><strong>Festering Vines</strong></td><td>279K</td><td>2</td><td>0K</td><td><span class="tag tag-diff">Yes</span> &mdash; avoidable root</td></tr>
+    <tr><td><strong>Bursting Shroom</strong></td><td>268K</td><td>1</td><td>0K</td><td><span class="tag tag-warn">Partially</span> &mdash; proximity damage</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="yellow">Mixed damage profile.</strong> Snackznchill took <strong class="red">80 melee hits</strong> (2467K) from adds &mdash; more than expected for a ranged DPS. Additionally, <strong class="red">2 Festering Vines hits</strong> (279K) indicate getting caught by avoidable roots. Better positioning reduces damage intake and maintains casting uptime.</p>
+
+<h2>Wipe Progression</h2>
+<p class="section-intro">DPS across all 20 pulls on Mythic Rotmire. Shorter wipes show higher DPS from burst-phase bias.</p>
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 79%; background: var(--red);" data-tooltip="F2: 164K DPS (1:13)"></div>
+    <div class="prog-bar" style="height: 80%; background: var(--red);" data-tooltip="F3: 166K DPS (1:11)"></div>
+    <div class="prog-bar" style="height: 94%; background: var(--red);" data-tooltip="F4: 195K DPS (0:51)"></div>
+    <div class="prog-bar" style="height: 56%; background: var(--orange);" data-tooltip="F5: 117K DPS (2:42)"></div>
+    <div class="prog-bar" style="height: 54%; background: var(--orange);" data-tooltip="F7: 111K DPS (2:18)"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--orange);" data-tooltip="F8: 141K DPS (2:17)"></div>
+    <div class="prog-bar" style="height: 71%; background: var(--yellow);" data-tooltip="F9: 147K DPS (3:14)"></div>
+    <div class="prog-bar" style="height: 58%; background: var(--yellow);" data-tooltip="F10: 120K DPS (5:37)"></div>
+    <div class="prog-bar" style="height: 58%; background: var(--yellow);" data-tooltip="F11: 120K DPS (4:48)"></div>
+    <div class="prog-bar" style="height: 64%; background: var(--yellow);" data-tooltip="F12: 134K DPS (5:42)"></div>
+    <div class="prog-bar" style="height: 62%; background: var(--orange);" data-tooltip="F13: 129K DPS (2:51)"></div>
+    <div class="prog-bar" style="height: 59%; background: var(--red);" data-tooltip="F14: 123K DPS (1:15)"></div>
+    <div class="prog-bar" style="height: 57%; background: var(--yellow);" data-tooltip="F15: 118K DPS (5:05)"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--red);" data-tooltip="F16: 208K DPS (0:53)"></div>
+    <div class="prog-bar" style="height: 62%; background: var(--yellow);" data-tooltip="F17: 130K DPS (5:45)"></div>
+    <div class="prog-bar" style="height: 58%; background: var(--yellow);" data-tooltip="F18: 120K DPS (6:52)"></div>
+    <div class="prog-bar" style="height: 65%; background: var(--yellow);" data-tooltip="F19: 135K DPS (5:01)"></div>
+    <div class="prog-bar" style="height: 89%; background: var(--red);" data-tooltip="F20: 184K DPS (0:54)"></div>
+    <div class="prog-bar" style="height: 69%; background: var(--yellow);" data-tooltip="F21: 142K DPS (7:15)"></div>
+    <div class="prog-bar" style="height: 66%; background: var(--green);" data-tooltip="F22: 137K DPS (7:58) KILL"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span><span class="red">Short wipe</span> &bull; <span class="orange">Medium</span> &bull; <span class="yellow">Long pull</span> &bull; <span class="green">Kill</span></span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Filtering to pulls longer than 3 minutes: F9 (147K, 3:14) &rarr; F10 (120K, 5:37) &rarr; F11 (120K, 4:48) &rarr; F12 (134K, 5:42) &rarr; F15 (118K, 5:05) &rarr; F17 (130K, 5:45) &rarr; F18 (120K, 6:52) &rarr; F19 (135K, 5:01) &rarr; F21 (142K, 7:15) &rarr; <strong class="green">F22 Kill (137K, 7:58)</strong>. DPS on longer pulls ranges from <strong>118&ndash;147K</strong> with no clear improvement trend. The kill (137K) was in line with the average.</p>
+</div>
+
+<h2>Actionable Items</h2>
+<div class="action-item critical">
+  <strong>1. Fill every GCD &mdash; close the 27% CPM gap.</strong> At <strong>44.3 CPM vs 60.8 CPM</strong>, Snackznchill is losing roughly <strong>101 casts</strong> over the fight to dead GCD time. The Frost Mage rotation in 12.0.7 has no natural downtime &mdash; between Frostbolt (filler), Ice Lance (Freezing consumer / Fingers of Frost spender), Flurry (Brain Freeze spender), and cooldowns, there should always be a button to press. Every empty GCD is a lost Ice Lance or Frostbolt that would generate Freezing stacks and feed the Shatter damage engine. The reference maintains <strong>0.98 casts/second</strong> while Snackznchill averages <strong>0.72 casts/second</strong>. Practice ABC (Always Be Casting) &mdash; during movement, use Shimmer to maintain casts or pre-position for mechanics.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Cast Ice Lance on every Fingers of Frost proc and at 10+ Freezing stacks.</strong> Ice Lance CPM is <strong class="red">18.1 vs 29.5</strong> &mdash; the single biggest ability gap. As a Frostfire Mage, Ice Lance should be cast whenever Fingers of Frost is active (45 procs generated) or when Freezing stacks reach 10+. Each Ice Lance at threshold triggers <strong>Shatter</strong>, which is 38% of total damage. With 45 Fingers of Frost procs in 6:07, those alone should generate ~7.4 Ice Lances per minute &mdash; the remaining CPM should come from Freezing stack consumption. Monitor the Freezing debuff and cast Ice Lance before stacks cap at 20.
+</div>
+
+<div class="action-item critical">
+  <strong>3. Stay alive through soft enrage.</strong> Dying at <strong>6:07</strong> (1:51 before kill) cost approximately <strong>20367K</strong> in lost damage. Frost Mage survival tools: <strong>Ice Barrier</strong> (12 casts &mdash; good), <strong>Ice Cold</strong> (only 2 uses vs reference 4), <strong>Alter Time</strong> (6 uses). The death came during soft enrage (Rotting Pustules + Bursting Pustules stacking). Use Ice Cold more aggressively during high-damage windows after Bloom #2 and keep Healthstone/health pot ready. Every additional 30 seconds alive = ~5505K more damage.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Frozen Orb usage &mdash; use it on cooldown.</strong> Frozen Orb CPM is <strong>1.6 vs 2.9</strong> (&minus;45%). Each Frozen Orb deals ~556K damage and generates 3-5 Fingers of Frost procs for instant Ice Lances. It also triggers Freezing Rain (instant Blizzard for AoE during Awaken Fungi add phases). The 4-cast difference = ~<strong>2225K</strong> in direct Orb damage plus cascading procs. Set up a weakaura to track the 30-second cooldown.
+</div>
+
+<div class="action-item">
+  <strong>5. Minimize melee hits &mdash; maintain ranged positioning.</strong> 80 melee hits for 2467K from adds. As a ranged DPS this should be near zero. Also 2 Festering Vines hits suggest getting caught by avoidable roots &mdash; save Shimmer charges for Vines or pre-position away from root zones. Better positioning reduces damage intake and maintains casting uptime.
+</div>
+
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--cyan);">
+  <div class="card-header cyan">What Is Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Glacial Spike:</strong> 16 casts, identical to reference. Used correctly every time it procs.<br><br>
+    <strong>Ray of Frost:</strong> 12 casts matches reference exactly. Optimal usage of this 60s cooldown.<br><br>
+    <strong>Interrupts:</strong> 4 Counterspells vs reference 1 &mdash; strong raid utility contribution.<br><br>
+    <strong>Ice Barrier:</strong> 12 uses shows good defensive discipline, keeping the absorb rolling.<br><br>
+    <strong>Consumables:</strong> Flask of the Shattered Sun, Hearty Well Fed, Vantus Rune: Rotmire, Potion of Recklessness (pre-pot + combat). Full consumable usage.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">The 13.6% active DPS gap vs #1 ranked Золтен breaks down to: <strong>~50% GCD efficiency</strong> (27% CPM deficit = ~101 lost casts, primarily Ice Lances that would trigger Shatters), <strong>~25% death penalty</strong> (dying at 6:07 cost ~20367K), <strong>~15% Frozen Orb cascading loss</strong> (fewer Orbs = fewer procs = fewer Ice Lances), and <strong>~10% positioning</strong> (80 melee hits + 2 Festering Vines). Fixing the CPM gap alone &mdash; filling dead GCDs with Frostbolt filler and consuming Fingers of Frost immediately &mdash; would close the largest portion and bring DPS into the 165&ndash;175K range while alive.</p>
+</div>
+
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: Золтен (#1 ranked Frost Mage, report <code>zd72PqMtnGwKARY6</code>, Fight 21, 5:51 kill). All times relative to fight start. CPM calculated using active time (6:07) for Snackznchill.</p>
+  <p style="margin-top: 4px;">Talent delta: 2 differences. Item level: Snackznchill 289.8 vs Золтен 258.2 (+31.6). Both had Time Warp on pull and Aug Evoker support. Neither received Power Infusion. The performance gap is execution-based. Frost Mage rotation reference: Icy Veins 12.0.7 guide.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nurnyx (Shadow Priest) — Crown of the Cosmos Prog Night 3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --priest: #ffffff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--priest); }
+.header .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 8px; }
+.prog-tag { display: inline-block; background: var(--orange); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+.night-tag { display: inline-block; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .detail { font-size: 12px; color: var(--dim); margin-top: 4px; }
+.card .value.green { color: var(--green); }
+.card .value.yellow { color: var(--yellow); }
+.card .value.red { color: var(--red); }
+.card .value.orange { color: var(--orange); }
+
+section { margin-bottom: 32px; }
+section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88,166,255,0.04); }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; margin: 16px 0; padding: 0 4px; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+.bar { width: 100%; min-width: 12px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s; cursor: default; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-lr; text-orientation: mixed; height: 30px; overflow: hidden; }
+.bar-value { font-size: 9px; color: var(--dim); margin-bottom: 2px; white-space: nowrap; }
+.bar.death { background: var(--red); }
+.bar.survived { background: var(--green); }
+.bar.short { background: var(--border); }
+.bar.no-data { background: var(--border); opacity: 0.3; }
+
+.avg-line { position: relative; margin: -180px 0 180px; pointer-events: none; }
+.avg-line::after { content: ''; position: absolute; left: 0; right: 0; border-top: 2px dashed var(--yellow); opacity: 0.5; }
+
+.death-cause-card { background: var(--surface); border: 1px solid var(--red); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.death-cause-card .cause-name { font-size: 16px; font-weight: 700; color: var(--red); }
+.death-cause-card .cause-count { font-size: 13px; color: var(--dim); }
+.death-cause-card .cause-detail { font-size: 13px; margin-top: 8px; }
+
+.warning-box { background: rgba(248,81,73,0.1); border: 1px solid var(--red); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.warning-box .warning-title { font-weight: 700; color: var(--red); margin-bottom: 4px; }
+
+.info-box { background: rgba(88,166,255,0.08); border: 1px solid var(--accent); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.info-box .info-title { font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+
+.phase-badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+.phase-badge.p1 { background: rgba(63,185,80,0.15); color: var(--green); }
+.phase-badge.inter { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.phase-badge.p2 { background: rgba(219,109,40,0.15); color: var(--orange); }
+.phase-badge.p3 { background: rgba(248,81,73,0.15); color: var(--red); }
+
+.ref-row { background: rgba(188,140,255,0.06); }
+.ref-badge { display: inline-block; background: var(--purple); color: #000; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; }
+
+.survival-timeline { display: flex; height: 24px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.survival-segment { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
+
+.actionable { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 12px 0; }
+.actionable .priority { display: inline-block; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-right: 8px; }
+.actionable .priority.p2 { background: var(--orange); }
+.actionable .priority.p3 { background: var(--yellow); color: #000; }
+.actionable h4 { font-size: 14px; margin-bottom: 8px; }
+.actionable p { font-size: 13px; color: var(--dim); }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+.stat-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
+.stat-item .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-item .stat-value { font-size: 20px; font-weight: 700; margin: 4px 0; }
+
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Nurnyx</span> &mdash; Shadow Priest
+    <span class="prog-tag">PROGRESSION</span>
+    <span class="night-tag">NIGHT 3</span>
+  </h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &middot; 20 pulls &middot; Best: 26.5% remaining (Fight 25, 6:44) &middot; June 23, 2026
+    &middot; <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Report Hz1Lm672dZnBw9YC</a>
+  </div>
+</div>
+
+<!-- ═══════════════ SUMMARY CARDS ═══════════════ -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS (P1, full phase)</div>
+    <div class="value">56.8K</div>
+    <div class="detail">12 pulls surviving full P1</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="detail">4pc Tier + 2pc Accessory</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value red">0 / 20</div>
+    <div class="detail">Died in every pull. Avg survival: 2:47</div>
+  </div>
+  <div class="card">
+    <div class="label">Best Pull</div>
+    <div class="value orange">26.5%</div>
+    <div class="detail">Fight 25 (6:44) &mdash; Nurnyx died at 2:37</div>
+  </div>
+</div>
+
+<!-- ═══════════════ CRITICAL SURVIVAL WARNING ═══════════════ -->
+<section>
+  <div class="warning-box">
+    <div class="warning-title">CRITICAL: Died in Every Single Pull</div>
+    <p style="font-size:13px; margin-top:8px;">
+      Nurnyx died in <strong>20 out of 20</strong> pulls with an average survival time of <strong>2:47</strong>.
+      In 8 pulls, death came in Phase 1 (before 2:14). In 3 pulls, death came during the Intermission.
+      Only 9 pulls saw survival into Phase 2, and only 2 pulls survived into Phase 3.
+      <strong>Survival is the single most impactful improvement area</strong> &mdash; a dead DPS does zero damage. Every additional minute alive
+      directly translates to hundreds of thousands of damage the raid is currently missing.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════ PER-PHASE PERFORMANCE BREAKDOWN ═══════════════ -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+
+  <h3>Phase Reach Rate</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Fight Reached</th><th>Nurnyx Alive</th><th>Alive Rate</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge p1">P1: Sentinels</span></td>
+        <td>20 / 20</td>
+        <td>20 / 20</td>
+        <td style="color:var(--green);">100%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge inter">Intermission</span></td>
+        <td>14 / 20</td>
+        <td>12 / 20</td>
+        <td style="color:var(--yellow);">60%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge p2">P2: Rift</span></td>
+        <td>14 / 20</td>
+        <td>9 / 20</td>
+        <td style="color:var(--red);">45%</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge p3">P3: Devouring Cosmos</span></td>
+        <td>6 / 20</td>
+        <td>2 / 20</td>
+        <td style="color:var(--red);">10%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Per-Phase DPS (when alive)</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Pulls Alive</th><th>Avg DPS</th><th>Best DPS</th><th>Deaths in Phase</th><th>Top Death Cause</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-badge p1">P1: Sentinels</span></td>
+        <td>20</td>
+        <td style="font-weight:600;">56.8K</td>
+        <td>83.6K (f12)</td>
+        <td style="color:var(--red);">8</td>
+        <td>Echoing Darkness (2), Void Remnants (2), Grasp of Emptiness (1)</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge inter">Intermission</span></td>
+        <td>12</td>
+        <td style="color:var(--dim);">~0K</td>
+        <td style="color:var(--dim);">N/A</td>
+        <td style="color:var(--red);">3</td>
+        <td>Orbiting Matter (1), Silverstrike Barrage (1), Unknown (1)</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge p2">P2: Rift</span></td>
+        <td>9</td>
+        <td style="font-weight:600;">18.4K</td>
+        <td>29.8K (f20)</td>
+        <td style="color:var(--red);">10</td>
+        <td>Cosmic Barrier (3), Bursting Emptiness (3), Void Barrage (1)</td>
+      </tr>
+      <tr>
+        <td><span class="phase-badge p3">P3: Cosmos</span></td>
+        <td>2</td>
+        <td style="font-weight:600;">~7K</td>
+        <td>13.4K (f13)</td>
+        <td style="color:var(--red);">2</td>
+        <td>Unknown (2)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-box" style="margin-top:16px;">
+    <div class="info-title">Phase-Specific Insights</div>
+    <ul style="font-size:13px; margin-top:8px; padding-left:20px;">
+      <li><strong>P1 DPS is competitive</strong> when Nurnyx survives the full phase &mdash; 57K avg with peaks near 84K. The issue is not rotation execution in P1, it is staying alive.</li>
+      <li><strong>8 deaths in P1</strong> (40% of pulls) to avoidable mechanics: Echoing Darkness (Vorelus periodic AoE), Void Remnants, Grasp of Emptiness, Corrupting Essence, and Bursting Emptiness. These are all position-dependent mechanics.</li>
+      <li><strong>Intermission is pure survival</strong> with Stellar Emission channel + Silverstrike Barrage. 3 deaths here suggest defensive cooldown timing or positioning issues during the channel.</li>
+      <li><strong>P2 DPS drops to ~20K</strong> which is very low, but context matters: Nurnyx is already dead or dying in most P2 pulls. In the 2 longest P2 survivals (f20, f13), DPS reached 28-30K, suggesting limited P2 experience.</li>
+      <li><strong>P3 reached only twice</strong> &mdash; not enough data to evaluate. The raid needs Nurnyx alive through P2 first.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ PERFORMANCE ACROSS ALL PULLS ═══════════════ -->
+<section>
+  <h2>Performance Across All Pulls</h2>
+
+  <div class="stat-grid">
+    <div class="stat-item">
+      <div class="stat-label">Median Survival</div>
+      <div class="stat-value" style="color:var(--orange);">2:41</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Longest Survival</div>
+      <div class="stat-value" style="color:var(--green);">5:33</div>
+      <div style="font-size:11px;color:var(--dim);">Fight 13</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Shortest Survival</div>
+      <div class="stat-value" style="color:var(--red);">0:11</div>
+      <div style="font-size:11px;color:var(--dim);">Fight 11</div>
+    </div>
+  </div>
+
+  <h3>Survival Time Per Pull</h3>
+  <div style="position:relative;">
+    <div class="bar-chart" id="survival-chart">
+      <!-- Fight 5: 3:24 death, 228s fight -->
+      <div class="bar-wrapper"><div class="bar-value">3:24</div><div class="bar death" style="height:61%" title="Fight 5: Died at 3:24 to Void Barrage. Boss 50.4%"></div><div class="bar-label">f5</div></div>
+      <!-- Fight 6: 3:36 death, 233s fight -->
+      <div class="bar-wrapper"><div class="bar-value">3:36</div><div class="bar death" style="height:65%" title="Fight 6: Died at 3:36 to Cosmic Barrier. Boss 47.1%"></div><div class="bar-label">f6</div></div>
+      <!-- Fight 7: 0:52 death -->
+      <div class="bar-wrapper"><div class="bar-value">0:52</div><div class="bar death" style="height:16%" title="Fight 7: Died at 0:52 to Echoing Darkness. Boss 84.1%"></div><div class="bar-label">f7</div></div>
+      <!-- Fight 8: 1:12 death -->
+      <div class="bar-wrapper"><div class="bar-value">1:12</div><div class="bar death" style="height:22%" title="Fight 8: Died at 1:12. Boss 82.2%"></div><div class="bar-label">f8</div></div>
+      <!-- Fight 9: 2:43 death -->
+      <div class="bar-wrapper"><div class="bar-value">2:43</div><div class="bar death" style="height:49%" title="Fight 9: Died at 2:43 to Orbiting Matter. Boss 32.9%"></div><div class="bar-label">f9</div></div>
+      <!-- Fight 10: 1:33 death -->
+      <div class="bar-wrapper"><div class="bar-value">1:33</div><div class="bar death" style="height:28%" title="Fight 10: Died at 1:33 to Bursting Emptiness. Boss 71.1%"></div><div class="bar-label">f10</div></div>
+      <!-- Fight 11: 0:11 death -->
+      <div class="bar-wrapper"><div class="bar-value">0:11</div><div class="bar death" style="height:3%" title="Fight 11: Died at 0:11 to Grasp of Emptiness. Boss 50%"></div><div class="bar-label">f11</div></div>
+      <!-- Fight 12: 1:39 death -->
+      <div class="bar-wrapper"><div class="bar-value">1:39</div><div class="bar death" style="height:30%" title="Fight 12: Died at 1:39 to Echoing Darkness. Boss 42.5%"></div><div class="bar-label">f12</div></div>
+      <!-- Fight 13: 5:33 death (best) -->
+      <div class="bar-wrapper"><div class="bar-value" style="color:var(--green);">5:33</div><div class="bar death" style="height:100%;background:var(--cyan);" title="Fight 13: Best survival. Died at 5:33 in P3. Boss 32.3%"></div><div class="bar-label">f13</div></div>
+      <!-- Fight 14: 1:14 death -->
+      <div class="bar-wrapper"><div class="bar-value">1:14</div><div class="bar death" style="height:22%" title="Fight 14: Died at 1:14 to Void Remnants. Boss 81.2%"></div><div class="bar-label">f14</div></div>
+      <!-- Fight 15: 2:42 death -->
+      <div class="bar-wrapper"><div class="bar-value">2:42</div><div class="bar death" style="height:49%" title="Fight 15: Died at 2:42 to Silverstrike Barrage. Boss 61.8%"></div><div class="bar-label">f15</div></div>
+      <!-- Fight 16: 2:59 death -->
+      <div class="bar-wrapper"><div class="bar-value">2:59</div><div class="bar death" style="height:54%" title="Fight 16: Died at 2:59 in P2. Boss 61.6%"></div><div class="bar-label">f16</div></div>
+      <!-- Fight 17: 3:38 death -->
+      <div class="bar-wrapper"><div class="bar-value">3:38</div><div class="bar death" style="height:66%" title="Fight 17: Died at 3:38 to Cosmic Barrier. Boss 47.9%"></div><div class="bar-label">f17</div></div>
+      <!-- Fight 18: 3:59 death -->
+      <div class="bar-wrapper"><div class="bar-value">3:59</div><div class="bar death" style="height:72%" title="Fight 18: Died at 3:59 to Bursting Emptiness. Boss 43.4%"></div><div class="bar-label">f18</div></div>
+      <!-- Fight 19: 5:13 death -->
+      <div class="bar-wrapper"><div class="bar-value" style="color:var(--cyan);">5:13</div><div class="bar death" style="height:94%;background:var(--cyan);" title="Fight 19: Died at 5:13 in P3. Boss 36.4%"></div><div class="bar-label">f19</div></div>
+      <!-- Fight 20: 4:44 death -->
+      <div class="bar-wrapper"><div class="bar-value">4:44</div><div class="bar death" style="height:85%" title="Fight 20: Died at 4:44 to Void Expulsion. Boss 34.8%"></div><div class="bar-label">f20</div></div>
+      <!-- Fight 21: 1:57 death -->
+      <div class="bar-wrapper"><div class="bar-value">1:57</div><div class="bar death" style="height:35%" title="Fight 21: Died at 1:57 to Void Remnants. Boss 67.1%"></div><div class="bar-label">f21</div></div>
+      <!-- Fight 22: 1:07 death -->
+      <div class="bar-wrapper"><div class="bar-value">1:07</div><div class="bar death" style="height:20%" title="Fight 22: Died at 1:07 to Corrupting Essence. Boss 74.6%"></div><div class="bar-label">f22</div></div>
+      <!-- Fight 23: 4:55 death -->
+      <div class="bar-wrapper"><div class="bar-value">4:55</div><div class="bar death" style="height:89%" title="Fight 23: Died at 4:55 to Simulacrum Backlash. Boss 31.1%"></div><div class="bar-label">f23</div></div>
+      <!-- Fight 25: 2:37 death -->
+      <div class="bar-wrapper"><div class="bar-value">2:37</div><div class="bar death" style="height:47%" title="Fight 25: Died at 2:37. Boss 26.5%"></div><div class="bar-label">f25</div></div>
+    </div>
+  </div>
+  <div style="font-size:11px; color:var(--dim); margin-top:4px;">
+    <span style="color:var(--red);">&#9632;</span> Died (all pulls) &nbsp;
+    <span style="color:var(--cyan);">&#9632;</span> Reached P3 &nbsp;
+    Bar height = survival time (max 5:33)
+  </div>
+
+  <h3>Session Trend</h3>
+  <table>
+    <thead><tr><th>Segment</th><th>Avg Survival</th><th>Early Deaths (&lt;2min)</th><th>Reached P2+</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>First 10 pulls (f5-f13)</td>
+        <td>2:12</td>
+        <td style="color:var(--red);">6 / 10</td>
+        <td>4 / 10</td>
+      </tr>
+      <tr>
+        <td>Last 10 pulls (f14-f25)</td>
+        <td style="color:var(--green);">3:24</td>
+        <td>2 / 10</td>
+        <td style="color:var(--green);">7 / 10</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="info-box">
+    <div class="info-title">Improvement Trend</div>
+    <p style="font-size:13px;">Average survival increased from 2:12 in the first half to 3:24 in the second half. Early P1 deaths dropped from 6/10 to 2/10. Nurnyx is clearly learning the mechanics through the session, with P2 reach rate improving from 40% to 70%. The learning curve is visible and trending positive.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ DEATH PATTERN ANALYSIS ═══════════════ -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="stat-grid">
+    <div class="stat-item">
+      <div class="stat-label">Total Deaths</div>
+      <div class="stat-value" style="color:var(--red);">23</div>
+      <div style="font-size:11px;color:var(--dim);">across 20 pulls</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Multi-Death Pulls</div>
+      <div class="stat-value" style="color:var(--red);">3</div>
+      <div style="font-size:11px;color:var(--dim);">Fights 9, 11, 12</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Unique Kill Abilities</div>
+      <div class="stat-value">11</div>
+      <div style="font-size:11px;color:var(--dim);">widely distributed</div>
+    </div>
+  </div>
+
+  <h3>Death Causes Ranked</h3>
+  <table>
+    <thead>
+      <tr><th>Killing Ability</th><th>Deaths</th><th>Phase</th><th>Avg Death Time</th><th>Avoidable?</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background:rgba(248,81,73,0.08);">
+        <td style="font-weight:600;">Unknown / Residual Damage</td>
+        <td style="color:var(--red); font-weight:700;">6</td>
+        <td>Mixed</td>
+        <td>3:21</td>
+        <td style="color:var(--dim);">Varies</td>
+      </tr>
+      <tr style="background:rgba(248,81,73,0.08);">
+        <td style="font-weight:600;">Cosmic Barrier</td>
+        <td style="color:var(--red); font-weight:700;">3</td>
+        <td><span class="phase-badge p2">P2</span></td>
+        <td>3:37</td>
+        <td style="color:var(--red);">Yes &mdash; dodge/position</td>
+      </tr>
+      <tr style="background:rgba(248,81,73,0.08);">
+        <td style="font-weight:600;">Bursting Emptiness</td>
+        <td style="color:var(--red); font-weight:700;">3</td>
+        <td><span class="phase-badge p2">P2</span> / <span class="phase-badge p1">P1</span></td>
+        <td>3:10</td>
+        <td style="color:var(--red);">Yes &mdash; soak/spread</td>
+      </tr>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td style="color:var(--orange);">2</td>
+        <td><span class="phase-badge p1">P1</span></td>
+        <td>1:16</td>
+        <td style="color:var(--red);">Yes &mdash; dodge Vorelus orbs</td>
+      </tr>
+      <tr>
+        <td>Void Remnants</td>
+        <td style="color:var(--orange);">2</td>
+        <td><span class="phase-badge p1">P1</span></td>
+        <td>1:36</td>
+        <td style="color:var(--red);">Yes &mdash; clear pools</td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td>1</td>
+        <td><span class="phase-badge p2">P2</span></td>
+        <td>3:24</td>
+        <td style="color:var(--orange);">Partially</td>
+      </tr>
+      <tr>
+        <td>Orbiting Matter</td>
+        <td>1</td>
+        <td><span class="phase-badge inter">Inter</span></td>
+        <td>2:43</td>
+        <td style="color:var(--red);">Yes &mdash; dodge orbits</td>
+      </tr>
+      <tr>
+        <td>Silverstrike Barrage</td>
+        <td>1</td>
+        <td><span class="phase-badge inter">Inter</span></td>
+        <td>2:42</td>
+        <td style="color:var(--orange);">Partially &mdash; defensives</td>
+      </tr>
+      <tr>
+        <td>Grasp of Emptiness</td>
+        <td>1</td>
+        <td><span class="phase-badge p1">P1</span></td>
+        <td>0:11</td>
+        <td style="color:var(--red);">Yes &mdash; break grip</td>
+      </tr>
+      <tr>
+        <td>Void Expulsion</td>
+        <td>1</td>
+        <td><span class="phase-badge p2">P2</span></td>
+        <td>4:44</td>
+        <td style="color:var(--orange);">Partially &mdash; spread</td>
+      </tr>
+      <tr>
+        <td>Corrupting Essence</td>
+        <td>1</td>
+        <td><span class="phase-badge p1">P1</span></td>
+        <td>1:07</td>
+        <td style="color:var(--red);">Yes &mdash; move out</td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td>1</td>
+        <td><span class="phase-badge p2">P2</span></td>
+        <td>4:55</td>
+        <td style="color:var(--red);">Yes &mdash; stop DPS</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Death Timing Pattern</h3>
+  <div style="margin: 12px 0;">
+    <div class="survival-timeline">
+      <div class="survival-segment" style="width:40%;background:rgba(248,81,73,0.6);">P1: 8 deaths</div>
+      <div class="survival-segment" style="width:13%;background:rgba(210,153,34,0.6);">Inter: 3</div>
+      <div class="survival-segment" style="width:38%;background:rgba(219,109,40,0.6);">P2: 10 deaths</div>
+      <div class="survival-segment" style="width:9%;background:rgba(248,81,73,0.8);">P3: 2</div>
+    </div>
+    <div style="font-size:11px;color:var(--dim);">Distribution of 23 deaths across fight phases</div>
+  </div>
+
+  <div class="death-cause-card">
+    <div class="cause-name">Primary Problem: Dying to Varied Mechanics Across All Phases</div>
+    <div class="cause-count">23 deaths from 11 different abilities &mdash; no single mechanic dominates</div>
+    <div class="cause-detail">
+      Unlike a player who repeatedly fails one mechanic, Nurnyx is dying to almost everything.
+      The most frequent killers are Cosmic Barrier (3), Bursting Emptiness (3), Echoing Darkness (2), and Void Remnants (2).
+      The spread across so many different abilities suggests a fundamental survivability issue &mdash; either not using defensive cooldowns (Fade, Dispersion, Vampiric Embrace, Shadow Word: Death/Phantasm)
+      proactively, or consistently being out of position when damage goes out.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FULL DEATH LOG ═══════════════ -->
+<section>
+  <h2>Complete Death Log</h2>
+  <table>
+    <thead>
+      <tr><th>Pull</th><th>Death #</th><th>Time</th><th>Phase</th><th>Killing Ability</th><th>Fight Duration</th><th>Boss %</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>5</td><td>1</td><td>3:24</td><td><span class="phase-badge p2">P2</span></td><td>Void Barrage</td><td>3:48</td><td>50.4%</td></tr>
+      <tr><td>6</td><td>1</td><td>3:36</td><td><span class="phase-badge p2">P2</span></td><td>Cosmic Barrier</td><td>3:53</td><td>47.1%</td></tr>
+      <tr style="background:rgba(248,81,73,0.05);"><td>7</td><td>1</td><td>0:52</td><td><span class="phase-badge p1">P1</span></td><td>Echoing Darkness</td><td>1:17</td><td>84.1%</td></tr>
+      <tr style="background:rgba(248,81,73,0.05);"><td>8</td><td>1</td><td>1:12</td><td><span class="phase-badge p1">P1</span></td><td>Unknown</td><td>1:21</td><td>82.2%</td></tr>
+      <tr><td>9</td><td>1</td><td>2:43</td><td><span class="phase-badge inter">Inter</span></td><td>Orbiting Matter</td><td rowspan="2">5:15</td><td rowspan="2">32.9%</td></tr>
+      <tr><td>9</td><td>2</td><td>4:25</td><td><span class="phase-badge p2">P2</span></td><td>Bursting Emptiness</td></tr>
+      <tr style="background:rgba(248,81,73,0.05);"><td>10</td><td>1</td><td>1:33</td><td><span class="phase-badge p1">P1</span></td><td>Bursting Emptiness</td><td>2:00</td><td>71.1%</td></tr>
+      <tr style="background:rgba(248,81,73,0.05);"><td>11</td><td>1</td><td style="color:var(--red);font-weight:700;">0:11</td><td><span class="phase-badge p1">P1</span></td><td>Grasp of Emptiness</td><td rowspan="2">3:47</td><td rowspan="2">50.0%</td></tr>
+      <tr><td>11</td><td>2</td><td>3:35</td><td><span class="phase-badge p2">P2</span></td><td>Cosmic Barrier</td></tr>
+      <tr style="background:rgba(248,81,73,0.05);"><td>12</td><td>1</td><td>1:39</td><td><span class="phase-badge p1">P1</span></td><td>Echoing Darkness</td><td rowspan="2">4:47</td><td rowspan="2">42.5%</td></tr>
+      <tr><td>12</td><td>2</td><td>4:46</td><td><span class="phase-badge p2">P2</span></td><td>Unknown</td></tr>
+      <tr><td>13</td><td>1</td><td style="color:var(--cyan);">5:33</td><td><span class="phase-badge p3">P3</span></td><td>Unknown</td><td>6:01</td><td>32.3%</td></tr>
+      <tr style="background:rgba(248,81,73,0.05);"><td>14</td><td>1</td><td>1:14</td><td><span class="phase-badge p1">P1</span></td><td>Void Remnants</td><td>1:26</td><td>81.2%</td></tr>
+      <tr><td>15</td><td>1</td><td>2:42</td><td><span class="phase-badge inter">Inter</span></td><td>Silverstrike Barrage</td><td>3:05</td><td>61.8%</td></tr>
+      <tr><td>16</td><td>1</td><td>2:59</td><td><span class="phase-badge p2">P2</span></td><td>Unknown</td><td>3:05</td><td>61.6%</td></tr>
+      <tr><td>17</td><td>1</td><td>3:38</td><td><span class="phase-badge p2">P2</span></td><td>Cosmic Barrier</td><td>3:55</td><td>47.9%</td></tr>
+      <tr><td>18</td><td>1</td><td>3:59</td><td><span class="phase-badge p2">P2</span></td><td>Bursting Emptiness</td><td>4:23</td><td>43.4%</td></tr>
+      <tr><td>19</td><td>1</td><td style="color:var(--cyan);">5:13</td><td><span class="phase-badge p3">P3</span></td><td>Unknown</td><td>6:09</td><td>36.4%</td></tr>
+      <tr><td>20</td><td>1</td><td>4:44</td><td><span class="phase-badge p2">P2</span></td><td>Void Expulsion</td><td>5:15</td><td>34.8%</td></tr>
+      <tr style="background:rgba(248,81,73,0.05);"><td>21</td><td>1</td><td>1:57</td><td><span class="phase-badge p1">P1</span></td><td>Void Remnants</td><td>2:03</td><td>67.1%</td></tr>
+      <tr style="background:rgba(248,81,73,0.05);"><td>22</td><td>1</td><td>1:07</td><td><span class="phase-badge p1">P1</span></td><td>Corrupting Essence</td><td>1:32</td><td>74.6%</td></tr>
+      <tr><td>23</td><td>1</td><td>4:55</td><td><span class="phase-badge p2">P2</span></td><td>Simulacrum Backlash</td><td>6:25</td><td>31.1%</td></tr>
+      <tr><td>25</td><td>1</td><td>2:37</td><td><span class="phase-badge inter">Inter</span></td><td>Unknown</td><td>6:44</td><td>26.5%</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════ P1 ABILITY BREAKDOWN ═══════════════ -->
+<section>
+  <h2>Damage Profile (Top Pulls)</h2>
+
+  <p style="font-size:13px; color:var(--dim); margin-bottom:12px;">
+    Ability breakdown from Nurnyx's best-performing pulls where table data is available. These represent P1 + whatever P2 time was alive.
+    Shadow Priest (Archon hero talent tree based on Halo + Mind Flay: Insanity usage).
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Fight 13 (best, 5:33 alive)</th><th>Fight 20 (4:44 alive)</th><th>Fight 19 (5:13 alive)</th><th>Fight 12 (1:39 alive)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">Shadow Word: Madness</td>
+        <td>2,739K (18.0%)</td>
+        <td>2,546K (19.7%)</td>
+        <td>2,381K (17.6%)</td>
+        <td>1,893K (16.9%)</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Mind Blast</td>
+        <td>1,988K (13.1%)</td>
+        <td>1,847K (14.3%)</td>
+        <td>2,152K (15.9%)</td>
+        <td>1,803K (16.1%)</td>
+      </tr>
+      <tr>
+        <td>Shadowy Apparition</td>
+        <td>1,445K (9.5%)</td>
+        <td>1,099K (8.5%)</td>
+        <td>1,335K (9.9%)</td>
+        <td>1,252K (11.2%)</td>
+      </tr>
+      <tr>
+        <td>Halo</td>
+        <td>1,441K (9.5%)</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Mind Flay: Insanity</td>
+        <td>1,427K (9.4%)</td>
+        <td>1,168K (9.1%)</td>
+        <td>1,010K (7.5%)</td>
+        <td>1,003K (9.0%)</td>
+      </tr>
+      <tr>
+        <td>Shadow Word: Pain</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td>1,021K (7.6%)</td>
+        <td>746K (6.7%)</td>
+      </tr>
+      <tr>
+        <td>Void Apparition</td>
+        <td>&mdash;</td>
+        <td>952K (7.4%)</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size:12px; color:var(--dim); margin-top:8px;">
+    Shadow Word: Madness and Mind Blast consistently top the damage profile, consistent with Archon Shadow Priest priority.
+    Halo appears in the best pull (fight 13), suggesting good CD usage when surviving long enough to cycle through Voidform + Halo windows.
+  </div>
+</section>
+
+<!-- ═══════════════ REFERENCE COMPARISON ═══════════════ -->
+<section>
+  <h2>Reference Comparison (Context)</h2>
+
+  <p style="font-size:13px; color:var(--dim); margin-bottom:12px;">
+    Top-ranked Shadow Priests on Mythic Crown of the Cosmos. These are <strong>kill logs</strong> from players who survived the full fight.
+    Direct DPS comparison to a prog night with 100% death rate is not meaningful &mdash; these are shown purely as a ceiling reference for later progression.
+  </p>
+
+  <table>
+    <thead>
+      <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th></tr>
+    </thead>
+    <tbody>
+      <tr class="ref-row">
+        <td>Loafsp <span class="ref-badge">Rank 1</span></td>
+        <td style="color:var(--purple); font-weight:600;">111.5K</td>
+        <td>7:22</td>
+        <td>291</td>
+        <td>6 diffs</td>
+      </tr>
+      <tr class="ref-row">
+        <td>Stackedsp <span class="ref-badge">Rank 2</span></td>
+        <td style="color:var(--purple); font-weight:600;">111.0K</td>
+        <td>8:19</td>
+        <td>290</td>
+        <td style="color:var(--green);">2 diffs</td>
+      </tr>
+      <tr class="ref-row">
+        <td>Arino <span class="ref-badge">Rank 3</span></td>
+        <td style="color:var(--purple); font-weight:600;">109.9K</td>
+        <td>8:49</td>
+        <td>291</td>
+        <td>4 diffs</td>
+      </tr>
+      <tr class="ref-row">
+        <td>Cosmospi <span class="ref-badge">Rank 4</span></td>
+        <td style="color:var(--purple); font-weight:600;">109.9K</td>
+        <td>8:43</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr class="ref-row">
+        <td>&#19981;&#40509;&#22823;&#33285;&#21733; <span class="ref-badge">Rank 5</span></td>
+        <td style="color:var(--purple); font-weight:600;">109.8K</td>
+        <td>8:24</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr style="border-top:2px solid var(--border);">
+        <td><strong>Nurnyx</strong></td>
+        <td style="font-weight:600;">56.8K <span style="font-size:11px;color:var(--dim);">(P1 avg)</span></td>
+        <td style="color:var(--dim);">N/A (no kill)</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info-box">
+    <div class="info-title">Reference Context</div>
+    <p style="font-size:13px;">
+      Nurnyx has <strong>identical item level (291)</strong> and <strong>only 2 talent differences</strong> from the closest reference (Stackedsp).
+      This means any performance gap is execution-based, not gear or build.
+      However, comparing a prog night where the player died in every pull to a full kill is not a fair comparison.
+      The reference DPS of ~110K represents the ceiling for a <strong>full fight with zero deaths</strong> &mdash; Nurnyx's P1 DPS of 57K is within
+      reasonable range for the opener phase, especially given prog learning and survival pressure.
+      The priority is surviving long enough to contribute across all phases, not matching kill-log DPS numbers.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════ CONSISTENCY ANALYSIS ═══════════════ -->
+<section>
+  <h2>Consistency Analysis</h2>
+
+  <h3>P1 DPS Consistency (estimated from events)</h3>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Average P1 DPS</td><td style="font-weight:600;">56.8K</td></tr>
+      <tr><td>Median P1 DPS</td><td>59.3K</td></tr>
+      <tr><td>Best P1 DPS</td><td style="color:var(--green);">83.6K (Fight 12)</td></tr>
+      <tr><td>Worst P1 DPS (full P1)</td><td style="color:var(--red);">34.1K (Fight 17)</td></tr>
+      <tr><td>Typical Range (full P1)</td><td>34K &ndash; 84K</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size:12px; color:var(--dim); margin-top:8px;">
+    P1 DPS has moderate variance. Fights where Nurnyx dies very early in P1 (f7 at 0:52, f11 at 0:11) have low DPS because they only capture partial P1.
+    When surviving the full P1, DPS clusters between 56K-84K, which is a reasonable range for progression.
+  </div>
+
+  <h3>Survival Consistency by Phase Wall</h3>
+  <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="stat-item">
+      <div class="stat-label">Died in P1</div>
+      <div class="stat-value" style="color:var(--red);">8</div>
+      <div style="font-size:11px;color:var(--dim);">40% of pulls</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Died in Inter</div>
+      <div class="stat-value" style="color:var(--yellow);">3</div>
+      <div style="font-size:11px;color:var(--dim);">15% of pulls</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Died in P2</div>
+      <div class="stat-value" style="color:var(--orange);">7</div>
+      <div style="font-size:11px;color:var(--dim);">35% of pulls</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Died in P3</div>
+      <div class="stat-value" style="color:var(--red);">2</div>
+      <div style="font-size:11px;color:var(--dim);">10% of pulls</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ GEAR AND BUILD ═══════════════ -->
+<section>
+  <h2>Gear and Build</h2>
+  <table>
+    <thead><tr><th>Attribute</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Item Level</td><td style="font-weight:600;">291</td></tr>
+      <tr><td>Spec</td><td>Shadow (SpecID 258)</td></tr>
+      <tr><td>Hero Talent</td><td>Archon (Halo + Mind Flay: Insanity usage confirmed)</td></tr>
+      <tr><td>Intellect</td><td>2,657</td></tr>
+      <tr><td>Crit</td><td>747</td></tr>
+      <tr><td>Haste</td><td>844</td></tr>
+      <tr><td>Mastery</td><td>933</td></tr>
+      <tr><td>Versatility</td><td>27</td></tr>
+      <tr><td>Leech</td><td>249</td></tr>
+      <tr><td>Tier Set</td><td>4pc (Set 1986) + 2pc Accessory (Set 1971)</td></tr>
+      <tr><td>Enchants</td><td>Helm, Shoulders, Chest, Legs, Boots, Rings, Weapon present</td></tr>
+      <tr><td>Gems</td><td>3 gems socketed (Neck, Bracers, Ring)</td></tr>
+      <tr><td>Consumables</td><td>Vantus Rune: Crown of the Cosmos active, Well Fed buff</td></tr>
+    </tbody>
+  </table>
+  <div style="font-size:12px; color:var(--dim); margin-top:8px;">
+    Gear is well-optimized at 291 ilvl &mdash; matching the top reference players. Vantus Rune on the prog boss shows good preparation.
+    Very low Versatility (27 rating) is worth noting &mdash; Versatility provides damage reduction which helps survivability.
+    The 249 Leech helps with passive self-healing but does not replace proper defensive play.
+  </div>
+</section>
+
+<!-- ═══════════════ ACTIONABLE IMPROVEMENTS ═══════════════ -->
+<section>
+  <h2>Actionable Improvements</h2>
+
+  <div class="actionable">
+    <h4><span class="priority">P1</span> Use Defensive Cooldowns Proactively Before Every Major Mechanic</h4>
+    <p>
+      Shadow Priest has strong defensives: <strong>Dispersion</strong> (90% DR), <strong>Fade</strong> (10% DR with talent), <strong>Vampiric Embrace</strong> (self-healing),
+      and <strong>Shadow Word: Death</strong> for movement. Nurnyx is dying to 11 different abilities across all phases, which strongly suggests defensives are either not being used
+      or being used reactively after damage has already hit. On every known damage window (Grasp of Emptiness at ~25s, Void Expulsion at ~27s, Echoing Darkness every ~3s from Vorelus),
+      pre-cast Fade or Dispersion. The Intermission deaths to Silverstrike Barrage and Orbiting Matter specifically call for Dispersion during the Stellar Emission channel.
+      <strong>Impact: Eliminating even half of the 23 deaths would dramatically increase total damage output.</strong>
+    </p>
+  </div>
+
+  <div class="actionable">
+    <h4><span class="priority">P1</span> Positioning During P1 Sentinel Mechanics</h4>
+    <p>
+      8 of 23 deaths occurred in Phase 1, primarily to <strong>Echoing Darkness</strong> (Vorelus orbs, 2 deaths), <strong>Void Remnants</strong> (void pools, 2 deaths),
+      <strong>Grasp of Emptiness</strong> (pull-in, 1 death at 0:11), <strong>Bursting Emptiness</strong> (1 death), and <strong>Corrupting Essence</strong> (1 death).
+      These are all mechanics that punish poor positioning. As a ranged DPS, Nurnyx should be positioned at max range from Vorelus (to avoid Echoing Darkness splash),
+      away from Void Remnant pools, and ready to break Grasp of Emptiness immediately. The 0:11 death in Fight 11 to Grasp of Emptiness is particularly costly &mdash;
+      this is the very first mechanic of the fight.
+      <strong>Impact: Consistently surviving P1 (which 60% of pulls already achieve) would guarantee P2 contribution in every pull the raid reaches it.</strong>
+    </p>
+  </div>
+
+  <div class="actionable">
+    <h4><span class="priority p2">P2</span> Cosmic Barrier and Bursting Emptiness in P2</h4>
+    <p>
+      Cosmic Barrier killed Nurnyx in 3 pulls (fights 6, 11, 17), all between 3:35-3:38 fight time. Bursting Emptiness killed in 3 pulls (fights 9, 10, 18).
+      These are the two most consistent killers. Cosmic Barrier requires breaking the shield or moving away from the barrier source.
+      Bursting Emptiness requires proper spread positioning. With only 9 pulls reaching P2 alive, Nurnyx needs more reps on these mechanics.
+      <strong>Impact: These 6 deaths represent the P2 mechanic wall. Resolving them extends survival into late P2 where the raid needs sustained DPS.</strong>
+    </p>
+  </div>
+
+  <div class="actionable">
+    <h4><span class="priority p2">P3</span> Intermission Survival Plan</h4>
+    <p>
+      3 deaths during the Intermission (fights 9, 15, 25) to Orbiting Matter, Silverstrike Barrage, and Unknown damage. The Intermission is pure survival &mdash;
+      Stellar Emission channel from 2:22 to 2:52 with Silverstrike Barrage every 6 seconds. Shadow Priest should use <strong>Dispersion</strong> during the heaviest
+      overlap of Stellar Emission + Silverstrike Barrage, and <strong>Vampiric Embrace</strong> for self-sustain.
+      A healthstone or health potion at low HP during the channel is also an option.
+      <strong>Impact: 3 deaths here are preventable with a defensive plan, converting 3 sub-3:00 deaths into P2+ pulls.</strong>
+    </p>
+  </div>
+
+  <div class="actionable">
+    <h4><span class="priority p3">P4</span> Track Improvement &mdash; The Learning Curve Is Real</h4>
+    <p>
+      Session data shows clear improvement: early deaths dropped from 6/10 (first half) to 2/10 (second half), and average survival increased from 2:12 to 3:24.
+      The 4 longest-surviving pulls (f13, f19, f20, f23) all came in the second half of the session. This is meaningful progress.
+      <strong>Next session: aim for 0 P1 deaths and establish a consistent Intermission defensive plan.</strong>
+      If Nurnyx can survive to P2 in 80%+ of pulls, the raid gains a full DPS for 2+ additional minutes per attempt.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════ WHAT'S WORKING ═══════════════ -->
+<section>
+  <h2>What's Working</h2>
+  <div class="info-box">
+    <div class="info-title">Positive Observations</div>
+    <ul style="font-size:13px; margin-top:8px; padding-left:20px;">
+      <li><strong>P1 DPS is solid</strong> when alive &mdash; 57K average with peaks near 84K. Rotation execution in the opener is not a problem.</li>
+      <li><strong>Gear is fully optimized</strong> at 291 ilvl with proper enchants, gems, tier set, and Vantus Rune.</li>
+      <li><strong>Build matches top players</strong> &mdash; only 2 talent differences from the rank 2 Shadow Priest (Stackedsp).</li>
+      <li><strong>Clear learning trajectory</strong> &mdash; survival improved significantly through the session, with the best pulls coming later in the night.</li>
+      <li><strong>Damage profile is correct</strong> &mdash; Shadow Word: Madness, Mind Blast, and Mind Flay: Insanity are the top damage sources, consistent with Archon Shadow Priest priority.</li>
+      <li><strong>Ability usage is diverse</strong> &mdash; Halo, Void Volley, Shadowy Apparitions, and DoT damage all appear in expected proportions.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ CONTEXT FOOTER ═══════════════ -->
+<section>
+  <h2>Analysis Context</h2>
+  <p style="font-size:13px; color:var(--dim);">
+    This is a <strong>progression analysis</strong>, not a kill-log comparison. Nurnyx's primary gap is not DPS output or rotation &mdash; it is survivability.
+    The 100% death rate across 20 pulls means Nurnyx is contributing zero damage for a significant portion of every attempt.
+    On a ~8-minute kill, dying at 2:47 average means roughly 65% of potential damage is lost to being dead.
+    Fixing survivability will have a larger impact than any rotation optimization could.
+  </p>
+  <p style="font-size:13px; color:var(--dim); margin-top:8px;">
+    The same item level (291) and nearly identical talent build as the top-ranked players confirms this is an execution and mechanic familiarity gap,
+    not a gearing or build issue. The visible improvement through the session suggests this will resolve with more pulls and deliberate defensive cooldown planning.
+  </p>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a></p>
+  <p>Reference players: Loafsp (Zul'jin, 111.5K), Stackedsp (Kazzak, 111.0K, 2 talent diffs), Arino (Sargeras, 109.9K)</p>
+  <p>Phase boundaries: P1 0:00-2:14 | Intermission 2:14-2:53 | P2 2:53-5:09 | P3 5:09+</p>
+  <p style="margin-top:8px; color:var(--dim);">Shadow Priest guide reference: <a href="https://www.wowhead.com/guide/classes/priest/shadow/rotation-cooldowns-pve-dps" target="_blank">Wowhead</a> | <a href="https://www.icy-veins.com/wow/shadow-priest-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins</a> | <a href="https://www.method.gg/guides/shadow-priest/playstyle-and-rotation" target="_blank">Method</a></p>
+</div>
+
+</body>
+</html>

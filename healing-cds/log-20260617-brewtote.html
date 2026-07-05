@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brewtote — Restoration Shaman — Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .ramp-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .ramp-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .ramp-timeline .good { background: rgba(63,185,80,0.12); }
+  .ramp-timeline .bad { background: rgba(248,81,73,0.12); }
+  .ramp-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .ramp-timeline .bloom-hit { background: rgba(248,81,73,0.25); border: 1px solid rgba(248,81,73,0.5); padding: 4px 8px; border-radius: 4px; font-weight: 700; display: block; margin: 4px 0; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .healer-cd-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .healer-cd-row:last-child { border-bottom: none; }
+  .healer-name { width: 160px; font-weight: 600; font-size: 13px; }
+  .cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .cd-pill.druid { background: rgba(255,125,10,0.15); color: #ff7d0a; }
+  .cd-pill.shaman { background: rgba(0,112,222,0.15); color: #0070de; }
+  .cd-pill.priest-disc { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+  .cd-pill.priest-holy { background: rgba(255,245,105,0.15); color: #fff569; }
+  .cd-pill.missing { background: rgba(248,81,73,0.1); color: var(--red); border: 1px dashed rgba(248,81,73,0.3); }
+  .oh-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .oh-eff { background: var(--green); }
+  .oh-over { background: var(--red); opacity: 0.6; }
+  .death-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; }
+  .death-timeline .dmg { color: var(--red); }
+  .death-timeline .heal { color: var(--green); }
+  .death-timeline .absorb { color: var(--cyan); }
+  .death-timeline .ts { color: var(--dim); display: inline-block; width: 50px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Brewtote <span class="dim">— Restoration Shaman</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value green">163.8K</div>
+    <div class="stat-label">HPS (Full Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">287</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">18.4%</div>
+    <div class="stat-label">Overheal</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Brewtote survived the kill with <strong class="green">163.8K HPS</strong> and an excellent <strong class="green">18.4% overheal</strong> rate (reference: 11.9%). Led all healers in raw throughput. CD deployment had a notable gap: <strong class="yellow">Ascendance used at 1:58 for Bloom #1</strong> but then <strong class="red">no major CDs for Bloom #2</strong> at 4:16, followed by Spirit Link + Ascendance both used on Bloom #3 at 6:32. The reference (Jollintotems) uses SLT+Ascendance on Bloom #1 and SLT+Ascendance again on Bloom #2 &mdash; a tighter cadence. Flame Shock overcasting at <strong class="yellow">6.5/min vs reference's 1.4/min</strong> is consuming globals that could be Riptide or Chain Heal. Strong overall performance with room to tighten CD timing and DPS-filler balance.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Restoration Shamans on Mythic Rotmire. Primary reference: <strong>Jollintotems</strong> (closest talent match at 11 diffs, 196K HPS, 7:21 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Overheal</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(0,112,222,0.06);">
+      <td><strong>Brewtote</strong></td>
+      <td>163,840</td>
+      <td>7:58</td>
+      <td>286.9</td>
+      <td>&mdash;</td>
+      <td class="green">18.4%</td>
+    </tr>
+    <tr>
+      <td>Zote <span class="ref-badge">#1</span></td>
+      <td class="green">208,120</td>
+      <td>7:23</td>
+      <td>257.3</td>
+      <td><span class="tag tag-diff">16 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Drineystwo <span class="ref-badge">#2</span></td>
+      <td class="green">202,393</td>
+      <td>6:42</td>
+      <td>290.8</td>
+      <td><span class="tag tag-diff">13 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Pastanoodle <span class="ref-badge">#3</span></td>
+      <td class="green">197,320</td>
+      <td>7:25</td>
+      <td>257.1</td>
+      <td><span class="tag tag-diff">15 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Jollintotems <span class="ref-badge">#4 PRIMARY</span></td>
+      <td class="green">196,214</td>
+      <td>7:21</td>
+      <td>256.4</td>
+      <td><span class="tag tag-warn">11 diff</span></td>
+      <td class="green">11.9%</td>
+    </tr>
+    <tr>
+      <td>Shamoan <span class="ref-badge">#5</span></td>
+      <td class="green">195,881</td>
+      <td>6:59</td>
+      <td>273.7</td>
+      <td><span class="tag tag-diff">15 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Brewtote's 163.8K HPS is below all 5 references (avg 200.0K). Fight duration is the longest at 7:58 &mdash; longer fights reduce HPS since late-fight damage is lower. The 11-diff talent delta with Jollintotems means a different toolkit in some areas, but core rotational abilities (Chain Heal, Riptide, Healing Rain) are shared.</p>
+
+<!-- BOSS TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major healing events. Fungal Bloom fires on a fixed ~136s cycle at 2:00, 4:16, and 6:32. Festering Vines fires every ~50s. Brewtote survived the full fight.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Tiareynna death marker (for context) -->
+  <div class="timeline-marker" style="left: 39.3%; border-color: var(--dim); width: 1px; opacity: 0.5;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">Tiareynna dies (3:08)</span>
+  </div>
+  <!-- Brewtote CD markers -->
+  <div class="timeline-marker" style="left: 24.6%; border-color: var(--cyan); width: 2px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--cyan); font-size: 9px;">Asc</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.1%; border-color: var(--cyan); width: 2px;">
+    <span class="timeline-label" style="bottom: 16px; left: 6px; color: var(--cyan); font-size: 9px;">SLT+Asc</span>
+  </div>
+  <!-- Alive zone (full fight) -->
+  <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(63,185,80,0.03);"></div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<!-- BLOOM RAMP ANALYSIS -->
+<h2>Bloom #1 Ramp Analysis</h2>
+<p class="section-intro">Resto Shaman ramp: place Healing Rain, spread Riptides, drop major CDs (Spirit Link Totem + Ascendance) at or just before damage, then Chain Heal through the window. Bloom #1 fires at exactly 2:00 (120s).</p>
+
+<div class="side-by-side">
+  <!-- JOLLINTOTEMS (REFERENCE) -->
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="green">Jollintotems</span> <span class="ref-badge">Reference</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">106.2s</span> <span class="cast good">Riptide</span></div>
+      <div><span class="dim">107.7s</span> <span class="cast good">Downpour</span></div>
+      <div><span class="dim">111.0s</span> <span class="cast neutral">Lava Burst + Flame Shock</span></div>
+      <div><span class="dim">114.2s</span> <span class="cast neutral">Lava Burst</span></div>
+      <div><span class="dim">114.6s</span> <span class="cast good">Healing Rain + Surging Totem</span></div>
+      <div><span class="dim">116.2s</span> <span class="cast good">Riptide</span></div>
+      <div><span class="dim">117.6s</span> <span class="cast good">Riptide</span> <span class="dim">(3 Riptides out)</span></div>
+      <div><span class="dim">119.0s</span> <span class="cast good">Spirit Link Totem + Chain Heal</span></div>
+      <div><span class="dim">119.7s</span> <span class="cast good">Spiritwalker's Grace</span></div>
+      <div style="margin-top: 6px; padding: 4px 0; border-top: 1px dashed var(--green);">
+        <strong class="green">&#9654; CDs DEPLOYED (1s before Bloom)</strong>
+      </div>
+      <div><span class="dim">120.1s</span> <span class="cast good">Ascendance</span> <span class="dim">(+0.1s after Bloom)</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (120s) &mdash; SLT + Ascendance + Healing Rain active</div>
+      <div><span class="dim">122-134s</span> <span class="cast good">Chain Heal &times;8 + Riptide &times;3</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Result: SLT equalizes HP, Ascendance amplifies Chain Heal, Healing Rain ticking</strong></div>
+    </div>
+  </div>
+
+  <!-- BREWTOTE -->
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Brewtote</span> <span class="tag tag-warn">PARTIAL</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">105.0s</span> <span class="cast neutral">Flame Shock &times;2</span> <span class="dim">(DPS filler)</span></div>
+      <div><span class="dim">106.4s</span> <span class="cast neutral">Lava Burst</span></div>
+      <div><span class="dim">109.6s</span> <span class="cast good">Lava Burst + Riptide</span></div>
+      <div><span class="dim">111.1s</span> <span class="cast neutral">Flame Shock &times;2</span> <span class="dim">(still DPSing)</span></div>
+      <div><span class="dim">113.8s</span> <span class="cast neutral">Healing Wave</span></div>
+      <div><span class="dim">115.0s</span> <span class="cast good">Healing Rain + Surging Totem</span></div>
+      <div><span class="dim">116.1s</span> <span class="cast good">Riptide</span></div>
+      <div><span class="dim">117.3s</span> <span class="cast good">Spiritwalker's Grace</span></div>
+      <div><span class="dim">117.9s</span> <span class="cast neutral">Potion of Recklessness</span></div>
+      <div><span class="dim">118.1s</span> <span class="cast good">Ascendance</span> <span class="dim">(-1.9s before Bloom)</span></div>
+      <div><span class="dim">119.3s</span> <span class="cast good">Unleash Life</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (120s) &mdash; Ascendance active, NO Spirit Link Totem</div>
+      <div><span class="dim">121-134s</span> <span class="cast good">Chain Heal &times;8 + Downpour</span></div>
+      <div><span class="dim">133.9s</span> <span class="cast neutral">Astral Shift</span> <span class="dim">(personal defensive)</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">Result: Good Ascendance timing, but no SLT &mdash; missing the HP equalization</strong></div>
+      <div><span class="dim">Only 1 Riptide pre-spread (ref had 3)</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Bloom #1 Comparison</div>
+  <p style="font-size: 14px;">Brewtote's Ascendance timing was good (1.9s before Bloom), but the ramp was missing <strong>Spirit Link Totem</strong> &mdash; the reference deploys SLT + Ascendance together for maximum throughput. Brewtote only had 1 Riptide pre-spread where the reference had 3, reducing Tidal Waves procs and Chain Heal bounce efficiency. Flame Shock casts at 105s and 111s consumed 3-4 globals that could have been Riptide spreads.</p>
+</div>
+
+<!-- BLOOM 2 & 3 -->
+<h2>Bloom #2 &amp; #3 CD Deployment</h2>
+<p class="section-intro">Brewtote's CD deployment across all three Blooms compared to the reference pattern.</p>
+
+<div class="grid-2">
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="red">Bloom #2 &mdash; 4:16</span> <span class="tag tag-crit">NO MAJOR CD</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">Healing Rain + Surging Totem placed at 4:12</span></div>
+      <div><span class="dim">Chain Heal spam 4:05-4:29</span></div>
+      <div><span class="dim">Unleash Life at 4:18</span></div>
+      <div style="margin-top: 8px;"><strong class="red">No Ascendance or Spirit Link Totem used.</strong></div>
+      <div><span class="dim">Ascendance was on 3min CD from 1:58 use &rarr; available at ~4:58</span></div>
+      <div><span class="dim">SLT was available (never used on Bloom #1)</span></div>
+    </div>
+  </div>
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Bloom #3 &mdash; 6:32</span> <span class="tag tag-same">BOTH CDs</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">Chain Heal pre-healing 6:21-6:30</span></div>
+      <div><span class="dim">Totemic Projection at 6:29</span></div>
+      <div><span class="dim">6:34 Spirit Link Totem</span> <span class="cast good">+2s after Bloom</span></div>
+      <div><span class="dim">6:37 Healing Rain + Surging Totem</span></div>
+      <div><span class="dim">6:38 Downpour</span></div>
+      <div><span class="dim">6:40 Ascendance</span> <span class="cast good">+8s after Bloom</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Both CDs deployed.</strong> SLT at +2s is slightly late. Ascendance at +8s misses the peak damage window.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">CD Cadence Issue</div>
+  <p style="font-size: 14px;">The reference (Jollintotems) uses <strong>SLT + Ascendance on Bloom #1</strong> and <strong>SLT + Ascendance on Bloom #2</strong> (5:04 + 5:06, which is their fight's Bloom #2 timing). This is the optimal cadence &mdash; both CDs cover 2 of 3 Blooms. Brewtote used Ascendance on Bloom #1 but saved SLT until Bloom #3, leaving Bloom #2 with <strong>zero major CDs</strong>. Since Ascendance was on cooldown from the 1:58 use, neither CD was available for Bloom #2 at 4:16. Shifting SLT to Bloom #2 and Ascendance to Bloom #3 (or vice versa) would ensure every Bloom has at least one major CD.</p>
+</div>
+
+<!-- TEAM CD COORDINATION -->
+<h2>Team CD Coordination</h2>
+<p class="section-intro">Which healing CDs covered each Bloom across all 4 healers. Tiareynna died at 3:08 &mdash; only available for Bloom #1.</p>
+
+<div class="card">
+  <!-- BLOOM 1 -->
+  <h3 style="margin-bottom: 12px;">Bloom #1 &mdash; 2:00</h3>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio <span class="dim">(RDruid)</span></div>
+    <span class="cd-pill druid">Tranquility (2:03)</span>
+  </div>
+  <div class="healer-cd-row" style="background: rgba(0,112,222,0.06);">
+    <div class="healer-name" style="color: #0070de;">Brewtote <span class="dim">(RSham)</span></div>
+    <span class="cd-pill shaman">Ascendance (1:58)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna <span class="dim">(Disc)</span></div>
+    <span class="cd-pill priest-disc">Evangelism (2:06)</span>
+    <span class="tag tag-crit" style="font-size: 10px;">5.6s LATE</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #fff569;">Void&eacute;art <span class="dim">(HPriest)</span></div>
+    <span class="cd-pill priest-holy">Apotheosis (2:04)</span>
+  </div>
+
+  <!-- BLOOM 2 -->
+  <h3 style="margin: 20px 0 12px;">Bloom #2 &mdash; 4:16</h3>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio</div>
+    <span class="cd-pill druid">Convoke the Spirits (4:28)</span>
+  </div>
+  <div class="healer-cd-row" style="background: rgba(248,81,73,0.04);">
+    <div class="healer-name" style="color: #0070de;">Brewtote</div>
+    <span class="cd-pill missing">No major CD</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna</div>
+    <span class="cd-pill missing">DEAD</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #fff569;">Void&eacute;art</div>
+    <span class="cd-pill priest-holy">Apotheosis (4:20)</span>
+  </div>
+
+  <!-- BLOOM 3 -->
+  <h3 style="margin: 20px 0 12px;">Bloom #3 &mdash; 6:32</h3>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio</div>
+    <span class="cd-pill druid">Convoke the Spirits (6:49)</span>
+  </div>
+  <div class="healer-cd-row" style="background: rgba(0,112,222,0.06);">
+    <div class="healer-name" style="color: #0070de;">Brewtote</div>
+    <span class="cd-pill shaman">Spirit Link Totem (6:34)</span>
+    <span class="cd-pill shaman">Ascendance (6:40)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna</div>
+    <span class="cd-pill missing">DEAD</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #fff569;">Void&eacute;art</div>
+    <span class="cd-pill priest-holy">Apotheosis (6:37)</span>
+  </div>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Bloom #2 had only 2 healer CDs (Convoke + Apotheosis). With Tiareynna dead and Brewtote on cooldown, this was the weakest Bloom coverage. Shifting one of Brewtote's CDs to Bloom #2 would give every Bloom at least 3 healer CDs.</p>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Brewtote (7:58 full fight) vs Jollintotems (7:21 full fight). Abilities sorted by Resto Shaman priority.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Brewtote CPM</th>
+      <th>Brewtote Casts</th>
+      <th>Jollin CPM</th>
+      <th>Jollin Casts</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Chain Heal</strong></td>
+      <td class="green"><strong>14.2</strong></td>
+      <td>113</td>
+      <td>13.3</td>
+      <td>98</td>
+      <td class="green">+7%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Riptide</strong></td>
+      <td class="yellow">8.2</td>
+      <td>65</td>
+      <td>11.2</td>
+      <td>82</td>
+      <td class="yellow">&minus;27%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Healing Wave</td>
+      <td class="yellow">1.9</td>
+      <td>15</td>
+      <td>4.4</td>
+      <td>32</td>
+      <td class="yellow">&minus;57%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Downpour</td>
+      <td class="yellow">1.0</td>
+      <td>8</td>
+      <td>3.5</td>
+      <td>26</td>
+      <td class="red">&minus;71%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Healing Rain</td>
+      <td>2.0</td>
+      <td>16</td>
+      <td>1.9</td>
+      <td>14</td>
+      <td class="green">+5%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Healing Stream Totem</td>
+      <td>3.0</td>
+      <td>24</td>
+      <td>2.9</td>
+      <td>21</td>
+      <td class="green">+3%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Unleash Life</td>
+      <td>2.5</td>
+      <td>20</td>
+      <td>2.7</td>
+      <td>20</td>
+      <td class="dim">&minus;7%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Surging Totem</td>
+      <td>2.0</td>
+      <td>16</td>
+      <td>1.9</td>
+      <td>14</td>
+      <td class="green">+5%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Stormstream Totem</td>
+      <td>1.5</td>
+      <td>12</td>
+      <td>1.6</td>
+      <td>12</td>
+      <td class="dim">&minus;6%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Flame Shock</strong></td>
+      <td class="yellow"><strong>6.5</strong></td>
+      <td>52</td>
+      <td>1.4</td>
+      <td>10</td>
+      <td class="yellow">+364%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr>
+      <td>Lava Burst</td>
+      <td>2.5</td>
+      <td>20</td>
+      <td>1.9</td>
+      <td>14</td>
+      <td class="dim">+32%</td>
+      <td><span class="tag tag-info">More DPS</span></td>
+    </tr>
+    <tr>
+      <td>Nature's Swiftness</td>
+      <td>0.9</td>
+      <td>7</td>
+      <td>1.0</td>
+      <td>7</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Ascendance</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Spirit Link Totem</td>
+      <td>0.1</td>
+      <td>1</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td class="yellow">&minus;50%</td>
+      <td><span class="tag tag-warn">1 fewer use</span></td>
+    </tr>
+    <tr>
+      <td>Spiritwalker's Grace</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">More movement</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Flame Shock Overcasting</div>
+    <p style="font-size: 14px;">Flame Shock is a maintenance DoT &mdash; apply it once and maintain it. Brewtote cast it <strong>52 times (6.5/min)</strong> vs the reference's <strong>10 casts (1.4/min)</strong>. This is 42 extra globals spent refreshing a DoT that lasts 18 seconds. Those globals would be better spent on Riptide (currently 27% below reference) or Downpour (71% below). Each Flame Shock global replaces a potential 50-80K healing event.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Riptide &amp; Downpour Deficit</div>
+    <p style="font-size: 14px;">Riptide at <strong>8.2/min vs 11.2/min</strong> means fewer Tidal Waves procs (which buff the next Healing Wave or Chain Heal) and fewer HoTs ticking on the raid before damage events. Downpour at <strong>1.0/min vs 3.5/min</strong> is the bigger gap &mdash; the reference uses Downpour 3.5x more often, generating significant burst AoE healing. Together, these abilities account for most of the HPS gap.</p>
+  </div>
+</div>
+
+<!-- HEALING BREAKDOWN -->
+<h2>Healing Breakdown</h2>
+<p class="section-intro">Top healing sources with overheal percentage. Brewtote's 7:58 full fight vs Jollintotems' 7:21 full fight.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Brewtote Eff.</th><th>OH%</th><th></th><th>Jollin Eff.</th><th>OH%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Chain Heal</strong></td>
+      <td>30,683K</td>
+      <td class="yellow">14.5%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 85.5%"></div>
+          <div class="oh-over" style="width: 14.5%"></div>
+        </div>
+      </td>
+      <td>28,291K</td>
+      <td class="green">4.6%</td>
+    </tr>
+    <tr>
+      <td>Healing Rain</td>
+      <td>9,150K</td>
+      <td>17.4%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 82.6%"></div>
+          <div class="oh-over" style="width: 17.4%"></div>
+        </div>
+      </td>
+      <td>10,448K</td>
+      <td>11.5%</td>
+    </tr>
+    <tr>
+      <td>Earthliving Weapon</td>
+      <td>8,012K</td>
+      <td>25.4%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 74.6%"></div>
+          <div class="oh-over" style="width: 25.4%"></div>
+        </div>
+      </td>
+      <td>8,261K</td>
+      <td>15.5%</td>
+    </tr>
+    <tr>
+      <td>Healing Stream Totem</td>
+      <td>6,985K</td>
+      <td>14.7%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 85.3%"></div>
+          <div class="oh-over" style="width: 14.7%"></div>
+        </div>
+      </td>
+      <td>6,002K</td>
+      <td class="green">5.8%</td>
+    </tr>
+    <tr>
+      <td>Stormstream Totem</td>
+      <td>6,441K</td>
+      <td>19.1%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 80.9%"></div>
+          <div class="oh-over" style="width: 19.1%"></div>
+        </div>
+      </td>
+      <td>6,248K</td>
+      <td>18.1%</td>
+    </tr>
+    <tr>
+      <td>Spirit Link</td>
+      <td>3,890K</td>
+      <td class="green">0%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 100%"></div>
+        </div>
+      </td>
+      <td>6,663K</td>
+      <td class="green">0%</td>
+    </tr>
+    <tr>
+      <td>Riptide</td>
+      <td>3,189K</td>
+      <td>32.1%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 67.9%"></div>
+          <div class="oh-over" style="width: 32.1%"></div>
+        </div>
+      </td>
+      <td>5,078K</td>
+      <td>22.5%</td>
+    </tr>
+    <tr>
+      <td>Downpour</td>
+      <td>2,497K</td>
+      <td class="green">8.8%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 91.2%"></div>
+          <div class="oh-over" style="width: 8.8%"></div>
+        </div>
+      </td>
+      <td>5,752K</td>
+      <td>20.7%</td>
+    </tr>
+    <tr>
+      <td>Stormswell</td>
+      <td>2,801K</td>
+      <td>21.1%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 78.9%"></div>
+          <div class="oh-over" style="width: 21.1%"></div>
+        </div>
+      </td>
+      <td>3,110K</td>
+      <td class="green">7.0%</td>
+    </tr>
+    <tr>
+      <td>Healing Wave</td>
+      <td>1,429K</td>
+      <td class="yellow">46.6%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 53.4%"></div>
+          <div class="oh-over" style="width: 46.6%"></div>
+        </div>
+      </td>
+      <td>3,586K</td>
+      <td>28.9%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Notable gaps: Spirit Link healing is 3,890K vs 6,663K (1 use vs 2 uses). Downpour is 2,497K vs 5,752K (8 casts vs 26). Riptide is 3,189K vs 5,078K (65 casts vs 82). Chain Heal overheal is 14.5% vs 4.6% &mdash; the reference's Chain Heals are landing more efficiently, possibly due to better Riptide pre-spreading giving Chain Heal smarter bounce targets.</p>
+
+<!-- DPS CONTRIBUTION -->
+<h2>DPS Contribution</h2>
+<p class="section-intro">Resto Shaman DPS comes from Flame Shock + Lava Burst during low-damage windows. Brewtote is active on DPS but over-investing globals in Flame Shock maintenance.</p>
+
+<div class="grid-3">
+  <div class="card stat">
+    <div class="stat-value">6,707</div>
+    <div class="stat-label">Brewtote DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value dim">5,083</div>
+    <div class="stat-label">Jollintotems DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">3,203K</div>
+    <div class="stat-label">Total Damage</div>
+  </div>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Brewtote's DPS is <strong class="green">32% higher</strong> than the reference (6,707 vs 5,083). This is consistent with the Flame Shock overcasting &mdash; 52 Flame Shock casts vs 10 generates significantly more damage, but the tradeoff is 42 fewer healing globals. The reference trades DPS for more Riptide, Downpour, and Healing Wave casts, resulting in 32K higher HPS. For progression, the HPS is more valuable than the extra DPS.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Brewtote's HPS across all 20 pulls on Mythic Rotmire. Clear upward trend as fight lengths increase. Brewtote survived the kill fight (F22) and died near the end of most wipes (84-99% through each fight), indicating the deaths were team wipes, not early individual mistakes.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 23%; background: var(--red);" data-tooltip="F2: 38.4K HPS (1:13)"></div>
+    <div class="prog-bar" style="height: 29%; background: var(--red);" data-tooltip="F3: 48.2K HPS (1:11)"></div>
+    <div class="prog-bar" style="height: 26%; background: var(--red);" data-tooltip="F4: 41.9K HPS (0:51)"></div>
+    <div class="prog-bar" style="height: 57%; background: var(--orange);" data-tooltip="F5: 94.1K HPS (2:42)"></div>
+    <div class="prog-bar" style="height: 65%; background: var(--orange);" data-tooltip="F7: 105.7K HPS (2:18)"></div>
+    <div class="prog-bar" style="height: 47%; background: var(--red);" data-tooltip="F8: 77.8K HPS (2:17)"></div>
+    <div class="prog-bar" style="height: 67%; background: var(--orange);" data-tooltip="F9: 109.7K HPS (3:14)"></div>
+    <div class="prog-bar" style="height: 74%; background: var(--orange);" data-tooltip="F10: 120.9K HPS (5:37)"></div>
+    <div class="prog-bar" style="height: 70%; background: var(--orange);" data-tooltip="F11: 115.4K HPS (4:48)"></div>
+    <div class="prog-bar" style="height: 84%; background: var(--yellow);" data-tooltip="F12: 137.2K HPS (5:42)"></div>
+    <div class="prog-bar" style="height: 75%; background: var(--orange);" data-tooltip="F13: 122.8K HPS (2:51)"></div>
+    <div class="prog-bar" style="height: 53%; background: var(--red);" data-tooltip="F14: 87.1K HPS (1:15)"></div>
+    <div class="prog-bar" style="height: 82%; background: var(--yellow);" data-tooltip="F15: 134.0K HPS (5:05)"></div>
+    <div class="prog-bar" style="height: 30%; background: var(--red);" data-tooltip="F16: 49.6K HPS (0:53)"></div>
+    <div class="prog-bar" style="height: 77%; background: var(--orange);" data-tooltip="F17: 125.6K HPS (5:45)"></div>
+    <div class="prog-bar" style="height: 82%; background: var(--yellow);" data-tooltip="F18: 134.6K HPS (6:52)"></div>
+    <div class="prog-bar" style="height: 76%; background: var(--orange);" data-tooltip="F19: 125.1K HPS (5:01)"></div>
+    <div class="prog-bar" style="height: 31%; background: var(--red);" data-tooltip="F20: 50.9K HPS (0:54)"></div>
+    <div class="prog-bar" style="height: 93%; background: var(--yellow);" data-tooltip="F21: 152.4K HPS (7:15)"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F22 KILL: 163.8K HPS (7:58)"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Short wipes (sub-2 min) show low HPS because there is less raidwide damage in the first 2 minutes. The three longest pulls before the kill (F18: 134.6K, F19: 125.1K, F21: 152.4K) show a clear upward trend. The kill (163.8K) was the highest HPS pull &mdash; consistent with a full-length fight generating the most sustained healing demand.</p>
+
+<!-- HEALER RANKING -->
+<h2>Healer Ranking &mdash; Kill Fight</h2>
+<p class="section-intro">All 4 dedicated healers on the Mythic Rotmire kill, sorted by total HPS.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>#</th><th>Player</th><th>Spec</th><th>Total Healing</th><th>HPS</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(0,112,222,0.06);">
+      <td>1</td>
+      <td><strong>Brewtote</strong></td>
+      <td>Resto Shaman</td>
+      <td>78,240K</td>
+      <td class="green">163,840</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Tiareynna</strong></td>
+      <td>Disc Priest</td>
+      <td>74,262K</td>
+      <td>155,511</td>
+      <td><span class="tag tag-crit">Died 3:08</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>S&igrave;lencio</strong></td>
+      <td>Resto Druid</td>
+      <td>73,782K</td>
+      <td>154,505</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Void&eacute;art</strong></td>
+      <td>Holy Priest</td>
+      <td>64,494K</td>
+      <td>135,056</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Brewtote led all healers in both total healing (78.2M) and HPS (163.8K). Note: Tiareynna's 155.5K HPS was earned in only 3:08 of the 7:58 fight &mdash; their actual throughput while alive was much higher but they contributed zero for the final 62% of the fight. The remaining 3 healers had to compensate, which inflates their HPS relative to a normal 4-healer kill.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Deploy a major CD for every Bloom.</strong> Bloom #2 at 4:16 had zero CDs from Brewtote. Spirit Link Totem was available (never used on Bloom #1) but was held until Bloom #3. Assign SLT to Bloom #2 and Ascendance to Blooms #1 and #3. Alternatively, use Ascendance on Bloom #1 and SLT on Bloom #2, then Ascendance again on Bloom #3 (3-min CD allows this). Either way, ensure every Bloom has at least one CD deployed.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Reduce Flame Shock casts from 52 to ~10.</strong> Flame Shock is a maintenance DoT that lasts 18 seconds. At 6.5 casts/min, Brewtote is re-applying it 4.7x more than the reference (1.4/min). This is 42 wasted globals across the fight. Apply Flame Shock once, refresh only when it falls off or on a new target, and redirect those globals to Riptide and Downpour. Expected gain: ~20-30K additional HPS from the redirected globals.
+</div>
+
+<div class="action-item">
+  <strong>3. Increase Riptide usage from 8.2/min to 11+/min.</strong> Riptide is the core rotational button for Resto Shaman &mdash; it feeds Tidal Waves procs (which buff Chain Heal and Healing Wave), provides a HoT for Chain Heal bounce targeting, and has a short 6-second cooldown. The reference casts 82 Riptides vs Brewtote's 65. Those 17 missing Riptides represent lost Tidal Waves procs, weaker Chain Heal bounces, and 1,889K less Riptide healing.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Downpour usage from 1.0/min to 3+/min.</strong> Downpour is a burst AoE heal on a short cooldown. The reference casts it 26 times (3.5/min) for 5,752K healing vs Brewtote's 8 casts for 2,497K. This is the single largest healing gap by ability (3,255K delta). Press it on cooldown during damage windows &mdash; the 8.8% overheal on Brewtote's Downpours shows it is landing efficiently when used.
+</div>
+
+<div class="action-item">
+  <strong>5. Pre-spread more Riptides before Bloom.</strong> On Bloom #1, Brewtote had 1 Riptide out before the damage hit. The reference had 3 Riptides pre-spread. More Riptides = more Tidal Waves procs entering the Bloom window = stronger Chain Heals during peak damage. Start spreading Riptides 10-12 seconds before each Bloom instead of DPSing with Flame Shock.
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: Jollintotems (#4 ranked Resto Shaman, report <code>LGJCjYy69cr7FtQx</code>, Fight 42, 7:21 kill). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 11 differences between Brewtote and Jollintotems. Core rotational abilities (Chain Heal, Riptide, Healing Rain, Healing Wave) are shared. The Flame Shock, Riptide, and Downpour issues above are talent-independent.</p>
+  <p style="margin-top: 4px;">Brewtote HPS computed from WCL healing events: 82,399K effective / 477.5s = 172,549 HPS (raw). WCL table reports 163,840 HPS (78,240K / 477.5s) which reflects different aggregation. Both are shown where appropriate.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bebeshakur — Unholy Death Knight — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .tag-prog { background: rgba(219,109,40,0.15); color: var(--orange); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Bebeshakur <span class="dim">&mdash; Unholy Death Knight</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (26 wipes, no kill) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">181.7K</div>
+    <div class="stat-label">DPS (Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">282</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">0.01%</div>
+    <div class="stat-label">Best Pull (F8, 2:22)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">40.3</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--orange); margin-top: 16px;">
+  <div class="card-header orange">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">Bebeshakur is outputting <strong class="yellow">181.7K DPS</strong> on the longest pull (Fight 23, 4:53) &mdash; a <strong class="red">~9% gap</strong> behind #1 ranked Unholy DK ChiZiShu (<strong class="purple">~200K events-based DPS</strong> in an 8:42 kill, <strong class="purple">101.4K WCL active DPS</strong>). However, this is <strong class="orange">prog wipe data vs a full kill</strong>: Bebeshakur died at <strong class="red">4:24</strong> to Bursting Emptiness (raid wipe), cutting the fight short. The reference played the full 8:42 with late-fight sustained phases unavailable to Bebeshakur. The primary gap is in <strong class="red">total CPM: 40.3 vs 52.7 (&minus;23.5%)</strong>. Scourge Strike is the biggest shortfall at <strong class="red">12.5 vs 18.7 CPM (&minus;33%)</strong>, followed by Death Coil/Necrotic Coil (<strong class="red">&minus;35%/&minus;39%</strong>) and Soul Reaper (<strong class="red">&minus;44%</strong>). With <strong class="yellow">10 talent differences</strong>, ilvl gap (<strong class="yellow">282 vs 290</strong>), and 6 vs 13 Ebon Might applications, a portion of this gap is external. But the CPM deficit points to systematic uptime loss &mdash; likely from movement mechanics and unfamiliarity with boss timings during prog.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Unholy Death Knights on Mythic Crown of the Cosmos (kills only). Primary reference: <strong>ChiZiShu</strong> (fewest talent diffs at 10, 101.4K DPS, 8:42 kill). All references are from <strong>kills</strong> &mdash; Bebeshakur's data is from a <strong>wipe pull</strong>.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Bebeshakur</strong> <span class="tag tag-prog">PROG</span></td>
+      <td>181,681</td>
+      <td>4:53 <span class="dim">(wipe)</span></td>
+      <td>282.0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Died 4:24</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>ChiZiShu <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">101,390</td>
+      <td>8:42 <span class="dim">(kill)</span></td>
+      <td>290.3</td>
+      <td><span class="tag tag-warn">10 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Lanadk <span class="ref-badge">#2</span></td>
+      <td class="green">101,481</td>
+      <td>8:28 <span class="dim">(kill)</span></td>
+      <td>272.8</td>
+      <td><span class="tag tag-warn">11 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Adyostontos <span class="ref-badge">#3</span></td>
+      <td class="green">100,753</td>
+      <td>8:33 <span class="dim">(kill)</span></td>
+      <td>291.5</td>
+      <td><span class="tag tag-diff">12 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Banandk <span class="ref-badge">#4</span></td>
+      <td class="green">100,267</td>
+      <td>6:47 <span class="dim">(kill)</span></td>
+      <td>291.5</td>
+      <td><span class="tag tag-diff">13 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>GuurTuBaeluk <span class="ref-badge">#5</span></td>
+      <td class="green">99,643</td>
+      <td>8:44 <span class="dim">(kill)</span></td>
+      <td>290.6</td>
+      <td><span class="tag tag-diff">15 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="yellow">Important context:</strong> Bebeshakur's 181.7K DPS is from a 4:53 wipe &mdash; shorter fights include burst-phase bias that inflates DPS relative to a full 8+ minute kill. The references are sustained DPS across the full encounter. Additionally, Bebeshakur's ilvl is <strong>282 vs 290</strong> for the primary reference (&minus;8 ilvl), and received only <strong>6 Ebon Might applications vs 13</strong> for the reference, meaning roughly <strong>half the Aug Evoker support</strong>. These factors explain a substantial portion of the raw DPS gap.</p>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Fight 23 Timeline &mdash; Crown of the Cosmos</h2>
+<p class="section-intro">Crown is a 3-phase fight: Sentinels (positioning + adds), Rift Simulacrum (energy control + images), Devouring Cosmos (multi-platform execute). Fight 23 lasted 4:53 before a raid wipe. The raid entered deep P2 before collapsing to cascading deaths.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Phase markers -->
+  <div style="position: absolute; top: 0; left: 0; width: 34%; height: 100%; background: rgba(88,166,255,0.06); border-right: 1px dashed var(--accent);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--accent); font-size: 11px; font-weight: 600;">P1: Sentinels</span>
+  </div>
+  <div style="position: absolute; top: 0; left: 34%; width: 66%; height: 100%; background: rgba(188,140,255,0.04);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--purple); font-size: 11px; font-weight: 600;">P2: Rift Simulacrum</span>
+  </div>
+  <!-- Death cascade start -->
+  <div class="timeline-marker" style="left: 51.4%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="top: 18px; left: 6px; color: var(--red); font-size: 9px;">First deaths (2:31)</span>
+  </div>
+  <!-- Mass deaths 4:01+ -->
+  <div class="timeline-marker" style="left: 82.2%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="top: 30px; left: 6px; color: var(--red); font-size: 9px;">Cascade (4:01+)</span>
+  </div>
+  <!-- Player death -->
+  <div class="timeline-marker" style="left: 90.1%; border-color: var(--orange); width: 3px;">
+    <span class="timeline-label" style="top: 42px; left: 6px; color: var(--orange); font-size: 10px; font-weight: 600;">&#x2620; Bebeshakur (4:24)</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 34%; color: var(--dim);">~1:40</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:53</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State &mdash; Fight 23</div>
+  <p>0:00&ndash;2:31 = 20/20 alive &middot; 2:31 = 18/20 (Alitheria + Smokinthisza to Silverstrike Barrage) &middot; 2:42 = 17/20 (Invincibale) &middot; 3:46&ndash;4:06 = cascade begins (Sonic, Invincibale, Orichamaru, Starfighter, Moistbear, Zinnks) &middot; 4:14 = 10/20 (Smokinthisza, Unholyftw, Nurnyx) &middot; <strong class="red">4:24 = raid wipe</strong> (Bebeshakur + 4 others to Bursting Emptiness)</p>
+  <p style="margin-top: 4px; color: var(--orange);">Bebeshakur survived until the final raid wipe at 4:24. The death was raid-wide Bursting Emptiness, not an individual mistake. 22 total deaths in this pull &mdash; the raid was in full collapse from 3:46 onward.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Bebeshakur (4:53 wipe) vs ChiZiShu (8:42 kill). <strong class="yellow">Context:</strong> The reference played nearly twice as long, so raw cast counts differ dramatically &mdash; CPM normalizes for duration. Sorted by DPS impact.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Scourge Strike</strong></td>
+      <td>61</td>
+      <td class="red">12.5</td>
+      <td>163</td>
+      <td>18.7</td>
+      <td class="red">&minus;33%</td>
+      <td><span class="tag tag-crit">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Death Coil</strong></td>
+      <td>31</td>
+      <td class="red">6.3</td>
+      <td>85</td>
+      <td>9.8</td>
+      <td class="red">&minus;35%</td>
+      <td><span class="tag tag-diff">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Necrotic Coil</strong></td>
+      <td>25</td>
+      <td class="red">5.1</td>
+      <td>73</td>
+      <td>8.4</td>
+      <td class="red">&minus;39%</td>
+      <td><span class="tag tag-diff">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Soul Reaper</strong></td>
+      <td>6</td>
+      <td class="red">1.2</td>
+      <td>19</td>
+      <td>2.2</td>
+      <td class="red">&minus;44%</td>
+      <td><span class="tag tag-crit">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Festering Strike</td>
+      <td>12</td>
+      <td>2.5</td>
+      <td>24</td>
+      <td>2.8</td>
+      <td class="yellow">&minus;11%</td>
+      <td><span class="tag tag-same">Acceptable</span></td>
+    </tr>
+    <tr>
+      <td>Festering Scythe</td>
+      <td>11</td>
+      <td>2.3</td>
+      <td>24</td>
+      <td>2.8</td>
+      <td class="yellow">&minus;18%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Dark Transformation</td>
+      <td>5</td>
+      <td>1.0</td>
+      <td>10</td>
+      <td>1.1</td>
+      <td class="dim">&minus;11%</td>
+      <td><span class="tag tag-same">On CD</span></td>
+    </tr>
+    <tr>
+      <td>Army of the Dead</td>
+      <td>3</td>
+      <td>0.6</td>
+      <td>6</td>
+      <td>0.7</td>
+      <td class="dim">&minus;11%</td>
+      <td><span class="tag tag-same">On CD</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Death and Decay</td>
+      <td>5</td>
+      <td class="yellow">1.0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="yellow">+inf</td>
+      <td><span class="tag tag-warn">Wasted GCDs</span></td>
+    </tr>
+    <tr>
+      <td>Putrefy</td>
+      <td>7</td>
+      <td>1.4</td>
+      <td>5</td>
+      <td>0.6</td>
+      <td class="green">+149%</td>
+      <td><span class="tag tag-info">Proc-based</span></td>
+    </tr>
+    <tr>
+      <td>Outbreak</td>
+      <td>4</td>
+      <td>0.8</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="dim">+78%</td>
+      <td><span class="tag tag-same">Maintenance</span></td>
+    </tr>
+    <tr>
+      <td>Anti-Magic Shell</td>
+      <td>5</td>
+      <td>1.0</td>
+      <td>7</td>
+      <td>0.8</td>
+      <td class="green">+27%</td>
+      <td><span class="tag tag-same">Good usage</span></td>
+    </tr>
+    <tr>
+      <td>Death Grip</td>
+      <td>9</td>
+      <td>1.8</td>
+      <td>12</td>
+      <td>1.4</td>
+      <td class="green">+34%</td>
+      <td><span class="tag tag-info">Utility</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Scourge Strike Deficit: &minus;33% CPM</div>
+    <p style="font-size: 14px;">Scourge Strike is Unholy's primary Rune spender and Festering Wound consumer. At <strong>12.5 vs 18.7 CPM</strong>, Bebeshakur is pressing Scourge Strike roughly <strong>one-third less often</strong> than the reference. In current-patch Unholy, Scourge Strike should be cast whenever you have 1+ Lesser Ghoul stacks &mdash; it drives both direct damage and pet Sweeping Claws procs. This single gap accounts for the largest chunk of the CPM deficit. The reference's higher Scourge Strike rate also explains their vastly higher Sweeping Claws damage (8.4M vs 2.5M).</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Death Coil / Necrotic Coil: &minus;35% / &minus;39%</div>
+    <p style="font-size: 14px;">Death Coil is the primary Runic Power spender. Necrotic Coil replaces it during Forbidden Knowledge windows. Combined, Bebeshakur pressed these <strong>56 times (11.5 CPM)</strong> vs reference's <strong>158 times (18.2 CPM)</strong> &mdash; a <strong>37% deficit</strong>. This means significant Runic Power is being wasted by overcapping. Each unspent Death Coil is lost Sudden Doom value and missed Coil of Devastation damage. During Dark Transformation windows, Death Coil also feeds Commander of the Dead bonus damage.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--yellow);">
+  <div class="card-header yellow">Death and Decay: 5 Wasted GCDs</div>
+  <p style="font-size: 14px;">Bebeshakur cast Death and Decay <strong>5 times</strong>. The reference used it <strong>zero times</strong>. For single-target Rider of the Apocalypse Unholy, Death and Decay is a low-value ability in the current patch &mdash; the GCDs spent on D&D would be far better used on Scourge Strike or Death Coil. Those 5 GCDs represent roughly 7.5 seconds of missed rotational damage. In a 4:53 fight, 5 unnecessary casts is significant.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Total: Bebeshakur <strong>53.2M</strong> (181.7K DPS over 4:53) vs ChiZiShu <strong>104.5M</strong> (200.1K DPS over 8:42). Raw totals differ due to fight length &mdash; the DPS comparison accounts for time normalization.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref %</th><th>Gap Note</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Putrefy</strong></td>
+      <td>6,469K</td>
+      <td>12.2%</td>
+      <td>10.7%</td>
+      <td><span class="tag tag-same">Higher share</span></td>
+    </tr>
+    <tr>
+      <td><strong>Melee</strong></td>
+      <td>6,417K</td>
+      <td>12.1%</td>
+      <td>12.2%</td>
+      <td><span class="tag tag-same">Aligned</span></td>
+    </tr>
+    <tr>
+      <td>Shadow Bolt <span class="dim">(pet)</span></td>
+      <td>4,090K</td>
+      <td>7.7%</td>
+      <td>5.7%</td>
+      <td><span class="tag tag-same">Higher share</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Necrotic Coil</strong></td>
+      <td>4,007K</td>
+      <td>7.5%</td>
+      <td class="purple">9.1%</td>
+      <td><span class="tag tag-warn">Under-share</span></td>
+    </tr>
+    <tr>
+      <td>Scourge Strike</td>
+      <td>3,531K</td>
+      <td>6.6%</td>
+      <td>6.8%</td>
+      <td><span class="tag tag-same">Aligned</span></td>
+    </tr>
+    <tr>
+      <td>Death Coil</td>
+      <td>3,489K</td>
+      <td>6.6%</td>
+      <td>6.8%</td>
+      <td><span class="tag tag-same">Aligned</span></td>
+    </tr>
+    <tr>
+      <td>Dread Plague <span class="dim">(DoT)</span></td>
+      <td>2,897K</td>
+      <td>5.4%</td>
+      <td>5.3%</td>
+      <td><span class="tag tag-same">Good uptime</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Sweeping Claws</strong> <span class="dim">(pet)</span></td>
+      <td>2,520K</td>
+      <td class="red">4.7%</td>
+      <td class="purple">8.1%</td>
+      <td><span class="tag tag-diff">&minus;3.4% share</span></td>
+    </tr>
+    <tr>
+      <td>Pestilence</td>
+      <td>2,302K</td>
+      <td>4.3%</td>
+      <td>3.9%</td>
+      <td><span class="tag tag-same">Aligned</span></td>
+    </tr>
+    <tr>
+      <td>Ruptured Viscera</td>
+      <td>2,059K</td>
+      <td>3.9%</td>
+      <td>3.5%</td>
+      <td><span class="tag tag-same">Aligned</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Coil of Devastation</strong></td>
+      <td>1,411K</td>
+      <td class="red">2.7%</td>
+      <td class="purple">3.4%</td>
+      <td><span class="tag tag-warn">Lower share</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Soul Reaper</strong></td>
+      <td>755K</td>
+      <td class="red">1.4%</td>
+      <td class="purple">2.1%</td>
+      <td><span class="tag tag-warn">&minus;44% CPM</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Infected Claws</strong> <span class="dim">(pet)</span></td>
+      <td class="red">0</td>
+      <td class="red">0%</td>
+      <td class="purple">3.0%</td>
+      <td><span class="tag tag-diff">Talent diff</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Key Damage Profile Observations</div>
+  <p style="font-size: 14px;"><strong class="red">Sweeping Claws</strong> is the standout gap: 4.7% of Bebeshakur's damage vs 8.1% for the reference. Sweeping Claws is pet damage triggered by Scourge Strike casts &mdash; the 33% Scourge Strike CPM deficit directly cascades into fewer pet attacks. <strong class="red">Infected Claws</strong> is completely absent (0%) vs 3.0% for reference &mdash; this is a talent difference (10 talent diffs). <strong class="red">Soul Reaper</strong> at 1.4% vs 2.1% reflects the 44% CPM gap on this ability. <strong class="red">Coil of Devastation</strong> at 2.7% vs 3.4% is a downstream effect of fewer Death Coils cast. Positively, <strong class="green">DoT uptime</strong> (Dread Plague 5.4% vs 5.3%) and <strong class="green">Melee share</strong> (12.1% vs 12.2%) are well-aligned, indicating decent boss uptime when alive.</p>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown Usage</h2>
+<p class="section-intro">Major cooldown timing and cast counts. Bebeshakur's shorter fight (4:53 vs 8:42) means fewer total uses, but CPM tells the efficiency story.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cooldown</th><th>Player Uses</th><th>Player Timing</th><th>Ref Uses</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Dark Transformation</strong></td>
+      <td>5</td>
+      <td class="dim">0:06, 1:18, 2:04, 3:13, 4:09</td>
+      <td>10</td>
+      <td><span class="tag tag-same">On CD</span></td>
+    </tr>
+    <tr>
+      <td><strong>Army of the Dead</strong></td>
+      <td>3</td>
+      <td class="dim">0:05, 1:39, 3:13</td>
+      <td>6</td>
+      <td><span class="tag tag-same">On CD</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Soul Reaper</strong></td>
+      <td>6</td>
+      <td class="dim">0:07, 0:38, 1:18, 2:05, 3:15, 4:10</td>
+      <td>19</td>
+      <td><span class="tag tag-diff">&minus;44% CPM</span></td>
+    </tr>
+    <tr>
+      <td><strong>Anti-Magic Shell</strong></td>
+      <td>5</td>
+      <td class="dim">0:10, 0:56, 1:48, 2:59, 4:00</td>
+      <td>7</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Icebound Fortitude</td>
+      <td>0</td>
+      <td class="dim">&mdash;</td>
+      <td>2</td>
+      <td><span class="tag tag-warn">Unused</span></td>
+    </tr>
+    <tr>
+      <td>Blood Fury <span class="dim">(racial)</span></td>
+      <td>2</td>
+      <td class="dim">used</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Anti-Magic Zone</td>
+      <td>1</td>
+      <td class="dim">used</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Utility</span></td>
+    </tr>
+    <tr>
+      <td>Mind Freeze</td>
+      <td>1</td>
+      <td class="dim">interrupt</td>
+      <td>0</td>
+      <td><span class="tag tag-same">Utility</span></td>
+    </tr>
+    <tr>
+      <td>Potion</td>
+      <td>1</td>
+      <td class="dim">pre-pot</td>
+      <td>2</td>
+      <td><span class="tag tag-warn">No 2nd pot</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="mechanic-card cd">
+    <div class="card-header cyan">Dark Transformation + Army Alignment</div>
+    <p style="font-size: 14px;">Both major CDs are being used on cooldown &mdash; <strong>Dark Transformation every ~50s</strong> and <strong>Army of the Dead every ~95s</strong>. Cast 1 alignment (0:05/0:06) is correct. The DT &rarr; Army sync at 3:13 shows good CD stacking. This is solid for prog.</p>
+  </div>
+  <div class="mechanic-card bloom">
+    <div class="card-header red">Soul Reaper: &minus;44% CPM</div>
+    <p style="font-size: 14px;">Soul Reaper is being cast <strong>only during Dark Transformation windows</strong> (6 casts aligning with 5 DT windows). The reference casts it <strong>19 times in 8:42</strong> (2.2 CPM), using it aggressively throughout the fight, not just during DT. In current-patch Unholy, Soul Reaper should be cast on CD during DT and also when Reaping procs outside DT. This is a significant missed damage source.</p>
+  </div>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received. Notable difference in Aug Evoker support.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player</th><th>Reference</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism/Lust</strong></td>
+      <td>2:59</td>
+      <td>2:54</td>
+      <td><span class="tag tag-same">Similar timing</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Ebon Might</strong></td>
+      <td class="yellow">6 applications</td>
+      <td class="purple">13 applications</td>
+      <td><span class="tag tag-diff">Half the uptime</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>4 applications</td>
+      <td>5 applications</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td>None</td>
+      <td><span class="tag tag-same">Neither</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="yellow">Ebon Might gap is significant.</strong> ChiZiShu received <strong>13 Ebon Might applications</strong> vs Bebeshakur's <strong>6</strong> &mdash; over double. Ebon Might provides a substantial Strength buff (estimated +5-8% DPS). This alone could account for 3-5% of the normalized DPS gap. The shorter fight duration (fewer EM windows possible) and potentially less consistent Aug Evoker targeting both contribute.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Bebeshakur during Fight 23. Crown of the Cosmos inflicts heavy unavoidable raid damage through Simulacrum Backlash, Echoing Darkness, and Voidstalker Sting.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>2,170K</td>
+      <td>83</td>
+      <td>426K</td>
+      <td><span class="tag tag-same">No &mdash; P2 raid pulse</span></td>
+    </tr>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>2,054K</td>
+      <td>118</td>
+      <td>1,262K</td>
+      <td><span class="tag tag-same">No &mdash; proximity aura</span></td>
+    </tr>
+    <tr>
+      <td><strong>Voidstalker Sting</strong></td>
+      <td>1,582K</td>
+      <td>76</td>
+      <td>408K</td>
+      <td><span class="tag tag-same">No &mdash; periodic DoT</span></td>
+    </tr>
+    <tr>
+      <td>Corrupting Essence</td>
+      <td>1,068K</td>
+      <td>9</td>
+      <td>521K</td>
+      <td><span class="tag tag-same">No &mdash; raid mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,008K</td>
+      <td>30</td>
+      <td>221K</td>
+      <td><span class="tag tag-warn">Partially &mdash; puddle placement</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>387K</td>
+      <td>14</td>
+      <td>27K</td>
+      <td><span class="tag tag-same">No &mdash; environmental</span></td>
+    </tr>
+    <tr>
+      <td class="red">Falling</td>
+      <td class="red">382K</td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-diff">Yes &mdash; avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>360K</td>
+      <td>5</td>
+      <td>26K</td>
+      <td><span class="tag tag-same">No &mdash; raid targeted</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>360K</td>
+      <td>21</td>
+      <td>207K</td>
+      <td><span class="tag tag-same">No &mdash; environmental</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>217K</td>
+      <td>1</td>
+      <td>34K</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Emptiness <span class="dim">(death)</span></td>
+      <td>121K</td>
+      <td>1</td>
+      <td>110K</td>
+      <td><span class="tag tag-same">No &mdash; wipe mechanic</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="yellow">Falling damage (382K, 2 hits)</strong> is the only clearly avoidable source. This happened during P2 platform transitions. Otherwise, the damage profile is clean &mdash; almost entirely unavoidable raid mechanics. Good use of Anti-Magic Shell (5 casts) is absorbing magic damage efficiently. The Echoing Darkness absorption rate (1.26M absorbed of 3.32M total) shows AMS was timed well for high-damage periods.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Bebeshakur's DPS across all 26 Crown of the Cosmos pulls. Bars are colored by boss % reached: <span class="green">green = sub-10%</span>, <span class="yellow">yellow = 10-50%</span>, <span class="orange">orange = 50-90%</span>, <span class="red">red = 90%+</span>. Boss % labels show raid progress depth. Bebeshakur died in every pull (expected for prog wipes).</p>
+
+<div class="card">
+  <div class="progression-chart" style="height: 160px;">
+    <!-- F1: 0 DPS, 99.45% boss, 0:28 -->
+    <div class="prog-bar" style="height: 2%; background: var(--red);" data-tooltip="F1: 0 DPS (0:28) 99.5% boss"></div>
+    <!-- F2: 144K, 51.98% -->
+    <div class="prog-bar" style="height: 36%; background: var(--orange);" data-tooltip="F2: 144K DPS (1:03) 52.0% boss">
+      <span class="prog-label" style="color: var(--orange);">52%</span>
+    </div>
+    <!-- F3: 201K, 54.75% -->
+    <div class="prog-bar" style="height: 51%; background: var(--orange);" data-tooltip="F3: 201K DPS (1:57) 54.8% boss"></div>
+    <!-- F4: 144K, 54.62% -->
+    <div class="prog-bar" style="height: 36%; background: var(--orange);" data-tooltip="F4: 144K DPS (1:16) 54.6% boss"></div>
+    <!-- F5: 228K, 74.02% -->
+    <div class="prog-bar" style="height: 57%; background: var(--orange);" data-tooltip="F5: 228K DPS (1:00) 74.0% boss"></div>
+    <!-- F6: 217K, 19.48% -->
+    <div class="prog-bar" style="height: 55%; background: var(--yellow);" data-tooltip="F6: 217K DPS (2:23) 19.5% boss">
+      <span class="prog-label" style="color: var(--yellow);">19%</span>
+    </div>
+    <!-- F7: 117K, 41.72% -->
+    <div class="prog-bar" style="height: 30%; background: var(--yellow);" data-tooltip="F7: 117K DPS (1:29) 41.7% boss"></div>
+    <!-- F8: 360K, 0.01% BEST -->
+    <div class="prog-bar" style="height: 91%; background: var(--green);" data-tooltip="F8: 360K DPS (2:22) 0.01% boss BEST">
+      <span class="prog-label" style="color: var(--green); font-weight: bold;">0.01%!</span>
+    </div>
+    <!-- F9: 256K, 7.27% -->
+    <div class="prog-bar" style="height: 65%; background: var(--green);" data-tooltip="F9: 256K DPS (2:32) 7.3% boss">
+      <span class="prog-label" style="color: var(--green);">7%</span>
+    </div>
+    <!-- F10: 180K, 98.36% -->
+    <div class="prog-bar" style="height: 45%; background: var(--red);" data-tooltip="F10: 180K DPS (3:40) 98.4% boss"></div>
+    <!-- F11: 135K, 30.29% -->
+    <div class="prog-bar" style="height: 34%; background: var(--yellow);" data-tooltip="F11: 135K DPS (2:02) 30.3% boss"></div>
+    <!-- F12: 224K, 92.06% -->
+    <div class="prog-bar" style="height: 56%; background: var(--red);" data-tooltip="F12: 224K DPS (3:54) 92.1% boss"></div>
+    <!-- F13: 92K, 60.77% -->
+    <div class="prog-bar" style="height: 23%; background: var(--orange);" data-tooltip="F13: 92K DPS (1:15) 60.8% boss"></div>
+    <!-- F14: 174K, 95.25% -->
+    <div class="prog-bar" style="height: 44%; background: var(--red);" data-tooltip="F14: 174K DPS (3:51) 95.3% boss"></div>
+    <!-- F15: 89K, 9.05% -->
+    <div class="prog-bar" style="height: 22%; background: var(--green);" data-tooltip="F15: 89K DPS (2:29) 9.1% boss"></div>
+    <!-- F16: 306K, 21.23% -->
+    <div class="prog-bar" style="height: 77%; background: var(--yellow);" data-tooltip="F16: 306K DPS (2:10) 21.2% boss">
+      <span class="prog-label" style="color: var(--yellow);">21%</span>
+    </div>
+    <!-- F17: 397K, 0.01% BEST (tied) -->
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F17: 397K DPS (2:24) 0.01% boss BEST">
+      <span class="prog-label" style="color: var(--green); font-weight: bold;">0.01%!</span>
+    </div>
+    <!-- F18: 165K, 95.72% -->
+    <div class="prog-bar" style="height: 42%; background: var(--red);" data-tooltip="F18: 165K DPS (3:56) 95.7% boss"></div>
+    <!-- F19: 173K, 34.53% -->
+    <div class="prog-bar" style="height: 44%; background: var(--yellow);" data-tooltip="F19: 173K DPS (1:54) 34.5% boss"></div>
+    <!-- F20: 167K, 35.43% -->
+    <div class="prog-bar" style="height: 42%; background: var(--yellow);" data-tooltip="F20: 167K DPS (2:00) 35.4% boss"></div>
+    <!-- F21: 232K, 0.22% -->
+    <div class="prog-bar" style="height: 58%; background: var(--green);" data-tooltip="F21: 232K DPS (2:27) 0.22% boss">
+      <span class="prog-label" style="color: var(--green);">0.2%</span>
+    </div>
+    <!-- F22: 0 DPS, 99.7% -->
+    <div class="prog-bar" style="height: 2%; background: var(--red);" data-tooltip="F22: 0 DPS (0:25) 99.7% boss"></div>
+    <!-- F23: 158K, 77.31% PRIMARY -->
+    <div class="prog-bar" style="height: 40%; background: var(--orange); border: 2px solid var(--accent);" data-tooltip="F23: 158K DPS (4:53) 77.3% boss ANALYZED">
+      <span class="prog-label" style="color: var(--accent); font-weight: bold;">4:53</span>
+    </div>
+    <!-- F24: 202K, 92.92% -->
+    <div class="prog-bar" style="height: 51%; background: var(--red);" data-tooltip="F24: 202K DPS (3:49) 92.9% boss"></div>
+    <!-- F25: 214K, 99.88% -->
+    <div class="prog-bar" style="height: 54%; background: var(--red);" data-tooltip="F25: 214K DPS (3:08) 99.9% boss"></div>
+    <!-- F26: 226K, 96.91% -->
+    <div class="prog-bar" style="height: 57%; background: var(--red);" data-tooltip="F26: 226K DPS (3:40) 96.9% boss"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 1</span>
+    <span style="color: var(--dim);"><span class="green">&lt;10% boss</span> &bull; <span class="yellow">10-50%</span> &bull; <span class="orange">50-90%</span> &bull; <span class="red">&gt;90%</span> &bull; <span class="accent">Analyzed</span></span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;"><strong>Best boss % pulls:</strong> F8 (<strong class="green">0.01%</strong>, 360K DPS, 2:22), F17 (<strong class="green">0.01%</strong>, 397K DPS, 2:24), F21 (<strong class="green">0.22%</strong>, 232K DPS, 2:27). These were deep pulls that nearly killed the boss. Notably, the highest-DPS pulls (F8 360K, F17 397K) are short (2:22-2:24) meaning heavy burst bias &mdash; the opening burst phase is being executed well.</p>
+  <p style="font-size: 14px; margin-top: 8px;">Filtering to pulls longer than 3 minutes: F3 (201K, 1:57) &rarr; F10 (180K, 3:40) &rarr; F12 (224K, 3:54) &rarr; F14 (174K, 3:51) &rarr; F18 (165K, 3:56) &rarr; <strong class="accent">F23 (158K, 4:53)</strong> &rarr; F24 (202K, 3:49) &rarr; F26 (226K, 3:40). DPS varies from <strong>158-226K</strong> on longer pulls. F23 is actually the lowest on sustained pulls, partly because it was the longest pull (more time at lower DPS after burst). The <strong>post-F23 pulls (F24-F26)</strong> show recovered DPS at 202-226K despite being shorter, suggesting no fatigue issue.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs primary reference. Unholy DK stat priority in TWW Season 2: Mastery &#8776; Critical Strike &gt; Haste &gt; Versatility.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Bebeshakur</th><th>ChiZiShu</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td class="yellow">282.0</td>
+      <td class="purple">290.3</td>
+      <td><span class="tag tag-warn">&minus;8.3 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Strength</td>
+      <td>1,954</td>
+      <td class="purple">2,044</td>
+      <td>&minus;4.4% primary stat</td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td>1,131</td>
+      <td>1,137</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td>270</td>
+      <td>281</td>
+      <td><span class="tag tag-same">Similar (both low)</span></td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="yellow">1,117</td>
+      <td class="purple">1,264</td>
+      <td>&minus;11.6% Mastery</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>0</td>
+      <td>0</td>
+      <td><span class="tag tag-same">Both zero</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">The <strong>&minus;8.3 ilvl gap</strong> translates to roughly <strong>&minus;4-5% DPS from raw stats</strong> alone (lower Strength, less Mastery). Mastery is particularly important for Unholy as it increases pet and minion damage through Mastery: Dreadblade. The 11.6% Mastery deficit partially explains the lower Sweeping Claws and pet damage shares. Both players have very low Haste, which is acceptable for the Mastery/Crit-focused Unholy build.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Scourge Strike frequency (&minus;33% CPM gap = biggest single issue).</strong> Scourge Strike is at <strong>12.5 CPM vs reference 18.7 CPM</strong> &mdash; roughly <strong>30 missed Scourge Strikes</strong> over a comparable 8:42 fight. Each missed SS means missed pet Sweeping Claws damage (your 4.7% vs reference 8.1% damage share). In the current Unholy rotation, Scourge Strike should be pressed whenever you have 1+ Lesser Ghoul stacks from Festering Wound consumption. The gap suggests GCDs are being lost to movement or hesitation during Crown's positioning mechanics. <strong>Fix:</strong> Practice maintaining SS uptime during Grasp of Emptiness beam dodges and Void Expulsion puddle placement. Use Death Charge/Death Grip to close gaps after forced movement instead of walking back.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Spend Runic Power aggressively &mdash; Death Coil / Necrotic Coil at &minus;37% combined CPM.</strong> Combined RP spending (Death Coil + Necrotic Coil) is <strong>11.5 CPM vs reference 18.2 CPM</strong>. This suggests Runic Power is overcapping frequently, wasting potential Sudden Doom procs and Coil of Devastation damage. In Unholy's rotation, Death Coil should be used on Sudden Doom procs immediately, during Forbidden Knowledge windows as Necrotic Coil, and as a dump when approaching RP cap. <strong>Fix:</strong> Set a WeakAura or alert for RP > 80 to force spending. During Dark Transformation, prioritize Death Coil even more aggressively to benefit from Commander of the Dead.
+</div>
+
+<div class="action-item">
+  <strong>3. Cast Soul Reaper outside Dark Transformation windows.</strong> Currently at <strong>1.2 vs 2.2 CPM (&minus;44%)</strong>, Soul Reaper is only being cast during DT windows (6 casts aligning with 5 DT casts). The reference casts it <strong>19 times</strong>, using it throughout the fight whenever the Reaping effect is available. In current-patch Unholy, Soul Reaper should be used: (a) during Dark Transformation on CD, (b) when target is below 35% HP during DT, and (c) whenever Reaping procs outside DT. <strong>Fix:</strong> Track Reaping proc availability and use Soul Reaper opportunistically between DT windows.
+</div>
+
+<div class="action-item">
+  <strong>4. Remove Death and Decay from single-target rotation.</strong> Bebeshakur cast D&D <strong>5 times</strong> (1.0 CPM); the reference cast it <strong>zero times</strong>. For Rider of the Apocalypse Unholy in single-target, Death and Decay provides negligible value and wastes a GCD + Rune that should go to Scourge Strike or Festering Strike. Those 5 GCDs represent ~7.5 seconds of lost rotational damage. <strong>Fix:</strong> Remove Death and Decay from single-target keybinds or add a modifier so it is only used on AoE pulls.
+</div>
+
+<div class="action-item">
+  <strong>5. Use Icebound Fortitude during high-damage windows.</strong> IBF was unused (0 casts) while the reference used it <strong>2 times</strong>. On Crown of the Cosmos, there are multiple heavy damage windows (Corrupting Essence, Simulacrum Backlash pulses) where IBF helps survive. Staying alive longer = more DPS uptime. The falling damage (382K, 2 hits) also suggests platform transition positioning could be tighter. <strong>Fix:</strong> Map IBF to Corrupting Essence or heavy Simulacrum Backlash windows. Fix platform transition movement to avoid falls.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Cooldown discipline:</strong> Dark Transformation and Army of the Dead are being used on cooldown with proper co-alignment (DT + Army at 0:05-0:06 and 3:13). Blood Fury racial is being used. Anti-Magic Shell usage (5 casts, well-timed) is generating RP from magic damage effectively.<br><br>
+    <strong>DoT uptime:</strong> Dread Plague at 5.4% damage share matches the reference's 5.3%. Virulent Plague at 3.5% vs 3.1% is also good. Outbreak maintenance (4 casts) is sufficient for a ~5 minute fight.<br><br>
+    <strong>Melee uptime:</strong> Melee damage share (12.1% vs 12.2%) is nearly identical to the reference, indicating consistent boss contact when not forced off by mechanics.<br><br>
+    <strong>Survivability:</strong> Bebeshakur survived until the final raid wipe at 4:24 &mdash; not an individual death. Most damage taken is unavoidable raid mechanics. AMS timing is good. Only notable avoidable damage is 2 falling hits during transitions.<br><br>
+    <strong>Burst execution:</strong> The best pulls (F8: 360K, F17: 397K) show strong opener execution. Army + DT + prepot + racials are being stacked correctly on pull.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary &mdash; Progression Context</div>
+  <p style="font-size: 14px;">Comparing prog wipe data to a kill is inherently apples-to-oranges. The <strong>~9% raw DPS gap</strong> (181.7K vs ~200K events-based) breaks down approximately: <strong>~35% CPM deficit</strong> (GCDs lost to movement/unfamiliarity with Crown mechanics), <strong>~25% gear and stats</strong> (&minus;8 ilvl, &minus;12% Mastery, &minus;4% Strength), <strong>~20% external buffs</strong> (half the Ebon Might applications), <strong>~10% talent differences</strong> (10 node diffs including missing Infected Claws), and <strong>~10% fight duration context</strong> (wipe at 4:53 vs full 8:42 kill). The highest-priority fixes are all execution-based: getting more Scourge Strikes per minute, spending Runic Power instead of overcapping, using Soul Reaper outside DT windows, and removing Death and Decay from ST. Fixing these would close the CPM gap from 40.3 toward the reference 52.7, which is the single largest improvement available regardless of gear.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (Wipe, 4:53, 77.31% boss). Primary reference: ChiZiShu (#1 ranked Unholy DK, report <code>gAJLB4X6m28VdjCf</code>, Fight 31, 8:42 kill). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 10 differences. Item level difference: &minus;8.3 (282.0 vs 290.3). External buffs: both had Heroism at ~3:00. Bebeshakur received 6 Ebon Might applications vs reference 13. Neither received Power Infusion. This is progression data (26 wipes, no kill) &mdash; DPS comparisons are contextualized accordingly.</p>
+  <p style="margin-top: 4px; color: var(--dim);">Spec guide reference: Unholy DK rotation per Icy Veins Patch 12.0.7 (TWW Season 2). Rider of the Apocalypse hero tree. Generated June 2026.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zinnks — Augmentation Evoker — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .tag-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .uptime-bar { position: relative; height: 24px; background: var(--border); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+  .uptime-fill { position: absolute; top: 0; height: 100%; border-radius: 4px; }
+  .uptime-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; font-weight: 600; z-index: 2; }
+  .support-metric { text-align: center; padding: 12px; }
+  .support-metric .metric-value { font-size: 32px; font-weight: 700; }
+  .support-metric .metric-label { font-size: 11px; color: var(--dim); text-transform: uppercase; margin-top: 4px; }
+  .support-metric .metric-ref { font-size: 12px; color: var(--purple); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Zinnks <span class="dim">&mdash; Augmentation Evoker</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (No Kill &mdash; 26 Wipes) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value yellow">167.7K</div>
+    <div class="stat-label">Support DPS (Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">286.7</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">0.01%</div>
+    <div class="stat-label">Best Pull (F8 &amp; F17)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">37.1</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- AUGMENTATION CONTEXT -->
+<div class="card" style="border-left: 3px solid var(--purple); margin-top: 4px; margin-bottom: 16px;">
+  <div class="card-header purple">Augmentation Evoker &mdash; Support Spec Context</div>
+  <p style="font-size: 13px; color: var(--dim);">Augmentation is a <strong>support DPS spec</strong>. Personal DPS is low by design &mdash; the spec amplifies allies through Ebon Might (stat buff on 4 targets), Prescience (crit buff), and Shifting Sands (versatility). The key performance metrics are <strong>Ebon Might uptime</strong>, <strong>Prescience usage</strong>, <strong>Eruption CPM</strong> (extends Ebon Might), and <strong>empowered spell frequency</strong> (Fire Breath + Upheaval). Raw DPS numbers should not be compared against pure DPS specs.</p>
+</div>
+
+<!-- SUPPORT METRICS DASHBOARD -->
+<h2>Support Performance Dashboard</h2>
+<p class="section-intro">The metrics that matter for Augmentation Evoker. Ebon Might uptime and Eruption CPM are the primary indicators of how well Zinnks is amplifying the raid.</p>
+
+<div class="grid-4">
+  <div class="card support-metric">
+    <div class="metric-value red">61.0%</div>
+    <div class="metric-label">Ebon Might Uptime</div>
+    <div class="metric-ref">Ref: 85.0%</div>
+  </div>
+  <div class="card support-metric">
+    <div class="metric-value red">12.7</div>
+    <div class="metric-label">Eruption CPM</div>
+    <div class="metric-ref">Ref: 16.6</div>
+  </div>
+  <div class="card support-metric">
+    <div class="metric-value yellow">4.6</div>
+    <div class="metric-label">Prescience CPM</div>
+    <div class="metric-ref">Ref: 5.6</div>
+  </div>
+  <div class="card support-metric">
+    <div class="metric-value green">2.0</div>
+    <div class="metric-label">Fire Breath CPM</div>
+    <div class="metric-ref">Ref: 2.1</div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card">
+    <div class="card-header">Ebon Might Uptime Comparison</div>
+    <div style="margin-top: 8px;">
+      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+        <span>Zinnks</span><span class="red">61.0%</span>
+      </div>
+      <div class="uptime-bar">
+        <div class="uptime-fill" style="width: 61%; background: var(--red); opacity: 0.7;"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; margin-top: 12px;">
+        <span class="purple">Polp (Reference)</span><span class="purple">85.0%</span>
+      </div>
+      <div class="uptime-bar">
+        <div class="uptime-fill" style="width: 85%; background: var(--purple); opacity: 0.7;"></div>
+      </div>
+    </div>
+    <p style="font-size: 13px; color: var(--dim); margin-top: 12px;">Ebon Might is the core of Augmentation &mdash; it buffs 4 allies with a portion of your primary stat. Every second it's down, 4 DPS players lose their stat buff. The <strong class="red">24% uptime gap</strong> means Zinnks's allies had significantly less stat amplification throughout the fight.</p>
+  </div>
+  <div class="card">
+    <div class="card-header">Eruption Rate &mdash; The Ebon Might Engine</div>
+    <div style="margin-top: 8px;">
+      <div class="cps-bar">
+        <span style="width: 70px; font-size: 12px;">Zinnks</span>
+        <div class="cps-fill" style="width: calc(12.7 / 16.6 * 100%); max-width: 100%; background: var(--red);">12.7 CPM</div>
+      </div>
+      <div class="cps-bar">
+        <span style="width: 70px; font-size: 12px;" class="purple">Polp</span>
+        <div class="cps-fill" style="width: 100%; background: var(--purple);">16.6 CPM</div>
+      </div>
+    </div>
+    <p style="font-size: 13px; color: var(--dim); margin-top: 12px;">Eruption extends Ebon Might duration through the Sands of Time talent. Each Eruption cast adds seconds to the buff. Polp casts <strong>16.6 Eruptions/min</strong> vs Zinnks's <strong>12.7</strong> &mdash; a <strong class="red">24% deficit</strong>. This directly explains the lower Ebon Might uptime: fewer Eruptions means shorter buff windows, more gaps, and more recasts needed.</p>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Zinnks dealt <strong class="yellow">167.7K support DPS</strong> across the longest pull (Fight 23, 4:52) before dying at 4:06 &mdash; compared to <strong class="purple">Polp's 98.6K DPS</strong> on a 7:38 kill. However, as a support spec, the critical metric is <strong>Ebon Might uptime</strong>: Zinnks achieved <strong class="red">61.0% vs Polp's 85.0%</strong> &mdash; a <strong class="red">24 percentage point gap</strong>. The root cause is <strong class="red">Eruption CPM at 12.7 vs 16.6</strong> (&minus;24%) &mdash; fewer Eruptions means shorter Ebon Might windows. Living Flame filler is at <strong class="red">4.4 CPM vs 9.8 CPM</strong> (&minus;55%), suggesting significant dead time or movement-related casting gaps. Prescience usage is <strong class="yellow">4.6 vs 5.6 CPM</strong> (&minus;18%), meaning fewer crit buffs on DPS allies. Fire Breath and Upheaval (empowered spells that also extend Ebon Might) are close to reference rates. This is progression data against a kill reference &mdash; prog pulls involve more deaths, more panic movement, and less stable rotations, which inflates the gap. But the Eruption and Ebon Might deficits are the primary areas to improve.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Augmentation Evokers on Mythic Crown of the Cosmos (all kills). Primary reference: <strong>Polp</strong> (fewest talent diffs at 5, 98.6K DPS, 7:38 kill). Note: reference DPS is from a full kill; Zinnks's DPS is from a 4:52 wipe with death at 4:06. Augmentation DPS is naturally lower than pure DPS specs.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Zinnks</strong></td>
+      <td>167,683</td>
+      <td>4:52 (wipe)</td>
+      <td>286.7</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Prog &mdash; Died 4:06</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Polp <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="purple">98,617</td>
+      <td>7:38 (kill)</td>
+      <td>290.8</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Minnthyr <span class="ref-badge">#2</span></td>
+      <td class="purple">97,322</td>
+      <td>7:14 (kill)</td>
+      <td>288.3</td>
+      <td><span class="tag tag-diff">9 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#1053;&#1077;&#1088;&#1092;&#1076; <span class="ref-badge">#3</span></td>
+      <td class="purple">95,672</td>
+      <td>7:44 (kill)</td>
+      <td>290.8</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#26102;&#38388;&#38632; <span class="ref-badge">#4</span></td>
+      <td class="purple">95,253</td>
+      <td>8:11 (kill)</td>
+      <td>290.8</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#31528;&#34507;&#32650;&#32650; <span class="ref-badge">#5</span></td>
+      <td class="purple">95,118</td>
+      <td>8:29 (kill)</td>
+      <td>288.9</td>
+      <td><span class="tag tag-diff">11 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong>DPS context:</strong> Zinnks shows higher raw DPS (167.7K) than the references (~95-99K) because shorter fights inflate DPS &mdash; burst cooldowns and Breath of Eons are a larger fraction of a 4-minute pull than a 7-8 minute kill. The meaningful comparison is <strong>Ebon Might uptime, Eruption CPM, and Prescience frequency</strong> which are rate-based and comparable across fight lengths.</p>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Zinnks (4:06 alive time) vs Polp (7:38 kill). CPM calculated using alive time for Zinnks to give a fair rate comparison. Sorted by Augmentation priority.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Eruption</strong> <span style="font-size:11px;color:var(--dim);">&mdash; EM extender, core filler</span></td>
+      <td>52</td>
+      <td class="red">12.7</td>
+      <td>127</td>
+      <td>16.6</td>
+      <td class="red">&minus;24%</td>
+      <td><span class="tag tag-crit">Critical Gap</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Prescience</strong> <span style="font-size:11px;color:var(--dim);">&mdash; crit buff on allies</span></td>
+      <td>19</td>
+      <td class="yellow">4.6</td>
+      <td>43</td>
+      <td>5.6</td>
+      <td class="yellow">&minus;18%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Living Flame</strong> <span style="font-size:11px;color:var(--dim);">&mdash; filler between Eruptions</span></td>
+      <td>18</td>
+      <td class="red">4.4</td>
+      <td>75</td>
+      <td>9.8</td>
+      <td class="red">&minus;55%</td>
+      <td><span class="tag tag-crit">Very Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Fire Breath</strong> <span style="font-size:11px;color:var(--dim);">&mdash; empowered, extends EM</span></td>
+      <td>8</td>
+      <td class="green">2.0</td>
+      <td>16</td>
+      <td>2.1</td>
+      <td class="green">&minus;7%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Upheaval</strong> <span style="font-size:11px;color:var(--dim);">&mdash; empowered, extends EM</span></td>
+      <td>7</td>
+      <td class="yellow">1.7</td>
+      <td>16</td>
+      <td>2.1</td>
+      <td class="yellow">&minus;18%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong> <span style="font-size:11px;color:var(--dim);">&mdash; recast/refresh</span></td>
+      <td>7</td>
+      <td class="green">1.7</td>
+      <td>12</td>
+      <td>1.6</td>
+      <td class="green">+9%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Breath of Eons</strong> <span style="font-size:11px;color:var(--dim);">&mdash; major CD, extends EM</span></td>
+      <td>3</td>
+      <td>0.7</td>
+      <td>6</td>
+      <td>0.8</td>
+      <td class="green">&minus;7%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Tip the Scales</strong> <span style="font-size:11px;color:var(--dim);">&mdash; instant empower</span></td>
+      <td>3</td>
+      <td>0.7</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td class="green">+87%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Azure Strike <span style="font-size:11px;color:var(--dim);">&mdash; instant filler</span></td>
+      <td>7</td>
+      <td>1.7</td>
+      <td>5</td>
+      <td>0.7</td>
+      <td class="yellow">+161%</td>
+      <td><span class="tag tag-warn">Over-using</span></td>
+    </tr>
+    <tr>
+      <td>Hover <span style="font-size:11px;color:var(--dim);">&mdash; movement</span></td>
+      <td>13</td>
+      <td>3.2</td>
+      <td>26</td>
+      <td>3.4</td>
+      <td class="dim">&minus;7%</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td>Obsidian Scales <span style="font-size:11px;color:var(--dim);">&mdash; defensive</span></td>
+      <td>4</td>
+      <td>1.0</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td class="dim">+273%</td>
+      <td><span class="tag tag-info">Prog survival</span></td>
+    </tr>
+    <tr>
+      <td>Emerald Blossom <span style="font-size:11px;color:var(--dim);">&mdash; self/group heal</span></td>
+      <td>3</td>
+      <td>0.7</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">Prog survival</span></td>
+    </tr>
+    <tr>
+      <td>Zephyr <span style="font-size:11px;color:var(--dim);">&mdash; raid utility</span></td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">Raid CD</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- KEY FINDINGS -->
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="mechanic-card bloom">
+    <div class="card-header red">Eruption Deficit &mdash; The Core Problem</div>
+    <p style="font-size: 14px;">Eruption is the engine that keeps Ebon Might running. Each Eruption cast extends the duration of Ebon Might through the Sands of Time passive. At <strong>12.7 CPM vs 16.6 CPM</strong>, Zinnks is missing roughly <strong>16 Eruption casts</strong> per 4 minutes of alive time (extrapolated). This directly causes lower Ebon Might uptime (61% vs 85%) because the buff expires faster without extensions. The gap is filled partially with Azure Strike (1.7 CPM vs 0.7) which does less damage and does <strong>not</strong> extend Ebon Might. Every Azure Strike that could have been an Eruption is a missed EM extension.</p>
+  </div>
+  <div class="mechanic-card bloom">
+    <div class="card-header red">Living Flame Gap &mdash; 55% Below Reference</div>
+    <p style="font-size: 14px;">Living Flame at <strong>4.4 CPM vs 9.8 CPM</strong> is the largest rate gap. Living Flame is the primary filler between Eruption casts when Essence Burst procs are unavailable and no empowered spell is ready. A 55% deficit suggests significant periods of <strong>not pressing buttons</strong> &mdash; either movement without Hover usage, unfamiliarity with when to cast filler, or GCD time lost to defensive/survival casts. The reference casts Hover at the same rate (3.4 vs 3.2 CPM), so movement itself is not the differentiator &mdash; it's what happens <em>during</em> movement. Living Flame is instant with the Leaping Flames talent, so it should be castable while moving with Hover.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability on Fight 23. Total: 49.1M (167.7K DPS over 4:52, 200K DPS over 4:06 alive). Remember: much of Aug damage is attributed &mdash; Ebon Might (21.7%) and Prescience (5.3%) represent stat buffs given to allies, not direct damage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Type</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Eruption</strong></td>
+      <td>13,442K</td>
+      <td>27.4%</td>
+      <td class="purple">27,529K</td>
+      <td>31.4%</td>
+      <td><span class="tag tag-info">Core rotational</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>10,646K</td>
+      <td>21.7%</td>
+      <td class="purple">20,357K</td>
+      <td>23.2%</td>
+      <td><span class="tag tag-purple">Attributed support</span></td>
+    </tr>
+    <tr>
+      <td>Bombardments</td>
+      <td>4,732K</td>
+      <td>9.6%</td>
+      <td class="purple">7,068K</td>
+      <td>8.1%</td>
+      <td><span class="tag tag-info">Scalecommander proc</span></td>
+    </tr>
+    <tr>
+      <td>Breath of Eons</td>
+      <td>4,394K</td>
+      <td>8.9%</td>
+      <td class="purple">2,884K</td>
+      <td>3.3%</td>
+      <td><span class="tag tag-info">Major CD</span></td>
+    </tr>
+    <tr>
+      <td>Prescience</td>
+      <td>2,596K</td>
+      <td>5.3%</td>
+      <td class="purple">4,985K</td>
+      <td>5.7%</td>
+      <td><span class="tag tag-purple">Attributed support</span></td>
+    </tr>
+    <tr>
+      <td>Upheaval</td>
+      <td>2,284K</td>
+      <td>4.6%</td>
+      <td class="purple">4,849K</td>
+      <td>5.5%</td>
+      <td><span class="tag tag-info">Empowered</span></td>
+    </tr>
+    <tr>
+      <td>Inferno's Blessing</td>
+      <td>2,238K</td>
+      <td>4.6%</td>
+      <td class="purple">4,330K</td>
+      <td>4.9%</td>
+      <td><span class="tag tag-purple">Attributed buff</span></td>
+    </tr>
+    <tr>
+      <td>Living Flame</td>
+      <td>1,756K</td>
+      <td>3.6%</td>
+      <td class="purple">3,175K</td>
+      <td>3.6%</td>
+      <td><span class="tag tag-info">Filler</span></td>
+    </tr>
+    <tr>
+      <td>Fire Breath</td>
+      <td>1,494K</td>
+      <td>3.0%</td>
+      <td class="purple">2,486K</td>
+      <td>2.8%</td>
+      <td><span class="tag tag-info">Empowered</span></td>
+    </tr>
+    <tr>
+      <td>Echo of the Evercurse</td>
+      <td>1,330K</td>
+      <td>2.7%</td>
+      <td class="dim">&mdash;</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Trinket/proc</span></td>
+    </tr>
+    <tr>
+      <td>Shifting Sands</td>
+      <td>1,158K</td>
+      <td>2.4%</td>
+      <td class="purple">2,455K</td>
+      <td>2.8%</td>
+      <td><span class="tag tag-purple">Attributed buff</span></td>
+    </tr>
+    <tr>
+      <td>Fate Mirror</td>
+      <td>1,056K</td>
+      <td>2.1%</td>
+      <td class="purple">2,895K</td>
+      <td>3.3%</td>
+      <td><span class="tag tag-info">Passive proc</span></td>
+    </tr>
+    <tr>
+      <td>Pyre</td>
+      <td>1,033K</td>
+      <td>2.1%</td>
+      <td class="purple">1,082K</td>
+      <td>1.2%</td>
+      <td><span class="tag tag-info">Bombardments trigger</span></td>
+    </tr>
+    <tr>
+      <td>Melt Armor</td>
+      <td>758K</td>
+      <td>1.5%</td>
+      <td class="purple">823K</td>
+      <td>0.9%</td>
+      <td><span class="tag tag-info">Passive debuff</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Damage Distribution Context</div>
+  <p style="font-size: 14px;">The damage profile shape matches the reference closely &mdash; Eruption and Ebon Might are the top two sources in both cases. The absolute values differ due to fight length (4:06 alive vs 7:38 kill). The key insight is the <strong>Eruption share</strong>: Zinnks has Eruption at 27.4% vs Polp's 31.4% &mdash; meaning less of Zinnks's damage comes from the primary EM-extending ability, which correlates with the lower Eruption CPM and lower EM uptime. Breath of Eons shows higher percentage (8.9% vs 3.3%) because it's a burst CD that represents a larger share in shorter fights.</p>
+</div>
+
+<!-- EBON MIGHT DISTRIBUTION -->
+<h2>Ebon Might Target Distribution</h2>
+<p class="section-intro">Ebon Might uptime per buffed ally on Fight 23. Zinnks maintained Ebon Might on 13 targets (4 at a time). Average uptime: 61.0% across all targets vs Polp's 85.0%.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Target</th><th>Class</th><th>Uptime</th><th>Applications</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Baodabao</td><td>Mage</td>
+      <td>65.9%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref (85%)</span></td>
+    </tr>
+    <tr>
+      <td>Bebeshakur</td><td>Death Knight</td>
+      <td>65.9%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Snackznchill</td><td>Mage</td>
+      <td>65.9%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Darthurg</td><td>Hunter</td>
+      <td>65.9%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Nurnyx</td><td>Priest</td>
+      <td>64.7%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Unholyftw</td><td>Death Knight</td>
+      <td>64.7%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Smokinthisza</td><td>Hunter</td>
+      <td>64.0%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Starfighter</td><td>Warrior</td>
+      <td>60.3%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Moistbear</td><td>Druid</td>
+      <td>60.8%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Orichamaru</td><td>Warlock</td>
+      <td>60.1%</td><td>7</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Invincibale</td><td>Shaman</td>
+      <td>58.4%</td><td>6</td>
+      <td><span class="tag tag-diff">Low</span></td>
+    </tr>
+    <tr>
+      <td>Son&igrave;c</td><td>Warlock</td>
+      <td>55.0%</td><td>6</td>
+      <td><span class="tag tag-diff">Low</span></td>
+    </tr>
+    <tr>
+      <td>Alitheria</td><td>Paladin</td>
+      <td>40.9%</td><td>4</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">All targets are below the reference benchmark of 85%. The highest uptime targets (Baodabao, Bebeshakur, Snackznchill, Darthurg) reached 65.9% &mdash; still 19 points below reference. Alitheria had the lowest at 40.9% with only 4 applications (died early at 2:31). The consistent ~60-66% range across most targets confirms this is a <strong>systematic Eruption/extension issue</strong>, not a targeting problem.</p>
+
+<!-- DEATH TIMELINE -->
+<h2>Fight 23 Death Timeline</h2>
+<p class="section-intro">Zinnks died at <strong>4:06</strong> to Void Barrage. The raid lost 22 players total, with mass casualties in the final 90 seconds as the Rift Simulacrum mechanic overwhelmed the group.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Death clusters -->
+  <div class="timeline-marker" style="left: 51.4%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red); font-size: 9px;">2:31 &mdash; 3 deaths</span>
+  </div>
+  <div class="timeline-marker" style="left: 77.1%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red); font-size: 9px;">3:46&ndash;4:03 &mdash; 5 deaths</span>
+  </div>
+  <div class="timeline-marker" style="left: 83.9%; border-color: var(--orange); width: 3px;">
+    <span class="timeline-label" style="top: 18px; left: 6px; color: var(--orange); font-size: 9px;">&#x2620; Zinnks (4:06)</span>
+  </div>
+  <div class="timeline-marker" style="left: 89.0%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="top: 34px; left: 6px; color: var(--red); font-size: 9px;">4:14&ndash;4:24 &mdash; 8 deaths (wipe)</span>
+  </div>
+  <div class="timeline-marker" style="left: 96.1%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">4:42&ndash;4:52 &mdash; last 3</span>
+  </div>
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">2:30</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:52</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State</div>
+  <p>0:00&ndash;2:31 = 20/20 alive &middot; 2:31 = 17/20 (Alitheria, Smokinthisza, Invincibale die to Silverstrike Barrage) &middot; 3:46&ndash;4:03 = 12/20 (Son&igrave;c, Invincibale, Orichamaru, Starfighter, Moistbear die) &middot; <strong class="orange">4:06 = Zinnks dies</strong> to Void Barrage &middot; 4:14&ndash;4:24 = mass wipe (Smokinthisza, Unholyftw, Nurnyx, Snackznchill, Senssay, Brewtote, Baodabao, Dueche, Bebeshakur, S&igrave;lencio die) &middot; 4:28&ndash;4:52 = last 3 die</p>
+  <p style="margin-top: 4px; color: var(--yellow);">Zinnks survived past the mid-fight death cluster but died before the final wipe. Void Barrage is an avoidable mechanic &mdash; surviving longer would have provided more alive time for analysis.</p>
+</div>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Zinnks's DPS across all 26 pulls on Mythic Crown of the Cosmos. Bar height = DPS, label = boss % reached. Color by boss %: <span class="green">green (&lt;10%)</span>, <span class="yellow">yellow (10-50%)</span>, <span class="orange">orange (50-90%)</span>, <span class="red">red (&gt;90%)</span>. Fights 1 and 22 had 0 DPS (instant wipes).</p>
+
+<div class="card">
+  <div class="progression-chart" style="margin-bottom: 24px;">
+    <!-- F2: 245K DPS, 63s, boss 52% -->
+    <div class="prog-bar" style="height: 88%; background: var(--orange);" data-tooltip="F2: 245K DPS (1:03) Boss: 51.98%">
+      <span class="prog-label">52%</span>
+    </div>
+    <!-- F3: 165K, 117s, 55% -->
+    <div class="prog-bar" style="height: 59%; background: var(--orange);" data-tooltip="F3: 165K DPS (1:57) Boss: 54.75%">
+      <span class="prog-label">55%</span>
+    </div>
+    <!-- F4: 165K, 76s, 55% -->
+    <div class="prog-bar" style="height: 59%; background: var(--orange);" data-tooltip="F4: 165K DPS (1:16) Boss: 54.62%">
+      <span class="prog-label">55%</span>
+    </div>
+    <!-- F5: 184K, 60s, 74% -->
+    <div class="prog-bar" style="height: 66%; background: var(--orange);" data-tooltip="F5: 184K DPS (1:00) Boss: 74.02%">
+      <span class="prog-label">74%</span>
+    </div>
+    <!-- F6: 156K, 143s, 19% -->
+    <div class="prog-bar" style="height: 56%; background: var(--yellow);" data-tooltip="F6: 156K DPS (2:23) Boss: 19.48%">
+      <span class="prog-label">19%</span>
+    </div>
+    <!-- F7: 165K, 89s, 42% -->
+    <div class="prog-bar" style="height: 59%; background: var(--yellow);" data-tooltip="F7: 165K DPS (1:29) Boss: 41.72%">
+      <span class="prog-label">42%</span>
+    </div>
+    <!-- F8: 280K, 142s, 0.01% BEST -->
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F8: 280K DPS (2:22) Boss: 0.01% ★ BEST">
+      <span class="prog-label" style="color:var(--green);font-weight:700;">0%&#9733;</span>
+    </div>
+    <!-- F9: 235K, 152s, 7% -->
+    <div class="prog-bar" style="height: 84%; background: var(--green);" data-tooltip="F9: 235K DPS (2:32) Boss: 7.27%">
+      <span class="prog-label">7%</span>
+    </div>
+    <!-- F10: 131K, 220s, 98% -->
+    <div class="prog-bar" style="height: 47%; background: var(--red);" data-tooltip="F10: 131K DPS (3:40) Boss: 98.36%">
+      <span class="prog-label">98%</span>
+    </div>
+    <!-- F11: 185K, 122s, 30% -->
+    <div class="prog-bar" style="height: 66%; background: var(--yellow);" data-tooltip="F11: 185K DPS (2:02) Boss: 30.29%">
+      <span class="prog-label">30%</span>
+    </div>
+    <!-- F12: 189K, 234s, 92% -->
+    <div class="prog-bar" style="height: 68%; background: var(--red);" data-tooltip="F12: 189K DPS (3:54) Boss: 92.06%">
+      <span class="prog-label">92%</span>
+    </div>
+    <!-- F13: 201K, 75s, 61% -->
+    <div class="prog-bar" style="height: 72%; background: var(--orange);" data-tooltip="F13: 201K DPS (1:15) Boss: 60.77%">
+      <span class="prog-label">61%</span>
+    </div>
+    <!-- F14: 168K, 231s, 95% -->
+    <div class="prog-bar" style="height: 60%; background: var(--red);" data-tooltip="F14: 168K DPS (3:51) Boss: 95.25%">
+      <span class="prog-label">95%</span>
+    </div>
+    <!-- F15: 242K, 149s, 9% -->
+    <div class="prog-bar" style="height: 86%; background: var(--green);" data-tooltip="F15: 242K DPS (2:29) Boss: 9.05%">
+      <span class="prog-label">9%</span>
+    </div>
+    <!-- F16: 229K, 130s, 21% -->
+    <div class="prog-bar" style="height: 82%; background: var(--yellow);" data-tooltip="F16: 229K DPS (2:10) Boss: 21.23%">
+      <span class="prog-label">21%</span>
+    </div>
+    <!-- F17: 256K, 144s, 0.01% -->
+    <div class="prog-bar" style="height: 91%; background: var(--green);" data-tooltip="F17: 256K DPS (2:24) Boss: 0.01% ★ BEST">
+      <span class="prog-label" style="color:var(--green);">0%&#9733;</span>
+    </div>
+    <!-- F18: 174K, 236s, 96% -->
+    <div class="prog-bar" style="height: 62%; background: var(--red);" data-tooltip="F18: 174K DPS (3:56) Boss: 95.72%">
+      <span class="prog-label">96%</span>
+    </div>
+    <!-- F19: 204K, 114s, 35% -->
+    <div class="prog-bar" style="height: 73%; background: var(--yellow);" data-tooltip="F19: 204K DPS (1:54) Boss: 34.53%">
+      <span class="prog-label">35%</span>
+    </div>
+    <!-- F20: 187K, 120s, 35% -->
+    <div class="prog-bar" style="height: 67%; background: var(--yellow);" data-tooltip="F20: 187K DPS (2:00) Boss: 35.43%">
+      <span class="prog-label">35%</span>
+    </div>
+    <!-- F21: 262K, 147s, 0.22% -->
+    <div class="prog-bar" style="height: 94%; background: var(--green);" data-tooltip="F21: 262K DPS (2:27) Boss: 0.22%">
+      <span class="prog-label" style="color:var(--green);">0.2%</span>
+    </div>
+    <!-- F23: 152K, 293s, 77% LONGEST -->
+    <div class="prog-bar" style="height: 54%; background: var(--orange);" data-tooltip="F23: 152K DPS (4:52) Boss: 77.31% — LONGEST PULL">
+      <span class="prog-label">77%</span>
+    </div>
+    <!-- F24: 174K, 229s, 93% -->
+    <div class="prog-bar" style="height: 62%; background: var(--red);" data-tooltip="F24: 174K DPS (3:49) Boss: 92.92%">
+      <span class="prog-label">93%</span>
+    </div>
+    <!-- F25: 191K, 188s, 100% -->
+    <div class="prog-bar" style="height: 68%; background: var(--red);" data-tooltip="F25: 191K DPS (3:08) Boss: 99.88%">
+      <span class="prog-label">100%</span>
+    </div>
+    <!-- F26: 188K, 220s, 97% -->
+    <div class="prog-bar" style="height: 67%; background: var(--red);" data-tooltip="F26: 188K DPS (3:40) Boss: 96.91%">
+      <span class="prog-label">97%</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span style="color: var(--dim);"><span class="green">&#9632;</span> &lt;10% boss &bull; <span class="yellow">&#9632;</span> 10-50% &bull; <span class="orange">&#9632;</span> 50-90% &bull; <span class="red">&#9632;</span> &gt;90%</span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Analysis</div>
+  <p style="font-size: 14px;">Three pulls reached boss 0.01-0.22%: <strong class="green">F8 (280K DPS, 2:22)</strong>, <strong class="green">F17 (256K DPS, 2:24)</strong>, and <strong class="green">F21 (262K DPS, 2:27)</strong>. These were all sub-2:30 pulls where burst cooldowns carried. Longer pulls show lower sustained DPS as expected (152K on the 4:52 F23, 168-189K on 3:30+ pulls). The <strong>late-session regression</strong> is notable: pulls 23-26 all show boss % above 77%, suggesting the raid lost coordination or energy. Zinnks's personal DPS on the longest pull (F23) was the lowest of any 3+ minute pull at 152K, which is likely due to the death at 4:06 and the broader raid collapse after 2:30.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs primary reference. For Augmentation Evoker, Critical Strike and Haste are the priority stats, with Mastery being least valuable.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Zinnks</th><th>Polp (Ref)</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>286.7</td>
+      <td>290.8</td>
+      <td><span class="tag tag-warn">&minus;4.1 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Intellect</td>
+      <td class="green">3,432</td>
+      <td>2,620</td>
+      <td>Player has +31% more Int</td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="green">1,278</td>
+      <td>N/A</td>
+      <td>Crit is priority stat for Aug</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="green">1,736</td>
+      <td>N/A</td>
+      <td>High Haste enables more Eruptions</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td>302</td>
+      <td>N/A</td>
+      <td><span class="dim">Lowest priority stat</span></td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>40</td>
+      <td>N/A</td>
+      <td><span class="dim">Very low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Zinnks has <strong>higher Intellect</strong> (3,432 vs 2,620) despite lower ilvl (286.7 vs 290.8) &mdash; this is meaningful because Ebon Might shares a portion of the Evoker's primary stat with buffed allies. Higher Intellect means each second of Ebon Might uptime is <strong>more valuable</strong>, making the uptime gap even more impactful. With 1,736 Haste, the GCD should be fast enough to support high Eruption CPM &mdash; the deficit is rotational execution, not stat limitation.</p>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown Usage</h2>
+<p class="section-intro">Major cooldown cast counts and context. Breath of Eons is the primary burst CD (2 min). Tip the Scales enables instant empowered casts.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cooldown</th><th>Player Uses</th><th>Expected</th><th>Ref Uses</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Breath of Eons</strong></td>
+      <td>3</td>
+      <td>~2-3</td>
+      <td>6</td>
+      <td><span class="tag tag-same">Good for 4:06 alive</span></td>
+    </tr>
+    <tr>
+      <td><strong>Fire Breath</strong></td>
+      <td>8</td>
+      <td>~8-9</td>
+      <td>16</td>
+      <td><span class="tag tag-same">Good rate</span></td>
+    </tr>
+    <tr>
+      <td><strong>Upheaval</strong></td>
+      <td>7</td>
+      <td>~8-9</td>
+      <td>16</td>
+      <td><span class="tag tag-warn">Slightly low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Tip the Scales</strong></td>
+      <td>3</td>
+      <td>~3</td>
+      <td>3</td>
+      <td><span class="tag tag-same">Matches ref</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>7</td>
+      <td>&mdash;</td>
+      <td>12</td>
+      <td><span class="tag tag-same">Good rate (1.7 CPM)</span></td>
+    </tr>
+    <tr>
+      <td>Obsidian Scales</td>
+      <td>4</td>
+      <td>&mdash;</td>
+      <td>2</td>
+      <td><span class="tag tag-info">Prog survival</span></td>
+    </tr>
+    <tr>
+      <td>Zephyr</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Raid utility</span></td>
+    </tr>
+    <tr>
+      <td>Emerald Blossom</td>
+      <td>3</td>
+      <td>&mdash;</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Self-heal (GCD cost)</span></td>
+    </tr>
+    <tr>
+      <td>Time Spiral</td>
+      <td>1</td>
+      <td>&mdash;</td>
+      <td>2</td>
+      <td><span class="tag tag-same">Utility</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--cyan);">
+  <div class="card-header cyan">Cooldown Alignment: Good</div>
+  <p style="font-size: 14px;">Major cooldowns are being used at appropriate rates. Breath of Eons at 3 uses in 4:06 means it was used on cooldown (2-min CD). Fire Breath at 8 casts (2.0 CPM) is close to the 30-second CD rate. Tip the Scales matches reference exactly at 3 uses. The problem is not cooldown management &mdash; it's the <strong>filler rotation between cooldowns</strong> where Eruption and Living Flame CPM drop significantly.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during Fight 23. Augmentation Evoker provides buffs to allies rather than receiving them, but external buffs still impact personal DPS.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism</strong></td>
+      <td>2:59 (lasted 55s)</td>
+      <td><span class="tag tag-info">Mid-fight lust for P2/P3 transition</span></td>
+    </tr>
+    <tr>
+      <td><strong>Fury of the Aspects</strong></td>
+      <td>0:22 (7 applications, ~30s total)</td>
+      <td><span class="tag tag-info">Self-cast haste buff</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>Not received</td>
+      <td><span class="tag tag-same">Neither player received PI</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Heroism at 2:59 is a mid-fight lust timed for a phase transition. Zinnks self-casted Fury of the Aspects early for opener haste. No Power Infusion was received. These are typical prog buff patterns and don't significantly skew the comparison.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Zinnks during Fight 23. Zinnks died at 4:06 to Void Barrage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Void Barrage</strong></td>
+      <td>High (killing blow)</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning dependent</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Barrage</td>
+      <td>Raid-wide</td>
+      <td>Multiple</td>
+      <td><span class="tag tag-same">No &mdash; raid mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>Raid-wide</td>
+      <td>Multiple</td>
+      <td><span class="tag tag-same">No &mdash; unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td>
+      <td>Mechanic damage</td>
+      <td>Multiple</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>DoT damage</td>
+      <td>Ticking</td>
+      <td><span class="tag tag-same">No &mdash; debuff mechanic</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">The death to Void Barrage at 4:06 came during the chaotic Rift Simulacrum phase when the raid was rapidly losing players. Multiple raid members died to the same mechanic window. The 4 Obsidian Scales uses and 3 Emerald Blossom self-heals show Zinnks was actively trying to survive through the damage-heavy prog transition.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Eruption CPM from 12.7 to 16+ to maintain Ebon Might uptime.</strong> This is the single most impactful improvement. Eruption extends Ebon Might through Sands of Time &mdash; every missed Eruption shortens the buff window for 4 allied DPS players. The <strong>24% CPM gap</strong> directly causes the <strong>24% Ebon Might uptime gap</strong> (61% vs 85%). In practical terms: cast Eruption whenever you have an Essence Burst proc or when Ebon Might needs extension, even during movement (Eruption is instant with Essence Burst). Prioritize Eruption over Azure Strike in every situation where Ebon Might is active. Estimated raid DPS gain: <strong>significant</strong> &mdash; 24% more EM uptime means 24% more time that 4 DPS allies receive your stat buff.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Fill dead GCDs with Living Flame &mdash; current rate is 55% below reference.</strong> Living Flame at <strong>4.4 CPM vs 9.8 CPM</strong> indicates substantial periods of not pressing buttons. When no Eruption is available (no Essence Burst procs, Ebon Might not active), Living Flame should be the default filler. With the Leaping Flames talent, Living Flame becomes instant after empowered spells and can be cast while moving with Hover. The reference casts Living Flame <strong>75 times</strong> in 7:38 &mdash; it should be the most common cast after Eruption. Map Living Flame to an easily accessible keybind and treat it as the "when nothing else is ready, press this" button. Estimated personal DPS gain: <strong>~15-20%</strong> from filling dead GCDs.
+</div>
+
+<div class="action-item">
+  <strong>3. Replace Azure Strike filler with Eruption or Living Flame.</strong> Azure Strike is at <strong>1.7 CPM vs 0.7 CPM</strong> (+161%). Azure Strike is lower priority than both Eruption (extends Ebon Might) and Living Flame (higher damage, procs Leaping Flames). The reference uses Azure Strike sparingly (5 total casts in 7:38). Every Azure Strike that could be an Eruption is a missed Ebon Might extension. Use Azure Strike only as a last-resort instant when moving without Hover and both Eruption and Living Flame are unavailable.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Upheaval usage to match Fire Breath cadence.</strong> Fire Breath is at a good rate (2.0 CPM, near reference 2.1), but Upheaval is lower at <strong>1.7 CPM vs 2.1 CPM</strong> (&minus;18%). Both empowered spells extend Ebon Might through Sands of Time and grant Shifting Sands to nearby allies. They should be used on cooldown with similar frequency. Missing Upheaval casts means fewer EM extensions and fewer Shifting Sands buff applications. On a ~12 second cooldown, Upheaval should be cast roughly every 2 GCD windows.
+</div>
+
+<div class="action-item">
+  <strong>5. Keep Prescience on cooldown &mdash; avoid capping charges.</strong> Prescience at <strong>4.6 CPM vs 5.6 CPM</strong> (&minus;18%) means fewer crit buffs distributed to DPS allies. Prescience is a two-charge system that should never cap at 2 charges. Between Eruption casts and empowered spells, weave Prescience applications to keep the charges rolling. Target the highest-DPS players in the raid (check your Details/WCL for who is doing the most damage). Even during prog movement, Prescience is instant and costs no movement time.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Cooldown management:</strong> Breath of Eons, Fire Breath, and Tip the Scales are all used at correct rates. Fire Breath at 2.0 CPM nearly matches the reference's 2.1 &mdash; empowered spell timing is solid.<br><br>
+    <strong>Ebon Might recast awareness:</strong> Ebon Might itself was recast 7 times (1.7 CPM), slightly above the reference's 1.6 CPM. Zinnks is aware of when EM falls off and recasts it &mdash; the problem is maintaining it between recasts via Eruption extensions, not forgetting to recast.<br><br>
+    <strong>Defensive awareness:</strong> 4 Obsidian Scales uses and 3 Emerald Blossom self-heals show active survival play during progression. 2 Zephyr casts contributed raid-wide damage reduction. This defensive awareness is valuable during prog even if it costs some GCDs.<br><br>
+    <strong>Best pulls showed strong burst:</strong> On the three 0.01% boss pulls (F8: 280K, F17: 256K, F21: 262K), Zinnks put up strong numbers during burst windows, indicating good Breath of Eons and empowered spell alignment during cooldown windows.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Context</div>
+  <p style="font-size: 14px;">This analysis compares <strong>wipe prog data</strong> against <strong>kill data</strong> from the #1 ranked Aug Evoker. Prog pulls are inherently messier: more deaths cause panic movement, healers go into survival mode, DPS drop, and the Aug Evoker's buff targets die mid-buff. The 61% Ebon Might uptime is partially explained by <strong>5 of 13 buff targets dying</strong> during the pull (dead targets don't benefit from EM). However, the <strong>Eruption and Living Flame CPM gaps</strong> are rate-based metrics independent of ally deaths &mdash; these represent genuine rotation improvement opportunities that will carry over once the team secures a kill. Closing the Eruption gap alone would bring Ebon Might uptime closer to 75-80%, which translates to meaningful DPS gains for the entire raid.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (Wipe, 4:52, best sustained pull). Reference: Polp (#1 ranked Augmentation Evoker, report <code>bWA8RQLvhyG24Yp9</code>, Fight 7, 7:38 kill, 98.6K DPS). All CPM calculations use alive time (4:06) for Zinnks.</p>
+  <p style="margin-top: 4px;">Talent delta: 5 differences between Zinnks and Polp. Item level: 286.7 vs 290.8 (&minus;4.1). Spec guide sources: Icy Veins Augmentation Evoker Rotation Guide (12.0.7), Wowhead Augmentation Evoker Guide (TWW S2). Ebon Might uptime data from WCL buff tables.</p>
+  <p style="margin-top: 4px;">Augmentation Evoker is a support spec &mdash; personal DPS is not the primary metric. Ebon Might uptime and buff distribution are the core measures of performance.</p>
+</div>
+
+</body>
+</html>

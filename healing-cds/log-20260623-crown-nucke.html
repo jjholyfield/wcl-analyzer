@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nucke (Vengeance DH) - Crown of the Cosmos Prog - June 23 2026</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1f6e1;</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --dh: #a330c9; --dk: #c41e3a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.header { margin-bottom:24px; }
+.header h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+.header .player-name { color:var(--dh); }
+.header .meta { font-size:14px; color:var(--dim); }
+.prog-tag { display:inline-block; background:var(--orange); color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:8px; vertical-align:middle; text-transform:uppercase; letter-spacing:0.5px; }
+.night-tag { display:inline-block; background:var(--purple); color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:4px; vertical-align:middle; }
+
+.summary-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; text-align:center; }
+.card .label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.card .value { font-size:24px; font-weight:700; }
+.card .sub { font-size:12px; color:var(--dim); margin-top:2px; }
+
+.section { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:16px; }
+.section h2 { font-size:18px; font-weight:600; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+.section h3 { font-size:15px; font-weight:600; margin:12px 0 8px; color:var(--accent); }
+
+.verdict { border-left:4px solid var(--red); padding:16px; background:var(--surface); border-radius:0 8px 8px 0; margin-bottom:16px; font-size:14px; line-height:1.7; }
+.verdict strong.red { color:var(--red); }
+.verdict strong.yellow { color:var(--yellow); }
+.verdict strong.green { color:var(--green); }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:8px 10px; background:rgba(88,166,255,0.08); border-bottom:1px solid var(--border); font-weight:600; color:var(--dim); font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:8px 10px; border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+tr.highlight { background:rgba(163,48,201,0.1); }
+tr.ref-row { background:rgba(188,140,255,0.06); }
+
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.tag-crit { background:rgba(248,81,73,0.15); color:var(--red); }
+.tag-diff { background:rgba(219,109,40,0.15); color:var(--orange); }
+.tag-warn { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.tag-same { background:rgba(63,185,80,0.15); color:var(--green); }
+.tag-info { background:rgba(88,166,255,0.15); color:var(--accent); }
+
+.progression-chart { display:flex; align-items:flex-end; gap:3px; height:180px; margin:16px 0; padding:0 4px; }
+.prog-bar { flex:1; min-width:0; border-radius:4px 4px 0 0; position:relative; cursor:pointer; transition:opacity 0.2s; }
+.prog-bar:hover { opacity:0.8; }
+.prog-bar .bar-label { position:absolute; bottom:-20px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--dim); white-space:nowrap; }
+.prog-bar[data-tooltip]:hover::after { content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#1c2129; border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:6px; font-size:11px; white-space:pre-line; z-index:10; pointer-events:none; min-width:140px; }
+
+.dtps-chart { display:flex; align-items:flex-end; gap:3px; height:160px; margin:16px 0; }
+.dtps-bar { flex:1; min-width:0; border-radius:4px 4px 0 0; position:relative; cursor:pointer; }
+.dtps-bar:hover { opacity:0.8; }
+.dtps-bar .bar-label { position:absolute; bottom:-20px; left:50%; transform:translateX(-50%); font-size:9px; color:var(--dim); white-space:nowrap; }
+.dtps-bar[data-tooltip]:hover::after { content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#1c2129; border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:6px; font-size:11px; white-space:pre-line; z-index:10; pointer-events:none; min-width:140px; }
+
+.death-phase { display:inline-block; padding:1px 6px; border-radius:3px; font-size:11px; font-weight:600; margin-right:4px; }
+.phase-p1 { background:rgba(63,185,80,0.15); color:var(--green); }
+.phase-int { background:rgba(88,166,255,0.15); color:var(--accent); }
+.phase-p2 { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.phase-p3 { background:rgba(248,81,73,0.15); color:var(--red); }
+
+.action-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:8px; font-size:13px; }
+.action-item.critical { border-left:3px solid var(--red); }
+.action-item.warning { border-left:3px solid var(--yellow); }
+.action-item.info { border-left:3px solid var(--accent); }
+.action-item strong { color:var(--text); }
+
+.phase-table td:first-child { font-weight:600; }
+.overheal-bar { display:inline-block; height:8px; border-radius:4px; background:var(--yellow); vertical-align:middle; }
+.abs-bar { display:inline-block; height:8px; border-radius:4px; background:var(--green); vertical-align:middle; }
+
+.footer { text-align:center; padding:24px 0; font-size:12px; color:var(--dim); border-top:1px solid var(--border); margin-top:24px; }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width:768px) { .two-col { grid-template-columns:1fr; } .summary-cards { grid-template-columns:repeat(2,1fr); } }
+
+.ref-badge { display:inline-block; background:var(--purple); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:3px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23 Crown Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Nucke</span> &mdash; Vengeance Demon Hunter <span class="prog-tag">PROGRESSION</span><span class="night-tag">NIGHT 3</span></h1>
+  <div class="meta">
+    Crown of the Cosmos (Mythic) &bull; June 23, 2026 &bull; 20 pulls &bull; Best: 26.51% (6:44) &bull;
+    <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">WCL Report</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-cards">
+  <div class="card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color:var(--red)">18.9K</div>
+    <div class="sub">Ref: 45.7K (41%)</div>
+  </div>
+  <div class="card">
+    <div class="label">Avg DTPS</div>
+    <div class="value" style="color:var(--yellow)">59.2K</div>
+    <div class="sub">Ref: 52.4K (+13% more taken)</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--red)">0 / 20</div>
+    <div class="sub">Died every pull</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="sub">Ref: 291 ilvl</div>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div class="verdict">
+  <strong class="red">Nucke died in all 20 pulls</strong> across this progression session, which is the single most important finding.
+  Average DPS of <strong class="red">18.9K</strong> is <strong class="red">59% below</strong> the reference kill (45.7K),
+  driven by a <strong class="red">29% total CPM deficit</strong> (101.2 vs 143.5).
+  Soul Cleave usage is <strong class="red">45% below reference</strong> (9.4 vs 17.0 CPM), which directly impacts both damage output and self-healing through Soul Fragment consumption.
+  Felblade at 0.6 CPM vs 6.0 CPM reference (<strong class="red">-90%</strong>) represents a massive loss of Fury generation and mobility.
+  Defensively, Demon Spikes usage is <strong class="green">on par with reference</strong> (4.3 vs 4.1 CPM), and all three major defensives were used in every pull.
+  However, DTPS is <strong class="yellow">13% higher</strong> than the reference kill, suggesting the lower Soul Cleave and Spirit Bomb usage is reducing self-healing throughput and making damage intake spikier.
+  The <strong class="red">#1 death cause is Echoing Darkness (6 deaths)</strong>, all in P1, suggesting a positioning or add-handling issue with Vorelus's mechanic.
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Phase boundaries: P1 (0:00&ndash;2:14) | Intermission (2:14&ndash;2:53) | P2 (2:53&ndash;5:09) | P3 (5:09+). DPS/DTPS/HPS from fight 25 (longest pull, 6:44). Defensive counts aggregated across all pulls reaching each phase.</p>
+
+  <table class="phase-table">
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Reached</th>
+        <th>DPS</th>
+        <th>DTPS</th>
+        <th>Self-HPS</th>
+        <th>Deaths</th>
+        <th>DS/pull</th>
+        <th>FB/pull</th>
+        <th>Meta/pull</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="death-phase phase-p1">P1</span> Sentinels</td>
+        <td>20 / 20</td>
+        <td>130.8K</td>
+        <td>67.3K</td>
+        <td>42.0K</td>
+        <td style="color:var(--yellow)">6</td>
+        <td>9.5</td>
+        <td>2.0</td>
+        <td>2.7</td>
+      </tr>
+      <tr>
+        <td><span class="death-phase phase-int">Int</span> Stellar Emission</td>
+        <td>14 / 20</td>
+        <td style="color:var(--dim)">0</td>
+        <td>14.8K</td>
+        <td>726</td>
+        <td>1</td>
+        <td>0.3</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+      <tr>
+        <td><span class="death-phase phase-p2">P2</span> Rift</td>
+        <td>14 / 20</td>
+        <td>63.9K</td>
+        <td>57.4K</td>
+        <td>34.9K</td>
+        <td style="color:var(--red)">7</td>
+        <td>8.3</td>
+        <td>1.9</td>
+        <td>1.8</td>
+      </tr>
+      <tr>
+        <td><span class="death-phase phase-p3">P3</span> Devouring Cosmos</td>
+        <td>4 / 20</td>
+        <td>45.8K</td>
+        <td>51.0K</td>
+        <td>27.7K</td>
+        <td style="color:var(--red)">6</td>
+        <td>4.5</td>
+        <td>1.3</td>
+        <td>1.3</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Key Phase Insights</h3>
+  <ul style="font-size:13px;color:var(--dim);margin-left:20px;">
+    <li><strong style="color:var(--text)">P1 Echoing Darkness problem:</strong> 6 of 20 deaths occur in P1, all to Echoing Darkness (Vorelus add). This is a positioning or add-priority issue, not a defensive CD issue &mdash; Demon Spikes averaging 9.5/pull in P1 is solid.</li>
+    <li><strong style="color:var(--text)">P2 is the deadliest phase:</strong> 7 deaths (35% of all deaths) across 14 pulls that reached P2. Cosmic Barrier (3), Silverstrike Ricochet (2), Stellar Emission (1), and Void Remnants (1) are the causes &mdash; multiple overlapping mechanics.</li>
+    <li><strong style="color:var(--text)">P3 death rate is extreme:</strong> All 4 pulls that reached P3 ended with Nucke dying (6 deaths total including battle rez). Causes vary widely, indicating general survivability collapse.</li>
+    <li><strong style="color:var(--text)">Self-HPS drops through phases:</strong> 42.0K in P1 down to 27.7K in P3 (34% drop). Healing throughput needs to increase in later phases, not decrease.</li>
+    <li><strong style="color:var(--text)">Metamorphosis front-loaded:</strong> 2.7 Meta casts/pull in P1 vs 1.8 in P2 and 1.3 in P3. Banking Meta for harder phases would improve survivability where it matters most.</li>
+  </ul>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis (20 / 20 pulls)</h2>
+
+  <div class="two-col">
+    <div>
+      <h3>Deaths by Cause</h3>
+      <table>
+        <thead><tr><th>Ability</th><th>Deaths</th><th>Phase</th></tr></thead>
+        <tbody>
+          <tr><td>Echoing Darkness</td><td style="font-weight:600;color:var(--red)">6</td><td><span class="death-phase phase-p1">P1</span></td></tr>
+          <tr><td>Cosmic Barrier</td><td style="font-weight:600;color:var(--red)">4</td><td><span class="death-phase phase-p2">P2</span> <span class="death-phase phase-p3">P3</span></td></tr>
+          <tr><td>Silverstrike Ricochet</td><td style="font-weight:600;color:var(--yellow)">2</td><td><span class="death-phase phase-p2">P2</span></td></tr>
+          <tr><td>Stellar Emission</td><td style="font-weight:600;color:var(--yellow)">2</td><td><span class="death-phase phase-int">Intermission</span> <span class="death-phase phase-p2">P2</span></td></tr>
+          <tr><td>Voidstalker Sting</td><td style="font-weight:600;color:var(--yellow)">2</td><td><span class="death-phase phase-p3">P3</span></td></tr>
+          <tr><td>Simulacrum Backlash</td><td style="font-weight:600;color:var(--dim)">1</td><td><span class="death-phase phase-p3">P3</span></td></tr>
+          <tr><td>Cosmic Radiation</td><td style="font-weight:600;color:var(--dim)">1</td><td><span class="death-phase phase-p3">P3</span></td></tr>
+          <tr><td>Void Remnants</td><td style="font-weight:600;color:var(--dim)">1</td><td><span class="death-phase phase-p2">P2</span></td></tr>
+          <tr><td>Grasp of Emptiness</td><td style="font-weight:600;color:var(--dim)">1</td><td><span class="death-phase phase-p3">P3</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Deaths by Phase</h3>
+      <table>
+        <thead><tr><th>Phase</th><th>Deaths</th><th>Pulls Reached</th><th>Death Rate</th></tr></thead>
+        <tbody>
+          <tr><td><span class="death-phase phase-p1">P1</span></td><td>6</td><td>20</td><td style="color:var(--yellow)">30%</td></tr>
+          <tr><td><span class="death-phase phase-int">Int</span></td><td>1</td><td>14</td><td>7%</td></tr>
+          <tr><td><span class="death-phase phase-p2">P2</span></td><td>7</td><td>14</td><td style="color:var(--red)">50%</td></tr>
+          <tr><td><span class="death-phase phase-p3">P3</span></td><td>6</td><td>4</td><td style="color:var(--red)">150%*</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:var(--dim);margin-top:4px;">*Multiple deaths per pull possible with battle rez.</p>
+    </div>
+  </div>
+
+  <h3>Death Timeline (Every Pull)</h3>
+  <table>
+    <thead><tr><th>Pull</th><th>Duration</th><th>Death @</th><th>Phase</th><th>Cause</th><th>Boss %</th></tr></thead>
+    <tbody>
+      <tr><td>f5</td><td>3:48</td><td>3:47</td><td><span class="death-phase phase-p2">P2</span></td><td>Cosmic Barrier</td><td>50.44%</td></tr>
+      <tr><td>f6</td><td>3:53</td><td>3:52</td><td><span class="death-phase phase-p2">P2</span></td><td>Silverstrike Ricochet</td><td>47.14%</td></tr>
+      <tr><td>f7</td><td>1:17</td><td>1:00</td><td><span class="death-phase phase-p1">P1</span></td><td>Echoing Darkness</td><td>84.12%</td></tr>
+      <tr><td>f8</td><td>1:21</td><td>1:11</td><td><span class="death-phase phase-p1">P1</span></td><td>Echoing Darkness</td><td>82.21%</td></tr>
+      <tr><td>f9</td><td>5:15</td><td>5:14</td><td><span class="death-phase phase-p3">P3</span></td><td>Simulacrum Backlash</td><td>32.91%</td></tr>
+      <tr><td>f10</td><td>2:00</td><td>1:43</td><td><span class="death-phase phase-p1">P1</span></td><td>Echoing Darkness</td><td>71.08%</td></tr>
+      <tr><td>f11</td><td>3:47</td><td>3:45</td><td><span class="death-phase phase-p2">P2</span></td><td>Cosmic Barrier</td><td>50%</td></tr>
+      <tr><td>f12</td><td>4:47</td><td>4:43</td><td><span class="death-phase phase-p2">P2</span></td><td>Silverstrike Ricochet</td><td>42.46%</td></tr>
+      <tr><td>f13</td><td>6:01</td><td>5:29</td><td><span class="death-phase phase-p3">P3</span></td><td>Cosmic Radiation</td><td>32.29%</td></tr>
+      <tr><td>f14</td><td>1:26</td><td>1:11</td><td><span class="death-phase phase-p1">P1</span></td><td>Echoing Darkness</td><td>81.15%</td></tr>
+      <tr><td>f15</td><td>3:05</td><td>2:45</td><td><span class="death-phase phase-int">Intermission</span></td><td>Stellar Emission</td><td>61.79%</td></tr>
+      <tr><td>f16</td><td>3:05</td><td>2:55</td><td><span class="death-phase phase-p2">P2</span></td><td>Stellar Emission</td><td>61.64%</td></tr>
+      <tr><td>f17</td><td>3:55</td><td>3:54</td><td><span class="death-phase phase-p2">P2</span></td><td>Cosmic Barrier</td><td>47.92%</td></tr>
+      <tr><td>f18</td><td>4:23</td><td>4:22</td><td><span class="death-phase phase-p2">P2</span></td><td>Void Remnants</td><td>43.36%</td></tr>
+      <tr><td>f19</td><td>6:09</td><td>6:03</td><td><span class="death-phase phase-p3">P3</span></td><td>Cosmic Barrier</td><td>36.36%</td></tr>
+      <tr><td>f20</td><td>5:15</td><td>5:14</td><td><span class="death-phase phase-p3">P3</span></td><td>Voidstalker Sting</td><td>34.78%</td></tr>
+      <tr><td>f21</td><td>2:03</td><td>1:52</td><td><span class="death-phase phase-p1">P1</span></td><td>Echoing Darkness</td><td>67.14%</td></tr>
+      <tr><td>f22</td><td>1:32</td><td>1:20</td><td><span class="death-phase phase-p1">P1</span></td><td>Echoing Darkness</td><td>74.57%</td></tr>
+      <tr><td>f23</td><td>6:25</td><td>6:23</td><td><span class="death-phase phase-p3">P3</span></td><td>Voidstalker Sting</td><td>31.14%</td></tr>
+      <tr><td>f25</td><td>6:44</td><td>6:39</td><td><span class="death-phase phase-p3">P3</span></td><td>Grasp of Emptiness</td><td>26.51%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- DTPS Across All Pulls -->
+<div class="section">
+  <h2>DTPS Across All Pulls</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:8px;">Lower is better (better active mitigation). Reference DTPS: 52.4K (kill).</p>
+  <div class="dtps-chart">
+    <div class="dtps-bar" style="height:77%;background:var(--orange);" data-tooltip="f5 (3:47)&#10;DTPS: 64.3K&#10;DPS: 13.6K&#10;Boss: 50.44%"><div class="bar-label">5</div></div>
+    <div class="dtps-bar" style="height:70%;background:var(--yellow);" data-tooltip="f6 (3:53)&#10;DTPS: 58.5K&#10;DPS: 12.4K&#10;Boss: 47.14%"><div class="bar-label">6</div></div>
+    <div class="dtps-bar" style="height:61%;background:var(--green);" data-tooltip="f7 (1:17)&#10;DTPS: 51.0K&#10;DPS: 0&#10;Boss: 84.12%"><div class="bar-label">7</div></div>
+    <div class="dtps-bar" style="height:86%;background:var(--red);" data-tooltip="f8 (1:20)&#10;DTPS: 71.7K&#10;DPS: 0&#10;Boss: 82.21%"><div class="bar-label">8</div></div>
+    <div class="dtps-bar" style="height:70%;background:var(--yellow);" data-tooltip="f9 (5:14)&#10;DTPS: 58.2K&#10;DPS: 26.4K&#10;Boss: 32.91%"><div class="bar-label">9</div></div>
+    <div class="dtps-bar" style="height:69%;background:var(--yellow);" data-tooltip="f10 (1:59)&#10;DTPS: 57.5K&#10;DPS: 0&#10;Boss: 71.08%"><div class="bar-label">10</div></div>
+    <div class="dtps-bar" style="height:63%;background:var(--green);" data-tooltip="f11 (3:47)&#10;DTPS: 52.9K&#10;DPS: 10.8K&#10;Boss: 50%"><div class="bar-label">11</div></div>
+    <div class="dtps-bar" style="height:67%;background:var(--yellow);" data-tooltip="f12 (4:47)&#10;DTPS: 56.1K&#10;DPS: 14.4K&#10;Boss: 42.46%"><div class="bar-label">12</div></div>
+    <div class="dtps-bar" style="height:57%;background:var(--green);" data-tooltip="f13 (6:00)&#10;DTPS: 47.6K&#10;DPS: 17.3K&#10;Boss: 32.29%"><div class="bar-label">13</div></div>
+    <div class="dtps-bar" style="height:100%;background:var(--red);" data-tooltip="f14 (1:26)&#10;DTPS: 83.5K&#10;DPS: 0&#10;Boss: 81.15%"><div class="bar-label">14</div></div>
+    <div class="dtps-bar" style="height:56%;background:var(--green);" data-tooltip="f15 (3:04)&#10;DTPS: 47.1K&#10;DPS: 0&#10;Boss: 61.79%"><div class="bar-label">15</div></div>
+    <div class="dtps-bar" style="height:64%;background:var(--green);" data-tooltip="f16 (3:05)&#10;DTPS: 53.5K&#10;DPS: 0&#10;Boss: 61.64%"><div class="bar-label">16</div></div>
+    <div class="dtps-bar" style="height:66%;background:var(--yellow);" data-tooltip="f17 (3:54)&#10;DTPS: 55.1K&#10;DPS: 8.5K&#10;Boss: 47.92%"><div class="bar-label">17</div></div>
+    <div class="dtps-bar" style="height:55%;background:var(--green);" data-tooltip="f18 (4:22)&#10;DTPS: 45.7K&#10;DPS: 16.7K&#10;Boss: 43.36%"><div class="bar-label">18</div></div>
+    <div class="dtps-bar" style="height:68%;background:var(--yellow);" data-tooltip="f19 (6:08)&#10;DTPS: 56.9K&#10;DPS: 27.8K&#10;Boss: 36.36%"><div class="bar-label">19</div></div>
+    <div class="dtps-bar" style="height:70%;background:var(--yellow);" data-tooltip="f20 (5:15)&#10;DTPS: 58.5K&#10;DPS: 21.2K&#10;Boss: 34.78%"><div class="bar-label">20</div></div>
+    <div class="dtps-bar" style="height:87%;background:var(--red);" data-tooltip="f21 (2:02)&#10;DTPS: 72.9K&#10;DPS: 0&#10;Boss: 67.14%"><div class="bar-label">21</div></div>
+    <div class="dtps-bar" style="height:95%;background:var(--red);" data-tooltip="f22 (1:31)&#10;DTPS: 79.5K&#10;DPS: 0&#10;Boss: 74.57%"><div class="bar-label">22</div></div>
+    <div class="dtps-bar" style="height:70%;background:var(--yellow);" data-tooltip="f23 (6:24)&#10;DTPS: 58.3K&#10;DPS: 25.7K&#10;Boss: 31.14%"><div class="bar-label">23</div></div>
+    <div class="dtps-bar" style="height:66%;background:var(--yellow);" data-tooltip="f25 (6:44)&#10;DTPS: 55.1K&#10;DPS: 32.3K&#10;Boss: 26.51%"><div class="bar-label">25</div></div>
+  </div>
+  <div style="display:flex;gap:16px;margin-top:24px;font-size:11px;color:var(--dim);">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>&lt;55K</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--yellow);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>55-60K</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--orange);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>60-70K</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>&gt;70K</span>
+    <span style="margin-left:auto;">Ref: 52.4K (kill)</span>
+  </div>
+</div>
+
+<!-- Wipe Progression -->
+<div class="section">
+  <h2>Wipe Progression</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:8px;">Pull duration and boss % reached. Color indicates highest phase reached.</p>
+  <div class="progression-chart">
+    <div class="prog-bar" style="height:56%;background:var(--yellow);" data-tooltip="f5 (3:47)&#10;Boss: 50.44%&#10;Phase: P2&#10;DPS: 13.6K&#10;Died: 3:47"><div class="bar-label">5</div></div>
+    <div class="prog-bar" style="height:58%;background:var(--yellow);" data-tooltip="f6 (3:53)&#10;Boss: 47.14%&#10;Phase: P2&#10;DPS: 12.4K&#10;Died: 3:52"><div class="bar-label">6</div></div>
+    <div class="prog-bar" style="height:19%;background:var(--red);" data-tooltip="f7 (1:17)&#10;Boss: 84.12%&#10;Phase: P1&#10;DPS: 0&#10;Died: 1:00"><div class="bar-label">7</div></div>
+    <div class="prog-bar" style="height:20%;background:var(--red);" data-tooltip="f8 (1:20)&#10;Boss: 82.21%&#10;Phase: P1&#10;DPS: 0&#10;Died: 1:11"><div class="bar-label">8</div></div>
+    <div class="prog-bar" style="height:78%;background:var(--yellow);" data-tooltip="f9 (5:14)&#10;Boss: 32.91%&#10;Phase: P2&#10;DPS: 26.4K&#10;Died: 5:14"><div class="bar-label">9</div></div>
+    <div class="prog-bar" style="height:30%;background:var(--orange);" data-tooltip="f10 (1:59)&#10;Boss: 71.08%&#10;Phase: P1&#10;DPS: 0&#10;Died: 1:43"><div class="bar-label">10</div></div>
+    <div class="prog-bar" style="height:56%;background:var(--yellow);" data-tooltip="f11 (3:47)&#10;Boss: 50%&#10;Phase: P2&#10;DPS: 10.8K&#10;Died: 3:45"><div class="bar-label">11</div></div>
+    <div class="prog-bar" style="height:71%;background:var(--yellow);" data-tooltip="f12 (4:47)&#10;Boss: 42.46%&#10;Phase: P2&#10;DPS: 14.4K&#10;Died: 4:43"><div class="bar-label">12</div></div>
+    <div class="prog-bar" style="height:89%;background:var(--purple);" data-tooltip="f13 (6:00)&#10;Boss: 32.29%&#10;Phase: P3&#10;DPS: 17.3K&#10;Died: 5:29"><div class="bar-label">13</div></div>
+    <div class="prog-bar" style="height:21%;background:var(--red);" data-tooltip="f14 (1:26)&#10;Boss: 81.15%&#10;Phase: P1&#10;DPS: 0&#10;Died: 1:11"><div class="bar-label">14</div></div>
+    <div class="prog-bar" style="height:46%;background:var(--yellow);" data-tooltip="f15 (3:04)&#10;Boss: 61.79%&#10;Phase: P2&#10;DPS: 0&#10;Died: 2:45"><div class="bar-label">15</div></div>
+    <div class="prog-bar" style="height:46%;background:var(--yellow);" data-tooltip="f16 (3:05)&#10;Boss: 61.64%&#10;Phase: P2&#10;DPS: 0&#10;Died: 2:55"><div class="bar-label">16</div></div>
+    <div class="prog-bar" style="height:58%;background:var(--yellow);" data-tooltip="f17 (3:54)&#10;Boss: 47.92%&#10;Phase: P2&#10;DPS: 8.5K&#10;Died: 3:54"><div class="bar-label">17</div></div>
+    <div class="prog-bar" style="height:65%;background:var(--yellow);" data-tooltip="f18 (4:22)&#10;Boss: 43.36%&#10;Phase: P2&#10;DPS: 16.7K&#10;Died: 4:22"><div class="bar-label">18</div></div>
+    <div class="prog-bar" style="height:91%;background:var(--purple);" data-tooltip="f19 (6:08)&#10;Boss: 36.36%&#10;Phase: P3&#10;DPS: 27.8K&#10;Died: 6:03"><div class="bar-label">19</div></div>
+    <div class="prog-bar" style="height:78%;background:var(--yellow);" data-tooltip="f20 (5:15)&#10;Boss: 34.78%&#10;Phase: P2&#10;DPS: 21.2K&#10;Died: 5:14"><div class="bar-label">20</div></div>
+    <div class="prog-bar" style="height:30%;background:var(--orange);" data-tooltip="f21 (2:02)&#10;Boss: 67.14%&#10;Phase: P1&#10;DPS: 0&#10;Died: 1:52"><div class="bar-label">21</div></div>
+    <div class="prog-bar" style="height:23%;background:var(--red);" data-tooltip="f22 (1:31)&#10;Boss: 74.57%&#10;Phase: P1&#10;DPS: 0&#10;Died: 1:20"><div class="bar-label">22</div></div>
+    <div class="prog-bar" style="height:95%;background:var(--purple);" data-tooltip="f23 (6:24)&#10;Boss: 31.14%&#10;Phase: P3&#10;DPS: 25.7K&#10;Died: 6:23"><div class="bar-label">23</div></div>
+    <div class="prog-bar" style="height:100%;background:var(--purple);" data-tooltip="f25 (6:44)&#10;Boss: 26.51%&#10;Phase: P3&#10;DPS: 32.3K&#10;Died: 6:39"><div class="bar-label">25</div></div>
+  </div>
+  <div style="display:flex;gap:16px;margin-top:24px;font-size:11px;color:var(--dim);">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>P1 (&lt;2min)</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--orange);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>P1 (2min+)</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--yellow);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>P2</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--purple);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>P3</span>
+  </div>
+</div>
+
+<!-- Defensive CD Discipline -->
+<div class="section">
+  <h2>Defensive CD Discipline</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Usage across all 20 pulls. Demon Spikes is active mitigation (near-100% uptime target). Fiery Brand and Metamorphosis are major CDs.</p>
+
+  <table>
+    <thead>
+      <tr><th>Defensive</th><th>Pulls Used</th><th>Total Casts</th><th>Avg/Pull</th><th>CPM</th><th>Ref CPM</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Demon Spikes</td>
+        <td>20 / 20</td>
+        <td>328</td>
+        <td>16.4</td>
+        <td>4.3</td>
+        <td>4.1</td>
+        <td><span class="tag tag-same">On Par</span></td>
+      </tr>
+      <tr>
+        <td>Fiery Brand</td>
+        <td>20 / 20</td>
+        <td>72</td>
+        <td>3.6</td>
+        <td>0.9</td>
+        <td>1.3</td>
+        <td><span class="tag tag-diff">-31%</span></td>
+      </tr>
+      <tr>
+        <td>Metamorphosis</td>
+        <td>20 / 20</td>
+        <td>84</td>
+        <td>4.2</td>
+        <td>1.1</td>
+        <td>2.2</td>
+        <td><span class="tag tag-crit">-50%</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Defensive Usage by Phase (avg casts per pull reaching that phase)</h3>
+  <table>
+    <thead><tr><th>Phase</th><th>Demon Spikes</th><th>Fiery Brand</th><th>Metamorphosis</th></tr></thead>
+    <tbody>
+      <tr><td><span class="death-phase phase-p1">P1</span></td><td>9.5</td><td>2.0</td><td>2.7</td></tr>
+      <tr><td><span class="death-phase phase-int">Int</span></td><td>0.3</td><td>0</td><td>0</td></tr>
+      <tr><td><span class="death-phase phase-p2">P2</span></td><td>8.3</td><td>1.9</td><td>1.8</td></tr>
+      <tr><td><span class="death-phase phase-p3">P3</span></td><td>4.5</td><td>1.3</td><td>1.3</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">Metamorphosis averages 2.7 casts in P1 but only 1.8 in P2 and 1.3 in P3. Given that P2/P3 have higher death rates, saving Meta for later phases would improve survivability where it matters most.</p>
+</div>
+
+<!-- Cast Profile Comparison -->
+<div class="section">
+  <h2>Cast Profile vs Reference (Deamonmeat, 291 ilvl, 8:16 kill)</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Nucke aggregate across 20 pulls (76 min total) vs reference kill. Both players are Aldrachi Reaver.</p>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Nucke Total</th><th>CPM</th><th>Ref Total</th><th>Ref CPM</th><th>&Delta;</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Soul Fragment</td><td>2919</td><td>38.3</td><td>420</td><td>50.8</td><td>-12.5</td><td><span class="tag tag-diff">-25%</span></td></tr>
+      <tr><td>Fracture</td><td>2734</td><td>35.9</td><td>387</td><td>46.8</td><td>-10.9</td><td><span class="tag tag-diff">-23%</span></td></tr>
+      <tr><td>Soul Cleave</td><td>713</td><td>9.4</td><td>141</td><td>17</td><td>-7.6</td><td><span class="tag tag-crit">-45%</span></td></tr>
+      <tr><td>Felblade</td><td>44</td><td>0.6</td><td>50</td><td>6</td><td>-5.4</td><td><span class="tag tag-crit">-90%</span></td></tr>
+      <tr><td>Immolation Aura</td><td>191</td><td>2.5</td><td>39</td><td>4.7</td><td>-2.2</td><td><span class="tag tag-crit">-47%</span></td></tr>
+      <tr><td>Demon Spikes</td><td>328</td><td>4.3</td><td>34</td><td>4.1</td><td>+0.2</td><td><span class="tag tag-same">+5%</span></td></tr>
+      <tr><td>Spirit Bomb</td><td>181</td><td>2.4</td><td>33</td><td>4</td><td>-1.6</td><td><span class="tag tag-crit">-40%</span></td></tr>
+      <tr><td>Torment</td><td>88</td><td>1.2</td><td>18</td><td>2.2</td><td>-1</td><td><span class="tag tag-crit">-45%</span></td></tr>
+      <tr><td>Metamorphosis</td><td>84</td><td>1.1</td><td>18</td><td>2.2</td><td>-1.1</td><td><span class="tag tag-crit">-50%</span></td></tr>
+      <tr><td>Sigil of Flame</td><td>75</td><td>1</td><td>15</td><td>1.8</td><td>-0.8</td><td><span class="tag tag-crit">-44%</span></td></tr>
+      <tr><td>Fiery Brand</td><td>72</td><td>0.9</td><td>11</td><td>1.3</td><td>-0.4</td><td><span class="tag tag-crit">-31%</span></td></tr>
+      <tr><td>Glide</td><td>66</td><td>0.9</td><td>10</td><td>1.2</td><td>-0.3</td><td><span class="tag tag-diff">-25%</span></td></tr>
+      <tr><td>Sigil of Spite</td><td>52</td><td>0.7</td><td>7</td><td>0.8</td><td>-0.1</td><td><span class="tag tag-warn">-13%</span></td></tr>
+      <tr><td>Throw Glaive</td><td>146</td><td>1.9</td><td>0</td><td>0</td><td>+1.9</td><td><span class="tag tag-info">+100%</span></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;"><strong style="color:var(--text)">Total CPM:</strong> Nucke 101.2 vs Ref 143.5 (<span style="color:var(--red)">-29%</span>). This is a significant GCD efficiency gap. More Fracture &rarr; more Soul Fragments &rarr; more Soul Cleave/Spirit Bomb &rarr; more damage and self-healing.</p>
+</div>
+
+<!-- Damage Taken Breakdown -->
+<div class="section">
+  <h2>Damage Taken Breakdown (Fight 25 &mdash; 6:44)</h2>
+  <table>
+    <thead><tr><th>Ability</th><th>Raw Total</th><th>Absorbed</th><th>Abs %</th><th>Hits</th></tr></thead>
+    <tbody>
+      <tr><td>Melee</td><td>9050.0K</td><td>1940.8K</td><td>21% <span class="abs-bar" style="width:21px;background:var(--yellow);"></span></td><td>157</td></tr>
+      <tr><td>Voidstalker Sting</td><td>2811.8K</td><td>801.3K</td><td>28% <span class="abs-bar" style="width:28px;background:var(--yellow);"></span></td><td>162</td></tr>
+      <tr><td>Echoing Darkness</td><td>1875.9K</td><td>391.1K</td><td>21% <span class="abs-bar" style="width:21px;background:var(--yellow);"></span></td><td>117</td></tr>
+      <tr><td>Simulacrum Backlash</td><td>1769.7K</td><td>216.6K</td><td>12% <span class="abs-bar" style="width:12px;background:var(--yellow);"></span></td><td>82</td></tr>
+      <tr><td>Cosmic Barrier</td><td>1275.8K</td><td>473.1K</td><td>37% <span class="abs-bar" style="width:37px;background:var(--green);"></span></td><td>60</td></tr>
+      <tr><td>Void Expulsion</td><td>1251.0K</td><td>340.9K</td><td>27% <span class="abs-bar" style="width:27px;background:var(--yellow);"></span></td><td>44</td></tr>
+      <tr><td>Rift Slash</td><td>738.3K</td><td>126.0K</td><td>17% <span class="abs-bar" style="width:17px;background:var(--yellow);"></span></td><td>7</td></tr>
+      <tr><td>Dark Hand</td><td>674.5K</td><td>0</td><td>0% <span class="abs-bar" style="width:0px;background:var(--red);"></span></td><td>6</td></tr>
+      <tr><td>Silverstrike Ricochet</td><td>561.3K</td><td>185.3K</td><td>33% <span class="abs-bar" style="width:33px;background:var(--green);"></span></td><td>8</td></tr>
+      <tr><td>Gravity Collapse</td><td>545.4K</td><td>213.7K</td><td>39% <span class="abs-bar" style="width:39px;background:var(--green);"></span></td><td>5</td></tr>
+      <tr><td>Stellar Emission</td><td>498.5K</td><td>28.3K</td><td>6% <span class="abs-bar" style="width:6px;background:var(--red);"></span></td><td>15</td></tr>
+      <tr><td>Corrupting Essence</td><td>361.6K</td><td>0</td><td>0% <span class="abs-bar" style="width:0px;background:var(--red);"></span></td><td>3</td></tr>
+      <tr><td>Cosmic Radiation</td><td>295.7K</td><td>38.3K</td><td>13% <span class="abs-bar" style="width:13px;background:var(--yellow);"></span></td><td>15</td></tr>
+      <tr><td>Bursting Emptiness</td><td>209.8K</td><td>0</td><td>0% <span class="abs-bar" style="width:0px;background:var(--red);"></span></td><td>1</td></tr>
+      <tr><td>Interrupting Tremor</td><td>110.5K</td><td>53.8K</td><td>49% <span class="abs-bar" style="width:49px;background:var(--green);"></span></td><td>2</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">Melee is the largest damage source (9.05M, 21% absorbed). Higher absorption on Cosmic Barrier (37%) and Gravity Collapse (39%) suggests defensives are being used for some mechanics but not consistently across all.</p>
+</div>
+
+<!-- Self-Healing Breakdown -->
+<div class="section">
+  <h2>Self-Healing Breakdown (Fight 25 &mdash; 6:44)</h2>
+  <table>
+    <thead><tr><th>Ability</th><th>Effective</th><th>Overheal</th><th>OH %</th><th>Hits</th></tr></thead>
+    <tbody>
+      <tr><td>Consume Soul</td><td>3110.0K</td><td>3309.3K</td><td>52% <span class="overheal-bar" style="width:52px;"></span></td><td>250</td></tr>
+      <tr><td>Soul Barrier</td><td>2655.5K</td><td>0</td><td>0% <span class="overheal-bar" style="width:0px;"></span></td><td>131</td></tr>
+      <tr><td>Metamorphosis</td><td>1872.9K</td><td>0</td><td>0% <span class="overheal-bar" style="width:0px;"></span></td><td>6</td></tr>
+      <tr><td>Leech</td><td>1825.6K</td><td>554.7K</td><td>23% <span class="overheal-bar" style="width:23px;"></span></td><td>128</td></tr>
+      <tr><td>Frailty</td><td>1127.3K</td><td>3791.9K</td><td>77% <span class="overheal-bar" style="width:77px;"></span></td><td>226</td></tr>
+      <tr><td>First In, Last Out</td><td>674.6K</td><td>0</td><td>0% <span class="overheal-bar" style="width:0px;"></span></td><td>50</td></tr>
+      <tr><td>Protective Toadstools</td><td>548.9K</td><td>0</td><td>0% <span class="overheal-bar" style="width:0px;"></span></td><td>42</td></tr>
+      <tr><td>Last Resort</td><td>266.1K</td><td>0</td><td>0% <span class="overheal-bar" style="width:0px;"></span></td><td>1</td></tr>
+      <tr><td>Soul Cleave</td><td>263.5K</td><td>577.1K</td><td>69% <span class="overheal-bar" style="width:69px;"></span></td><td>62</td></tr>
+      <tr><td>Healing Elixir</td><td>234.1K</td><td>0</td><td>0% <span class="overheal-bar" style="width:0px;"></span></td><td>2</td></tr>
+      <tr><td>Live by the Glaive</td><td>178.1K</td><td>146.9K</td><td>45% <span class="overheal-bar" style="width:45px;"></span></td><td>18</td></tr>
+      <tr><td>Charred Warblades</td><td>175.8K</td><td>706.5K</td><td>80% <span class="overheal-bar" style="width:80px;"></span></td><td>266</td></tr>
+      <tr><td>Healthstone</td><td>96.8K</td><td>108.5K</td><td>53% <span class="overheal-bar" style="width:53px;"></span></td><td>1</td></tr>
+      <tr><td>Rune of Unleashed Fire</td><td>6.6K</td><td>0</td><td>0% <span class="overheal-bar" style="width:0px;"></span></td><td>1</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">Consume Soul (Soul Fragment healing) and Soul Barrier are the top self-heal sources. Frailty at 77% overheal is expected (passive healing from debuffed targets). Soul Cleave direct healing has 69% overheal, suggesting it is often used at high HP rather than timed for damage intake windows.</p>
+</div>
+
+<!-- Tank Swap Pattern -->
+<div class="section">
+  <h2>Tank Swap Pattern</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Taunt usage for Nucke (Torment) vs Glazedwhole (Dark Command) across 6 sampled long pulls.</p>
+
+  <table>
+    <thead><tr><th>Pull</th><th>Duration</th><th>Nucke Taunts</th><th>Glazed Taunts</th><th>Ratio</th></tr></thead>
+    <tbody>
+      <tr><td>f9</td><td>5:14</td><td>4</td><td>15</td><td style="color:var(--red)">0.27</td></tr>
+      <tr><td>f13</td><td>6:00</td><td>9</td><td>11</td><td style="color:var(--green)">0.82</td></tr>
+      <tr><td>f19</td><td>6:08</td><td>11</td><td>16</td><td style="color:var(--yellow)">0.69</td></tr>
+      <tr><td>f20</td><td>5:15</td><td>6</td><td>15</td><td style="color:var(--red)">0.40</td></tr>
+      <tr><td>f23</td><td>6:24</td><td>8</td><td>17</td><td style="color:var(--red)">0.47</td></tr>
+      <tr><td>f25</td><td>6:44</td><td>10</td><td>17</td><td style="color:var(--yellow)">0.59</td></tr>
+      <tr style="font-weight:600;border-top:2px solid var(--border);">
+        <td>Total</td><td></td><td>48</td><td>91</td><td style="color:var(--red)">0.53</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">Glazedwhole taunts roughly 2x as often as Nucke (91 vs 48). This could be by design if the strategy has Glazedwhole picking up more adds, but if boss tanking should be evenly split, the ratio should be closer to 1:1.</p>
+</div>
+
+<!-- Reference Comparison -->
+<div class="section">
+  <h2>Reference Comparison (De-Emphasized for Prog)</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Top 5 ranked Vengeance Demon Hunters on Mythic Crown. All are kill logs. Direct comparison is limited since this is progression data.</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th></tr></thead>
+    <tbody>
+      <tr class="highlight"><td>--</td><td style="color:var(--dh)">Nucke (prog avg)</td><td>18.9K</td><td>N/A (best 6:44)</td><td>291</td></tr>
+      <tr class="ref-row"><td><span class="ref-badge">#1</span></td><td style="color:var(--purple)">丿乄瑚灬琏丨-末日行者</td><td>54.8K</td><td>7:34</td><td>292</td></tr>
+      <tr class="ref-row"><td><span class="ref-badge">#2</span></td><td style="color:var(--purple)">Melvabeam-Twisting Nether</td><td>53.5K</td><td>8:25</td><td>290</td></tr>
+      <tr class="ref-row"><td><span class="ref-badge">#3</span></td><td style="color:var(--purple)">Riemi-Mal'Ganis</td><td>53.5K</td><td>8:32</td><td>290</td></tr>
+      <tr class="ref-row"><td><span class="ref-badge">#4</span></td><td style="color:var(--purple)">Deamonmeat-Draenor</td><td>51.1K</td><td>8:16</td><td>291</td></tr>
+      <tr class="ref-row"><td><span class="ref-badge">#5</span></td><td style="color:var(--purple)">Soulrending-Stormrage</td><td>50.2K</td><td>7:58</td><td>290</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Items</h2>
+
+  <div class="action-item critical">
+    <strong>1. Resolve P1 Echoing Darkness deaths (6/20 pulls).</strong>
+    Echoing Darkness from Vorelus is the #1 single-cause killer. All 6 deaths occur before 2:00 in P1. This is Vorelus's persistent AoE &mdash; ensure proper positioning relative to Vorelus, use Demon Spikes and Fiery Brand during high overlap windows, and coordinate with healers for externals. Dying in P1 wastes the entire pull.
+  </div>
+
+  <div class="action-item critical">
+    <strong>2. Increase Soul Cleave usage by ~45% (9.4 CPM &rarr; 14+ CPM target).</strong>
+    Soul Cleave is the primary resource spender for Vengeance. At nearly half the reference rate (17.0 CPM), Nucke is losing significant self-healing through Soul Fragment consumption, damage output, and Soul Barrier value. This single change would improve both DPS and survivability simultaneously.
+  </div>
+
+  <div class="action-item critical">
+    <strong>3. Fix Felblade usage (0.6 CPM vs 6.0 ref, -90%).</strong>
+    Felblade is a core rotational ability that generates Fury, deals damage, and provides gap-closing mobility. At 0.6 CPM it is nearly unused. This represents a massive Fury generation loss that cascades into fewer Soul Cleaves and Spirit Bombs. This should be a high-priority button.
+  </div>
+
+  <div class="action-item warning">
+    <strong>4. Close the 29% total CPM gap (101.2 &rarr; 130+ target).</strong>
+    Every missing GCD compounds: more Fracture casts (-23%) generate more Soul Fragments, which fuel more Soul Cleave/Spirit Bomb, which heals more and deals more damage. Immolation Aura at -47% should be kept on cooldown for Fury generation and passive AoE damage.
+  </div>
+
+  <div class="action-item warning">
+    <strong>5. Redistribute Metamorphosis usage toward P2/P3.</strong>
+    Meta averages 2.7 casts in P1 (30% death rate) but only 1.8 in P2 (50% death rate) and 1.3 in P3 (100% death rate). The 40% max HP increase and 200% armor is most valuable in the harder phases. Consider using only 1 Meta in P1 and banking the second for the P2 transition or early P3.
+  </div>
+
+  <div class="action-item info">
+    <strong>6. Plan defensives for P2 Cosmic Barrier and Silverstrike Ricochet.</strong>
+    3 deaths to Cosmic Barrier and 2 to Silverstrike Ricochet in P2 suggest these mechanics hit without active defensives. Pre-plan Fiery Brand or ensure Demon Spikes is active for known Cosmic Barrier timings. Silverstrike Ricochet requires positional awareness to avoid bounce-point damage.
+  </div>
+</div>
+
+<div class="footer">
+  Generated by WCL Analyzer &bull; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC">Warcraft Logs</a> &bull; Reference: Deamonmeat-Draenor (Rank #4 VDH, Mythic Crown kill)
+</div>
+
+</body>
+</html>

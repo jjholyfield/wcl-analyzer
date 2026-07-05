@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silencio - Resto Druid | Crown of the Cosmos Prog | June 18, 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.prog-tag { display:inline-block; background:rgba(210,153,34,0.15); color:var(--yellow); font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:8px; letter-spacing:0.5px; }
+h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+h1 .player-name { color:#ff7c0a; }
+h1 .spec { color:var(--dim); font-weight:400; font-size:18px; }
+.subtitle { color:var(--dim); font-size:14px; margin-bottom:24px; }
+h2 { font-size:18px; font-weight:600; margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+h3 { font-size:15px; font-weight:600; margin:20px 0 10px; color:var(--accent); }
+
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.card-label { font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.card-value { font-size:24px; font-weight:700; }
+.card-sub { font-size:12px; color:var(--dim); margin-top:2px; }
+
+.verdict { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 20px; margin-bottom:24px; border-left:4px solid var(--yellow); }
+.verdict p { font-size:14px; line-height:1.7; }
+
+table { width:100%; border-collapse:collapse; margin-bottom:16px; font-size:13px; }
+th { text-align:left; padding:8px 12px; background:var(--surface); border:1px solid var(--border); color:var(--dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:8px 12px; border:1px solid var(--border); }
+tr:nth-child(even) td { background:rgba(22,27,34,0.5); }
+.highlight-row td { background:rgba(255,124,10,0.08) !important; }
+
+.bar-chart { display:flex; align-items:flex-end; gap:3px; height:160px; margin:16px 0; padding-bottom:24px; position:relative; }
+.bar-wrap { display:flex; flex-direction:column; align-items:center; flex:1; min-width:0; height:100%; justify-content:flex-end; }
+.bar { width:100%; min-width:8px; border-radius:3px 3px 0 0; position:relative; cursor:pointer; transition:opacity 0.2s; }
+.bar:hover { opacity:0.8; }
+.bar-label { font-size:9px; color:var(--dim); margin-top:4px; writing-mode:vertical-rl; text-orientation:mixed; transform:rotate(180deg); max-height:60px; overflow:hidden; }
+.bar-tooltip { display:none; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:#1c2128; border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:11px; white-space:nowrap; z-index:10; pointer-events:none; }
+.bar:hover .bar-tooltip { display:block; }
+.avg-line { position:absolute; width:100%; border-top:2px dashed var(--accent); z-index:5; }
+.avg-label { position:absolute; right:0; top:-16px; font-size:10px; color:var(--accent); }
+
+.phase-table th.phase-p1 { background:rgba(63,185,80,0.12); }
+.phase-table th.phase-int { background:rgba(188,140,255,0.12); }
+.phase-table th.phase-p2 { background:rgba(88,166,255,0.12); }
+.phase-table th.phase-p3 { background:rgba(248,81,73,0.12); }
+
+.cd-pill { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:500; margin:2px; white-space:nowrap; }
+.cd-dead { background:rgba(248,81,73,0.15); color:var(--red); }
+.cd-none { background:rgba(139,148,158,0.1); color:var(--dim); }
+.cd-druid { background:rgba(255,125,10,0.15); color:#ff7c0a; }
+.cd-shaman { background:rgba(0,112,222,0.15); color:#0070de; }
+.cd-paladin { background:rgba(244,140,186,0.15); color:#f48cba; }
+.cd-monk { background:rgba(0,255,150,0.15); color:#00ff96; }
+.cd-priest { background:rgba(255,255,255,0.1); color:#e0e0e0; }
+
+.death-timeline { font-family:'Consolas','Courier New',monospace; font-size:12px; background:#0d1117; border:1px solid var(--border); border-radius:8px; padding:16px; margin:12px 0; overflow-x:auto; }
+.death-timeline .dmg { color:var(--red); }
+.death-timeline .heal { color:var(--green); }
+.death-timeline .abs { color:var(--cyan); }
+.death-timeline .dead { color:var(--red); font-weight:700; font-size:14px; }
+
+.action-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+.action-card.critical { border-left:4px solid var(--red); }
+.action-card.important { border-left:4px solid var(--accent); }
+.action-card.good { border-left:4px solid var(--green); }
+.action-title { font-weight:600; font-size:14px; margin-bottom:6px; }
+.action-body { font-size:13px; color:var(--dim); line-height:1.6; }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.cast-table .missing { color:var(--red); font-weight:600; }
+.cast-table .over { color:var(--yellow); }
+.cast-table .good { color:var(--green); }
+
+.footer { margin-top:40px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); }
+
+.oh-bar { display:inline-block; height:14px; border-radius:2px; vertical-align:middle; }
+.oh-effective { background:var(--green); }
+.oh-wasted { background:var(--red); opacity:0.6; }
+
+@media (max-width:768px) {
+  .cards { grid-template-columns:repeat(2,1fr); }
+  .two-col { grid-template-columns:1fr; }
+}
+
+.timeline-bar { position:relative; height:48px; background:var(--surface); border:1px solid var(--border); border-radius:8px; margin:16px 0; overflow:hidden; }
+.timeline-phase { position:absolute; top:0; height:100%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; letter-spacing:0.5px; }
+.timeline-marker { position:absolute; top:0; width:2px; height:100%; z-index:3; }
+.timeline-skull { position:absolute; top:50%; transform:translate(-50%,-50%); font-size:16px; z-index:4; }
+.timeline-time { position:absolute; bottom:-18px; font-size:10px; color:var(--dim); transform:translateX(-50%); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18, 2026 Log Analysis</a>
+
+<h1>
+  <span class="player-name">Silencio</span>
+  <span class="spec">Restoration Druid</span>
+  <span class="prog-tag">PROGRESSION</span>
+</h1>
+<div class="subtitle">
+  Mythic Crown of the Cosmos &middot; 27 pulls, no kill &middot; Best: 0.01% (pulls 5, 10) &middot; June 18, 2026
+  <br>Report: <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">jqFfXprk4hcaWx3C</a>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg HPS</div>
+    <div class="card-value">149.1K</div>
+    <div class="card-sub">26 qualifying pulls (&gt;60s)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">287</div>
+    <div class="card-sub">4pc Luminous Bloom + 2pc trinket</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value" style="color:var(--red)">0 / 27</div>
+    <div class="card-sub">Died in every pull</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Avg Overheal</div>
+    <div class="card-value" style="color:var(--red)">44.6%</div>
+    <div class="card-sub">Above 40% threshold</div>
+  </div>
+</div>
+
+<!-- Bottom Line Verdict -->
+<div class="verdict">
+  <p><strong>Died in all 27 pulls.</strong> Silencio never survived a full attempt on this session. The #1 killer is Void Remnants (9 deaths), followed by Simulacrum Backlash (5) and Voidstalker Sting (3) -- indicating consistent problems with environmental dodging in P1 and add management in P2. HPS across qualifying pulls averaged 149K, which is well below the top-5 Resto Druid reference average of ~225K on kills. Overheal at 44.6% is elevated, driven by high Rejuvenation (51%), Swiftmend (58%), and Tranquility (81%) overheal on the longer pulls. The core rotation is present -- Rejuvenation, Regrowth, Wild Growth, Swiftmend all appear at reasonable cast counts -- but survival must improve before throughput matters. DPS contribution is minimal at ~4K avg, with zero Wrath/Moonfire/Sunfire filler casts detected in any pull.</p>
+</div>
+
+<!-- Phase Timeline (visual) -->
+<h2>Boss Phase Timeline</h2>
+<div class="timeline-bar" style="height:48px;">
+  <div class="timeline-phase" style="left:0;width:36.7%;background:rgba(63,185,80,0.12);color:var(--green);">P1: Sentinels (0:00-2:14)</div>
+  <div class="timeline-phase" style="left:36.7%;width:10.7%;background:rgba(188,140,255,0.12);color:var(--purple);">Inter</div>
+  <div class="timeline-phase" style="left:47.4%;width:37.3%;background:rgba(88,166,255,0.12);color:var(--accent);">P2: Rift (2:53-5:09)</div>
+  <div class="timeline-phase" style="left:84.7%;width:15.3%;background:rgba(248,81,73,0.12);color:var(--red);">P3</div>
+  <div class="timeline-marker" style="left:36.7%;background:var(--border);"></div>
+  <div class="timeline-marker" style="left:47.4%;background:var(--border);"></div>
+  <div class="timeline-marker" style="left:84.7%;background:var(--border);"></div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<h2>Per-Phase Performance Breakdown</h2>
+
+<h3>Phase Reach Rate</h3>
+<table class="phase-table">
+<tr>
+  <th>Phase</th>
+  <th class="phase-p1">P1: Sentinels</th>
+  <th class="phase-int">Intermission</th>
+  <th class="phase-p2">P2: Rift</th>
+  <th class="phase-p3">P3: Devouring</th>
+</tr>
+<tr>
+  <td>Fight Reached Phase</td>
+  <td>27 / 27</td>
+  <td>19 / 27</td>
+  <td>16 / 27</td>
+  <td>6 / 27</td>
+</tr>
+<tr>
+  <td>Silencio Deaths in Phase</td>
+  <td style="color:var(--red)">11</td>
+  <td style="color:var(--yellow)">2</td>
+  <td style="color:var(--red)">9</td>
+  <td style="color:var(--red)">5</td>
+</tr>
+<tr>
+  <td>Death Rate in Phase</td>
+  <td style="color:var(--red)">41% of pulls</td>
+  <td style="color:var(--yellow)">11% of pulls reaching</td>
+  <td style="color:var(--red)">56% of pulls reaching</td>
+  <td style="color:var(--red)">83% of pulls reaching</td>
+</tr>
+</table>
+
+<h3>Death Causes by Phase</h3>
+<table>
+<tr><th>Phase</th><th>Ability</th><th>Deaths</th><th>Notes</th></tr>
+<tr><td rowspan="4" style="font-weight:600;color:var(--green)">P1</td>
+  <td>Void Remnants</td><td style="color:var(--red)">6</td><td>Standing in void pools -- avoidable positional damage</td></tr>
+<tr><td>Echoing Darkness</td><td style="color:var(--red)">3</td><td>Vorelus add AoE -- avoid proximity to adds</td></tr>
+<tr><td>Unknown</td><td>2</td><td>Rapid multi-source damage (likely stacked mechanics)</td></tr>
+<tr style="border-bottom:2px solid var(--border)"><td colspan="3"></td></tr>
+<tr><td rowspan="1" style="font-weight:600;color:var(--purple)">Intermission</td>
+  <td>Orbiting Matter</td><td>1</td><td>One-shot mechanic during Stellar Emission channel</td></tr>
+<tr style="border-bottom:2px solid var(--border)"><td>Cosmic Barrier</td><td>1</td><td>Rift Simulacrum proximity damage</td></tr>
+<tr><td rowspan="3" style="font-weight:600;color:var(--accent)">P2</td>
+  <td>Simulacrum Backlash</td><td style="color:var(--red)">5</td><td>AoE from Rift Simulacrums -- positioning/kill priority</td></tr>
+<tr><td>Voidstalker Sting</td><td>2</td><td>Targeted DoT with burst -- needs defensive or healing</td></tr>
+<tr style="border-bottom:2px solid var(--border)"><td>Void Remnants + Barrage</td><td>2</td><td>Overlapping damage sources</td></tr>
+<tr><td rowspan="3" style="font-weight:600;color:var(--red)">P3</td>
+  <td>Voidstalker Sting</td><td>1</td><td>Burst damage from Alleria's targeting</td></tr>
+<tr><td>Void Remnants</td><td>2</td><td>Void pools still killing in P3</td></tr>
+<tr><td>Dimensional Slash</td><td>1</td><td>Ground cleave -- must dodge</td></tr>
+</table>
+
+<!-- HPS Across All Pulls -->
+<h2>HPS Across All Pulls</h2>
+<div class="bar-chart" id="hps-chart">
+  <div class="avg-line" style="bottom:calc(149057/204000 * 100%); left:0;"><span class="avg-label">Avg: 149K</span></div>
+
+  <div class="bar-wrap"><div class="bar" style="height:calc(134571/204000 * 100%);background:var(--red);"><div class="bar-tooltip">F1: 135K HPS<br>1:03 / 87%<br>Died: 0:52 (Void Remnants)</div></div><div class="bar-label">1</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(189199/204000 * 100%);background:var(--orange);"><div class="bar-tooltip">F2: 189K HPS<br>1:07 / 81%<br>Died: 1:03 (Void Remnants)</div></div><div class="bar-label">2</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(169655/204000 * 100%);background:var(--orange);"><div class="bar-tooltip">F3: 170K HPS<br>3:47 / 58%<br>Died: 1:40 (Void Remnants)</div></div><div class="bar-label">3</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(203199/204000 * 100%);background:var(--green);"><div class="bar-tooltip">F4: 203K HPS<br>1:08 / 80%<br>Died: 0:53 (Unknown)</div></div><div class="bar-label">4</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(148910/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F5: 149K HPS<br>2:17 / 62%<br>Died: 2:16 (Void Remnants)</div></div><div class="bar-label">5</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(176263/204000 * 100%);background:var(--orange);"><div class="bar-tooltip">F6: 176K HPS<br>0:47 / 86%<br>Died: 0:35 (Echoing Dark.)</div></div><div class="bar-label">6</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(147239/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F7: 147K HPS<br>2:34 / 62%<br>Died: 2:10 (Unknown)</div></div><div class="bar-label">7</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(135689/204000 * 100%);background:var(--red);"><div class="bar-tooltip">F8: 136K HPS<br>3:59 / 55%<br>Died: 3:53 (Void Remnants)</div></div><div class="bar-label">8</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(128619/204000 * 100%);background:var(--red);"><div class="bar-tooltip">F9: 129K HPS<br>2:59 / 62%<br>Died: 2:29 (Orbiting Matter)</div></div><div class="bar-label">9</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(151906/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F10: 152K HPS<br>2:18 / 62%<br>Died: 2:13 (Void Remnants)</div></div><div class="bar-label">10</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(144878/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F11: 145K HPS<br>4:05 / 55%<br>Died: 3:59 (Cosmic Barrier)</div></div><div class="bar-label">11</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(144439/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F12: 144K HPS<br>1:03 / 87%<br>Died: 0:55 (Unknown)</div></div><div class="bar-label">12</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(151777/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F13: 152K HPS<br>1:04 / 87%<br>Died: 0:56 (Echoing Dark.)</div></div><div class="bar-label">13</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(147884/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F14: 148K HPS<br>4:02 / 57%<br>Died: 4:00 (Voidstalker Sting)</div></div><div class="bar-label">14</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(168304/204000 * 100%);background:var(--orange);"><div class="bar-tooltip">F15: 168K HPS<br>4:52 / 46%<br>Died: 4:52 (Sim. Backlash)</div></div><div class="bar-label">15</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(166691/204000 * 100%);background:var(--orange);"><div class="bar-tooltip">F16: 167K HPS<br>5:03 / 43%<br>Died: 4:54 (Sim. Backlash)</div></div><div class="bar-label">16</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(118194/204000 * 100%);background:var(--red);"><div class="bar-tooltip">F17: 118K HPS<br>1:01 / 88%<br>Died: 1:01 (Echoing Dark.)</div></div><div class="bar-label">17</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(145538/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F18: 146K HPS<br>5:56 / 39%<br>Died: 5:10 (Unknown)</div></div><div class="bar-label">18</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(151487/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F19: 151K HPS<br>5:16 / 44%<br>Died: 5:13 (Sim. Backlash)</div></div><div class="bar-label">19</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(139577/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F20: 140K HPS<br>5:23 / 37%<br>Died: 5:01 (Sim. Backlash)</div></div><div class="bar-label">20</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(129974/204000 * 100%);background:var(--red);"><div class="bar-tooltip">F21: 130K HPS<br>4:49 / 43%<br>Died: 4:42 (Sim. Backlash)</div></div><div class="bar-label">21</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(154334/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F22: 154K HPS<br>4:13 / 50%<br>Died: 4:10 (Void Remnants)</div></div><div class="bar-label">22</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(125343/204000 * 100%);background:var(--red);"><div class="bar-tooltip">F23: 125K HPS<br>6:05 / 37%<br>Died: 5:18 (Dimensional Slash)</div></div><div class="bar-label">23</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(148905/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F24: 149K HPS<br>4:44 / 42%<br>Died: 4:38 (Void Remnants)</div></div><div class="bar-label">24</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(145185/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F25: 145K HPS<br>1:01 / 86%<br>Died: 0:59 (Void Remnants)</div></div><div class="bar-label">25</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(128220/204000 * 100%);background:var(--red);"><div class="bar-tooltip">F27: 128K HPS<br>6:01 / 31%<br>Died: 5:55 (Voidstalker Sting)</div></div><div class="bar-label">27</div></div>
+  <div class="bar-wrap"><div class="bar" style="height:calc(155772/204000 * 100%);background:var(--yellow);"><div class="bar-tooltip">F28: 156K HPS<br>5:43 / 37%<br>Died: 5:13 (Voidstalker Sting)</div></div><div class="bar-label">28</div></div>
+</div>
+<p style="font-size:12px;color:var(--dim);margin-top:4px;">Each bar represents one pull. Hover for details. All bars are red-tinted (died in every pull). Dashed line = session average (149K).</p>
+
+<!-- CD Discipline Analysis -->
+<h2>CD Discipline Analysis</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Based on cast analysis across the longest pulls (F23: 6:05, F28: 5:43, F27: 6:01).</p>
+
+<table>
+<tr><th>Cooldown</th><th>Type</th><th>F23 Timings</th><th>F28 Timings</th><th>Assessment</th></tr>
+<tr>
+  <td style="color:#ff7c0a;font-weight:600;">Tranquility</td>
+  <td>Major AoE (3 min CD)</td>
+  <td>0:13, 4:07</td>
+  <td>0:25, 3:34</td>
+  <td style="color:var(--yellow)">2 uses per pull -- good frequency. P1 usage may waste mana before hard phases.</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;font-weight:600;">Convoke the Spirits</td>
+  <td>Major burst (2 min CD)</td>
+  <td>0:10, 1:13, 4:04, 5:07</td>
+  <td>0:11, 1:14, 2:54, 3:55, 4:55</td>
+  <td style="color:var(--green)">4-5 uses per pull -- excellent usage rate. Consistently on CD.</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;font-weight:600;">Ironbark</td>
+  <td>External (1 min CD)</td>
+  <td>1:24, 3:20, 4:57</td>
+  <td>1:33, 3:58</td>
+  <td style="color:var(--green)">Regular use. Good external discipline.</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;font-weight:600;">Innervate</td>
+  <td>Mana (3 min CD)</td>
+  <td>0:48, 4:44</td>
+  <td>0:34, 3:54</td>
+  <td style="color:var(--green)">2 uses per pull -- optimal.</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;font-weight:600;">Barkskin</td>
+  <td>Personal (1 min CD)</td>
+  <td>4:43</td>
+  <td>0:07, 1:46, 5:09</td>
+  <td style="color:var(--red)">1 use in F23 vs 3 in F28. Inconsistent personal defensive usage.</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;font-weight:600;">Nature's Swiftness</td>
+  <td>Instant heal (1 min CD)</td>
+  <td>4 uses</td>
+  <td>5 uses</td>
+  <td style="color:var(--green)">Good frequency -- using for emergency heals.</td>
+</tr>
+</table>
+
+<!-- Healer Team Ranking -->
+<h2>Healer Team Comparison (Long Pulls)</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Average HPS across the 6 longest fights (F18, F19, F20, F23, F27, F28).</p>
+
+<table>
+<tr><th>#</th><th>Healer</th><th>Spec</th><th>Avg HPS</th><th>Avg Overheal</th><th>Consistency</th></tr>
+<tr>
+  <td>1</td>
+  <td style="color:#f48cba;">Dueche</td>
+  <td>Holy Paladin</td>
+  <td style="font-weight:600;">145,586</td>
+  <td>33.8%</td>
+  <td style="color:var(--green)">Stable</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td style="color:#00ff98;">Senssay</td>
+  <td>Mistweaver Monk</td>
+  <td style="font-weight:600;">141,903</td>
+  <td>31.6%</td>
+  <td style="color:var(--green)">Stable</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td style="color:#0070dd;">Brewtote</td>
+  <td>Resto Shaman</td>
+  <td style="font-weight:600;">136,224</td>
+  <td>24.7%</td>
+  <td style="color:var(--green)">Lowest OH -- best efficiency</td>
+</tr>
+<tr class="highlight-row">
+  <td>4</td>
+  <td style="color:#ff7c0a;font-weight:700;">Silencio</td>
+  <td>Resto Druid</td>
+  <td style="font-weight:600;">130,534</td>
+  <td style="color:var(--red)">45.8%</td>
+  <td style="color:var(--red)">Lowest HPS, highest OH</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td style="color:#fff;">Voidheart</td>
+  <td>Disc Priest</td>
+  <td style="font-weight:600;">93,575</td>
+  <td>31.5%</td>
+  <td>Disc expected lower raw HPS</td>
+</tr>
+</table>
+
+<!-- Reference Comparison -->
+<h2>Reference Comparison (De-emphasized)</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Top 5 Resto Druids on Mythic Crown of the Cosmos kills. Context only -- prog performance is not directly comparable to kill performance.</p>
+
+<table>
+<tr><th>#</th><th>Player</th><th>Server</th><th>HPS</th><th>Kill Time</th><th>ilvl</th></tr>
+<tr><td>1</td><td style="color:#ff7c0a;">Hottley</td><td>Frostmourne</td><td>236,623</td><td>7:50</td><td>289</td></tr>
+<tr><td>2</td><td style="color:#ff7c0a;">Babuly</td><td>Gordunni</td><td>226,075</td><td>8:17</td><td>289</td></tr>
+<tr><td>3</td><td style="color:#ff7c0a;">Bingson</td><td>Azshara</td><td>223,548</td><td>7:43</td><td>290</td></tr>
+<tr><td>4</td><td style="color:#ff7c0a;">Asdfqwerzxcv</td><td>Lightbringer</td><td>221,294</td><td>8:18</td><td>291</td></tr>
+<tr><td>5</td><td style="color:#ff7c0a;">Lightsk</td><td>Stormrage</td><td>220,520</td><td>8:00</td><td>290</td></tr>
+<tr class="highlight-row">
+  <td>--</td>
+  <td style="color:#ff7c0a;font-weight:700;">Silencio (prog)</td>
+  <td>--</td>
+  <td style="color:var(--dim);">149,057 avg</td>
+  <td style="color:var(--dim);">no kill</td>
+  <td>287</td>
+</tr>
+</table>
+<p style="font-size:12px;color:var(--dim);margin-top:8px;">Reference average is 225.6K HPS on 7:50-8:18 kill fights. Silencio's best pull HPS was 203K (F4, short P1 wipe), and best long-pull HPS was 168K (F15, 4:52). The ~34% gap is partially explained by dying before full fight duration and lower ilvl (287 vs 289-291 avg).</p>
+
+<!-- Cast Profile (Best Pull F28) -->
+<h2>Cast Profile -- Fight 28 (5:43, best long pull)</h2>
+<table class="cast-table">
+<tr><th>Ability</th><th>Casts</th><th>CPM (alive)</th><th>Role</th><th>Assessment</th></tr>
+<tr><td style="color:#ff7c0a;">Rejuvenation</td><td>82</td><td>15.7</td><td>Primary filler / blanket HoT</td><td style="color:var(--green)">High volume -- good Abundance stacking</td></tr>
+<tr><td style="color:#ff7c0a;">Regrowth</td><td>64</td><td>12.3</td><td>Spot heal / Abundance consumer</td><td style="color:var(--green)">Strong usage -- Abundance cycle active</td></tr>
+<tr><td style="color:#ff7c0a;">Rejuvenation (Germ.)</td><td>31</td><td>5.9</td><td>Second HoT layer</td><td style="color:var(--green)">Good uptime</td></tr>
+<tr><td style="color:#ff7c0a;">Wild Growth</td><td>21</td><td>4.0</td><td>Primary AoE heal</td><td style="color:var(--green)">Near CD usage -- well maintained</td></tr>
+<tr><td style="color:#ff7c0a;">Swiftmend</td><td>17</td><td>3.3</td><td>Core rotational / feeds mastery</td><td style="color:var(--green)">On cooldown</td></tr>
+<tr><td style="color:#ff7c0a;">Tranquility</td><td>15 (ticks)</td><td>--</td><td>Major raid CD</td><td style="color:var(--green)">2 full channels</td></tr>
+<tr><td style="color:#ff7c0a;">Lifebloom</td><td>7</td><td>1.3</td><td>Tank maintenance</td><td style="color:var(--yellow)">Low -- should be refreshed more consistently</td></tr>
+<tr><td style="color:#ff7c0a;">Convoke the Spirits</td><td>5</td><td>1.0</td><td>Major burst CD</td><td style="color:var(--green)">Excellent -- 5 uses in 5:13 alive</td></tr>
+<tr><td style="color:#ff7c0a;">Nature's Cure</td><td>6</td><td>1.2</td><td>Dispel</td><td style="color:var(--green)">Active dispelling</td></tr>
+<tr><td style="color:#ff7c0a;">Barkskin</td><td>3</td><td>0.6</td><td>Personal defensive</td><td style="color:var(--green)">Good -- 3 uses in F28 (improved from F23)</td></tr>
+<tr class="missing"><td>Wrath / Moonfire / Sunfire</td><td style="color:var(--red);font-weight:700;">0</td><td>0.0</td><td>DPS filler</td><td style="color:var(--red)">ZERO damage filler spells cast in any pull</td></tr>
+</table>
+
+<!-- Healing Breakdown (F28) -->
+<h2>Healing Breakdown -- Fight 28 (5:43)</h2>
+<table>
+<tr><th>Ability</th><th>Effective</th><th>Overheal %</th><th>Visual</th><th>Notes</th></tr>
+<tr>
+  <td style="color:#ff7c0a;">Regrowth</td>
+  <td>9.64M</td>
+  <td>35.0%</td>
+  <td><span class="oh-bar oh-effective" style="width:65px"></span><span class="oh-bar oh-wasted" style="width:35px"></span></td>
+  <td style="color:var(--green)">Top heal -- Abundance cycle working</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Rejuvenation</td>
+  <td>8.78M</td>
+  <td>33.8%</td>
+  <td><span class="oh-bar oh-effective" style="width:66px"></span><span class="oh-bar oh-wasted" style="width:34px"></span></td>
+  <td style="color:var(--green)">Normal for HoT blanket</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Wild Growth</td>
+  <td>6.68M</td>
+  <td>25.7%</td>
+  <td><span class="oh-bar oh-effective" style="width:74px"></span><span class="oh-bar oh-wasted" style="width:26px"></span></td>
+  <td style="color:var(--green)">Low OH -- timed well with damage</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Everbloom</td>
+  <td>5.31M</td>
+  <td>11.6%</td>
+  <td><span class="oh-bar oh-effective" style="width:88px"></span><span class="oh-bar oh-wasted" style="width:12px"></span></td>
+  <td style="color:var(--green)">Excellent efficiency</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Tranquility</td>
+  <td>3.58M</td>
+  <td style="color:var(--yellow)">58.8%</td>
+  <td><span class="oh-bar oh-effective" style="width:41px"></span><span class="oh-bar oh-wasted" style="width:59px"></span></td>
+  <td style="color:var(--yellow)">High for a major CD -- timing could improve</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Efflorescence</td>
+  <td>2.39M</td>
+  <td>20.5%</td>
+  <td><span class="oh-bar oh-effective" style="width:80px"></span><span class="oh-bar oh-wasted" style="width:20px"></span></td>
+  <td style="color:var(--green)">Well-placed</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Symbiotic Blooms</td>
+  <td>1.93M</td>
+  <td>30.8%</td>
+  <td><span class="oh-bar oh-effective" style="width:69px"></span><span class="oh-bar oh-wasted" style="width:31px"></span></td>
+  <td>Wildstalker passive -- acceptable</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Lifebloom</td>
+  <td>1.67M</td>
+  <td style="color:var(--yellow)">65.5%</td>
+  <td><span class="oh-bar oh-effective" style="width:35px"></span><span class="oh-bar oh-wasted" style="width:65px"></span></td>
+  <td style="color:var(--yellow)">High OH -- Lifebloom ticks on full HP targets</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Grove Guardians</td>
+  <td>1.56M</td>
+  <td>6.4%</td>
+  <td><span class="oh-bar oh-effective" style="width:94px"></span><span class="oh-bar oh-wasted" style="width:6px"></span></td>
+  <td style="color:var(--green)">Very efficient -- well-timed treant usage</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Bursting Growth</td>
+  <td>1.40M</td>
+  <td>13.9%</td>
+  <td><span class="oh-bar oh-effective" style="width:86px"></span><span class="oh-bar oh-wasted" style="width:14px"></span></td>
+  <td style="color:var(--green)">Wildstalker passive -- excellent efficiency</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Leech</td>
+  <td>1.21M</td>
+  <td>23.8%</td>
+  <td><span class="oh-bar oh-effective" style="width:76px"></span><span class="oh-bar oh-wasted" style="width:24px"></span></td>
+  <td>Passive stat</td>
+</tr>
+<tr>
+  <td style="color:#ff7c0a;">Swiftmend</td>
+  <td>0.94M</td>
+  <td style="color:var(--yellow)">56.0%</td>
+  <td><span class="oh-bar oh-effective" style="width:44px"></span><span class="oh-bar oh-wasted" style="width:56px"></span></td>
+  <td style="color:var(--yellow)">Used on high-health targets -- aim for injured ones</td>
+</tr>
+</table>
+
+<!-- DPS Contribution -->
+<h2>DPS Contribution</h2>
+<div class="cards" style="grid-template-columns:repeat(3,1fr);">
+  <div class="card">
+    <div class="card-label">Avg DPS (qualifying)</div>
+    <div class="card-value" style="color:var(--red)">3,969</div>
+    <div class="card-sub">14 pulls with DPS data</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best DPS</div>
+    <div class="card-value">6,344</div>
+    <div class="card-sub">Fight 11 (4:05)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Filler Casts</div>
+    <div class="card-value" style="color:var(--red)">0</div>
+    <div class="card-sub">Zero Wrath / Moonfire / Sunfire</div>
+  </div>
+</div>
+<div class="action-card critical">
+  <div class="action-title">Zero DPS Filler</div>
+  <div class="action-body">Silencio cast zero damage filler spells (Wrath, Moonfire, Sunfire) across the entire session. All DPS comes from passive sources (Symbiotic Relationship, Bursting Growth damage component, trinket procs). During P1 when damage is manageable, healers should be weaving in Wrath/Sunfire casts. Even 2-3 Wrath casts per minute during downtime would contribute meaningful damage and Astral Power.</div>
+</div>
+
+<!-- Death Pattern Deep Dive -->
+<h2>Death Pattern Analysis</h2>
+
+<h3>Most Common: Void Remnants (9 deaths -- P1 and P2)</h3>
+<div class="action-card critical">
+  <div class="action-title">Void Remnants is the #1 killer</div>
+  <div class="action-body">Void Remnants hits for 233K unmitigated per tick, which is a one-shot on a leather wearer at this ilvl. It is a ground effect (void pool) that should be dodged entirely. Silencio died to this mechanic in pulls 1, 2, 3, 5, 8, 10, 22, 24, and 25 -- spanning the entire session with no improvement trend. This is avoidable damage from poor positioning. The deaths occur in both P1 (6 times) and P2 (2 times), indicating this is not a phase-specific learning issue but a fundamental positional habit.</div>
+</div>
+
+<h3>Second Most Common: Simulacrum Backlash (5 deaths -- P2)</h3>
+<div class="action-card important">
+  <div class="action-title">Simulacrum Backlash kills in Phase 2</div>
+  <div class="action-body">All 5 Simulacrum Backlash deaths occurred in P2 (pulls 15, 16, 19, 20, 21), typically at 4:42-5:01 into the fight. This is AoE damage from Rift Simulacrums. The pattern suggests Silencio is standing too close to adds during the Rift phase. Using Barkskin or Bear Form (Frenzied Regeneration) proactively when Simulacrums are active would help, along with better positioning away from them.</div>
+</div>
+
+<h3>Voidstalker Sting (3 deaths -- P2/P3)</h3>
+<div class="action-card important">
+  <div class="action-title">Voidstalker Sting kills in later phases</div>
+  <div class="action-body">Deaths at 4:00 (F14), 5:55 (F27), and 5:13 (F28). Voidstalker Sting is a targeted DoT from Alleria that deals 124K unmitigated per tick. Silencio needs to use Barkskin and self-heal aggressively when targeted by this. The F28 death shows 31K damage from Voidstalker Sting alone -- suggesting stacking with other damage sources.</div>
+</div>
+
+<!-- Example Death Forensic (F28, longest with good data) -->
+<h3>Death Forensic: Fight 28 (5:13 into pull)</h3>
+<div class="death-timeline">
+<span class="dmg">5:12.6  Voidstalker Sting    -18,542  (31K unmitigated)</span><br>
+<span class="dmg">5:12.8  Cosmic Radiation      -18,542  (31K unmitigated)</span><br>
+<span class="dead">5:13.0  DEAD -- overlapping Voidstalker Sting + Cosmic Radiation</span><br>
+<br>
+<span style="color:var(--dim)">Analysis: Voidstalker Sting DoT ticking simultaneously with Cosmic Radiation</span><br>
+<span style="color:var(--dim)">P3 damage. Combined burst exceeded remaining HP after sustained damage.</span><br>
+<span style="color:var(--dim)">Barkskin was used at 5:09 -- only 4s before death. Good defensive timing.</span><br>
+<span style="color:var(--dim)">Healthstone used earlier. Potent Healing Potion used. All personals exhausted.</span>
+</div>
+
+<!-- Ramp Analysis -->
+<h2>Ramp Timing Analysis</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Resto Druid healing ramp: pre-hot with Rejuvenation/Wild Growth, then deploy Convoke/Tranquility on damage windows.</p>
+
+<h3>Tranquility Timing</h3>
+<table>
+<tr><th>Pull</th><th>Tranquility #1</th><th>Phase</th><th>Tranquility #2</th><th>Phase</th><th>Assessment</th></tr>
+<tr><td>F23</td><td>0:13</td><td style="color:var(--green)">P1</td><td>4:07</td><td style="color:var(--accent)">P2</td><td style="color:var(--yellow)">First Tranq at 0:13 is very early -- damage is low in P1 opener. Save for Null Corona or Intermission?</td></tr>
+<tr><td>F28</td><td>0:25</td><td style="color:var(--green)">P1</td><td>3:34</td><td style="color:var(--accent)">P2</td><td style="color:var(--yellow)">Again early P1. Second usage better-timed for P2 damage.</td></tr>
+</table>
+
+<h3>Convoke the Spirits Timing</h3>
+<table>
+<tr><th>Pull</th><th>Use 1</th><th>Use 2</th><th>Use 3</th><th>Use 4</th><th>Use 5</th></tr>
+<tr><td>F23</td><td>0:10 (P1)</td><td>1:13 (P1)</td><td>4:04 (P2)</td><td>5:07 (P3)</td><td>--</td></tr>
+<tr><td>F28</td><td>0:11 (P1)</td><td>1:14 (P1)</td><td>2:54 (P2)</td><td>3:55 (P2)</td><td>4:55 (P3)</td></tr>
+</table>
+<p style="font-size:12px;color:var(--dim);margin-top:8px;">Convoke usage is excellent -- consistently on cooldown with 4-5 uses per long pull. The 2-minute CD aligns well with phase transitions.</p>
+
+<!-- Team CD Coordination (F23 longest pull) -->
+<h2>Team CD Coordination -- Fight 23 (6:05)</h2>
+<p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Major healing CDs from all healers on the longest pull. Phase boundaries marked.</p>
+
+<table>
+<tr>
+  <th>Healer</th>
+  <th style="background:rgba(63,185,80,0.12);">P1 (0:00-2:14)</th>
+  <th style="background:rgba(188,140,255,0.12);">Intermission (2:14-2:53)</th>
+  <th style="background:rgba(88,166,255,0.12);">P2 (2:53-5:09)</th>
+  <th style="background:rgba(248,81,73,0.12);">P3 (5:09+)</th>
+</tr>
+<tr class="highlight-row">
+  <td style="color:#ff7c0a;font-weight:600;">Silencio (RDruid)</td>
+  <td>
+    <span class="cd-pill cd-druid">Convoke 0:10</span>
+    <span class="cd-pill cd-druid">Tranq 0:13</span>
+    <span class="cd-pill cd-druid">Convoke 1:13</span>
+    <span class="cd-pill cd-druid">Ironbark 1:24</span>
+  </td>
+  <td><span class="cd-pill cd-none">No major CD</span></td>
+  <td>
+    <span class="cd-pill cd-druid">Ironbark 3:20</span>
+    <span class="cd-pill cd-druid">Convoke 4:04</span>
+    <span class="cd-pill cd-druid">Tranq 4:07</span>
+    <span class="cd-pill cd-druid">Barkskin 4:43</span>
+    <span class="cd-pill cd-druid">Ironbark 4:57</span>
+  </td>
+  <td>
+    <span class="cd-pill cd-druid">Convoke 5:07</span>
+    <span class="cd-pill cd-dead">DEAD 5:18</span>
+  </td>
+</tr>
+<tr>
+  <td style="color:#f48cba;">Dueche (HPal)</td>
+  <td>
+    <span class="cd-pill cd-paladin">Avenging Wrath</span>
+    <span class="cd-pill cd-paladin">Aura Mastery</span>
+  </td>
+  <td><span class="cd-pill cd-paladin">Devotion Aura</span></td>
+  <td><span class="cd-pill cd-paladin">Avenging Wrath</span></td>
+  <td><span class="cd-pill cd-paladin">Aura Mastery</span></td>
+</tr>
+<tr>
+  <td style="color:#00ff98;">Senssay (MW Monk)</td>
+  <td>
+    <span class="cd-pill cd-monk">Celestial Conduit</span>
+    <span class="cd-pill cd-monk">Yu'lon</span>
+  </td>
+  <td><span class="cd-pill cd-monk">Revival</span></td>
+  <td>
+    <span class="cd-pill cd-monk">Celestial Conduit</span>
+    <span class="cd-pill cd-monk">Yu'lon</span>
+  </td>
+  <td><span class="cd-pill cd-monk">Revival</span></td>
+</tr>
+<tr>
+  <td style="color:#0070dd;">Brewtote (RSham)</td>
+  <td>
+    <span class="cd-pill cd-shaman">Ascendance</span>
+  </td>
+  <td><span class="cd-pill cd-shaman">Spirit Link</span></td>
+  <td>
+    <span class="cd-pill cd-shaman">Ascendance</span>
+    <span class="cd-pill cd-shaman">Spirit Link</span>
+  </td>
+  <td><span class="cd-pill cd-shaman">Ascendance</span></td>
+</tr>
+<tr>
+  <td style="color:#e0e0e0;">Voidheart (Disc)</td>
+  <td>
+    <span class="cd-pill cd-priest">Evangelism</span>
+    <span class="cd-pill cd-priest">Barrier</span>
+  </td>
+  <td><span class="cd-pill cd-priest">Rapture</span></td>
+  <td>
+    <span class="cd-pill cd-priest">Evangelism</span>
+    <span class="cd-pill cd-priest">Barrier</span>
+  </td>
+  <td><span class="cd-pill cd-priest">Evangelism</span></td>
+</tr>
+</table>
+<p style="font-size:12px;color:var(--dim);margin-top:8px;">Key observation: Silencio uses Tranquility at 0:13 in P1 when damage is minimal. All other healers space their major CDs across phases more evenly. Consider saving Tranquility #1 for Intermission (Stellar Emission at 2:22) or early P2 damage.</p>
+
+<!-- Wipe Progression -->
+<h2>Wipe Progression</h2>
+<table>
+<tr><th>Pull</th><th>Duration</th><th>Boss %</th><th>Silencio Alive</th><th>Death Time</th><th>Death Cause</th><th>HPS</th></tr>
+<tr><td>1</td><td>1:03</td><td>87%</td><td style="color:var(--red)">0:52</td><td>P1</td><td>Void Remnants</td><td>135K</td></tr>
+<tr><td>2</td><td>1:07</td><td>81%</td><td style="color:var(--red)">1:03</td><td>P1</td><td>Void Remnants</td><td>189K</td></tr>
+<tr><td>3</td><td>3:47</td><td>58%</td><td style="color:var(--red)">1:40</td><td>P1</td><td>Void Remnants</td><td>170K</td></tr>
+<tr><td>4</td><td>1:08</td><td>80%</td><td style="color:var(--red)">0:53</td><td>P1</td><td>Unknown</td><td>203K</td></tr>
+<tr><td>5</td><td>2:17</td><td style="color:var(--green)">62%</td><td style="color:var(--yellow)">2:16</td><td>Inter</td><td>Void Remnants</td><td>149K</td></tr>
+<tr><td>6</td><td>0:47</td><td>86%</td><td style="color:var(--red)">0:35</td><td>P1</td><td>Echoing Darkness</td><td>176K</td></tr>
+<tr><td>7</td><td>2:34</td><td>62%</td><td style="color:var(--yellow)">2:10</td><td>P2</td><td>Unknown</td><td>147K</td></tr>
+<tr><td>8</td><td>3:59</td><td>55%</td><td style="color:var(--yellow)">3:53</td><td>P2</td><td>Void Remnants</td><td>136K</td></tr>
+<tr><td>9</td><td>2:59</td><td>62%</td><td style="color:var(--yellow)">2:29</td><td>Inter</td><td>Orbiting Matter</td><td>129K</td></tr>
+<tr><td>10</td><td>2:18</td><td style="color:var(--green)">62%</td><td style="color:var(--yellow)">2:13</td><td>P1</td><td>Void Remnants</td><td>152K</td></tr>
+<tr><td>11</td><td>4:05</td><td>55%</td><td style="color:var(--yellow)">3:59</td><td>P2</td><td>Cosmic Barrier</td><td>145K</td></tr>
+<tr><td>12</td><td>1:03</td><td>87%</td><td style="color:var(--red)">0:55</td><td>P1</td><td>Unknown</td><td>144K</td></tr>
+<tr><td>13</td><td>1:04</td><td>87%</td><td style="color:var(--red)">0:56</td><td>P1</td><td>Echoing Darkness</td><td>152K</td></tr>
+<tr><td>14</td><td>4:02</td><td>57%</td><td style="color:var(--yellow)">4:00</td><td>P2</td><td>Voidstalker Sting</td><td>148K</td></tr>
+<tr><td>15</td><td>4:52</td><td>46%</td><td style="color:var(--green)">4:52</td><td>P2</td><td>Sim. Backlash</td><td>168K</td></tr>
+<tr><td>16</td><td>5:03</td><td>43%</td><td style="color:var(--green)">4:54</td><td>P2</td><td>Sim. Backlash</td><td>167K</td></tr>
+<tr><td>17</td><td>1:01</td><td>88%</td><td style="color:var(--red)">1:01</td><td>P1</td><td>Echoing Darkness</td><td>118K</td></tr>
+<tr><td>18</td><td>5:56</td><td>39%</td><td style="color:var(--green)">5:10</td><td>P3</td><td>Unknown</td><td>146K</td></tr>
+<tr><td>19</td><td>5:16</td><td>44%</td><td style="color:var(--green)">5:13</td><td>P3</td><td>Sim. Backlash</td><td>151K</td></tr>
+<tr><td>20</td><td>5:23</td><td>37%</td><td style="color:var(--green)">5:01</td><td>P2</td><td>Sim. Backlash</td><td>140K</td></tr>
+<tr><td>21</td><td>4:49</td><td>43%</td><td style="color:var(--yellow)">4:42</td><td>P2</td><td>Sim. Backlash</td><td>130K</td></tr>
+<tr><td>22</td><td>4:13</td><td>50%</td><td style="color:var(--yellow)">4:10</td><td>P2</td><td>Void Remnants</td><td>154K</td></tr>
+<tr><td>23</td><td style="color:var(--green);font-weight:600;">6:05</td><td>37%</td><td style="color:var(--green)">5:18</td><td>P3</td><td>Dimensional Slash</td><td>125K</td></tr>
+<tr><td>24</td><td>4:44</td><td>42%</td><td style="color:var(--yellow)">4:38</td><td>P2</td><td>Void Remnants</td><td>149K</td></tr>
+<tr><td>25</td><td>1:01</td><td>86%</td><td style="color:var(--red)">0:59</td><td>P1</td><td>Void Remnants</td><td>145K</td></tr>
+<tr><td>27</td><td>6:01</td><td>31%</td><td style="color:var(--green)">5:55</td><td>P3</td><td>Voidstalker Sting</td><td>128K</td></tr>
+<tr><td>28</td><td>5:43</td><td>37%</td><td style="color:var(--green)">5:13</td><td>P3</td><td>Voidstalker Sting</td><td>156K</td></tr>
+</table>
+<p style="font-size:12px;color:var(--dim);margin-top:8px;">Positive trend: The last 10 pulls (F18-F28) averaged 4:59 alive time vs first 10 pulls averaging 1:56. The team is progressing deeper consistently, and Silencio's survival has improved from P1 deaths to P2/P3 deaths. The core issue shifted from Void Remnants in early pulls to Simulacrum Backlash and Voidstalker Sting in later pulls.</p>
+
+<!-- Actionable Items -->
+<h2>Actionable Items</h2>
+
+<div class="action-card critical">
+  <div class="action-title">1. Stop Dying to Void Remnants (9 deaths, 33% of all deaths)</div>
+  <div class="action-body">Void Remnants is a ground-targeted void pool that persists. It hits for 233K unmitigated per tick -- effectively a one-shot. Six of these deaths happen in P1 where healing demand is manageable. This is the highest-impact improvement available: staying alive through P1 means reaching the phases where the team needs healing. Use Travel Form or Wild Charge for faster repositioning. The fix is pure awareness -- these are avoidable pools that should never hit a ranged healer.</div>
+</div>
+
+<div class="action-card critical">
+  <div class="action-title">2. Position Away from Rift Simulacrums in P2 (5 Backlash deaths)</div>
+  <div class="action-body">All 5 Simulacrum Backlash deaths occur between 4:42-5:13 in P2 when Rift Simulacrums are active. This is proximity AoE. As a ranged healer, Silencio should be maintaining maximum distance from these adds. When they die (Backlash), the burst can overlap with Voidstalker Sting or Void Remnants for a lethal combo. Pre-Barkskin when Simulacrums are near death.</div>
+</div>
+
+<div class="action-card important">
+  <div class="action-title">3. Use Barkskin More Consistently (1 min CD)</div>
+  <div class="action-body">F23 had only 1 Barkskin usage in 5:18 alive, while F28 had 3 uses in 5:13 alive. On a 1-minute cooldown, Barkskin should be used 5+ times per 5-minute pull. Key moments: before Void Expulsion, when targeted by Voidstalker Sting, during Intermission (Stellar Emission), and before Simulacrum Backlash windows. The F28 improvement is promising -- keep that discipline.</div>
+</div>
+
+<div class="action-card important">
+  <div class="action-title">4. Delay Tranquility #1 to Intermission or P2</div>
+  <div class="action-body">Both F23 and F28 show Tranquility cast at 0:13 and 0:25 respectively -- within the first 30 seconds of P1 when damage is minimal. On F23, Tranquility had 81% overheal overall. The Intermission (Stellar Emission at 2:22-2:52) is a sustained AoE healing check where Tranquility's channel + HoT extension would be far more impactful. Alternatively, saving it for early P2 at 2:53+ where new damage abilities begin would improve both HPS and mana efficiency.</div>
+</div>
+
+<div class="action-card important">
+  <div class="action-title">5. Cast DPS Filler During Downtime (Currently 0 Wrath/Moonfire/Sunfire)</div>
+  <div class="action-body">Zero damage filler spells were cast across the entire 27-pull session. All ~4K DPS comes from passive procs (Symbiotic Relationship, trinkets). During P1 downtime between damage events, Silencio should be casting Wrath and maintaining Sunfire/Moonfire DoTs on adds. Even at 3-4K DPS from filler, that is meaningful on prog where every bit of DPS helps meet DPS checks. This is especially valuable in P1 where healing demand is lowest.</div>
+</div>
+
+<div class="action-card good">
+  <div class="action-title">6. Positive: Convoke Discipline is Excellent</div>
+  <div class="action-body">4-5 Convoke uses per long pull is exactly right for a 2-minute cooldown. Silencio is keeping Convoke on CD consistently across all long pulls. Similarly, Innervate usage at 2 per pull is optimal. This CD discipline should be maintained and extended to Barkskin (which needs the same on-CD mentality).</div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Data source: <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Report jqFfXprk4hcaWx3C</a> &middot; 27 fights on Mythic Crown of the Cosmos (Encounter 3181)</p>
+  <p>Reference: Top 5 Resto Druids on Mythic Crown kills (avg 225.6K HPS, ilvl 289-291)</p>
+  <p>Analysis mode: PROG (aggregate across all pulls, no kill)</p>
+  <p>Player source ID: 6 &middot; Spec: Restoration (specID 105) &middot; Hero Talents: Wildstalker</p>
+  <p style="margin-top:8px;">Generated June 20, 2026</p>
+</div>
+
+</body>
+</html>

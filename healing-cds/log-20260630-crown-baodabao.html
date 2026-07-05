@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baodabao - Frost Mage - Crown of the Cosmos (Prog Night 5)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --mage: #3fc7eb;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.prog-tag { display: inline-block; background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 8px; vertical-align: middle; }
+.night-tag { display: inline-block; background: var(--purple); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 4px; vertical-align: middle; }
+
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--mage); }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.header .meta { color: var(--dim); font-size: 13px; margin-top: 4px; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+section { margin-bottom: 32px; }
+section h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: rgba(88, 166, 255, 0.04); }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge-blue { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+.badge-purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 200px; padding-top: 20px; position: relative; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.bar { min-width: 20px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s; cursor: default; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); writing-mode: vertical-rl; text-orientation: mixed; margin-top: 4px; white-space: nowrap; }
+.bar-value { font-size: 9px; color: var(--dim); margin-bottom: 2px; }
+.avg-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--yellow); z-index: 1; }
+.avg-line-label { position: absolute; right: 4px; top: -14px; font-size: 10px; color: var(--yellow); }
+
+.callout { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.callout.warning { border-color: var(--red); background: rgba(248, 81, 73, 0.05); }
+.callout.info { border-color: var(--accent); background: rgba(88, 166, 255, 0.05); }
+.callout.success { border-color: var(--green); background: rgba(63, 185, 80, 0.05); }
+.callout h4 { font-size: 14px; margin-bottom: 8px; }
+.callout p { font-size: 13px; color: var(--dim); }
+
+.phase-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+
+.ref-table { font-size: 12px; }
+.ref-highlight { background: rgba(188, 140, 255, 0.08); }
+
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.action-item .action-num { display: inline-block; width: 24px; height: 24px; background: var(--accent); color: var(--bg); border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700; margin-right: 8px; }
+.action-item h4 { display: inline; font-size: 14px; }
+.action-item p { font-size: 13px; color: var(--dim); margin-top: 8px; }
+.action-item .impact { font-size: 12px; color: var(--yellow); margin-top: 4px; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); text-align: center; }
+
+.tooltip { position: relative; }
+.tooltip:hover::after { content: attr(data-tip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+
+.death-timeline { position: relative; height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin: 12px 0; overflow: visible; }
+.death-marker { position: absolute; top: 50%; transform: translate(-50%, -50%); font-size: 16px; cursor: default; z-index: 2; }
+.phase-region { position: absolute; top: 0; bottom: 0; border-right: 1px dashed var(--border); }
+.phase-label { position: absolute; top: -18px; font-size: 10px; color: var(--dim); white-space: nowrap; }
+
+.cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.cast-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.cast-card .ability-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.cast-card .cast-stat { font-size: 12px; color: var(--dim); }
+.cast-card .cast-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.cast-card .cast-fill { height: 100%; border-radius: 3px; }
+
+.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--dim); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260630-crown" class="back-link">&larr; June 30, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Baodabao</span> &mdash; Frost Mage
+    <span class="prog-tag">Progression</span>
+    <span class="night-tag">Night 5</span>
+  </h1>
+  <div class="subtitle">Mythic Crown of the Cosmos &mdash; 20 pulls, no kill</div>
+  <div class="meta">
+    June 30, 2026 &bull; Report <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG" target="_blank">qDfTzvAyV3pRb6rG</a>
+    &bull; Deepest pull: 7:56 (fight 25) &bull; Night 4 best was 7:12 &mdash; 44 seconds deeper into P3
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color: var(--mage);">56.6K</div>
+    <div class="sub">Across 12 qualifying pulls (&gt;60s)</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="sub">Matching top references</div>
+  </div>
+  <div class="card">
+    <div class="label">Raid DPS Rank</div>
+    <div class="value" style="color: var(--green);">#3</div>
+    <div class="sub">of 13 DPS (avg across night)</div>
+  </div>
+  <div class="card">
+    <div class="label">Best Pull</div>
+    <div class="value" style="color: var(--green);">73.4K</div>
+    <div class="sub">Fight 3 (7:07) &mdash; deep P3</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<section>
+  <h2>Performance Across All Pulls</h2>
+  <div class="chart-container">
+    <div class="bar-chart" id="dps-chart">
+      <div class="avg-line" style="bottom: 77%;" title="Avg: 56.6K">
+        <span class="avg-line-label">Avg 56.6K</span>
+      </div>
+      <!-- Fight bars generated inline -->
+      <div class="bar-wrapper">
+        <div class="bar-value">61.1K</div>
+        <div class="bar" style="height: 83%; background: var(--green);" title="Fight 1: 61.1K DPS, 7:18, died P3 (cascade)"></div>
+        <div class="bar-label">F1 7:18</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--dim);">-</div>
+        <div class="bar" style="height: 2px; background: var(--border);" title="Fight 2: 1:33, sub-60s excluded"></div>
+        <div class="bar-label" style="color: var(--border);">F2</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--green);">73.4K</div>
+        <div class="bar" style="height: 100%; background: var(--green);" title="Fight 3: 73.4K DPS, 7:07, died P3 (cascade)"></div>
+        <div class="bar-label">F3 7:07</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--dim);">-</div>
+        <div class="bar" style="height: 2px; background: var(--border);" title="Fight 4: 1:32, sub-60s excluded"></div>
+        <div class="bar-label" style="color: var(--border);">F4</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">53.7K</div>
+        <div class="bar" style="height: 73%; background: var(--green);" title="Fight 5: 53.7K DPS, 5:06, died P2 (cascade)"></div>
+        <div class="bar-label">F5 5:06</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">0K</div>
+        <div class="bar" style="height: 2px; background: var(--red);" title="Fight 6: Died 2:43 (Intermission) - ACTIONABLE - Silverstrike Barrage"></div>
+        <div class="bar-label" style="color: var(--red);">F6 *</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">63.6K</div>
+        <div class="bar" style="height: 87%; background: var(--green);" title="Fight 7: 63.6K DPS, 7:07, died P3 (cascade)"></div>
+        <div class="bar-label">F7 7:07</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--dim);">-</div>
+        <div class="bar" style="height: 2px; background: var(--border);" title="Fight 8: 1:00, sub-60s excluded"></div>
+        <div class="bar-label" style="color: var(--border);">F8</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">50.5K</div>
+        <div class="bar" style="height: 69%; background: var(--green);" title="Fight 9: 50.5K DPS, 5:08, died P2 (cascade)"></div>
+        <div class="bar-label">F9 5:08</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">62.8K</div>
+        <div class="bar" style="height: 86%; background: var(--green);" title="Fight 10: 62.8K DPS, 6:17, died P3 (cascade)"></div>
+        <div class="bar-label">F10 6:17</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">47.5K</div>
+        <div class="bar" style="height: 65%; background: var(--green);" title="Fight 11: 47.5K DPS, 7:45, died P3 (cascade)"></div>
+        <div class="bar-label">F11 7:45</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">68.1K</div>
+        <div class="bar" style="height: 93%; background: var(--green);" title="Fight 12: 68.1K DPS, 7:34, died P3 (cascade)"></div>
+        <div class="bar-label">F12 7:34</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--red);">0K</div>
+        <div class="bar" style="height: 2px; background: var(--red);" title="Fight 15: Died 2:36 (Intermission) - ACTIONABLE - Silverstrike Barrage"></div>
+        <div class="bar-label" style="color: var(--red);">F15 *</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--dim);">-</div>
+        <div class="bar" style="height: 2px; background: var(--border);" title="Fight 16: 1:02, sub-60s excluded"></div>
+        <div class="bar-label" style="color: var(--border);">F16</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">44.6K</div>
+        <div class="bar" style="height: 61%; background: var(--orange);" title="Fight 17: 44.6K DPS, 7:49, died P2 at 4:32 (cascade)"></div>
+        <div class="bar-label">F17 7:49</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--dim);">-</div>
+        <div class="bar" style="height: 2px; background: var(--border);" title="Fight 18: 1:01, sub-60s excluded"></div>
+        <div class="bar-label" style="color: var(--border);">F18</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--dim);">-</div>
+        <div class="bar" style="height: 2px; background: var(--border);" title="Fight 22: 2:19, P1 wipe"></div>
+        <div class="bar-label" style="color: var(--border);">F22</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">54.0K</div>
+        <div class="bar" style="height: 74%; background: var(--cyan);" title="Fight 23: 54.0K DPS, 5:52, SURVIVED to wipe"></div>
+        <div class="bar-label" style="color: var(--cyan);">F23 5:52</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">38.9K</div>
+        <div class="bar" style="height: 53%; background: var(--green);" title="Fight 24: 38.9K DPS, 3:59, died P2 (cascade)"></div>
+        <div class="bar-label">F24 3:59</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value">60.9K</div>
+        <div class="bar" style="height: 83%; background: var(--green);" title="Fight 25: 60.9K DPS, 7:56, died P3 (cascade) - DEEPEST PULL"></div>
+        <div class="bar-label" style="color: var(--accent);">F25 7:56</div>
+      </div>
+    </div>
+    <div style="margin-top: 12px; font-size: 11px; color: var(--dim);">
+      <span style="color: var(--cyan);">&#9632;</span> Survived to wipe &nbsp;
+      <span style="color: var(--green);">&#9632;</span> Died (cascade, after 2+ raid deaths) &nbsp;
+      <span style="color: var(--red);">&#9632;</span> Died (actionable, among first 2 deaths) &nbsp;
+      <span style="color: var(--orange);">&#9632;</span> Died early (cascade, pre-P3) &nbsp;
+      <span style="color: var(--border);">&#9632;</span> Short pull / excluded &nbsp;
+      * = Actionable death
+    </div>
+  </div>
+</section>
+
+<!-- Per-Phase Performance Breakdown -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Phase boundaries: P1 Sentinels (0:00-2:14) &rarr; Intermission (2:14-2:53) &rarr; P2 Rift (2:53-5:09) &rarr; P3 Devouring Cosmos (5:09+)
+  </p>
+
+  <!-- Phase reach visualization -->
+  <div class="callout info" style="margin-bottom: 20px;">
+    <h4>Phase Reach Rate</h4>
+    <div style="display: flex; gap: 24px; margin-top: 8px; flex-wrap: wrap;">
+      <div>
+        <span class="badge badge-green">P1: 12/12</span>
+        <span style="font-size: 12px; color: var(--dim); margin-left: 4px;">100%</span>
+      </div>
+      <div>
+        <span class="badge badge-green">Intermission: 12/12</span>
+        <span style="font-size: 12px; color: var(--dim); margin-left: 4px;">100%</span>
+      </div>
+      <div>
+        <span class="badge badge-green">P2: 12/12</span>
+        <span style="font-size: 12px; color: var(--dim); margin-left: 4px;">100% (survived Intermission in 10/12)</span>
+      </div>
+      <div>
+        <span class="badge badge-yellow">P3: 9/12</span>
+        <span style="font-size: 12px; color: var(--dim); margin-left: 4px;">75%</span>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Worst DPS</th>
+        <th>Deaths in Phase</th>
+        <th>Primary Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>P1: Sentinels</strong></td>
+        <td>12/12</td>
+        <td style="color: var(--green); font-weight: 600;">347.7K</td>
+        <td>380.6K</td>
+        <td>312.7K</td>
+        <td><span class="badge badge-green">0</span></td>
+        <td style="color: var(--dim);">None</td>
+      </tr>
+      <tr>
+        <td><strong>Intermission</strong></td>
+        <td>12/12</td>
+        <td style="color: var(--dim);">2.9K</td>
+        <td>4.9K</td>
+        <td>0K</td>
+        <td><span class="badge badge-red">2 actionable</span></td>
+        <td style="color: var(--red);">Silverstrike Barrage (2/2)</td>
+      </tr>
+      <tr>
+        <td><strong>P2: Rift</strong></td>
+        <td>12/12</td>
+        <td style="color: var(--accent); font-weight: 600;">140.6K</td>
+        <td>167.9K</td>
+        <td>119.6K</td>
+        <td><span class="badge badge-green">0</span></td>
+        <td style="color: var(--dim);">None (3 cascade)</td>
+      </tr>
+      <tr>
+        <td><strong>P3: Devouring Cosmos</strong></td>
+        <td>9/12</td>
+        <td style="color: var(--yellow); font-weight: 600;">47.3K</td>
+        <td>68.8K</td>
+        <td>21.4K</td>
+        <td><span class="badge badge-green">0</span></td>
+        <td style="color: var(--dim);">None (7 cascade)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top: 16px;">
+    <div class="callout success">
+      <h4 style="color: var(--green);">P1 Performance: Excellent</h4>
+      <p>347.7K avg DPS in P1 is outstanding. This is multi-target burst against Sentinels + Droplets where Frost Mage AoE shines. Consistent range (312K-380K) shows reliable execution of the Frozen Orb + Ice Lance cleave rotation during add phases. Zero deaths in P1 across all pulls.</p>
+    </div>
+    <div class="callout info">
+      <h4 style="color: var(--accent);">P2 Performance: Strong</h4>
+      <p>140.6K avg DPS in P2 represents a significant drop from P1 (expected -- single target + movement from Rift mechanics). The range is 119K-168K, suggesting some pulls have better cooldown alignment than others. No actionable deaths in P2 -- all 3 deaths in this phase were cascade (raid already falling apart).</p>
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top: 0;">
+    <div class="callout warning">
+      <h4 style="color: var(--red);">Intermission: 2 Actionable Deaths</h4>
+      <p>Both actionable deaths this night came from Silverstrike Barrage during the Intermission. In fights 6 and 15, Baodabao was hit by Stellar Emission ticks into a full-damage Silverstrike Barrage (454K and 482K). This is the survival phase -- near-zero DPS is expected. The key is living through it. Ice Barrier + Greater Invisibility or Ice Cold should be used defensively here.</p>
+    </div>
+    <div class="callout info">
+      <h4 style="color: var(--accent);">P3 Performance: Volatile</h4>
+      <p>P3 avg of 47.3K has a huge spread (21K-69K). The low-end pulls (21K in fight 11, 22K in fight 17) correlate with early deaths in P2/P3 cascade. The high-end (69K in fight 12, 68K in fight 7) shows what Baodabao can do when the raid stays alive. P3 performance is entirely dependent on raid survival state.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Death Pattern Analysis -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card">
+      <div class="label">Actionable Deaths</div>
+      <div class="value" style="color: var(--green);">2</div>
+      <div class="sub">of 20 total deaths across 20 pulls</div>
+    </div>
+    <div class="card">
+      <div class="label">Cascade Deaths</div>
+      <div class="value" style="color: var(--dim);">18</div>
+      <div class="sub">After 2+ raid members already dead</div>
+    </div>
+    <div class="card">
+      <div class="label">Survived to Wipe</div>
+      <div class="value" style="color: var(--cyan);">1</div>
+      <div class="sub">Fight 23 (5:52, P3)</div>
+    </div>
+  </div>
+
+  <h3>Death Cause Breakdown (All 20 Deaths)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Killing Ability</th>
+        <th>Total Deaths</th>
+        <th>Actionable</th>
+        <th>Cascade</th>
+        <th>Avg Death Time</th>
+        <th>Phase</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Unknown</strong> (environmental/raid wipe)</td>
+        <td>6</td>
+        <td><span class="badge badge-green">0</span></td>
+        <td>6</td>
+        <td>Various</td>
+        <td>P1 (short pulls)</td>
+      </tr>
+      <tr>
+        <td><strong>Voidstalker Sting</strong></td>
+        <td>5</td>
+        <td><span class="badge badge-green">0</span></td>
+        <td>5</td>
+        <td>6:14</td>
+        <td>P2/P3</td>
+      </tr>
+      <tr>
+        <td><strong>Bursting Emptiness</strong></td>
+        <td>4</td>
+        <td><span class="badge badge-green">0</span></td>
+        <td>4</td>
+        <td>5:02</td>
+        <td>P2/P3</td>
+      </tr>
+      <tr style="background: rgba(248, 81, 73, 0.05);">
+        <td><strong style="color: var(--red);">Silverstrike Barrage</strong></td>
+        <td>2</td>
+        <td><span class="badge badge-red">2</span></td>
+        <td>0</td>
+        <td>2:40</td>
+        <td style="color: var(--red);">Intermission</td>
+      </tr>
+      <tr>
+        <td><strong>Grasp of Emptiness</strong></td>
+        <td>2</td>
+        <td><span class="badge badge-green">0</span></td>
+        <td>2</td>
+        <td>3:57</td>
+        <td>P1/P3</td>
+      </tr>
+      <tr>
+        <td><strong>Gravity Collapse</strong></td>
+        <td>1</td>
+        <td><span class="badge badge-green">0</span></td>
+        <td>1</td>
+        <td>7:00</td>
+        <td>P3</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning" style="margin-top: 16px;">
+    <h4 style="color: var(--red);">Actionable Death Details: Silverstrike Barrage (Intermission)</h4>
+    <p><strong>Fight 6 (2:43 into pull):</strong> Took Stellar Emission ticks (11K, 16K, 23K) into a Silverstrike Barrage hit for 454,490 damage. Was the 2nd person to die in the raid.</p>
+    <p style="margin-top: 4px;"><strong>Fight 15 (2:36 into pull):</strong> Same pattern -- Stellar Emission ticks (17K, 38K, 14K, 22K) into a Silverstrike Barrage for 481,860 damage. Was the 1st person to die in the raid.</p>
+    <p style="margin-top: 8px; color: var(--text);"><strong>Fix:</strong> During the Intermission's Silverstrike Barrage casts, use Ice Barrier + either Greater Invisibility (60% damage reduction) or Ice Cold (immune). These are the only 2 pulls where Baodabao was among the first deaths. This one mechanic accounts for 100% of actionable deaths.</p>
+  </div>
+</section>
+
+<!-- Consistency Analysis -->
+<section>
+  <h2>Consistency Analysis</h2>
+
+  <div class="two-col">
+    <div class="callout">
+      <h4>Session Trend</h4>
+      <div class="stat-row">
+        <span class="stat-label">First 6 qualifying pulls avg</span>
+        <span style="color: var(--green);">60,851 DPS</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Last 6 qualifying pulls avg</span>
+        <span style="color: var(--yellow);">52,335 DPS</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Session change</span>
+        <span style="color: var(--red);">-14.0%</span>
+      </div>
+      <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+        DPS declined through the session, but this is misleading. The first-half includes the night's best pull (fight 3, 73.4K). The second-half includes the two worst-performing pulls (fight 17 at 44.6K, fight 24 at 38.9K) which were both compromised by early raid deaths. The deepest pull (fight 25) at 60.9K came at the end of the night, showing no fatigue on execution.
+      </p>
+    </div>
+
+    <div class="callout">
+      <h4>DPS Variance</h4>
+      <div class="stat-row">
+        <span class="stat-label">Best pull DPS</span>
+        <span style="color: var(--green);">73,419 (Fight 3)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Worst qualifying pull DPS</span>
+        <span style="color: var(--red);">38,901 (Fight 24)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Range</span>
+        <span>34,518 DPS spread</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Median DPS</span>
+        <span>60,852</span>
+      </div>
+      <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+        The large spread is driven by pull length and raid survival, not execution variance. Longer pulls with intact raids (fights 3, 7, 12) trend 63-73K. Shorter pulls where the raid collapsed early (fights 17, 24) drag the average down because Baodabao's strongest phase (P1 burst) gets diluted over a longer denominator.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top: 16px;">
+    <h4>P1 DPS Consistency (Most Comparable Phase)</h4>
+    <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">
+      P1 is the most meaningful consistency check because every qualifying pull reaches it and raid state is intact.
+    </p>
+    <div style="display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap;">
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F1</div>
+        <div style="font-size: 14px; font-weight: 600;">374K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F3</div>
+        <div style="font-size: 14px; font-weight: 600;">333K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F5</div>
+        <div style="font-size: 14px; font-weight: 600;">354K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F7</div>
+        <div style="font-size: 14px; font-weight: 600;">353K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F9</div>
+        <div style="font-size: 14px; font-weight: 600;">360K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F10</div>
+        <div style="font-size: 14px; font-weight: 600;">313K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F11</div>
+        <div style="font-size: 14px; font-weight: 600;">339K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F12</div>
+        <div style="font-size: 14px; font-weight: 600;">368K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F17</div>
+        <div style="font-size: 14px; font-weight: 600;">344K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F23</div>
+        <div style="font-size: 14px; font-weight: 600;">326K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F24</div>
+        <div style="font-size: 14px; font-weight: 600;">381K</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; color: var(--dim);">F25</div>
+        <div style="font-size: 14px; font-weight: 600;">328K</div>
+      </div>
+    </div>
+    <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+      Range: 313K - 381K (18% spread). Average: 347.7K. This is tight consistency for a burst-heavy AoE phase. The variance is largely driven by Frozen Orb and proc timing rather than execution gaps.
+    </p>
+  </div>
+</section>
+
+<!-- Cast Profile (Fight 25) -->
+<section>
+  <h2>Cast Profile (Fight 25 &mdash; Deepest Pull, 7:56)</h2>
+
+  <div class="cast-grid">
+    <div class="cast-card">
+      <div class="ability-name" style="color: var(--mage);">Ice Lance</div>
+      <div class="cast-stat">170 casts &bull; 21.4 CPM</div>
+      <div class="cast-stat">Primary Freezing stack consumer / Shatter trigger</div>
+      <div class="cast-bar"><div class="cast-fill" style="width: 100%; background: var(--mage);"></div></div>
+    </div>
+    <div class="cast-card">
+      <div class="ability-name" style="color: var(--mage);">Frostbolt</div>
+      <div class="cast-stat">33 casts &bull; 4.2 CPM</div>
+      <div class="cast-stat">Primary filler / Freezing stack generator</div>
+      <div class="cast-bar"><div class="cast-fill" style="width: 19%; background: var(--mage);"></div></div>
+    </div>
+    <div class="cast-card">
+      <div class="ability-name" style="color: var(--accent);">Flurry</div>
+      <div class="cast-stat">33 casts &bull; 4.2 CPM</div>
+      <div class="cast-stat">Brain Freeze consumer / Shatter enabler</div>
+      <div class="cast-bar"><div class="cast-fill" style="width: 19%; background: var(--accent);"></div></div>
+    </div>
+    <div class="cast-card">
+      <div class="ability-name" style="color: var(--cyan);">Ray of Frost</div>
+      <div class="cast-stat">11 casts &bull; 1.4 CPM</div>
+      <div class="cast-stat">60s CD channel / Freezing stack generator</div>
+      <div class="cast-bar"><div class="cast-fill" style="width: 6%; background: var(--cyan);"></div></div>
+    </div>
+    <div class="cast-card">
+      <div class="ability-name" style="color: var(--purple);">Glacial Spike</div>
+      <div class="cast-stat">11 casts &bull; 1.4 CPM</div>
+      <div class="cast-stat">Shatter window heavy-hitter</div>
+      <div class="cast-bar"><div class="cast-fill" style="width: 6%; background: var(--purple);"></div></div>
+    </div>
+    <div class="cast-card">
+      <div class="ability-name" style="color: var(--green);">Frozen Orb</div>
+      <div class="cast-stat">10 casts &bull; 1.3 CPM</div>
+      <div class="cast-stat">60s CD AoE + Fingers of Frost generator</div>
+      <div class="cast-bar"><div class="cast-fill" style="width: 6%; background: var(--green);"></div></div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top: 16px;">
+    <h4>Defensive Usage</h4>
+    <table style="margin-top: 8px;">
+      <thead>
+        <tr><th>Ability</th><th>Uses</th><th>CPM</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ice Barrier</td><td>12</td><td>1.5</td><td>Absorb shield, used frequently (good)</td></tr>
+        <tr><td>Shimmer</td><td>7</td><td>0.9</td><td>Blink alternative, movement during casts</td></tr>
+        <tr><td>Ice Cold</td><td>2</td><td>0.3</td><td>Damage immunity, ~4 min CD</td></tr>
+        <tr><td>Greater Invisibility</td><td>2</td><td>0.3</td><td>60% DR, 2 min CD</td></tr>
+        <tr><td>Healthstone</td><td>1</td><td>0.1</td><td></td></tr>
+        <tr><td>Silvermoon Health Potion</td><td>1</td><td>0.1</td><td></td></tr>
+        <tr><td>Slow Fall</td><td>3</td><td>0.4</td><td>Used for P3 Gravity Collapse positioning</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+      Good defensive usage overall. Ice Barrier is being refreshed consistently. Both Ice Cold and Greater Invisibility are being used, which means they are available for Intermission Silverstrike Barrage. The key is making sure one of them is up for that specific window.
+    </p>
+  </div>
+
+  <div class="callout" style="margin-top: 16px;">
+    <h4>Utility</h4>
+    <table style="margin-top: 8px;">
+      <thead>
+        <tr><th>Ability</th><th>Uses</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Counterspell</td><td>2</td><td>Interrupts on add casts</td></tr>
+        <tr><td>Nullsight</td><td>5</td><td>Trinket active (likely Nullsight Nebulon or similar)</td></tr>
+        <tr><td>Potion of Recklessness</td><td>1</td><td>Pre-pot or combat pot</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Reference Comparison -->
+<section>
+  <h2>Reference Comparison (De-emphasized &mdash; Kill vs Prog)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    These are kill logs from the top-ranked Frost Mages in 4-heal comps (US/EU). During prog, reference comparison is context only -- Baodabao has not seen the full fight yet. The ceiling these players represent is what to aim for, not a gap to close right now.
+  </p>
+
+  <table class="ref-table">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Region</th>
+        <th>DPS</th>
+        <th>Kill Time</th>
+        <th>iLvl</th>
+        <th>Talent Diff</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="ref-highlight">
+        <td><strong style="color: var(--purple);">Morvil</strong> (Primary Ref)</td>
+        <td>EU</td>
+        <td style="color: var(--purple);">107,267</td>
+        <td>8:38</td>
+        <td>291</td>
+        <td><span class="badge badge-green">1 diff</span></td>
+      </tr>
+      <tr>
+        <td>Asimage</td>
+        <td>US</td>
+        <td>108,201</td>
+        <td>9:05</td>
+        <td>290</td>
+        <td><span class="badge badge-green">2 diffs</span></td>
+      </tr>
+      <tr>
+        <td>Noribert</td>
+        <td>US</td>
+        <td>108,045</td>
+        <td>7:07</td>
+        <td>291</td>
+        <td><span class="badge badge-yellow">5 diffs</span></td>
+      </tr>
+      <tr>
+        <td>Camprix</td>
+        <td>EU</td>
+        <td>107,308</td>
+        <td>8:52</td>
+        <td>290</td>
+        <td><span class="badge badge-yellow">7 diffs</span></td>
+      </tr>
+      <tr>
+        <td>Feriblastv</td>
+        <td>EU</td>
+        <td>106,920</td>
+        <td>8:30</td>
+        <td>289</td>
+        <td><span class="badge badge-yellow">7 diffs</span></td>
+      </tr>
+      <tr style="background: rgba(63, 199, 235, 0.05);">
+        <td><strong style="color: var(--mage);">Baodabao</strong> (Best Pull)</td>
+        <td>US</td>
+        <td style="color: var(--mage);">73,419</td>
+        <td>7:07 (wipe)</td>
+        <td>291</td>
+        <td>--</td>
+      </tr>
+      <tr style="background: rgba(63, 199, 235, 0.05);">
+        <td><strong style="color: var(--mage);">Baodabao</strong> (Avg)</td>
+        <td>US</td>
+        <td style="color: var(--mage);">56,593</td>
+        <td>Prog avg</td>
+        <td>291</td>
+        <td>--</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="margin-top: 16px;">
+    <h4>Context</h4>
+    <p>
+      The reference kills average 107K DPS over 8+ minute fights. Baodabao's best pull was 73.4K over 7:07 (wipe). The ~32% gap is almost entirely explained by fight length and kill vs wipe dynamics:
+    </p>
+    <ul style="font-size: 13px; color: var(--dim); margin-top: 8px; padding-left: 20px;">
+      <li><strong>Kill pulls have lust in execute phase</strong> -- prog wipes do not get execute lust, which inflates kill DPS by 15-20%</li>
+      <li><strong>P3 is longer in kills</strong> -- the boss is killable and people stay alive, allowing full burn. In prog, P3 performance is cut short by raid wipe</li>
+      <li><strong>Talent build is nearly identical</strong> -- only 1 talent point differs from the primary reference (Morvil), so the gap is not spec-related</li>
+      <li><strong>Gear is identical ilvl</strong> -- 291 matches top references exactly</li>
+    </ul>
+    <p style="margin-top: 8px;">
+      Baodabao's P1 avg of 347.7K is extremely strong and would be competitive with reference players' P1 numbers. The overall DPS gap will close naturally as the raid extends further into P3 and eventually gets a kill with lust.
+    </p>
+  </div>
+</section>
+
+<!-- Raid Context -->
+<section>
+  <h2>Raid Context</h2>
+
+  <div class="callout">
+    <h4>Raid DPS Rankings (Avg Across Qualifying Pulls)</h4>
+    <table style="margin-top: 8px;">
+      <thead>
+        <tr><th>#</th><th>Player</th><th>Spec</th><th>Avg DPS</th><th>Pulls</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Bebeshakur</td><td style="color: #c41e3a;">Unholy DK</td><td>57,786</td><td>11</td></tr>
+        <tr><td>2</td><td>Unholyftw</td><td style="color: #c41e3a;">Unholy DK</td><td>57,597</td><td>11</td></tr>
+        <tr style="background: rgba(63, 199, 235, 0.08);"><td>3</td><td><strong style="color: var(--mage);">Baodabao</strong></td><td style="color: var(--mage);">Frost Mage</td><td><strong>56,593</strong></td><td>12</td></tr>
+        <tr><td>4</td><td>Invincibale</td><td style="color: #0070dd;">Ele Shaman</td><td>55,941</td><td>12</td></tr>
+        <tr><td>5</td><td>Blowe</td><td style="color: #aad372;">BM Hunter</td><td>55,261</td><td>10</td></tr>
+        <tr><td>6</td><td>Orichamaru</td><td style="color: #8788ee;">Demo Lock</td><td>54,174</td><td>12</td></tr>
+        <tr><td>7</td><td>Sonic</td><td style="color: #8788ee;">Demo Lock</td><td>52,957</td><td>12</td></tr>
+        <tr><td>8</td><td>Zinnks</td><td style="color: #33937f;">Aug Evoker</td><td>51,350</td><td>12</td></tr>
+        <tr><td>9</td><td>Smokinthisza</td><td style="color: #aad372;">MM Hunter</td><td>50,234</td><td>12</td></tr>
+        <tr><td>10</td><td>Starfighter</td><td style="color: #c69b6d;">Fury War</td><td>49,261</td><td>12</td></tr>
+        <tr><td>11</td><td>Nurnyx</td><td style="color: #fff;">Shadow Priest</td><td>47,654</td><td>10</td></tr>
+        <tr><td>12</td><td>Moistbear</td><td style="color: #ff7c0a;">Feral Druid</td><td>46,776</td><td>12</td></tr>
+        <tr><td>13</td><td>Chedrock</td><td style="color: #0070dd;">Ele Shaman</td><td>43,562</td><td>7</td></tr>
+        <tr><td>14</td><td>Darthurg</td><td style="color: #aad372;">MM Hunter</td><td>41,650</td><td>12</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout" style="margin-top: 16px;">
+    <h4>Night 5 Progress</h4>
+    <div class="stat-row">
+      <span class="stat-label">Night 4 deepest pull</span>
+      <span>7:12</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Night 5 deepest pull</span>
+      <span style="color: var(--green);">7:56 (+44s)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Pulls reaching P3</span>
+      <span>11/20 (55%)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Pulls over 7 minutes</span>
+      <span>5/20</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Roster changes</span>
+      <span>Blowe (BM Hunter) in. Cybrosaen (UH DK) pulls 2-9, replaced by Chedrock (Ele Shaman) pulls 10-25.</span>
+    </div>
+  </div>
+</section>
+
+<!-- Actionable Improvements -->
+<section>
+  <h2>Actionable Improvements</h2>
+
+  <div class="action-item">
+    <span class="action-num">1</span>
+    <h4>Survive Intermission Silverstrike Barrage</h4>
+    <p>100% of Baodabao's actionable deaths (2/2) came from Silverstrike Barrage during the Intermission. The pattern is identical both times: Stellar Emission ticks chipping health, then a 450-480K Silverstrike Barrage hit killing through remaining HP. Pre-shield with Ice Barrier before the Intermission starts, and use either Greater Invisibility (60% DR) or Ice Cold (full immune) specifically for the Silverstrike Barrage cast. This is a pure survival phase -- no DPS is expected, so burning a 2-minute defensive is free.</p>
+    <div class="impact">Impact: Eliminates 100% of actionable deaths. Surviving Intermission means reaching P2 with full health, preventing the early-death cascades seen in fights 6 and 15.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">2</span>
+    <h4>P2 DPS Consistency (119K-168K Range)</h4>
+    <p>P2 (Rift phase) has a 40% spread between worst and best pull DPS. Some of this is raid-state dependent, but the gap between 119K and 168K suggests inconsistent Frozen Orb and Ray of Frost alignment with the phase transition. On fights where Frozen Orb is available as P2 starts (2:53), P2 DPS is higher. Consider holding Frozen Orb in the last 10-15 seconds of P1 if it would come off cooldown during the Intermission anyway -- banking it for the P2 opener ensures a strong start to the longest damage phase.</p>
+    <div class="impact">Impact: Tightening the P2 floor from 119K toward the 140K average would add ~3-5K overall DPS on longer pulls.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">3</span>
+    <h4>P3 Experience and Survival</h4>
+    <p>Baodabao reached P3 in 9 of 12 qualifying pulls (75%). P3 DPS ranges from 21K to 69K, but the low-end values correlate entirely with compromised raids (cascade deaths). The high-end P3 performance (69K in fight 12, 65-68K in fights 3, 7, 10) shows strong execution when the raid is intact. As the raid improves P2 survival and more pulls reach P3 with full roster, this number will stabilize around the 60-70K range.</p>
+    <div class="impact">Impact: No rotation changes needed for P3. The variance is a raid survival issue, not a Baodabao execution issue. Continue learning P3 positioning for Gravity Collapse (already using Slow Fall) and Cosmic Radiation.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">4</span>
+    <h4>Cooldown Alignment for Kill Attempt</h4>
+    <p>When the raid reaches the point of kill attempts (8+ minutes), Icy Veins and Frozen Orb timing for the execute phase will matter significantly. Reference kills show 107K+ DPS over 8-9 minute fights, which means the P3 execute with lust should push well above the 69K P3 ceiling seen in prog. Plan Frozen Orb and Icy Veins usage in P3 to align with the burn window when lust is called. This is forward-looking -- not yet relevant during prog.</p>
+    <div class="impact">Impact: Proper CD alignment during the kill-attempt burn phase could add 15-20K DPS in the final 90 seconds.</div>
+  </div>
+</section>
+
+<!-- What's Going Well -->
+<section>
+  <h2>What's Going Well</h2>
+  <div class="two-col">
+    <div class="callout success">
+      <h4 style="color: var(--green);">#3 Raid DPS</h4>
+      <p>Baodabao is the 3rd highest DPS in the raid when averaged across all qualifying pulls, behind only the two Unholy DKs. This is with a Frost Mage, which is traditionally less favored on multi-phase progression encounters. Strong P1 burst and consistent P2 execution drive this ranking.</p>
+    </div>
+    <div class="callout success">
+      <h4 style="color: var(--green);">P1 Burst Is Excellent</h4>
+      <p>347.7K average P1 DPS with tight consistency (313K-381K). The Frozen Orb + Ice Lance cleave rotation against Sentinels and Void Droplets is being executed well. Zero deaths in P1 across all 20 pulls -- perfect survivability in the opening phase.</p>
+    </div>
+    <div class="callout success">
+      <h4 style="color: var(--green);">Almost Zero Actionable Deaths</h4>
+      <p>Only 2 of 20 deaths were actionable (among the first 2 raid deaths). The other 18 were cascade deaths where 2+ people were already dead. This means Baodabao is not causing wipes -- when the raid is intact, Baodabao stays alive.</p>
+    </div>
+    <div class="callout success">
+      <h4 style="color: var(--green);">Gear and Talents Match Reference</h4>
+      <p>291 ilvl matches top-ranked Frost Mages exactly. Only 1 talent point differs from the primary reference (Morvil). Any DPS gap is execution and fight experience, not gear or spec choices.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &bull; Data from <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG" target="_blank">Warcraft Logs</a></p>
+  <p>Primary reference: Morvil-Drak'thul (EU) &bull; 107,267 DPS &bull; 8:38 kill &bull; 291 ilvl &bull; 1 talent diff</p>
+  <p>Analysis mode: PROG &bull; 20 pulls aggregated &bull; 2-death threshold applied &bull; Phase-aware breakdown</p>
+</div>
+
+</body>
+</html>

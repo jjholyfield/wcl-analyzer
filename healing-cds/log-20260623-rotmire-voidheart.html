@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voidh&eacute;art (Disc Priest) &mdash; Mythic Rotmire Kill Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --priest: #fff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--priest); }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-kill { background: rgba(63, 185, 80, 0.2); color: var(--green); border: 1px solid rgba(63, 185, 80, 0.3); }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .note { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88, 166, 255, 0.05); }
+
+.callout { background: var(--surface); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 16px; }
+.callout.warning { border-left-color: var(--orange); }
+.callout.info { border-left-color: var(--accent); }
+.callout.green { border-left-color: var(--green); }
+.callout .callout-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.callout .callout-body { font-size: 13px; color: var(--dim); line-height: 1.7; }
+
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 200px; padding-top: 20px; position: relative; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; min-width: 20px; border-radius: 4px 4px 0 0; position: relative; transition: opacity 0.2s; cursor: default; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; text-align: center; }
+.bar-value { font-size: 9px; color: var(--text); text-align: center; margin-bottom: 2px; font-weight: 600; }
+.bar-survived { background: linear-gradient(180deg, var(--green), #1a6b2a); }
+.bar-died { background: linear-gradient(180deg, var(--red), #8b2020); }
+.bar-kill { background: linear-gradient(180deg, var(--accent), #1a4a8a); }
+.bar-short { background: linear-gradient(180deg, var(--dim), #555); }
+
+.timeline-bar { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; height: 60px; margin: 16px 0; overflow: visible; }
+.timeline-inner { position: relative; height: 100%; margin: 0 20px; }
+.timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.7; z-index: 2; }
+.timeline-marker .marker-label { position: absolute; top: -18px; left: -20px; font-size: 9px; white-space: nowrap; font-weight: 600; }
+.timeline-alive { position: absolute; top: 0; height: 100%; background: rgba(63, 185, 80, 0.08); border-radius: 8px; z-index: 0; }
+.timeline-time { position: absolute; bottom: -18px; font-size: 9px; color: var(--dim); transform: translateX(-50%); }
+
+.cd-grid { display: grid; gap: 1px; background: var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; font-size: 12px; }
+.cd-grid .cd-header { background: var(--surface); padding: 8px 12px; font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; }
+.cd-grid .cd-cell { background: var(--bg); padding: 8px 10px; min-height: 42px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.cd-grid .cd-cell.highlight-row { background: rgba(255, 255, 255, 0.04); }
+.cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.cd-pill-none { background: rgba(139,148,158,0.1); color: var(--dim); font-style: italic; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat-box { background: rgba(22, 27, 34, 0.8); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
+.stat-box .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-box .stat-value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+
+.inline-bar { display: inline-block; height: 8px; border-radius: 4px; vertical-align: middle; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.badge-orange { background: rgba(219, 109, 40, 0.2); color: var(--orange); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  body { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23 Rotmire Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Voidh&eacute;art</span> &mdash; Discipline Priest</h1>
+  <div class="subtitle">
+    <span class="tag tag-kill">KILL</span>
+    Mythic Rotmire &mdash; 8:08 kill &mdash; June 23, 2026 &mdash; Report <code>Hz1Lm672dZnBw9YC</code>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">HPS (Full Fight)</div>
+    <div class="value">141.0K</div>
+    <div class="note">Ref: 235.8K</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">284.7</div>
+    <div class="note">16 equipped items</div>
+  </div>
+  <div class="card">
+    <div class="label">Status</div>
+    <div class="value" style="color: var(--green);">Survived</div>
+    <div class="note">Full fight, 0 deaths</div>
+  </div>
+  <div class="card">
+    <div class="label">Overheal</div>
+    <div class="value" style="color: var(--green);">25.2%</div>
+    <div class="note">Ref: 25.7%</div>
+  </div>
+</div>
+
+<!-- Bottom Line Verdict -->
+<div class="section">
+  <div class="callout" style="border-left-color: var(--yellow);">
+    <div class="callout-title">Survived the kill &mdash; first pull as Disc Priest, ramp timing needs work</div>
+    <div class="callout-body">
+      Voidh&eacute;art swapped to Discipline Priest for the kill attempt after two wipes on a different spec (20-25K HPS on fights 1-2 vs 142K on the kill). Overheal is healthy at 25.2% and Smite filler is strong at 10.68 CPM. However, PW:Shield usage is critically low (7 vs reference 65), Penance CPM is 24% below reference, and Bloom #2 had no pre-ramp at all. Bloom #1 had a textbook ramp. Bloom #3 had only 1 PWR before damage. The fundamentals are there &mdash; Atonement throughput via Smite is solid &mdash; but the ramp discipline and PW:Shield maintenance need significant improvement.
+    </div>
+  </div>
+</div>
+
+<!-- Reference Comparison Table -->
+<div class="section">
+  <h2>Reference Comparison</h2>
+  <table>
+    <thead><tr><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>OH%</th><th>Status</th></tr></thead>
+    <tbody><tr style="background: rgba(188,140,255,0.06);">
+      <td style="color: var(--purple);"><strong>여우신선 (아즈샤라)</strong></td>
+      <td><strong>235,806</strong></td>
+      <td>8:35</td>
+      <td>290</td>
+      <td>7</td>
+      <td>&mdash;</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="">
+      <td style="">天命无忧 (白银之手)</td>
+      <td>230,606</td>
+      <td>7:13</td>
+      <td>288</td>
+      <td>7</td>
+      <td>&mdash;</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="">
+      <td style="">Awaken (Tarren Mill)</td>
+      <td>237,512</td>
+      <td>6:09</td>
+      <td>291</td>
+      <td>11</td>
+      <td>&mdash;</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="">
+      <td style="">喵绿喵绿哞 (白银之手)</td>
+      <td>232,590</td>
+      <td>7:32</td>
+      <td>291</td>
+      <td>11</td>
+      <td>&mdash;</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="">
+      <td style="">野原炘之助 (安苏)</td>
+      <td>234,082</td>
+      <td>8:28</td>
+      <td>293</td>
+      <td>13</td>
+      <td>&mdash;</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="background: rgba(255,255,255,0.06);">
+    <td style="color: #e0e0e0;"><strong>Voidh&eacute;art</strong></td>
+    <td><strong>141,039</strong></td>
+    <td>8:08</td>
+    <td>284.7</td>
+    <td>&mdash;</td>
+    <td>25.2%</td>
+    <td><span class="badge badge-green">Survived</span></td>
+  </tr></tbody>
+  </table>
+  <div class="note" style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Primary reference: <strong>여우신선</strong> (아즈샤라) &mdash; fewest talent diffs (7), closest ilvl at 290.
+    All references are Mythic Rotmire kills with Discipline Priest.
+  </div>
+</div>
+
+<!-- Boss Mechanic Timeline -->
+<div class="section">
+  <h2>Boss Mechanic Timeline</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Rotmire is a single-phase fight with repeating ~136s mechanic cycles. Fungal Bloom (100 energy) is the primary healing check &mdash; it revives add corpses as Bursting Shrooms that must be killed within 16s. Festering Vines roots players in expanding damage circles. Bursting Pustules is the soft enrage, adding Rotting Pustules stacks each cycle.
+  </p>
+
+  <div class="timeline-bar" style="height: 80px; margin-bottom: 30px;">
+    <div class="timeline-inner">
+      <div class="timeline-alive" style="left: 0; width: 100%;"></div>
+      <div class="timeline-marker" style="left: 24.6%; border-color: var(--red);"><div class="marker-label" style="color: var(--red);">Bloom #1 (2:00)</div></div>
+<div class="timeline-marker" style="left: 52.4%; border-color: var(--red);"><div class="marker-label" style="color: var(--red);">Bloom #2 (4:16)</div></div>
+<div class="timeline-marker" style="left: 80.2%; border-color: var(--red);"><div class="marker-label" style="color: var(--red);">Bloom #3 (6:32)</div></div>
+      <div class="timeline-marker" style="left: 8.8%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"><div class="marker-label" style="color: var(--orange); top: auto; bottom: -18px;">Vines</div></div>
+<div class="timeline-marker" style="left: 18.8%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+<div class="timeline-marker" style="left: 36.6%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+<div class="timeline-marker" style="left: 46.7%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+<div class="timeline-marker" style="left: 64.5%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+<div class="timeline-marker" style="left: 74.5%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+<div class="timeline-marker" style="left: 92.3%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+      <div class="timeline-time" style="left: 0;">0:00</div>
+      <div class="timeline-time" style="left: 50%;">4:04</div>
+      <div class="timeline-time" style="left: 100%;">8:08</div>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>Mechanic</th><th>Casts</th><th>Timing Pattern</th><th>Healing Impact</th></tr></thead>
+    <tbody>
+      <tr>
+        <td style="color: var(--red); font-weight: 600;">Fungal Bloom</td>
+        <td>3</td>
+        <td>2:00, 4:16, 6:32 (every ~136s)</td>
+        <td>Major raid-wide &mdash; revives Shrooms, requires raid CDs</td>
+      </tr>
+      <tr>
+        <td style="color: var(--orange);">Festering Vines</td>
+        <td>7</td>
+        <td>0:42, 1:32, 2:59, 3:48, 5:15, 6:04, 7:31</td>
+        <td>DoT circles, slows, creates permanent arena denial</td>
+      </tr>
+      <tr>
+        <td>Bursting Pustules</td>
+        <td>12</td>
+        <td>Every ~21-49s, accelerating</td>
+        <td>Soft enrage &mdash; adds Rotting Pustules DoT stacks</td>
+      </tr>
+      <tr>
+        <td>Awaken Fungi</td>
+        <td>8</td>
+        <td>0:15, 1:04, 2:31, 3:20, 4:47, 5:36, 7:03, 7:52</td>
+        <td>Spawns adds, ticking AoE damage on proximity</td>
+      </tr>
+      <tr>
+        <td>Putrid Fist</td>
+        <td>29</td>
+        <td>Every ~12s</td>
+        <td>Tank swap mechanic, heavy tank damage</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Ramp Analysis -->
+<div class="section">
+  <h2>Ramp Analysis &mdash; Fungal Bloom Windows</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Disc Priest ramp: Apply Atonements via Power Word: Radiance (5 each) &rarr; Evangelism to extend &rarr; burst damage (SW:Death, Mind Blast, Penance, Smite) to heal through Atonement. Ramp should start 5-6s before damage lands.
+  </p>
+
+  <div class="two-col" style="margin-bottom: 16px;">
+    <div>
+    <h3>Bloom #1 (2:00)</h3>
+    <div class="chart-container" style="padding: 12px;">
+      <div style="font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.8;">
+        <div style="">-12.7s: Smite</div>
+<div style="">-11.6s: Mind Blast</div>
+<div style="">-11.6s: Shadow Word: Death</div>
+<div style="">-9.5s: Smite</div>
+<div style="">-8.5s: Smite</div>
+<div style="color: var(--accent); font-weight: 600;">-6.6s: Power Word: Radiance</div>
+<div style="color: var(--accent); font-weight: 600;">-5.5s: Power Word: Radiance</div>
+<div style="color: var(--purple); font-weight: 700;">-5.5s: Evangelism</div>
+<div style="">-4.4s: Flash Heal</div>
+<div style="">-2.5s: Shadow Word: Pain</div>
+<div style="">-0.0s: Smite</div>
+<div style="">+0.8s: Beacon of Lightblind Wrath</div>
+<div style="">+3.0s: Smite</div>
+<div style="">+3.0s: Penance</div>
+<div style="">+4.3s: Penance</div>
+<div style="">+6.5s: Smite</div>
+<div style="">+6.5s: Shadow Word: Death</div>
+<div style="">+8.8s: Smite</div>
+<div style="">+9.7s: Flash Heal</div>
+<div style="">+10.8s: Flash Heal</div>
+<div style="">+11.8s: Flash Heal</div>
+<div style="">+12.9s: Void Shield</div>
+<div style="">+14.0s: Penance</div>
+      </div>
+      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 12px; color: var(--green);">
+        Good ramp: Evangelism at -5.5s with 2 PWR casts before damage.
+      </div>
+    </div>
+  </div>
+    <div>
+    <h3>Bloom #2 (4:16)</h3>
+    <div class="chart-container" style="padding: 12px;">
+      <div style="font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.8;">
+        <div style="">-15.0s: Penance</div>
+<div style="">-13.2s: Shadow Word: Pain</div>
+<div style="">-10.9s: Mind Blast</div>
+<div style="">-10.9s: Shadow Word: Death</div>
+<div style="">-9.7s: Penance</div>
+<div style="">-8.1s: Void Shield</div>
+<div style="">-6.9s: Flash Heal</div>
+<div style="">-5.0s: Flash Heal</div>
+<div style="">-4.1s: Smite</div>
+<div style="">-2.9s: Smite</div>
+<div style="">-1.3s: Smite</div>
+<div style="">-0.9s: Fade</div>
+<div style="">+0.9s: Penance</div>
+<div style="">+2.4s: Flash Heal</div>
+<div style="">+4.5s: Desperate Prayer</div>
+<div style="">+5.2s: Penance</div>
+<div style="">+6.5s: Void Shield</div>
+<div style="">+8.6s: Flash Heal</div>
+<div style="color: var(--accent); font-weight: 600;">+9.6s: Power Word: Radiance</div>
+<div style="color: var(--accent); font-weight: 600;">+10.7s: Power Word: Radiance</div>
+<div style="">+12.3s: Smite</div>
+<div style="">+12.3s: Shadow Word: Pain</div>
+<div style="">+14.6s: Mind Blast</div>
+      </div>
+      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 12px; color: var(--red);">
+        No ramp before this Bloom &mdash; no PWR or Evangelism in the 15s window.
+      </div>
+    </div>
+  </div>
+  </div>
+  <div>
+    <h3>Bloom #3 (6:32)</h3>
+    <div class="chart-container" style="padding: 12px;">
+      <div style="font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.8;">
+        <div style="">-13.1s: Mind Blast</div>
+<div style="">-11.9s: Smite</div>
+<div style="">-10.8s: Smite</div>
+<div style="">-10.8s: Penance</div>
+<div style="">-7.4s: Flash Heal</div>
+<div style="">-7.4s: Penance</div>
+<div style="color: var(--accent); font-weight: 600;">-3.6s: Power Word: Radiance</div>
+<div style="">-1.4s: Power Word: Shield</div>
+<div style="">-0.3s: Penance</div>
+<div style="">+2.3s: Flash Heal</div>
+<div style="">+3.3s: Void Shield</div>
+<div style="">+4.8s: Power Infusion</div>
+<div style="">+4.8s: Power Infusion</div>
+<div style="color: var(--accent); font-weight: 600;">+7.3s: Power Word: Radiance</div>
+<div style="">+7.4s: Penance</div>
+<div style="">+9.9s: Shadow Word: Pain</div>
+<div style="">+11.8s: Mind Blast</div>
+<div style="">+11.8s: Shadow Word: Death</div>
+<div style="">+12.9s: Penance</div>
+<div style="">+14.6s: Power Word: Shield</div>
+      </div>
+      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 12px; color: var(--orange);">
+        1 PWR cast(s) but no Evangelism before damage.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Team CD Coordination -->
+<div class="section">
+  <h2>Team CD Coordination &mdash; Fungal Blooms</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    5-healer comp. Each Bloom should have 2-3 major healing CDs covering it. Voidh&eacute;art&rsquo;s row is highlighted.
+  </p>
+  <div class="cd-grid" style="grid-template-columns: 160px repeat(3, 1fr);">
+    <div class="cd-header">Healer</div>
+    <div class="cd-header">Bloom #1 (2:00)</div>
+<div class="cd-header">Bloom #2 (4:16)</div>
+<div class="cd-header">Bloom #3 (6:32)</div>
+    <div class="cd-cell highlight-row" style="font-weight: 600; color: #e0e0e0;">Voidhéart<br><span style="font-size: 9px; color: var(--dim); font-weight: 400;">Discipline Priest</span></div>
+<div class="cd-cell highlight-row"><span class="cd-pill" style="background: rgba(255,255,255,0.1); color: #e0e0e0;">Evangelism 1:54</span></div>
+<div class="cd-cell highlight-row"><span class="cd-pill" style="background: rgba(255,255,255,0.1); color: #e0e0e0;">Power Infusion 4:33</span></div>
+<div class="cd-cell highlight-row"><span class="cd-pill" style="background: rgba(255,255,255,0.1); color: #e0e0e0;">Power Infusion 6:36</span></div>
+<div class="cd-cell" style="font-weight: 600; color: #00ff96;">Senssay<br><span style="font-size: 9px; color: var(--dim); font-weight: 400;">Mistweaver Monk</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(0,255,150,0.15); color: #00ff96;">Invoke Yu'lon, the Jade Serpent 2:16</span> <span class="cd-pill" style="background: rgba(0,255,150,0.15); color: #00ff96;">Celestial Conduit 2:17</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(0,255,150,0.15); color: #00ff96;">Celestial Conduit 4:31</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(0,255,150,0.15); color: #00ff96;">Celestial Conduit 6:46</span></div>
+<div class="cd-cell" style="font-weight: 600; color: #ff7d0a;">Sìlencio<br><span style="font-size: 9px; color: var(--dim); font-weight: 400;">Restoration Druid</span></div>
+<div class="cd-cell"><span class="cd-pill cd-pill-none">No major CD</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(255,125,10,0.15); color: #ff7d0a;">Tranquility 4:18</span> <span class="cd-pill" style="background: rgba(255,125,10,0.15); color: #ff7d0a;">Tranquility 4:21</span></div>
+<div class="cd-cell"><span class="cd-pill cd-pill-none">No major CD</span></div>
+<div class="cd-cell" style="font-weight: 600; color: #0070de;">Brewtote<br><span style="font-size: 9px; color: var(--dim); font-weight: 400;">Restoration Shaman</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(0,112,222,0.15); color: #0070de;">Ascendance 1:57</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(0,112,222,0.15); color: #0070de;">Spirit Link Totem 4:29</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(0,112,222,0.15); color: #0070de;">Ascendance 6:29</span></div>
+<div class="cd-cell" style="font-weight: 600; color: #f48cba;">Dueche<br><span style="font-size: 9px; color: var(--dim); font-weight: 400;">Holy Paladin</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(244,140,186,0.15); color: #f48cba;">Aura Mastery 1:59</span> <span class="cd-pill" style="background: rgba(244,140,186,0.15); color: #f48cba;">Avenging Wrath 2:01</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(244,140,186,0.15); color: #f48cba;">Avenging Wrath 4:18</span></div>
+<div class="cd-cell"><span class="cd-pill" style="background: rgba(244,140,186,0.15); color: #f48cba;">Avenging Wrath 6:33</span> <span class="cd-pill" style="background: rgba(244,140,186,0.15); color: #f48cba;">Aura Mastery 6:45</span></div>
+  </div>
+  <p style="font-size: 12px; color: var(--dim);">
+    Evangelism timings: 0:11, 1:54, 3:30, 5:35, 7:06 (5 total). Ultimate Penitence at 1:23, 5:49 &mdash; deployed between Blooms on Awaken Fungi windows, not on Blooms directly.
+  </p>
+</div>
+
+<!-- Cast Profile Comparison -->
+<div class="section">
+  <h2>Cast Profile Comparison</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    CPM calculated over full fight (8:08 = 8.1 min). Reference: 여우신선 (8:35 = 8.6 min).
+  </p>
+  <table>
+    <thead><tr><th>Ability</th><th>Player CPM</th><th>Casts</th><th>Ref CPM</th><th>Casts</th><th>Delta</th><th>Note</th></tr></thead>
+    <tbody><tr>
+      <td style="font-weight: 600;">Smite</td>
+      <td>10.68</td><td>87</td>
+      <td>10.94</td><td>94</td>
+      <td><span class="badge badge-green">Match</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Primary Atonement filler</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Penance</td>
+      <td>7.86</td><td>64</td>
+      <td>10.35</td><td>89</td>
+      <td><span class="badge badge-yellow">-24%</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Core rotational</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Shadow Word: Death</td>
+      <td>2.58</td><td>21</td>
+      <td>4.07</td><td>35</td>
+      <td><span class="badge badge-red">-37%</span></td>
+      <td style="font-size: 11px; color: var(--dim);">High damage for Atonement</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Power Word: Radiance</td>
+      <td>3.68</td><td>30</td>
+      <td>3.61</td><td>31</td>
+      <td><span class="badge badge-green">Match</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Ramp: 5 Atonements each</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Flash Heal</td>
+      <td>4.79</td><td>39</td>
+      <td>3.84</td><td>33</td>
+      <td><span class="badge badge-yellow">+25%</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Triage filler</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Mind Blast</td>
+      <td>2.21</td><td>18</td>
+      <td>3.02</td><td>26</td>
+      <td><span class="badge badge-red">-27%</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Damage on CD</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Shadow Word: Pain</td>
+      <td>3.07</td><td>25</td>
+      <td>2.09</td><td>18</td>
+      <td><span class="badge badge-orange">+47%</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Maintenance DoT</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Power Word: Shield</td>
+      <td>0.86</td><td>7</td>
+      <td>7.56</td><td>65</td>
+      <td><span class="badge badge-red">-89%</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Single Atonement application</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Evangelism</td>
+      <td>0.61</td><td>5</td>
+      <td>0.70</td><td>6</td>
+      <td><span class="badge badge-green">Match</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Ramp CD (extends Atonements)</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Power Infusion</td>
+      <td>0.98</td><td>8</td>
+      <td>0.93</td><td>8</td>
+      <td><span class="badge badge-green">Match</span></td>
+      <td style="font-size: 11px; color: var(--dim);">Damage buff</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Ultimate Penitence</td>
+      <td>0.25</td><td>2</td>
+      <td>0.23</td><td>2</td>
+      <td><span class="badge badge-green">Match</span></td>
+      <td style="font-size: 11px; color: var(--dim);">4-min CD</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Pain Suppression</td>
+      <td>0.12</td><td>1</td>
+      <td>0.00</td><td>0</td>
+      <td><span class="badge badge-orange">++100%</span></td>
+      <td style="font-size: 11px; color: var(--dim);">External DR</td>
+    </tr></tbody>
+  </table>
+</div>
+
+<!-- Cast Analysis Cards -->
+<div class="section">
+  <h2>Cast Profile Analysis</h2>
+  <div class="two-col">
+    <div class="callout info">
+      <div class="callout-title">PW:Shield Gap: 7 vs 65 casts</div>
+      <div class="callout-body">
+        The reference player uses PW:Shield as a constant Atonement applicator between ramp windows &mdash; shielding on cooldown to maintain passive Atonement coverage. Voidh&eacute;art cast it only 7 times across 8:09, relying on Flash Heal (39 casts, 4.79 CPM) instead. Flash Heal costs more mana, is slower, and doesn't provide absorb value. This single change would close much of the HPS gap.
+      </div>
+    </div>
+    <div class="callout green">
+      <div class="callout-title">Smite Usage: Strong</div>
+      <div class="callout-body">
+        Smite CPM at 10.68 matches the reference (10.94). This means Voidh&eacute;art is filling correctly with damage during low-damage windows rather than spamming heals on full-health targets. Good Smite discipline is the foundation of Disc Priest healing, and this is solid.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Healing Breakdown -->
+<div class="section">
+  <h2>Healing Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Total effective: 68.9M | Total overheal: 25.2% | Reference: 121.7M (25.7% OH)
+  </p>
+  <table>
+    <thead><tr><th>Source</th><th>Player Effective</th><th>Distribution</th><th>OH%</th><th>Ref Effective</th><th>Ref OH%</th></tr></thead>
+    <tbody><tr>
+      <td style="font-weight: 600;">Atonement</td>
+      <td>30.5M</td>
+      <td><span class="inline-bar" style="width: 100px; background: var(--green);"></span><span class="inline-bar" style="width: 29.800605343641028px; background: var(--red);"></span></td>
+      <td style="color: var(--dim);">29.8%</td>
+      <td>59.4M</td>
+      <td>30.4%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Void Shield</td>
+      <td>10.1M</td>
+      <td><span class="inline-bar" style="width: 73.60002221136443px; background: var(--green);"></span><span class="inline-bar" style="width: 0px; background: var(--red);"></span></td>
+      <td style="color: var(--dim);">0.0%</td>
+      <td>15.8M</td>
+      <td>0.0%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Penance</td>
+      <td>4.9M</td>
+      <td><span class="inline-bar" style="width: 35.512536735532585px; background: var(--green);"></span><span class="inline-bar" style="width: 17.42401775614772px; background: var(--red);"></span></td>
+      <td style="color: var(--red);">49.1%</td>
+      <td>6.9M</td>
+      <td>50.9%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Power Word: Radiance</td>
+      <td>4.4M</td>
+      <td><span class="inline-bar" style="width: 32.079334607169784px; background: var(--green);"></span><span class="inline-bar" style="width: 10.549189431183711px; background: var(--red);"></span></td>
+      <td style="color: var(--yellow);">32.9%</td>
+      <td>6.3M</td>
+      <td>18.5%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Flash Heal</td>
+      <td>2.3M</td>
+      <td><span class="inline-bar" style="width: 16.86051734578895px; background: var(--green);"></span><span class="inline-bar" style="width: 6.05316691843162px; background: var(--red);"></span></td>
+      <td style="color: var(--yellow);">35.9%</td>
+      <td>2.1M</td>
+      <td>40.6%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Divine Aegis</td>
+      <td>3.3M</td>
+      <td><span class="inline-bar" style="width: 23.626026131455564px; background: var(--green);"></span><span class="inline-bar" style="width: 0px; background: var(--red);"></span></td>
+      <td style="color: var(--dim);">0.0%</td>
+      <td>4.8M</td>
+      <td>0.0%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Piety</td>
+      <td>2.7M</td>
+      <td><span class="inline-bar" style="width: 19.28124709384271px; background: var(--green);"></span><span class="inline-bar" style="width: 1.2148369251479747px; background: var(--red);"></span></td>
+      <td style="color: var(--dim);">6.3%</td>
+      <td>4.5M</td>
+      <td>11.7%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Leech</td>
+      <td>2.5M</td>
+      <td><span class="inline-bar" style="width: 18.474018049025524px; background: var(--green);"></span><span class="inline-bar" style="width: 1.269391627835985px; background: var(--red);"></span></td>
+      <td style="color: var(--dim);">6.9%</td>
+      <td>4.5M</td>
+      <td>22.7%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Litany of Lightblind Wrath</td>
+      <td>2.5M</td>
+      <td><span class="inline-bar" style="width: 17.870161084468126px; background: var(--green);"></span><span class="inline-bar" style="width: 0px; background: var(--red);"></span></td>
+      <td style="color: var(--dim);">0.0%</td>
+      <td>&mdash;</td>
+      <td>&mdash;%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Penance (Contrition)</td>
+      <td>1.4M</td>
+      <td><span class="inline-bar" style="width: 10.117122735326047px; background: var(--green);"></span><span class="inline-bar" style="width: 3.488320692558612px; background: var(--red);"></span></td>
+      <td style="color: var(--yellow);">34.5%</td>
+      <td>2.3M</td>
+      <td>35.2%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Penance (Contrition Crit)</td>
+      <td>1.5M</td>
+      <td><span class="inline-bar" style="width: 11.105022198091572px; background: var(--green);"></span><span class="inline-bar" style="width: 3.038926305003619px; background: var(--red);"></span></td>
+      <td style="color: var(--dim);">27.4%</td>
+      <td>3.2M</td>
+      <td>39.8%</td>
+    </tr>
+<tr>
+      <td style="font-weight: 600;">Power Word: Shield</td>
+      <td>798K</td>
+      <td><span class="inline-bar" style="width: 5.785123355538363px; background: var(--green);"></span><span class="inline-bar" style="width: 0px; background: var(--red);"></span></td>
+      <td style="color: var(--dim);">0.0%</td>
+      <td>7.6M</td>
+      <td>0.0%</td>
+    </tr></tbody>
+  </table>
+</div>
+
+<!-- DPS Contribution -->
+<div class="section">
+  <h2>DPS Contribution</h2>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-label">DPS</div><div class="stat-value">25,349</div></div>
+    <div class="stat-box"><div class="stat-label">Total Damage</div><div class="stat-value">12.4M</div></div>
+    <div class="stat-box"><div class="stat-label">Top Source</div><div class="stat-value" style="font-size: 14px;">Inescapable Torment<br>2.8M</div></div>
+  </div>
+  <p style="font-size: 12px; color: var(--dim);">Disc Priest DPS filler is Smite. All damage contributes to Atonement healing. Key damage sources: Inescapable Torment 2.8M, Void Shield 2.5M, Penance (Twinsight) 1.8M, Shadow Word: Pain 1.2M, Smite 840K, Ultimate Penitence 772K.</p>
+</div>
+
+<!-- Wipe Progression -->
+<div class="section">
+  <h2>Wipe Progression</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Voidh&eacute;art swapped to Discipline Priest for Fight 3 (the kill). Fights 1-2 show drastically lower HPS (20-25K) consistent with a different spec.
+  </p>
+  <div class="chart-container"><div class="bar-chart"><div class="bar-wrapper">
+      <div class="bar-value">25K</div>
+      <div class="bar bar-died" style="height: 31.263558247640514px;"></div>
+      <div class="bar-label">F1<br>6:54<br>22.45%</div>
+    </div>
+<div class="bar-wrapper">
+      <div class="bar-value">20K</div>
+      <div class="bar bar-died" style="height: 25.6485420481758px;"></div>
+      <div class="bar-label">F2<br>8:25<br>11.61%</div>
+    </div>
+<div class="bar-wrapper">
+      <div class="bar-value">142K</div>
+      <div class="bar bar-kill" style="height: 180px;"></div>
+      <div class="bar-label">F3<br>8:08<br>KILL</div>
+    </div></div></div>
+</div>
+
+<!-- Healer Team Ranking -->
+<div class="section">
+  <h2>Healer Team Ranking &mdash; Kill Fight</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    5-healer comp. All healers survived. Voidh&eacute;art ranked #5 but contributed solid Atonement throughput and no deaths.
+  </p>
+  <table>
+    <thead><tr><th>#</th><th>Name</th><th>Spec</th><th>Total Healing</th><th>HPS</th><th>OH%</th><th>Status</th></tr></thead>
+    <tbody><tr style="">
+      <td>1</td>
+      <td style="color: #00ff96; font-weight: 400;">Senssay</td>
+      <td>Mistweaver Monk</td>
+      <td>83.2M</td>
+      <td>170,195</td>
+      <td>27.2%</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="">
+      <td>2</td>
+      <td style="color: #0070de; font-weight: 400;">Brewtote</td>
+      <td>Restoration Shaman</td>
+      <td>78.7M</td>
+      <td>160,949</td>
+      <td>20.6%</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="">
+      <td>3</td>
+      <td style="color: #f48cba; font-weight: 400;">Dueche</td>
+      <td>Holy Paladin</td>
+      <td>78.3M</td>
+      <td>160,282</td>
+      <td>31.5%</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="">
+      <td>4</td>
+      <td style="color: #ff7d0a; font-weight: 400;">Sìlencio</td>
+      <td>Restoration Druid</td>
+      <td>77.8M</td>
+      <td>159,270</td>
+      <td>41.6%</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr>
+<tr style="background: rgba(255,255,255,0.06);">
+      <td>5</td>
+      <td style="color: #e0e0e0; font-weight: 700;">Voidhéart</td>
+      <td>Discipline Priest</td>
+      <td>69.4M</td>
+      <td>141,980</td>
+      <td>25.4%</td>
+      <td><span class="badge badge-green">Survived</span></td>
+    </tr></tbody>
+  </table>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Items</h2>
+  <div class="callout" style="border-left-color: var(--red);">
+      <div class="callout-title">Power Word: Shield severely undercast: 7 vs reference 65</div>
+      <div class="callout-body">PW:Shield is a critical Atonement applicator between ramps and provides absorb healing. 여우신선 cast it 65 times (7.6 CPM) while Voidh&eacute;art cast it only 7 times (0.9 CPM). Every unused PW:Shield is a missed Atonement and missed absorb value. This is the single largest CPM gap in the profile.</div>
+    </div>
+<div class="callout" style="border-left-color: var(--accent);">
+      <div class="callout-title">Penance CPM 7.9 vs reference 10.4 (-24%)</div>
+      <div class="callout-body">Penance is the highest-priority rotational ability for Disc Priest. It should be pressed on cooldown. 여우신선 averaged 10.4 CPM. At 7.86 CPM, Voidh&eacute;art is leaving Penance idle for extended periods. Each missed Penance is ~5 Atonement healing events lost.</div>
+    </div>
+<div class="callout" style="border-left-color: var(--accent);">
+      <div class="callout-title">Shadow Word: Death underused: 2.6 vs reference 4.1 CPM</div>
+      <div class="callout-body">Shadow Word: Death is the highest single-hit damage spell for Disc and drives the most Atonement healing per GCD during ramp windows. 여우신선 used it 35 times. Voidh&eacute;art used it 21 times. Casting SW:Death during ramp windows significantly amplifies burst Atonement healing.</div>
+    </div>
+<div class="callout" style="border-left-color: var(--red);">
+      <div class="callout-title">Bloom #2 at 4:16: No ramp before damage</div>
+      <div class="callout-body">Zero PWR casts and no Evangelism before Bloom #2. The cast log shows Voidh&eacute;art was casting Penance and reactive Flash Heals instead of setting up Atonements beforehand. PWR casts appear at +10s, +11s &mdash; after the damage already hit. This turns a proactive spec into a reactive one, wasting Disc Priest's core strength.</div>
+    </div>
+<div class="callout" style="border-left-color: var(--accent);">
+      <div class="callout-title">Bloom #3 at 6:32: Incomplete ramp (1 PWR before damage)</div>
+      <div class="callout-body">Only 1 PWR cast(s) before Bloom #3. A full ramp needs 2-3 PWR before Evangelism to have 10-15 Atonements active when damage hits. The late ramp reduces throughput on the final Bloom cycle where damage is highest due to Bursting Pustules stacks.</div>
+    </div>
+<div class="callout" style="border-left-color: var(--green);">
+      <div class="callout-title">HPS gap: 141,039 vs reference 235,806 (60%)</div>
+      <div class="callout-body">Voidh&eacute;art's HPS is 60% of the top reference. Key contributors to the gap: PW:Shield usage (7 vs 65 casts), Penance CPM (7.86 vs 10.35), and incomplete ramps on Blooms #2 and #3. Fights 1-2 show 20-25K HPS (non-Disc spec), confirming this was the first pull as Disc Priest. Context matters: the kill was achieved and overheal is healthy at 25.2%.</div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Data source: WCL report <code>Hz1Lm672dZnBw9YC</code>, fight 3 (Mythic Rotmire kill, 8:08).</p>
+  <p>Primary reference: <strong>여우신선</strong> (아즈샤라) &mdash; 7 talent differences, 290 ilvl, 235,806 HPS.</p>
+  <p>Analysis mode: Kill. Player survived the full fight. Fights 1-2 were on a different spec (not analyzed as Disc).</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mythic Lightblinded Vanguard &mdash; Full Raid Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    padding: 32px;
+    max-width: 960px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c4a1ff;
+    margin-top: 36px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 6px;
+  }
+
+  .pattern {
+    background: #111;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: #999;
+  }
+
+  .pattern strong {
+    color: #ccc;
+  }
+
+  .pattern .warn {
+    color: #ffa940;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+
+  p, li {
+    font-size: 14px;
+    color: #ccc;
+  }
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 12px;
+  }
+
+  ul li {
+    padding: 2px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  ul li::before {
+    content: "\2022";
+    position: absolute;
+    left: 0;
+    color: #555;
+  }
+
+  /* ── Soaker / Info Tables ── */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .info-table th {
+    text-align: left;
+    font-weight: 600;
+    color: #888;
+    padding: 6px 12px;
+    border-bottom: 1px solid #222;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .info-table td {
+    padding: 5px 12px;
+    color: #ccc;
+    border-bottom: 1px solid #151515;
+  }
+
+  .info-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* ── CD Timeline Events ── */
+  .cycle-header {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #666;
+    margin-top: 32px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .event {
+    background: #141414;
+    border: 1px solid #1e1e1e;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+  }
+
+  .event-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .event-time {
+    font-size: 13px;
+    font-weight: 700;
+    color: #888;
+    font-family: 'Courier New', monospace;
+    min-width: 42px;
+  }
+
+  .event-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .event-note {
+    font-size: 12px;
+    color: #666;
+    margin-left: auto;
+  }
+
+  .event-aura .event-name { color: #ffd966; }
+  .event-aura {
+    border-left: 3px solid #ffd966;
+    background: #1a1710;
+  }
+  .event-burst .event-name { color: #5b9bd5; }
+  .event-burst {
+    border-left: 3px solid #5b9bd5;
+    background: #111418;
+  }
+  .event-dispel .event-name { color: #c4a1ff; }
+  .event-dispel {
+    border-left: 3px solid #c4a1ff;
+    background: #161220;
+  }
+  .event-aura.hardest, .event-burst.hardest, .event-dispel.hardest {
+    border-left: 3px solid #ff6b6b;
+    background: #1a1212;
+  }
+
+  .cd-list {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 2px 12px;
+    font-size: 13px;
+    padding-left: 52px;
+  }
+
+  .cd-role {
+    color: #888;
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .cd-role.hpal { color: #f48cba; }
+  .cd-role.rsham { color: #0070dd; }
+  .cd-role.mw { color: #00ff98; }
+  .cd-role.rdruid { color: #ff7c0a; }
+  .cd-role.dpriest { color: #fff; }
+  .cd-role.raid { color: #a0a0a0; }
+
+  .cd-ability {
+    color: #ddd;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .tag-warn {
+    background: #3d2200;
+    color: #ffa940;
+  }
+
+  .tag-danger {
+    background: #3d0011;
+    color: #ff6b6b;
+  }
+
+  .tag-info {
+    background: #002a3d;
+    color: #5bc0de;
+  }
+
+  .tag-dispel {
+    background: #251540;
+    color: #c4a1ff;
+  }
+
+  /* ── Tank Timeline ── */
+  .tank-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .tank-table th {
+    text-align: left;
+    font-weight: 600;
+    color: #888;
+    padding: 6px 12px;
+    border-bottom: 1px solid #333;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .tank-table td {
+    padding: 5px 12px;
+    color: #ccc;
+    border-bottom: 1px solid #1a1a1a;
+    vertical-align: top;
+  }
+
+  .tank-table .time-col {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #888;
+    white-space: nowrap;
+    min-width: 50px;
+  }
+
+  .tank-table .swap-row td {
+    background: #161218;
+    color: #c4a1ff;
+    font-weight: 500;
+  }
+
+  .tank-table .sr-row td {
+    background: #1a1710;
+    color: #ffd966;
+  }
+
+  /* ── Copy Blocks ── */
+  .mrt-section {
+    margin-top: 36px;
+  }
+
+  .mrt-block {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: #ccc;
+    position: relative;
+    margin-top: 8px;
+  }
+
+  .mrt-block .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+
+  .mrt-hint {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .copy-block {
+    background: #0d0d0d;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    color: #ccc;
+    position: relative;
+  }
+
+  .copy-block .label {
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: block;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #222;
+    border: 1px solid #333;
+    color: #aaa;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .copy-btn:hover {
+    background: #333;
+    color: #fff;
+  }
+
+  details {
+    margin-top: 36px;
+  }
+
+  summary {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    padding: 8px 0;
+  }
+
+  summary:hover {
+    color: #999;
+  }
+
+  .details-inner {
+    background: #111;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #888;
+    line-height: 1.7;
+  }
+
+  .details-inner a {
+    color: #7cacf8;
+  }
+
+  .reactive {
+    background: #111;
+    border: 1px dashed #333;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-top: 16px;
+  }
+
+  .reactive-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 8px;
+  }
+
+  .footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid #1a1a1a;
+    font-size: 12px;
+    color: #444;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h1>Mythic Lightblinded Vanguard &mdash; Full Raid Guide</h1>
+<p class="subtitle">Four Dads One Pizza &mdash; MW / RSham / RDruid / HPal / DPriest &mdash; 5 healers</p>
+
+<!-- ── OVERVIEW ── -->
+<div class="pattern">
+  Council of three paladin bosses, all active simultaneously. <strong>Kill order: Lightblood (Ret) &rarr; Senn (Holy) &rarr; Bellamy (Prot)</strong>. Repeating spirit cycle (~160s) spawns <strong>Mender &rarr; Defender &rarr; Vindictive</strong>, each empowering a boss and activating an aura. <strong>Searing Radiance</strong> (15s ramping DoT) is the primary healing check. <strong>Mass Avenger&rsquo;s Shield</strong> hits 19-20 players at ~1:10 and ~3:52 &mdash; Revival is the mass dispel. ~6 minute fight.
+</div>
+
+<!-- ── BOSS GUIDE ── -->
+<h2>Bosses</h2>
+
+<ul>
+  <li><strong style="color:#f48cba;">General Amias Bellamy</strong> (Prot Paladin) &mdash; The tank boss. Casts <strong>Avenger&rsquo;s Shield</strong>, <strong>Divine Toll</strong>, <strong>Judgment + Shield of the Righteous</strong>, and <strong>Divine Consecration</strong>. His <strong>Mass Avenger&rsquo;s Shield</strong> hits 19-20 players and must be dispelled with Revival.</li>
+  <li><strong style="color:#f48cba;">Commander Venel Lightblood</strong> (Ret Paladin) &mdash; The DPS boss. <strong>Kill first.</strong> Casts <strong>Sacred Toll</strong> (unavoidable raid nuke every ~18s), <strong>Judgment + Final Verdict</strong>, and <strong>Divine Storm</strong>. When empowered, Divine Storm spawns tornadoes melee needs to dodge.</li>
+  <li><strong style="color:#f48cba;">War Chaplain Senn</strong> (Holy Paladin) &mdash; The healer boss. <strong>Kill second.</strong> Casts <strong>Searing Radiance</strong> (15s ramping DoT &mdash; MT pulls her out), <strong>Sacred Shield</strong> (absorb shield on herself), <strong>Elekk Charge</strong>, <strong>Exorcism</strong>, and <strong>Tyr&rsquo;s Wrath</strong> (heal absorb on soakers).</li>
+</ul>
+
+<h2>Spirit Cycle (~160s)</h2>
+
+<p style="font-size:13px;color:#ccc;margin-bottom:12px;">Three spirits spawn sequentially in a repeating cycle. Each one empowers a boss and activates an aura. <strong>Light Infused</strong> pulses constant raid damage and ramps +25% each time an aura fires.</p>
+
+<ul>
+  <li><strong>Spirit of the Mender</strong> spawns first &rarr; empowers Senn &rarr; <strong>Tyr&rsquo;s Wrath</strong> (heal absorb on soakers)</li>
+  <li><strong>Spirit of the Defender</strong> spawns second &rarr; empowers Bellamy &rarr; <strong>Aura of Devotion</strong> (75% DR on bosses, swap to adds)</li>
+  <li><strong>Spirit of the Vindictive</strong> spawns third &rarr; empowers Lightblood &rarr; <strong>Aura of Wrath</strong> (doubles boss Holy damage) then <strong>Aura of Peace</strong> (Senn empowered &rarr; Tyr&rsquo;s Wrath from Senn)</li>
+</ul>
+
+<h2>Kill Order &amp; Timing</h2>
+
+<ul>
+  <li><strong>1. Lightblood (Ret)</strong> &mdash; Kill before his 3rd ultimate. Empowered phase spawns Divine Storm tornadoes.</li>
+  <li><strong>2. Senn (Holy)</strong> &mdash; Kill before her 3rd ultimate. Most dangerous healer boss &mdash; Searing Radiance + heal absorbs.</li>
+  <li><strong>3. Bellamy (Prot)</strong> &mdash; Dies last. Gets a 3rd ultimate but Prot phase is the most survivable.</li>
+</ul>
+
+<div class="pattern">
+  <span class="warn">Retribution:</span> When a paladin dies, the raid takes <strong>5% stacking damage amp</strong> every 2 seconds. Ret must be dead before the final Mass AS (~6:35) so Revival is available for that dispel.
+</div>
+
+<h2>Key Mechanics</h2>
+
+<h3>Searing Radiance (Senn)</h3>
+<p style="font-size:13px;color:#ccc;margin-bottom:8px;">15-second ramping DoT centered on Senn. Damage gets worse toward the end of the window. MT pulls Senn ~20 yards away from the raid at 3/4 of the cast bar. Fires at <strong>0:11, 1:03, 1:55, 3:02, 3:54, 5:41</strong>.</p>
+
+<h3>Mass Avenger&rsquo;s Shield (Bellamy)</h3>
+<p style="font-size:13px;color:#ccc;margin-bottom:8px;">Hits 19-20 players simultaneously. Fires at <strong>~1:10</strong> and <strong>~3:52</strong>. Must be mass-dispelled with Revival immediately.</p>
+
+<h3>Sacred Toll (Lightblood)</h3>
+<p style="font-size:13px;color:#ccc;margin-bottom:8px;">Unavoidable raid-wide nuke every ~18 seconds throughout the fight. The constant ticking damage that makes everything else harder.</p>
+
+<h3>Tyr&rsquo;s Wrath</h3>
+<p style="font-size:13px;color:#ccc;margin-bottom:8px;">Heal absorb applied to soakers. Comes from Spirit of the Mender (~0:34, ~3:13, ~5:52) and from empowered Senn (~2:23, ~5:02). Designated soakers stand in it so the rest of the raid doesn&rsquo;t get hit.</p>
+
+<h3>Execution Sentence</h3>
+<p style="font-size:13px;color:#ccc;margin-bottom:8px;">Targets healers only. Damage splits across everyone nearby &mdash; whole raid stacks to soak.</p>
+
+<h3>Sacred Shield (Senn)</h3>
+<p style="font-size:13px;color:#ccc;margin-bottom:8px;">Absorb shield Senn puts on herself every ~55-60s. Needs to be stripped so she can take damage.</p>
+
+<h3>Dangerous Overlaps (prog walls)</h3>
+<ul>
+  <li><strong>1:55-2:23</strong> &mdash; SR #3 &rarr; Aura of Peace &rarr; Tyr&rsquo;s Wrath (Senn) &mdash; <span style="color:#ff6b6b;">W5 saves you</span></li>
+  <li><strong>3:02-3:17</strong> &mdash; SR #4 + Tyr&rsquo;s Wrath (Spirit at 3:13) &mdash; <span style="color:#ff6b6b;">W6 saves you</span></li>
+  <li><strong>4:45-5:02</strong> &mdash; Empowered Divine Storm + Aura of Peace + Tyr&rsquo;s Wrath (Senn) &mdash; <span style="color:#ff6b6b;">W8 saves you</span></li>
+  <li><strong>5:41-5:56</strong> &mdash; Final SR + Retribution death stacks &mdash; <span style="color:#ff6b6b;">W9, wipe point</span></li>
+</ul>
+
+<!-- ── SOAKER ASSIGNMENTS ── -->
+<h2>Soaker Assignments</h2>
+
+<h3>Tyr&rsquo;s Wrath Soakers (heal absorb)</h3>
+<p style="font-size:13px;color:#888;margin-bottom:8px;">Confirmed across fights 36, 37, 39 from report w9CLGQXPWdDnfcrb</p>
+
+<table class="info-table">
+  <tr><th>Player</th><th>Role</th></tr>
+  <tr><td>Brewtote</td><td style="color:#0070dd;">RSham</td></tr>
+  <tr><td>Senssay (Josh)</td><td style="color:#00ff98;">MW Monk</td></tr>
+  <tr><td>Nucke</td><td>DH</td></tr>
+  <tr><td style="color:#ffa940;">TBD</td><td style="color:#666;">needs assignment</td></tr>
+  <tr><td style="color:#ffa940;">TBD</td><td style="color:#666;">needs assignment</td></tr>
+</table>
+
+<h3>Execution Sentence</h3>
+<p style="font-size:13px;color:#ccc;">Targets healers only. Whole raid stacks to soak the split (38-40 hits across 20 players). Floating healer role <strong style="color:#ffa940;">needs reassignment</strong> &mdash; one healer covers when another gets targeted.</p>
+
+<h3>Mass Avenger&rsquo;s Shield</h3>
+<p style="font-size:13px;color:#ccc;">Hits 19-20 players at <strong>~1:10</strong> and <strong>~3:52</strong>. Revival is the mass dispel.</p>
+
+<!-- ── HEALING CD ASSIGNMENTS ── -->
+<h2>Healing CD Assignments</h2>
+
+<div class="pattern">
+  CDs verified from actual casts in kill logs. Convoke is ~60s CD &mdash; used rotationally, not saved for big windows.
+</div>
+
+<div class="cycle-header">&mdash;&mdash;&mdash; Spirit Cycle 1 &mdash;&mdash;&mdash;</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">W1</span>
+    <span class="event-name">0:09 &mdash; Searing Radiance #1</span>
+    <span class="event-note">opening &mdash; easy</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu&rsquo;lon</span>
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Convoke</span>
+  </div>
+</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">W2</span>
+    <span class="event-name">0:39 &mdash; Tyr&rsquo;s Wrath (Spirit)</span>
+    <span class="event-note">heal absorb on soakers</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+  </div>
+</div>
+
+<div class="event event-dispel">
+  <div class="event-header">
+    <span class="event-time">W3</span>
+    <span class="event-name">1:10 &mdash; Mass Avenger&rsquo;s Shield</span>
+    <span class="tag tag-dispel">REVIVAL DISPEL</span>
+    <span class="event-note">hits 19-20 players</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">REVIVAL (mass dispel)</span>
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Convoke</span>
+    <span class="cd-role dpriest">DPriest</span><span class="cd-ability">Ultimate Penitence</span>
+  </div>
+</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">W4</span>
+    <span class="event-name">1:55 &mdash; Searing Radiance #3</span>
+    <span class="event-note">overlaps Sacred Shield at 1:32</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Convoke</span>
+  </div>
+</div>
+
+<div class="event event-aura hardest">
+  <div class="event-header">
+    <span class="event-time">W5</span>
+    <span class="event-name">2:17 &mdash; Aura of Peace + Tyr&rsquo;s Wrath</span>
+    <span class="tag tag-danger">PROG WALL</span>
+    <span class="event-note">SR #3 &rarr; AoP &rarr; Tyr&rsquo;s overlap</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu&rsquo;lon</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Convoke</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Aura Mastery</span>
+  </div>
+</div>
+
+<div class="cycle-header">&mdash;&mdash;&mdash; Spirit Cycle 2 &mdash;&mdash;&mdash;</div>
+
+<div class="event event-burst hardest">
+  <div class="event-header">
+    <span class="event-time">W6</span>
+    <span class="event-name">3:02 &mdash; Searing Radiance #4 + Tyr&rsquo;s Wrath</span>
+    <span class="tag tag-danger">PROG WALL</span>
+    <span class="event-note">Spirit Tyr&rsquo;s at 3:13</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Tranquility</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+  </div>
+</div>
+
+<div class="event event-dispel">
+  <div class="event-header">
+    <span class="event-time">W7</span>
+    <span class="event-name">3:52 &mdash; Mass Avenger&rsquo;s Shield (2nd)</span>
+    <span class="tag tag-dispel">REVIVAL DISPEL</span>
+    <span class="event-note">hits 19-20 players</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">REVIVAL (mass dispel)</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Convoke</span>
+  </div>
+</div>
+
+<div class="event event-aura hardest">
+  <div class="event-header">
+    <span class="event-time">W8</span>
+    <span class="event-name">4:37 &mdash; Empowered Divine Storm + Aura of Peace</span>
+    <span class="tag tag-danger">PROG WALL</span>
+    <span class="event-note">DS at 4:45 + AoP at 4:57 + Tyr&rsquo;s at 5:02</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu&rsquo;lon</span>
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Convoke + Ironbark</span>
+  </div>
+</div>
+
+<div class="cycle-header">&mdash;&mdash;&mdash; Kill Push &mdash;&mdash;&mdash;</div>
+
+<div class="event event-burst hardest">
+  <div class="event-header">
+    <span class="event-time">W9</span>
+    <span class="event-name">5:41 &mdash; Searing Radiance #6 + Retribution</span>
+    <span class="tag tag-danger">LETHAL</span>
+    <span class="event-note">Retribution stacks at 5:44 &mdash; wipe point</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Tranquility + Convoke</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath + Aura Mastery</span>
+    <span class="cd-role dpriest">DPriest</span><span class="cd-ability">Ultimate Penitence</span>
+  </div>
+</div>
+
+<!-- REACTIVE -->
+<div class="reactive">
+  <div class="reactive-title">Reactive &mdash; use on the fly, no pre-assignment</div>
+  <div class="cd-list" style="padding-left: 16px;">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Blessing of Sacrifice, Lay on Hands</span>
+    <span class="cd-role dpriest">DPriest</span><span class="cd-ability">Pain Suppression (single target)</span>
+    <span class="cd-role rdruid">RDruid</span><span class="cd-ability">Ironbark (outside W8)</span>
+  </div>
+</div>
+
+<!-- ── TANK TAUNT GUIDE ── -->
+<h2>Tank Taunt Guide</h2>
+
+<div class="pattern">
+  <strong>MT</strong> = the mover. Pulls Senn for Searing Radiance. Holds Senn + one other boss.<br>
+  <strong>OT</strong> = the wall. Holds Bellamy. Stands still.<br><br>
+  Tanks swap Bellamy and Lightblood simultaneously every ~80-90s. Senn always stays on MT.
+</div>
+
+<h3>The Pull</h3>
+<table class="tank-table">
+  <tr><th style="width:60px;">Time</th><th style="width:60px;">Who</th><th>Action</th></tr>
+  <tr><td class="time-col">0:00</td><td><strong>OT</strong></td><td>Taunt Bellamy (Prot)</td></tr>
+  <tr><td class="time-col">0:02</td><td><strong>MT</strong></td><td>Taunt Lightblood (Ret)</td></tr>
+  <tr><td class="time-col">0:14</td><td><strong>MT</strong></td><td>Taunt Senn (Holy) &mdash; pull her out for Searing Radiance</td></tr>
+</table>
+
+<h3>Taunt Swap Timer</h3>
+<p style="font-size:13px;color:#888;margin-bottom:10px;">Both tanks taunt simultaneously to trade Bellamy and Lightblood. Senn stays on MT.</p>
+<table class="tank-table">
+  <tr><th style="width:60px;">Time</th><th>MT Taunts</th><th>OT Taunts</th></tr>
+  <tr class="swap-row"><td class="time-col">1:03</td><td>Bellamy</td><td>Lightblood &larr; SWAP</td></tr>
+  <tr class="swap-row"><td class="time-col">2:33</td><td>Bellamy</td><td>Lightblood &larr; SWAP</td></tr>
+  <tr class="swap-row"><td class="time-col">3:45</td><td>Bellamy</td><td>Lightblood &larr; SWAP</td></tr>
+  <tr class="swap-row"><td class="time-col">5:15</td><td>Bellamy</td><td>Lightblood &larr; SWAP</td></tr>
+</table>
+
+<h3>Searing Radiance Pull (MT only)</h3>
+<p style="font-size:13px;color:#ccc;margin-bottom:10px;">Senn casts SR at the times below. Start running at <strong>3/4 of the cast bar</strong>. Taunt Senn if not already on you, pop a movement speed, run ~20 yards out. Bring her back after it expires (15s).</p>
+<table class="tank-table">
+  <tr><th style="width:60px;">Time</th><th>Action</th></tr>
+  <tr class="sr-row"><td class="time-col">0:11</td><td>SR #1 &mdash; pull Senn out at 3/4 bar</td></tr>
+  <tr class="sr-row"><td class="time-col">3:02</td><td>SR #4 &mdash; pull Senn out at 3/4 bar</td></tr>
+  <tr class="sr-row"><td class="time-col">5:41</td><td>SR #6 &mdash; pull Senn out at 3/4 bar (Retribution active &mdash; LETHAL)</td></tr>
+</table>
+
+<h3>Full Tank Timeline</h3>
+<table class="tank-table">
+  <tr><th style="width:60px;">Time</th><th>MT</th><th>OT</th></tr>
+  <tr><td class="time-col">0:00</td><td>&mdash;</td><td><strong>Taunt Bellamy</strong></td></tr>
+  <tr><td class="time-col">0:02</td><td><strong>Taunt Lightblood</strong></td><td>&mdash;</td></tr>
+  <tr class="sr-row"><td class="time-col">0:11</td><td>SR &mdash; pull Senn at 3/4 bar</td><td>&mdash;</td></tr>
+  <tr><td class="time-col">0:14</td><td><strong>Taunt Senn</strong></td><td>&mdash;</td></tr>
+  <tr class="swap-row"><td class="time-col">1:03</td><td><strong>Taunt Bellamy</strong></td><td><strong>Taunt Lightblood</strong> &larr; SWAP</td></tr>
+  <tr class="swap-row"><td class="time-col">2:33</td><td><strong>Taunt Bellamy</strong></td><td><strong>Taunt Lightblood</strong> &larr; SWAP</td></tr>
+  <tr class="sr-row"><td class="time-col">3:02</td><td>SR &mdash; pull Senn at 3/4 bar</td><td>&mdash;</td></tr>
+  <tr class="swap-row"><td class="time-col">3:45</td><td><strong>Taunt Bellamy</strong></td><td><strong>Taunt Lightblood</strong> &larr; SWAP</td></tr>
+  <tr class="swap-row"><td class="time-col">5:15</td><td><strong>Taunt Bellamy</strong></td><td><strong>Taunt Lightblood</strong> &larr; SWAP</td></tr>
+  <tr class="sr-row"><td class="time-col">5:41</td><td>SR &mdash; pull Senn at 3/4 bar</td><td>&mdash;</td></tr>
+</table>
+
+<!-- ── DISCORD COPY BLOCK ── -->
+<h2>Discord Copy/Paste</h2>
+<div class="copy-block" id="discord-block">
+<span class="label">Click to copy</span>
+<button class="copy-btn" onclick="copyDiscord()">Copy</button>
+MYTHIC LIGHTBLINDED VANGUARD &mdash; RAID GUIDE
+MW (Josh) / RSham (Brewtote) / RDruid (Silencio) / HPal (Dueche) / DPriest (Nurnyx)
+
+━━ SPIRIT CYCLE 1 ━━
+
+W1  0:09  SR #1 (opening)
+  MW     &mdash; Yu'lon
+  RDruid &mdash; Convoke
+
+W2  0:39  Tyr's Wrath (Spirit)
+  MW     &mdash; Celestial Conduit
+  RSham  &mdash; Ascendance
+  HPal   &mdash; Avenging Wrath
+
+W3  1:10  !! MASS AVENGER'S SHIELD !!
+  MW     &mdash; REVIVAL (mass dispel)
+  RDruid &mdash; Convoke
+  DPriest&mdash; Ultimate Penitence
+
+W4  1:55  SR #3
+  RDruid &mdash; Convoke
+
+W5  2:17  AoP + Tyr's Wrath  !! PROG WALL !!
+  MW     &mdash; Yu'lon
+  RSham  &mdash; Spirit Link Totem
+  RDruid &mdash; Convoke
+  HPal   &mdash; Aura Mastery
+
+━━ SPIRIT CYCLE 2 ━━
+
+W6  3:02  SR #4 + Tyr's Wrath  !! PROG WALL !!
+  MW     &mdash; Celestial Conduit
+  RDruid &mdash; Tranquility
+  HPal   &mdash; Avenging Wrath
+
+W7  3:52  !! MASS AVENGER'S SHIELD !!
+  MW     &mdash; REVIVAL (mass dispel)
+  RSham  &mdash; Ascendance
+  RDruid &mdash; Convoke
+
+W8  4:37  Emp Divine Storm + AoP  !! PROG WALL !!
+  MW     &mdash; Yu'lon
+  RDruid &mdash; Convoke + Ironbark
+
+━━ KILL PUSH ━━
+
+W9  5:41  SR #6 + Retribution  !! LETHAL !!
+  MW     &mdash; Celestial Conduit
+  RSham  &mdash; Spirit Link Totem
+  RDruid &mdash; Tranquility + Convoke
+  HPal   &mdash; Avenging Wrath + Aura Mastery
+  DPriest&mdash; Ultimate Penitence
+
+REACTIVE: BoSac / LoH / Pain Suppression / Ironbark
+
+━━ TANK TAUNTS ━━
+MT = mover (holds Senn). OT = wall (holds Bellamy).
+
+0:00  OT taunts Bellamy
+0:02  MT taunts Lightblood
+0:11  MT pulls Senn for SR (3/4 cast bar, run 20yd out)
+0:14  MT taunts Senn
+1:03  SWAP &mdash; MT taunts Bellamy, OT taunts Lightblood
+2:33  SWAP &mdash; MT taunts Bellamy, OT taunts Lightblood
+3:02  MT pulls Senn for SR
+3:45  SWAP &mdash; MT taunts Bellamy, OT taunts Lightblood
+5:15  SWAP &mdash; MT taunts Bellamy, OT taunts Lightblood
+5:41  MT pulls Senn for SR (Retribution active)</div>
+
+<!-- ── MRT NOTE ── -->
+<div class="mrt-section">
+<h2>MRT Note</h2>
+<p class="mrt-hint">Paste into MRT addon &rarr; Note &rarr; Edit. Spell icons and class colors render in-game.</p>
+<div class="mrt-block" id="mrt-block">
+<button class="copy-btn" onclick="copyMRT()">Copy</button>
+|cffFFFFFFMYTHIC LBV - HEALING CDs + TANKS|r
+|cff888888MW/RSham/RDruid/HPal/DPriest - 5 heal|r
+
+|cff666666--- SPIRIT CYCLE 1 ---|r
+
+{time:0:09} |cff5BC0DESearing Radiance #1|r
+  |cff00FF98MW|r Yu'lon  |cffFF7C0ARDruid|r Convoke
+
+{time:0:39} |cff5BC0DETyr's Wrath (Spirit)|r
+  |cff00FF98MW|r Celestial Conduit  |cff0070DDRSham|r {spell:114052}Ascendance  |cffF48CBAHPal|r Avenging Wrath
+
+{time:1:10} |cffC4A1FFMASS AVENGER'S SHIELD|r |cffC4A1FF!! REVIVAL !!|r
+  |cff00FF98MW|r {spell:115310}REVIVAL  |cffFF7C0ARDruid|r Convoke  |cffFFFFFFDPriest|r {spell:421453}Ultimate Penitence
+
+{time:1:55} |cff5BC0DESearing Radiance #3|r
+  |cffFF7C0ARDruid|r Convoke
+
+{time:2:17} |cffFF3333Aura of Peace + Tyr's Wrath|r |cffFF0000PROG WALL|r
+  |cff00FF98MW|r Yu'lon  |cff0070DDRSham|r {spell:98008}Spirit Link Totem
+  |cffFF7C0ARDruid|r Convoke  |cffF48CBAHPal|r {spell:31821}Aura Mastery
+
+|cff666666--- SPIRIT CYCLE 2 ---|r
+
+{time:3:02} |cffFF3333SR #4 + Tyr's Wrath|r |cffFF0000PROG WALL|r
+  |cff00FF98MW|r Celestial Conduit  |cffFF7C0ARDruid|r {spell:740}Tranquility  |cffF48CBAHPal|r Avenging Wrath
+
+{time:3:52} |cffC4A1FFMASS AVENGER'S SHIELD|r |cffC4A1FF!! REVIVAL !!|r
+  |cff00FF98MW|r {spell:115310}REVIVAL  |cff0070DDRSham|r {spell:114052}Ascendance
+  |cffFF7C0ARDruid|r Convoke
+
+{time:4:37} |cffFF3333Emp Divine Storm + AoP|r |cffFF0000PROG WALL|r
+  |cff00FF98MW|r Yu'lon  |cffFF7C0ARDruid|r Convoke + {spell:102342}Ironbark
+
+|cff666666--- KILL PUSH ---|r
+
+{time:5:41} |cffFF0000SR #6 + RETRIBUTION|r |cffFF0000!! LETHAL !!|r
+  |cff00FF98MW|r Celestial Conduit  |cff0070DDRSham|r {spell:98008}Spirit Link Totem
+  |cffFF7C0ARDruid|r {spell:740}Tranq + Convoke  |cffF48CBAHPal|r AvWrath + {spell:31821}Aura Mastery  |cffFFFFFFDPriest|r {spell:421453}Ult Penitence
+
+|cff666666--- TANK TAUNTS ---|r
+|cff888888MT=mover(Senn) OT=wall(Bellamy)|r
+{time:0:00} OT taunt Bellamy
+{time:0:02} MT taunt Lightblood
+{time:0:11} |cffFFD966MT pull Senn for SR|r
+{time:1:03} |cffC4A1FFSWAP|r MT&rarr;Bellamy OT&rarr;Lightblood
+{time:2:33} |cffC4A1FFSWAP|r MT&rarr;Bellamy OT&rarr;Lightblood
+{time:3:02} |cffFFD966MT pull Senn for SR|r
+{time:3:45} |cffC4A1FFSWAP|r MT&rarr;Bellamy OT&rarr;Lightblood
+{time:5:15} |cffC4A1FFSWAP|r MT&rarr;Bellamy OT&rarr;Lightblood
+{time:5:41} |cffFFD966MT pull Senn for SR|r |cffFF0000RETRIBUTION|r
+</div>
+</div>
+
+<!-- COLLAPSED DETAILS -->
+<details>
+  <summary>Boss Ability Timeline &amp; Sources</summary>
+  <div class="details-inner">
+    <strong>Major Ability Timers (from #1 MW kill, 358s)</strong><br><br>
+
+    <strong>Searing Radiance (15s windows):</strong> 0:11, 1:03, 1:55, 3:02, 3:54, 5:41<br>
+    <strong>Sacred Toll:</strong> every ~18s (22, 40, 58, 76, 112, 130, 166, 184, 202, 220, 274, 292, 310, 328)<br>
+    <strong>Sacred Shield + Elekk Charge:</strong> 0:33, 1:32, 2:45, 3:29, 4:21, 5:24 (~55-60s)<br>
+    <strong>Tyr&rsquo;s Wrath (Spirit):</strong> 0:34, 3:13, 5:52 (~160s)<br>
+    <strong>Tyr&rsquo;s Wrath (Senn):</strong> 2:23, 5:02 (~160s)<br>
+    <strong>Aura of Devotion:</strong> 0:29, 3:08, 5:47 (~160s phase marker)<br>
+    <strong>Aura of Wrath:</strong> 1:22, 4:01 (~160s, Ret empowered)<br>
+    <strong>Aura of Peace:</strong> 2:17, 4:57 (~160s, Senn empowered)<br>
+    <strong>Divine Toll:</strong> 0:34, 1:27, 3:13, 4:06 (~53s)<br>
+    <strong>Light Infused:</strong> 0:26, 1:19, 2:12, 3:05, 3:58, 4:52, 5:44 (~53s)<br>
+    <strong>Mass Avenger&rsquo;s Shield:</strong> ~1:06-1:10, ~3:48-3:52 (~162s)<br>
+    <strong>Empowered Divine Storm:</strong> 2:03, 4:45 (during Aura of Wrath)<br>
+    <strong>Retribution:</strong> 5:44+ (boss death mechanic)<br>
+    <br>
+
+    <strong>Dangerous Overlaps (prog walls):</strong><br>
+    1. 1:55-2:23 &mdash; SR #3 &rarr; Aura of Peace &rarr; Tyr&rsquo;s Wrath (Senn)<br>
+    2. 3:02-3:17 &mdash; SR #4 + Tyr&rsquo;s Wrath (Spirit at 3:13)<br>
+    3. 4:45-5:02 &mdash; Empowered Divine Storm + Aura of Peace + Tyr&rsquo;s Wrath (Senn)<br>
+    4. 5:41-5:56 &mdash; Final SR + Retribution death stacks &mdash; wipe point<br>
+    <br>
+
+    <strong>Spirit Spawn Sequence (~160s cycle):</strong><br>
+    0:34 Mender &rarr; 1:07 Defender &rarr; 1:22 Aura of Wrath &rarr; 2:01 Vindictive &rarr; 2:17 Aura of Peace<br>
+    3:13 Mender (cycle 2) &rarr; 4:27 Defender &rarr; 4:45 Emp Divine Storm &rarr; 4:57 Aura of Peace &rarr; 5:21 Vindictive<br>
+    <br>
+
+    <strong>Logs Analyzed:</strong><br>
+    <a href="https://www.warcraftlogs.com/reports/TqBdyt79nLhZrXpP#fight=22" target="_blank">#1 MW Monk kill &mdash; 358s (primary timeline)</a><br>
+    <a href="https://www.warcraftlogs.com/reports/FQqNpWjdY9ArPL31#fight=37" target="_blank">#5 MW Monk kill &mdash; 431s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/QXTFh4pJKGWjfHVA#fight=34" target="_blank">MW Monk kill &mdash; 453s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/w9CLGQXPWdDnfcrb" target="_blank">Josh&rsquo;s team report (soaker data)</a><br>
+    <br>
+  </div>
+</details>
+
+<div class="footer">
+  Built from WCL API data &mdash; MW Monk + HPal + Disc Priest kills analyzed &mdash; all CD timers verified from ranked kill gaps
+</div>
+
+<script>
+function copyMRT() {
+  const block = document.getElementById('mrt-block');
+  const text = block.innerText
+    .replace('Copy', '')
+    .trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+function copyDiscord() {
+  const block = document.getElementById('discord-block');
+  const text = block.innerText
+    .replace('Click to copy', '')
+    .replace('Copy', '')
+    .trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#discord-block .copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+
+</body>
+</html>

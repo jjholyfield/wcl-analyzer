@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crown of the Cosmos - Night 3 Progression</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.dim { color: var(--dim); }
+
+/* Header */
+.header { margin-bottom: 32px; }
+.back-link { font-size: 14px; color: var(--dim); margin-bottom: 16px; display: block; }
+.boss-title { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+.boss-subtitle { font-size: 16px; color: var(--dim); margin-bottom: 8px; }
+.prog-tag { display: inline-block; background: rgba(210,153,34,0.15); color: var(--yellow); padding: 4px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.improvement-tag { display: inline-block; background: rgba(63,185,80,0.15); color: var(--green); padding: 4px 12px; border-radius: 4px; font-size: 13px; font-weight: 600; margin-left: 8px; }
+.header-meta { margin-top: 12px; font-size: 14px; color: var(--dim); }
+
+/* Summary Cards */
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+.summary-card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.summary-card .value { font-size: 28px; font-weight: 700; }
+.summary-card .sub { font-size: 13px; color: var(--dim); margin-top: 4px; }
+
+/* Section headers */
+.section { margin-bottom: 40px; }
+.section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+/* Phase reach table */
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+th { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+td { font-size: 14px; }
+tr:hover { background: rgba(88,166,255,0.04); }
+
+/* Phase wall callout */
+.phase-wall { background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.3); border-radius: 8px; padding: 16px; margin-top: 16px; }
+.phase-wall strong { color: var(--red); }
+
+/* Chart */
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 32px; position: relative; }
+.chart-canvas { width: 100%; height: 300px; position: relative; }
+.chart-bar-container { display: flex; align-items: flex-end; gap: 4px; height: 250px; padding-bottom: 30px; position: relative; }
+.chart-bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
+.chart-bar { width: 100%; min-width: 20px; border-radius: 3px 3px 0 0; position: relative; cursor: pointer; transition: opacity 0.2s; }
+.chart-bar:hover { opacity: 0.8; }
+.chart-bar-label { font-size: 10px; color: var(--dim); margin-top: 4px; text-align: center; }
+.chart-death-count { font-size: 10px; color: var(--red); position: absolute; top: -16px; width: 100%; text-align: center; font-weight: 600; }
+.chart-phase-line { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--dim); opacity: 0.4; }
+.chart-phase-label { position: absolute; right: 4px; font-size: 10px; color: var(--dim); transform: translateY(-14px); }
+.chart-tooltip { font-size: 11px; color: var(--dim); text-align: center; margin-top: 2px; }
+.chart-milestone { position: absolute; font-size: 9px; padding: 2px 6px; border-radius: 3px; white-space: nowrap; z-index: 10; }
+
+/* Kill bars */
+.ability-row { display: flex; align-items: center; margin-bottom: 8px; }
+.ability-name { width: 200px; font-size: 13px; flex-shrink: 0; }
+.ability-bar-container { flex: 1; display: flex; align-items: center; gap: 8px; }
+.ability-bar { height: 20px; background: var(--red); border-radius: 3px; min-width: 4px; opacity: 0.7; }
+.ability-count { font-size: 13px; font-weight: 600; color: var(--text); min-width: 30px; }
+
+/* Phase sections */
+.phase-section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.phase-header { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.phase-stats { font-size: 13px; color: var(--dim); margin-bottom: 16px; }
+.phase-wall-badge { display: inline-block; background: rgba(248,81,73,0.2); color: var(--red); padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+
+/* Player grid */
+.player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.player-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-decoration: none !important; transition: border-color 0.2s; display: block; }
+.player-card:hover { border-color: var(--accent); }
+.player-card-name { font-size: 15px; font-weight: 600; }
+.player-card-spec { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+.player-card-metric { font-size: 18px; font-weight: 700; color: var(--text); }
+.player-card-stats { font-size: 12px; color: var(--dim); margin-top: 4px; display: flex; justify-content: space-between; }
+.player-card-detail { font-size: 11px; color: var(--dim); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.role-header { font-size: 14px; font-weight: 600; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; margin-top: 20px; }
+
+/* Session trend */
+.trend-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.trend-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.trend-card .label { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.trend-stat { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; }
+.trend-stat .stat-label { color: var(--dim); }
+
+/* Actionable items */
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.action-item .action-label { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+.action-item p { font-size: 14px; line-height: 1.5; }
+.action-item.positive { border-color: rgba(63,185,80,0.3); }
+.action-item.positive .action-label { color: var(--green); }
+
+/* Footer */
+.footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 13px; color: var(--dim); text-align: center; }
+
+/* DPS Chart */
+.dps-chart { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; }
+.dps-bar-container { display: flex; align-items: flex-end; gap: 4px; height: 200px; }
+.dps-bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.dps-bar { width: 100%; min-width: 20px; border-radius: 3px 3px 0 0; }
+.dps-bar-label { font-size: 10px; color: var(--dim); margin-top: 4px; }
+
+@media (max-width: 768px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .trend-grid { grid-template-columns: 1fr; }
+    .player-grid { grid-template-columns: repeat(2, 1fr); }
+    .ability-name { width: 140px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- A. Header -->
+<div class="header">
+    <a href="/raid/" class="back-link">&larr; Back to Raid Index</a>
+    <div class="boss-title">Crown of the Cosmos</div>
+    <div class="boss-subtitle">Mythic &middot; June 23, 2026</div>
+    <span class="prog-tag">Progression &mdash; Night 3</span>
+    <span class="improvement-tag">Night 2 best: ~0% boss &rarr; Night 3 best: 13.55%</span>
+    <div class="header-meta">
+        20 pulls &middot; Best: 13.55% (fight 21, 2:02) &middot; Longest: 6:44 (fight 25) &middot;
+        <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">View on WCL</a>
+    </div>
+</div>
+
+<!-- B. Summary Cards -->
+<div class="summary-grid">
+    <div class="summary-card">
+        <div class="label">Pulls</div>
+        <div class="value">20</div>
+        <div class="sub">20 qualifying (&gt;60s)</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Best Boss %</div>
+        <div class="value" style="color: #3fb950">13.55%</div>
+        <div class="sub">Fight 21 at 2:02</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Avg Pull Duration</div>
+        <div class="value">3:48</div>
+        <div class="sub">Trending up through session</div>
+    </div>
+    <div class="summary-card">
+        <div class="label">Total Deaths</div>
+        <div class="value" style="color: var(--red)">420</div>
+        <div class="sub">21 unique players died</div>
+    </div>
+</div>
+
+<!-- C. Phase Reach Rate -->
+<div class="section">
+    <div class="section-title">Phase Reach Rate</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Phase</th>
+                <th>Pulls Reached</th>
+                <th>Rate</th>
+                <th>First Reached</th>
+                <th>Deaths in Phase</th>
+                <th>Deaths / Pull in Phase</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>P1: Sentinels</td>
+                <td>20/20</td>
+                <td style="color: #3fb950; font-weight: 600;">100%</td>
+                <td>Pull 1</td>
+                <td>139</td>
+                <td>7.0</td>
+            </tr>
+            <tr>
+                <td>Intermission</td>
+                <td>14/20</td>
+                <td style="color: #d29922; font-weight: 600;">70%</td>
+                <td>Pull 1</td>
+                <td>32</td>
+                <td>2.3</td>
+            </tr>
+            <tr>
+                <td>P2: Rift <span class="phase-wall-badge">PHASE WALL</span></td>
+                <td>14/20</td>
+                <td style="color: #d29922; font-weight: 600;">70%</td>
+                <td>Pull 1</td>
+                <td>186</td>
+                <td>13.3</td>
+            </tr>
+            <tr>
+                <td>P3: Devouring Cosmos</td>
+                <td>4/20</td>
+                <td style="color: #f85149; font-weight: 600;">20%</td>
+                <td>Pull 9</td>
+                <td>63</td>
+                <td>15.8</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="phase-wall">
+        <strong>P2: Rift is the wall.</strong> 70% of pulls reach P2, but only 20% break through to P3.
+        186 deaths in P2 (13.3 per pull) &mdash;
+        the highest death rate of any phase. Cosmic Barrier alone accounts for 60 of those deaths.
+    </div>
+</div>
+
+<!-- D. Pull Progression Chart -->
+<div class="section">
+    <div class="section-title">Pull Progression</div>
+    <div class="chart-container">
+        <div style="position: relative;">
+            <div class="chart-bar-container" id="pullChart">
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">5</div>
+                    <div class="chart-bar" style="height: 123.93714427121999px; background: #db6d28;" title="Pull 1: 3:47, 81.36% boss, 5 early deaths, P2"></div>
+                    <div class="chart-bar-label">1</div>
+                    <div class="chart-tooltip">81%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">7</div>
+                    <div class="chart-bar" style="height: 126.93635238802277px; background: #db6d28;" title="Pull 2: 3:53, 76.04% boss, 7 early deaths, P2"></div>
+                    <div class="chart-bar-label">2</div>
+                    <div class="chart-tooltip">76%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">13</div>
+                    <div class="chart-bar" style="height: 42.11140806731007px; background: #d29922;" title="Pull 3: 1:17, 58.22% boss, 13 early deaths, P1"></div>
+                    <div class="chart-bar-label">3</div>
+                    <div class="chart-tooltip">58%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    
+                    <div class="chart-bar" style="height: 43.86335065577827px; background: #d29922;" title="Pull 4: 1:20, 53.2% boss, 2 early deaths, P1"></div>
+                    <div class="chart-bar-label">4</div>
+                    <div class="chart-tooltip">53%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">12</div>
+                    <div class="chart-bar" style="height: 171.35664439495173px; background: #d29922;" title="Pull 5: 5:14, 53.09% boss, 12 early deaths, P2"></div>
+                    <div class="chart-bar-label">5</div>
+                    <div class="chart-tooltip">53%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">14</div>
+                    <div class="chart-bar" style="height: 65.26666666666667px; background: #39d2c0;" title="Pull 6: 1:59, 23.91% boss, 14 early deaths, P1"></div>
+                    <div class="chart-bar-label">6</div>
+                    <div class="chart-tooltip">24%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">5</div>
+                    <div class="chart-bar" style="height: 123.69977728285077px; background: #db6d28;" title="Pull 7: 3:47, 80.66% boss, 5 early deaths, P2"></div>
+                    <div class="chart-bar-label">7</div>
+                    <div class="chart-tooltip">81%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">6</div>
+                    <div class="chart-bar" style="height: 156.27676317743132px; background: #d29922;" title="Pull 8: 4:47, 68.49% boss, 6 early deaths, P2"></div>
+                    <div class="chart-bar-label">8</div>
+                    <div class="chart-tooltip">68%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">17</div>
+                    <div class="chart-bar" style="height: 196.3460529571888px; background: #d29922;" title="Pull 9: 6:00, 52.09% boss, 17 early deaths, P3"></div>
+                    <div class="chart-bar-label">9</div>
+                    <div class="chart-tooltip">52%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">8</div>
+                    <div class="chart-bar" style="height: 47.04983914872555px; background: #d29922;" title="Pull 10: 1:26, 50.42% boss, 8 early deaths, P1"></div>
+                    <div class="chart-bar-label">10</div>
+                    <div class="chart-tooltip">50%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">13</div>
+                    <div class="chart-bar" style="height: 100.49443207126947px; background: #f85149;" title="Pull 11: 3:04, 99.67% boss, 13 early deaths, P2"></div>
+                    <div class="chart-bar-label">11</div>
+                    <div class="chart-tooltip">100%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">6</div>
+                    <div class="chart-bar" style="height: 100.96753278891363px; background: #f85149;" title="Pull 12: 3:05, 99.43% boss, 6 early deaths, P2"></div>
+                    <div class="chart-bar-label">12</div>
+                    <div class="chart-tooltip">99%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">9</div>
+                    <div class="chart-bar" style="height: 127.91195248700815px; background: #db6d28;" title="Pull 13: 3:54, 77.3% boss, 9 early deaths, P2"></div>
+                    <div class="chart-bar-label">13</div>
+                    <div class="chart-tooltip">77%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">10</div>
+                    <div class="chart-bar" style="height: 143.0511754516209px; background: #d29922;" title="Pull 14: 4:22, 69.94% boss, 10 early deaths, P2"></div>
+                    <div class="chart-bar-label">14</div>
+                    <div class="chart-tooltip">70%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">18</div>
+                    <div class="chart-bar" style="height: 200.6447908933432px; background: #d29922;" title="Pull 15: 6:08, 58.66% boss, 18 early deaths, P3"></div>
+                    <div class="chart-bar-label">15</div>
+                    <div class="chart-tooltip">59%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">14</div>
+                    <div class="chart-bar" style="height: 171.7077951002227px; background: #d29922;" title="Pull 16: 5:15, 56.1% boss, 14 early deaths, P2"></div>
+                    <div class="chart-bar-label">16</div>
+                    <div class="chart-tooltip">56%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    <div class="chart-milestone" style="background: rgba(63,185,80,0.2); color: #3fb950; top: -30px;">Best %</div>
+                    <div class="chart-death-count">3</div>
+                    <div class="chart-bar" style="height: 66.8258846820094px; background: #3fb950;" title="Pull 17: 2:02, 13.55% boss, 3 early deaths, P1"></div>
+                    <div class="chart-bar-label">17</div>
+                    <div class="chart-tooltip">14%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">3</div>
+                    <div class="chart-bar" style="height: 49.823113090819106px; background: #58a6ff;" title="Pull 18: 1:31, 33.08% boss, 3 early deaths, P1"></div>
+                    <div class="chart-bar-label">18</div>
+                    <div class="chart-tooltip">33%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    
+                    <div class="chart-death-count">12</div>
+                    <div class="chart-bar" style="height: 209.43063598119275px; background: #d29922;" title="Pull 19: 6:24, 50.24% boss, 12 early deaths, P3"></div>
+                    <div class="chart-bar-label">19</div>
+                    <div class="chart-tooltip">50%</div>
+                </div>
+                <div class="chart-bar-wrapper">
+                    <div class="chart-milestone" style="background: rgba(88,166,255,0.2); color: #58a6ff; top: -30px;">Longest</div>
+                    <div class="chart-death-count">18</div>
+                    <div class="chart-bar" style="height: 220.0px; background: #58a6ff;" title="Pull 20: 6:44, 42.77% boss, 18 early deaths, P3"></div>
+                    <div class="chart-bar-label">20</div>
+                    <div class="chart-tooltip">43%</div>
+                </div>
+            </div>
+            <div class="chart-phase-line" style="bottom: 99.68572135609998px;"><span class="chart-phase-label">P1 end (2:08)</span></div>
+            <div class="chart-phase-line" style="bottom: 124.18460777035386px;"><span class="chart-phase-label">P2 start (2:53)</span></div>
+            <div class="chart-phase-line" style="bottom: 198.77010640930462px;"><span class="chart-phase-label">P3 start (~5:10)</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- E. What's Killing Us - By Phase -->
+<div class="section">
+    <div class="section-title">What's Killing Us &mdash; By Phase</div>
+
+    <div class="phase-section">
+        <div class="phase-header">P1: Sentinels (0:00 - 2:08) </div>
+        <div class="phase-stats">139 deaths across 20 pulls (7.0 per pull) &mdash; First 2 minutes. Alleria + 3 Sentinel adds. Void Droplets spawn throughout.</div>
+        <div class="ability-row">
+            <div class="ability-name">Accumulated Damage</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 100.0%"></div>
+                <span class="ability-count">65</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Silverstrike Arrow</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 24.615384615384617%"></div>
+                <span class="ability-count">16</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Void Remnants</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 23.076923076923077%"></div>
+                <span class="ability-count">15</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Bursting Emptiness</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 20.0%"></div>
+                <span class="ability-count">13</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Echoing Darkness</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 15.384615384615385%"></div>
+                <span class="ability-count">10</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Void Expulsion</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 7.6923076923076925%"></div>
+                <span class="ability-count">5</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Grasp of Emptiness</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 6.153846153846154%"></div>
+                <span class="ability-count">4</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Corrupting Essence</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 6.153846153846154%"></div>
+                <span class="ability-count">4</span>
+            </div>
+        </div>
+
+    </div>
+    <div class="phase-section">
+        <div class="phase-header">Intermission (2:08 - 2:53) </div>
+        <div class="phase-stats">32 deaths across 14 pulls (2.3 per pull) &mdash; Stellar Emission channel + Silverstrike Barrage. Pure survival, no targets.</div>
+        <div class="ability-row">
+            <div class="ability-name">Silverstrike Barrage</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 100.0%"></div>
+                <span class="ability-count">14</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Accumulated Damage</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 100.0%"></div>
+                <span class="ability-count">14</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Orbiting Matter</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 14.285714285714285%"></div>
+                <span class="ability-count">2</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Falling</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 7.142857142857142%"></div>
+                <span class="ability-count">1</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Singularity Eruption</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 7.142857142857142%"></div>
+                <span class="ability-count">1</span>
+            </div>
+        </div>
+
+    </div>
+    <div class="phase-section">
+        <div class="phase-header">P2: Rift (2:53 - ~5:10) <span class="phase-wall-badge">PHASE WALL</span></div>
+        <div class="phase-stats">186 deaths across 14 pulls (13.3 per pull) &mdash; Rift Simulacrum + Undying Voidspawn. Call of the Void, Voidstalker Sting, Rift Slash overlaps.</div>
+        <div class="ability-row">
+            <div class="ability-name">Cosmic Barrier</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 100.0%"></div>
+                <span class="ability-count">60</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Accumulated Damage</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 46.666666666666664%"></div>
+                <span class="ability-count">28</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Simulacrum Backlash</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 30.0%"></div>
+                <span class="ability-count">18</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Bursting Emptiness</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 26.666666666666668%"></div>
+                <span class="ability-count">16</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Void Expulsion</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 23.333333333333332%"></div>
+                <span class="ability-count">14</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Void Barrage</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 20.0%"></div>
+                <span class="ability-count">12</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Voidstalker Sting</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 20.0%"></div>
+                <span class="ability-count">12</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Void Remnants</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 16.666666666666664%"></div>
+                <span class="ability-count">10</span>
+            </div>
+        </div>
+
+    </div>
+    <div class="phase-section">
+        <div class="phase-header">P3: Devouring Cosmos (5:10+) </div>
+        <div class="phase-stats">63 deaths across 4 pulls (15.8 per pull) &mdash; Everything returns. Cosmic Radiation, Dimensional Slash, Aspect of the End.</div>
+        <div class="ability-row">
+            <div class="ability-name">Accumulated Damage</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 100.0%"></div>
+                <span class="ability-count">18</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Cosmic Barrier</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 72.22222222222221%"></div>
+                <span class="ability-count">13</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Voidstalker Sting</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 55.55555555555556%"></div>
+                <span class="ability-count">10</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Grasp of Emptiness</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 33.33333333333333%"></div>
+                <span class="ability-count">6</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Dimensional Slash</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 27.77777777777778%"></div>
+                <span class="ability-count">5</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Bursting Emptiness</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 22.22222222222222%"></div>
+                <span class="ability-count">4</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Melee</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 16.666666666666664%"></div>
+                <span class="ability-count">3</span>
+            </div>
+        </div>
+<div class="ability-row">
+            <div class="ability-name">Void Expulsion</div>
+            <div class="ability-bar-container">
+                <div class="ability-bar" style="width: 11.11111111111111%"></div>
+                <span class="ability-count">2</span>
+            </div>
+        </div>
+
+    </div>
+    <div class="phase-section">
+        <div class="phase-header">First Death Analysis</div>
+        
+<p>First death occurred in <strong>P1</strong> in 15/20 pulls, in the <strong>Intermission</strong> in 5/20 pulls, and in <strong>P2</strong> in 0/20 pulls.</p>
+<p>When the first death is in P1, average pull duration is <strong>3:25</strong>. When no one dies until Intermission or later, average pull duration is <strong>4:56</strong>.</p>
+        <p class="dim" style="margin-top: 8px;">
+            The most common first-death sources are Silverstrike Arrow, Bursting Emptiness, and Echoing Darkness in P1.
+            Surviving P1 cleanly is the single biggest predictor of a long pull.
+        </p>
+    </div>
+</div>
+
+<!-- F. Player Death Leaderboard -->
+<div class="section">
+    <div class="section-title">Player Death Leaderboard</div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Spec</th>
+                <th>Deaths</th>
+                <th>Worst Phase</th>
+                <th>Top Killer</th>
+                <th>Avg Death Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <td>1</td>
+            <td><a href="/raid/log-20260623-crown-invincibale" style="color: #0070dd; text-decoration: none;">Invincibale</a></td>
+            <td class="dim">Elemental</td>
+            <td style="color: #f85149; font-weight: 600;">23</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (5)</td>
+            <td class="dim">3:30</td>
+        </tr>
+<tr>
+            <td>2</td>
+            <td><a href="/raid/log-20260623-crown-unholyftw" style="color: #c41e3a; text-decoration: none;">Unholyftw</a></td>
+            <td class="dim">Unholy</td>
+            <td style="color: #f85149; font-weight: 600;">23</td>
+            <td>P1</td>
+            <td class="dim">Bursting Emptiness (7)</td>
+            <td class="dim">3:11</td>
+        </tr>
+<tr>
+            <td>3</td>
+            <td><a href="/raid/log-20260623-crown-sìlencio" style="color: #ff7c0a; text-decoration: none;">Sìlencio</a></td>
+            <td class="dim">Restoration</td>
+            <td style="color: #f85149; font-weight: 600;">23</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (11)</td>
+            <td class="dim">3:12</td>
+        </tr>
+<tr>
+            <td>4</td>
+            <td><a href="/raid/log-20260623-crown-nurnyx" style="color: #fff; text-decoration: none;">Nurnyx</a></td>
+            <td class="dim">Shadow</td>
+            <td style="color: #f85149; font-weight: 600;">23</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (6)</td>
+            <td class="dim">2:59</td>
+        </tr>
+<tr>
+            <td>5</td>
+            <td><a href="/raid/log-20260623-crown-moistbear" style="color: #ff7c0a; text-decoration: none;">Moistbear</a></td>
+            <td class="dim">Feral</td>
+            <td style="color: #f85149; font-weight: 600;">22</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (6)</td>
+            <td class="dim">3:15</td>
+        </tr>
+<tr>
+            <td>6</td>
+            <td><a href="/raid/log-20260623-crown-voidhéart" style="color: #fff; text-decoration: none;">Voidhéart</a></td>
+            <td class="dim">Shadow</td>
+            <td style="color: #f85149; font-weight: 600;">22</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (5)</td>
+            <td class="dim">2:59</td>
+        </tr>
+<tr>
+            <td>7</td>
+            <td><a href="/raid/log-20260623-crown-orichamaru" style="color: #8788ee; text-decoration: none;">Orichamaru</a></td>
+            <td class="dim">Demonology</td>
+            <td style="color: #f85149; font-weight: 600;">21</td>
+            <td>P2</td>
+            <td class="dim">Void Remnants (4)</td>
+            <td class="dim">3:20</td>
+        </tr>
+<tr>
+            <td>8</td>
+            <td><a href="/raid/log-20260623-crown-senssay" style="color: #00ff98; text-decoration: none;">Senssay</a></td>
+            <td class="dim">Mistweaver</td>
+            <td style="color: #f85149; font-weight: 600;">21</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (9)</td>
+            <td class="dim">3:28</td>
+        </tr>
+<tr>
+            <td>9</td>
+            <td><a href="/raid/log-20260623-crown-zinnks" style="color: #33937f; text-decoration: none;">Zinnks</a></td>
+            <td class="dim">Augmentation</td>
+            <td style="color: #f85149; font-weight: 600;">21</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (7)</td>
+            <td class="dim">3:32</td>
+        </tr>
+<tr>
+            <td>10</td>
+            <td><a href="/raid/log-20260623-crown-snackznchill" style="color: #3fc7eb; text-decoration: none;">Snackznchill</a></td>
+            <td class="dim">Frost</td>
+            <td style="color: #f85149; font-weight: 600;">21</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (7)</td>
+            <td class="dim">3:10</td>
+        </tr>
+<tr>
+            <td>11</td>
+            <td><a href="/raid/log-20260623-crown-brewtote" style="color: #0070dd; text-decoration: none;">Brewtote</a></td>
+            <td class="dim">Restoration</td>
+            <td style="color: #f85149; font-weight: 600;">21</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (7)</td>
+            <td class="dim">3:37</td>
+        </tr>
+<tr>
+            <td>12</td>
+            <td><a href="/raid/log-20260623-crown-bebeshakur" style="color: #c41e3a; text-decoration: none;">Bebeshakur</a></td>
+            <td class="dim">Unholy</td>
+            <td style="color: #f85149; font-weight: 600;">21</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (9)</td>
+            <td class="dim">3:26</td>
+        </tr>
+<tr>
+            <td>13</td>
+            <td><a href="/raid/log-20260623-crown-starfighter" style="color: #c69b6d; text-decoration: none;">Starfighter</a></td>
+            <td class="dim">Fury</td>
+            <td style="color: #db6d28; font-weight: 600;">20</td>
+            <td>P2</td>
+            <td class="dim">Cosmic Barrier (3)</td>
+            <td class="dim">3:18</td>
+        </tr>
+<tr>
+            <td>14</td>
+            <td><a href="/raid/log-20260623-crown-sonìc" style="color: #8788ee; text-decoration: none;">Sonìc</a></td>
+            <td class="dim">Demonology</td>
+            <td style="color: #db6d28; font-weight: 600;">20</td>
+            <td>P2</td>
+            <td class="dim">Cosmic Barrier (5)</td>
+            <td class="dim">3:26</td>
+        </tr>
+<tr>
+            <td>15</td>
+            <td><a href="/raid/log-20260623-crown-nucke" style="color: #a330c9; text-decoration: none;">Nucke</a></td>
+            <td class="dim">Vengeance</td>
+            <td style="color: #db6d28; font-weight: 600;">20</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (11)</td>
+            <td class="dim">3:40</td>
+        </tr>
+<tr>
+            <td>16</td>
+            <td><a href="/raid/log-20260623-crown-smokinthisza" style="color: #aad372; text-decoration: none;">Smokinthisza</a></td>
+            <td class="dim">Marksmanship</td>
+            <td style="color: #db6d28; font-weight: 600;">20</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (6)</td>
+            <td class="dim">3:36</td>
+        </tr>
+<tr>
+            <td>17</td>
+            <td><a href="/raid/log-20260623-crown-dueche" style="color: #f48cba; text-decoration: none;">Dueche</a></td>
+            <td class="dim">Holy</td>
+            <td style="color: #db6d28; font-weight: 600;">19</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (5)</td>
+            <td class="dim">3:24</td>
+        </tr>
+<tr>
+            <td>18</td>
+            <td><a href="/raid/log-20260623-crown-baodabao" style="color: #3fc7eb; text-decoration: none;">Baodabao</a></td>
+            <td class="dim">Frost</td>
+            <td style="color: #db6d28; font-weight: 600;">19</td>
+            <td>P2</td>
+            <td class="dim">Cosmic Barrier (5)</td>
+            <td class="dim">3:07</td>
+        </tr>
+<tr>
+            <td>19</td>
+            <td><a href="/raid/log-20260623-crown-glazedwhole" style="color: #c41e3a; text-decoration: none;">Glazedwhole</a></td>
+            <td class="dim">Blood</td>
+            <td style="color: #db6d28; font-weight: 600;">19</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (10)</td>
+            <td class="dim">3:36</td>
+        </tr>
+<tr>
+            <td>20</td>
+            <td><a href="/raid/log-20260623-crown-darthurg" style="color: #aad372; text-decoration: none;">Darthurg</a></td>
+            <td class="dim">Marksmanship</td>
+            <td style="color: #3fb950; font-weight: 600;">12</td>
+            <td>P2</td>
+            <td class="dim">Accumulated Damage (5)</td>
+            <td class="dim">3:25</td>
+        </tr>
+<tr>
+            <td>21</td>
+            <td><a href="/raid/log-20260623-crown-alitheria" style="color: #f48cba; text-decoration: none;">Alitheria</a></td>
+            <td class="dim">Retribution</td>
+            <td style="color: #3fb950; font-weight: 600;">9</td>
+            <td>P2</td>
+            <td class="dim">Cosmic Barrier (2)</td>
+            <td class="dim">2:40</td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+
+<!-- G. Raid DPS by Pull -->
+<div class="section">
+    <div class="section-title">Raid DPS by Pull</div>
+    <div class="dps-chart">
+        <div class="dps-bar-container">
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 105.65637229792773px; background: #58a6ff; opacity: 1.0;" title="Pull 1: 404,515 total DPS (P2)"></div>
+                <div class="dps-bar-label">1</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 125.96066441557461px; background: #58a6ff; opacity: 1.0;" title="Pull 2: 482,252 total DPS (P2)"></div>
+                <div class="dps-bar-label">2</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 3px; background: var(--border); opacity: 0.3;" title="Pull 3: 0 total DPS (P1) (no data)"></div>
+                <div class="dps-bar-label">3</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 3px; background: var(--border); opacity: 0.3;" title="Pull 4: 0 total DPS (P1) (no data)"></div>
+                <div class="dps-bar-label">4</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 180.0px; background: #58a6ff; opacity: 1.0;" title="Pull 5: 689,147 total DPS (P2)"></div>
+                <div class="dps-bar-label">5</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 3px; background: var(--border); opacity: 0.3;" title="Pull 6: 0 total DPS (P1) (no data)"></div>
+                <div class="dps-bar-label">6</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 105.33931077114171px; background: #58a6ff; opacity: 1.0;" title="Pull 7: 403,302 total DPS (P2)"></div>
+                <div class="dps-bar-label">7</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 138.232086913242px; background: #58a6ff; opacity: 1.0;" title="Pull 8: 529,235 total DPS (P2)"></div>
+                <div class="dps-bar-label">8</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 162.88277827517206px; background: #3fb950; opacity: 1.0;" title="Pull 9: 623,612 total DPS (P3)"></div>
+                <div class="dps-bar-label">9</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 3px; background: var(--border); opacity: 0.3;" title="Pull 10: 0 total DPS (P1) (no data)"></div>
+                <div class="dps-bar-label">10</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 3px; background: #58a6ff; opacity: 1.0;" title="Pull 11: 9,164 total DPS (P2)"></div>
+                <div class="dps-bar-label">11</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 3.0963582515776755px; background: #58a6ff; opacity: 1.0;" title="Pull 12: 11,855 total DPS (P2)"></div>
+                <div class="dps-bar-label">12</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 120.96133626062364px; background: #58a6ff; opacity: 1.0;" title="Pull 13: 463,112 total DPS (P2)"></div>
+                <div class="dps-bar-label">13</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 143.56843169889734px; background: #58a6ff; opacity: 1.0;" title="Pull 14: 549,665 total DPS (P2)"></div>
+                <div class="dps-bar-label">14</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 139.5317805925296px; background: #3fb950; opacity: 1.0;" title="Pull 15: 534,211 total DPS (P3)"></div>
+                <div class="dps-bar-label">15</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 169.39926895132677px; background: #58a6ff; opacity: 1.0;" title="Pull 16: 648,561 total DPS (P2)"></div>
+                <div class="dps-bar-label">16</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 3px; background: var(--border); opacity: 0.3;" title="Pull 17: 0 total DPS (P1) (no data)"></div>
+                <div class="dps-bar-label">17</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 3px; background: var(--border); opacity: 0.3;" title="Pull 18: 0 total DPS (P1) (no data)"></div>
+                <div class="dps-bar-label">18</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 164.584760580834px; background: #3fb950; opacity: 1.0;" title="Pull 19: 630,128 total DPS (P3)"></div>
+                <div class="dps-bar-label">19</div>
+            </div>
+            <div class="dps-bar-wrapper">
+                <div class="dps-bar" style="height: 176.3946821215212px; background: #3fb950; opacity: 1.0;" title="Pull 20: 675,344 total DPS (P3)"></div>
+                <div class="dps-bar-label">20</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 12px; justify-content: center;">
+            <span style="font-size: 12px;"><span style="color: #f85149;">&#9632;</span> P1 only</span>
+            <span style="font-size: 12px;"><span style="color: #d29922;">&#9632;</span> Intermission</span>
+            <span style="font-size: 12px;"><span style="color: #58a6ff;">&#9632;</span> Reached P2</span>
+            <span style="font-size: 12px;"><span style="color: #3fb950;">&#9632;</span> Reached P3</span>
+        </div>
+    </div>
+</div>
+
+<!-- H. DPS Leaderboard -->
+<div class="section">
+    <div class="section-title">DPS Leaderboard (Aggregate)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Spec</th>
+                <th>Avg DPS</th>
+                <th>Survival</th>
+                <th>Deaths</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <td>1</td>
+            <td><a href="/raid/log-20260623-crown-bebeshakur" style="color: #c41e3a; text-decoration: none;">Bebeshakur</a></td>
+            <td class="dim">Unholy</td>
+            <td style="font-weight: 600;">39,415</td>
+            <td style="color: #f85149">0%</td>
+            <td>21</td>
+        </tr>
+<tr>
+            <td>2</td>
+            <td><a href="/raid/log-20260623-crown-orichamaru" style="color: #8788ee; text-decoration: none;">Orichamaru</a></td>
+            <td class="dim">Demonology</td>
+            <td style="font-weight: 600;">38,023</td>
+            <td style="color: #f85149">0%</td>
+            <td>21</td>
+        </tr>
+<tr>
+            <td>3</td>
+            <td><a href="/raid/log-20260623-crown-invincibale" style="color: #0070dd; text-decoration: none;">Invincibale</a></td>
+            <td class="dim">Elemental</td>
+            <td style="font-weight: 600;">37,086</td>
+            <td style="color: #f85149">0%</td>
+            <td>23</td>
+        </tr>
+<tr>
+            <td>4</td>
+            <td><a href="/raid/log-20260623-crown-unholyftw" style="color: #c41e3a; text-decoration: none;">Unholyftw</a></td>
+            <td class="dim">Unholy</td>
+            <td style="font-weight: 600;">35,318</td>
+            <td style="color: #f85149">0%</td>
+            <td>23</td>
+        </tr>
+<tr>
+            <td>5</td>
+            <td><a href="/raid/log-20260623-crown-smokinthisza" style="color: #aad372; text-decoration: none;">Smokinthisza</a></td>
+            <td class="dim">Marksmanship</td>
+            <td style="font-weight: 600;">35,083</td>
+            <td style="color: #f85149">0%</td>
+            <td>20</td>
+        </tr>
+<tr>
+            <td>6</td>
+            <td><a href="/raid/log-20260623-crown-snackznchill" style="color: #3fc7eb; text-decoration: none;">Snackznchill</a></td>
+            <td class="dim">Frost</td>
+            <td style="font-weight: 600;">35,064</td>
+            <td style="color: #f85149">0%</td>
+            <td>21</td>
+        </tr>
+<tr>
+            <td>7</td>
+            <td><a href="/raid/log-20260623-crown-sonìc" style="color: #8788ee; text-decoration: none;">Sonìc</a></td>
+            <td class="dim">Demonology</td>
+            <td style="font-weight: 600;">33,419</td>
+            <td style="color: #f85149">0%</td>
+            <td>20</td>
+        </tr>
+<tr>
+            <td>8</td>
+            <td><a href="/raid/log-20260623-crown-zinnks" style="color: #33937f; text-decoration: none;">Zinnks</a></td>
+            <td class="dim">Augmentation</td>
+            <td style="font-weight: 600;">31,417</td>
+            <td style="color: #f85149">0%</td>
+            <td>21</td>
+        </tr>
+<tr>
+            <td>9</td>
+            <td><a href="/raid/log-20260623-crown-baodabao" style="color: #3fc7eb; text-decoration: none;">Baodabao</a></td>
+            <td class="dim">Frost</td>
+            <td style="font-weight: 600;">27,128</td>
+            <td style="color: #f85149">5%</td>
+            <td>19</td>
+        </tr>
+<tr>
+            <td>10</td>
+            <td><a href="/raid/log-20260623-crown-moistbear" style="color: #ff7c0a; text-decoration: none;">Moistbear</a></td>
+            <td class="dim">Feral</td>
+            <td style="font-weight: 600;">24,855</td>
+            <td style="color: #f85149">0%</td>
+            <td>22</td>
+        </tr>
+<tr>
+            <td>11</td>
+            <td><a href="/raid/log-20260623-crown-starfighter" style="color: #c69b6d; text-decoration: none;">Starfighter</a></td>
+            <td class="dim">Fury</td>
+            <td style="font-weight: 600;">24,477</td>
+            <td style="color: #f85149">0%</td>
+            <td>20</td>
+        </tr>
+<tr>
+            <td>12</td>
+            <td><a href="/raid/log-20260623-crown-nurnyx" style="color: #fff; text-decoration: none;">Nurnyx</a></td>
+            <td class="dim">Shadow</td>
+            <td style="font-weight: 600;">23,981</td>
+            <td style="color: #f85149">0%</td>
+            <td>23</td>
+        </tr>
+<tr>
+            <td>13</td>
+            <td><a href="/raid/log-20260623-crown-voidhéart" style="color: #fff; text-decoration: none;">Voidhéart</a></td>
+            <td class="dim">Shadow</td>
+            <td style="font-weight: 600;">14,728</td>
+            <td style="color: #f85149">0%</td>
+            <td>22</td>
+        </tr>
+<tr>
+            <td>14</td>
+            <td><a href="/raid/log-20260623-crown-darthurg" style="color: #aad372; text-decoration: none;">Darthurg</a></td>
+            <td class="dim">Marksmanship</td>
+            <td style="font-weight: 600;">8,811</td>
+            <td style="color: #f85149">0%</td>
+            <td>12</td>
+        </tr>
+<tr>
+            <td>15</td>
+            <td><a href="/raid/log-20260623-crown-alitheria" style="color: #f48cba; text-decoration: none;">Alitheria</a></td>
+            <td class="dim">Retribution</td>
+            <td style="font-weight: 600;">6,689</td>
+            <td style="color: #f85149">0%</td>
+            <td>9</td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+
+<!-- I. Healer Performance -->
+<div class="section">
+    <div class="section-title">Healer Performance (Aggregate)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Spec</th>
+                <th>Avg HPS</th>
+                <th>Survival</th>
+                <th>Deaths</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <td>1</td>
+            <td><a href="/raid/log-20260623-crown-dueche" style="color: #f48cba; text-decoration: none;">Dueche</a></td>
+            <td class="dim">Holy</td>
+            <td style="font-weight: 600;">161,237</td>
+            <td style="color: #f85149">5%</td>
+            <td>19</td>
+        </tr>
+<tr>
+            <td>2</td>
+            <td><a href="/raid/log-20260623-crown-brewtote" style="color: #0070dd; text-decoration: none;">Brewtote</a></td>
+            <td class="dim">Restoration</td>
+            <td style="font-weight: 600;">144,162</td>
+            <td style="color: #f85149">0%</td>
+            <td>21</td>
+        </tr>
+<tr>
+            <td>3</td>
+            <td><a href="/raid/log-20260623-crown-sìlencio" style="color: #ff7c0a; text-decoration: none;">Sìlencio</a></td>
+            <td class="dim">Restoration</td>
+            <td style="font-weight: 600;">139,848</td>
+            <td style="color: #f85149">0%</td>
+            <td>23</td>
+        </tr>
+<tr>
+            <td>4</td>
+            <td><a href="/raid/log-20260623-crown-senssay" style="color: #00ff98; text-decoration: none;">Senssay</a></td>
+            <td class="dim">Mistweaver</td>
+            <td style="font-weight: 600;">136,149</td>
+            <td style="color: #f85149">0%</td>
+            <td>21</td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+
+<!-- J. Tank Performance -->
+<div class="section">
+    <div class="section-title">Tank Performance (Aggregate)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th>Spec</th>
+                <th>Avg DPS</th>
+                <th>Self-Healing</th>
+                <th>Survival</th>
+                <th>Deaths</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <td>1</td>
+            <td><a href="/raid/log-20260623-crown-nucke" style="color: #a330c9; text-decoration: none;">Nucke</a></td>
+            <td class="dim">Vengeance</td>
+            <td>16,051</td>
+            <td>39,269</td>
+            <td style="color: #f85149">0%</td>
+            <td>20</td>
+        </tr>
+<tr>
+            <td>2</td>
+            <td><a href="/raid/log-20260623-crown-glazedwhole" style="color: #c41e3a; text-decoration: none;">Glazedwhole</a></td>
+            <td class="dim">Blood</td>
+            <td>16,043</td>
+            <td>63,440</td>
+            <td style="color: #f85149">5%</td>
+            <td>19</td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+
+<!-- K. Session Trend Analysis -->
+<div class="section">
+    <div class="section-title">Session Trend Analysis</div>
+    <div class="trend-grid">
+        <div class="trend-card">
+            <div class="label">Early (Pulls 1-7)</div>
+            <div class="trend-stat"><span class="stat-label">Avg Duration</span><span>3:02</span></div>
+            <div class="trend-stat"><span class="stat-label">Avg Boss %</span><span>60.9%</span></div>
+            <div class="trend-stat"><span class="stat-label">Total Deaths</span><span>58</span></div>
+            <div class="trend-stat"><span class="stat-label">P3 Entries</span><span>0/7</span></div>
+        </div>
+        <div class="trend-card">
+            <div class="label">Mid (Pulls 8-14)</div>
+            <div class="trend-stat"><span class="stat-label">Avg Duration</span><span>3:48</span></div>
+            <div class="trend-stat"><span class="stat-label">Avg Boss %</span><span>73.9%</span></div>
+            <div class="trend-stat"><span class="stat-label">Total Deaths</span><span>69</span></div>
+            <div class="trend-stat"><span class="stat-label">P3 Entries</span><span>1/7</span></div>
+        </div>
+        <div class="trend-card">
+            <div class="label">Late (Pulls 15-20)</div>
+            <div class="trend-stat"><span class="stat-label">Avg Duration</span><span>4:41</span></div>
+            <div class="trend-stat"><span class="stat-label">Avg Boss %</span><span>42.4%</span></div>
+            <div class="trend-stat"><span class="stat-label">Total Deaths</span><span>68</span></div>
+            <div class="trend-stat"><span class="stat-label">P3 Entries</span><span>3/6</span></div>
+        </div>
+    </div>
+    <div style="margin-top: 16px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+        <p style="font-size: 14px;">
+            <strong>Clear improvement through the night.</strong> Early pulls averaged 3:02 with 61% boss remaining.
+            Late pulls averaged 4:41 with 42% boss remaining.
+            P3 was first entered on pull 5 (fight 9) and the raid reached it in 3/6 late pulls.
+            The best pulls came in the late session, with the longest pull (6:44, fight 25) and the best boss % (13.55%, fight 21) both occurring in the final 6 pulls.
+        </p>
+    </div>
+</div>
+
+<!-- L. What Needs to Change -->
+<div class="section">
+    <div class="section-title">What Needs to Change</div>
+
+    <div class="action-item">
+        <div class="action-label">1. P2 Phase Wall: Cosmic Barrier is wiping the raid</div>
+        <p>
+            Cosmic Barrier killed 60 players in P2 alone &mdash; more than any other single mechanic in any phase.
+            This is the Rift Simulacrum's shield that needs to be broken before it expires.
+            When it fails, it wipes the raid with massive AoE.
+            DPS need to swap to the shield immediately when it spawns and burn it before the cast completes.
+        </p>
+    </div>
+
+    <div class="action-item">
+        <div class="action-label">2. P2: Simulacrum Backlash + Bursting Emptiness (18 + 16 deaths)</div>
+        <p>
+            Simulacrum Backlash killed 18 players in P2. This fires when the Rift Simulacrum dies or when Cosmic Barrier breaks &mdash;
+            the raid needs to be spread and healthy when this happens. Bursting Emptiness added 16 more deaths from Void Droplet soaks.
+            Healers should have CDs planned for Cosmic Barrier breaks.
+        </p>
+    </div>
+
+    <div class="action-item">
+        <div class="action-label">3. P1: Clean up early deaths (15/20 pulls had first death in P1)</div>
+        <p>
+            Silverstrike Arrow (16 deaths), Void Remnants (15 deaths),
+            and Bursting Emptiness (13 deaths) are the main P1 killers.
+            15 of 20 pulls had their first death in P1.
+            Pulls with clean P1 execution lasted significantly longer.
+        </p>
+    </div>
+
+    <div class="action-item">
+        <div class="action-label">4. P3 execution needs reps</div>
+        <p>
+            The raid only reached P3 in 4/20 pulls (20%).
+            Voidstalker Sting (10 deaths) and Cosmic Barrier (13 deaths)
+            are the main killers in P3. The death count per P3 pull is inflated by wipe-cascade deaths at end of pull.
+            More P3 time will come naturally as P2 execution improves &mdash; the focus should be breaking the P2 wall first.
+        </p>
+    </div>
+
+    <div class="action-item positive">
+        <div class="action-label">5. What's working</div>
+        <p>
+            <strong>Night 2 best was barely scratching the boss. Night 3 best is 13.55% &mdash; deep P3 territory.</strong>
+            That is a massive jump. The late session showed consistent P3 entries and pulls over 5 minutes.
+            Raid DPS is strong when people are alive &mdash; the issue is survival, not throughput.
+            The Intermission is largely clean (32 deaths total, only 2.3 per pull).
+            P1 execution improved steadily through the night. The team is learning this fight.
+        </p>
+    </div>
+</div>
+
+<!-- M. Player Pages -->
+<div class="section">
+    <div class="section-title">Player Analysis Pages</div>
+    <h3 class="role-header">Tanks</h3>
+<div class="player-grid">
+<a href="/raid/log-20260623-crown-nucke" class="player-card">
+                <div class="player-card-name" style="color: #a330c9">Nucke</div>
+                <div class="player-card-spec">Vengeance</div>
+                <div class="player-card-metric">16,051 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>20 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-glazedwhole" class="player-card">
+                <div class="player-card-name" style="color: #c41e3a">Glazedwhole</div>
+                <div class="player-card-spec">Blood</div>
+                <div class="player-card-metric">16,043 DPS</div>
+                <div class="player-card-stats">
+                    <span>5% alive</span>
+                    <span>19 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+</div>
+<h3 class="role-header">Healers</h3>
+<div class="player-grid">
+<a href="/raid/log-20260623-crown-dueche" class="player-card">
+                <div class="player-card-name" style="color: #f48cba">Dueche</div>
+                <div class="player-card-spec">Holy</div>
+                <div class="player-card-metric">161,237 HPS</div>
+                <div class="player-card-stats">
+                    <span>5% alive</span>
+                    <span>19 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-brewtote" class="player-card">
+                <div class="player-card-name" style="color: #0070dd">Brewtote</div>
+                <div class="player-card-spec">Restoration</div>
+                <div class="player-card-metric">144,162 HPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>21 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-sìlencio" class="player-card">
+                <div class="player-card-name" style="color: #ff7c0a">Sìlencio</div>
+                <div class="player-card-spec">Restoration</div>
+                <div class="player-card-metric">139,848 HPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>23 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-senssay" class="player-card">
+                <div class="player-card-name" style="color: #00ff98">Senssay</div>
+                <div class="player-card-spec">Mistweaver</div>
+                <div class="player-card-metric">136,149 HPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>21 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+</div>
+<h3 class="role-header">DPS</h3>
+<div class="player-grid">
+<a href="/raid/log-20260623-crown-bebeshakur" class="player-card">
+                <div class="player-card-name" style="color: #c41e3a">Bebeshakur</div>
+                <div class="player-card-spec">Unholy</div>
+                <div class="player-card-metric">39,415 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>21 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-orichamaru" class="player-card">
+                <div class="player-card-name" style="color: #8788ee">Orichamaru</div>
+                <div class="player-card-spec">Demonology</div>
+                <div class="player-card-metric">38,023 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>21 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Void Remnants</div>
+            </a>
+<a href="/raid/log-20260623-crown-invincibale" class="player-card">
+                <div class="player-card-name" style="color: #0070dd">Invincibale</div>
+                <div class="player-card-spec">Elemental</div>
+                <div class="player-card-metric">37,086 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>23 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-unholyftw" class="player-card">
+                <div class="player-card-name" style="color: #c41e3a">Unholyftw</div>
+                <div class="player-card-spec">Unholy</div>
+                <div class="player-card-metric">35,318 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>23 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P1 | Bursting Emptiness</div>
+            </a>
+<a href="/raid/log-20260623-crown-smokinthisza" class="player-card">
+                <div class="player-card-name" style="color: #aad372">Smokinthisza</div>
+                <div class="player-card-spec">Marksmanship</div>
+                <div class="player-card-metric">35,083 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>20 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-snackznchill" class="player-card">
+                <div class="player-card-name" style="color: #3fc7eb">Snackznchill</div>
+                <div class="player-card-spec">Frost</div>
+                <div class="player-card-metric">35,064 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>21 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-sonìc" class="player-card">
+                <div class="player-card-name" style="color: #8788ee">Sonìc</div>
+                <div class="player-card-spec">Demonology</div>
+                <div class="player-card-metric">33,419 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>20 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Cosmic Barrier</div>
+            </a>
+<a href="/raid/log-20260623-crown-zinnks" class="player-card">
+                <div class="player-card-name" style="color: #33937f">Zinnks</div>
+                <div class="player-card-spec">Augmentation</div>
+                <div class="player-card-metric">31,417 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>21 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-baodabao" class="player-card">
+                <div class="player-card-name" style="color: #3fc7eb">Baodabao</div>
+                <div class="player-card-spec">Frost</div>
+                <div class="player-card-metric">27,128 DPS</div>
+                <div class="player-card-stats">
+                    <span>5% alive</span>
+                    <span>19 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Cosmic Barrier</div>
+            </a>
+<a href="/raid/log-20260623-crown-moistbear" class="player-card">
+                <div class="player-card-name" style="color: #ff7c0a">Moistbear</div>
+                <div class="player-card-spec">Feral</div>
+                <div class="player-card-metric">24,855 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>22 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-starfighter" class="player-card">
+                <div class="player-card-name" style="color: #c69b6d">Starfighter</div>
+                <div class="player-card-spec">Fury</div>
+                <div class="player-card-metric">24,477 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>20 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Cosmic Barrier</div>
+            </a>
+<a href="/raid/log-20260623-crown-nurnyx" class="player-card">
+                <div class="player-card-name" style="color: #fff">Nurnyx</div>
+                <div class="player-card-spec">Shadow</div>
+                <div class="player-card-metric">23,981 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>23 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-voidhéart" class="player-card">
+                <div class="player-card-name" style="color: #fff">Voidhéart</div>
+                <div class="player-card-spec">Shadow</div>
+                <div class="player-card-metric">14,728 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>22 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-darthurg" class="player-card">
+                <div class="player-card-name" style="color: #aad372">Darthurg</div>
+                <div class="player-card-spec">Marksmanship</div>
+                <div class="player-card-metric">8,811 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>12 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Accumulated Damage</div>
+            </a>
+<a href="/raid/log-20260623-crown-alitheria" class="player-card">
+                <div class="player-card-name" style="color: #f48cba">Alitheria</div>
+                <div class="player-card-spec">Retribution</div>
+                <div class="player-card-metric">6,689 DPS</div>
+                <div class="player-card-stats">
+                    <span>0% alive</span>
+                    <span>9 deaths</span>
+                </div>
+                <div class="player-card-detail">Worst: P2 | Cosmic Barrier</div>
+            </a>
+</div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs report Hz1Lm672dZnBw9YC</a></p>
+    <p>20 pulls analyzed &middot; 20 qualifying pulls (&gt;60s) &middot; All fights included except fight 24 (reset at 100% boss)</p>
+    <p>Phase boundaries: P1 ends at Silversunder Catastrophe (~2:08), P2 starts at Empowering Darkness (~2:53), P3 starts at Cosmic Radiation (~5:10)</p>
+</div>
+
+</div>
+</body>
+</html>

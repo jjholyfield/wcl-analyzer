@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silencio — Restoration Druid — Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .ramp-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .ramp-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .ramp-timeline .good { background: rgba(63,185,80,0.12); }
+  .ramp-timeline .bad { background: rgba(248,81,73,0.12); }
+  .ramp-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .ramp-timeline .bloom-hit { background: rgba(248,81,73,0.25); border: 1px solid rgba(248,81,73,0.5); padding: 4px 8px; border-radius: 4px; font-weight: 700; display: block; margin: 4px 0; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .healer-cd-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .healer-cd-row:last-child { border-bottom: none; }
+  .healer-name { width: 160px; font-weight: 600; font-size: 13px; }
+  .cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .cd-pill.druid { background: rgba(255,125,10,0.15); color: #ff7d0a; }
+  .cd-pill.shaman { background: rgba(0,112,222,0.15); color: #0070de; }
+  .cd-pill.priest-disc { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+  .cd-pill.priest-holy { background: rgba(255,245,105,0.15); color: #fff569; }
+  .cd-pill.missing { background: rgba(248,81,73,0.1); color: var(--red); border: 1px dashed rgba(248,81,73,0.3); }
+  .oh-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .oh-eff { background: var(--green); }
+  .oh-over { background: var(--red); opacity: 0.6; }
+  .death-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; }
+  .death-timeline .dmg { color: var(--red); }
+  .death-timeline .heal { color: var(--green); }
+  .death-timeline .absorb { color: var(--cyan); }
+  .death-timeline .ts { color: var(--dim); display: inline-block; width: 50px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>S&igrave;lencio <span class="dim">&mdash; Restoration Druid</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">155.4K</div>
+    <div class="stat-label">HPS (Full Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">286.3</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">41.6%</div>
+    <div class="stat-label">Overheal</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">S&igrave;lencio survived the full 7:58 kill and delivered <strong class="green">154.5K HPS</strong> with solid CD timing on all 3 Blooms. The primary gap vs the reference (Thym&oacute;s, <strong class="green">211K HPS</strong>) is in <strong class="yellow">filler spell throughput</strong>: Rejuvenation at <strong class="yellow">14.3 CPM vs 18.2</strong>, Regrowth at <strong class="yellow">15.1 CPM vs 18.4</strong>, and Swiftmend at <strong class="yellow">3.3 CPM vs 4.5</strong>. Overheal is elevated at <strong class="orange">41.6%</strong> (vs ref 39.2%), driven by <strong class="yellow">Lifebloom at 68% OH</strong> and <strong class="yellow">Tranquility at 57% OH</strong>. DPS contribution is notably low at <strong class="red">2,582 DPS</strong> (only 8 Wrath casts) vs the reference's <strong class="green">6,550 DPS</strong> with Cat Form weaving. Positioning is excellent &mdash; zero Festering Vines hits across the entire fight.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Restoration Druids on Mythic Rotmire. Primary reference: <strong>Thym&oacute;s</strong> (closest talent match at 3 diffs, 208K HPS, 7:57 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Overheal</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(255,125,10,0.06);">
+      <td><strong>S&igrave;lencio</strong></td>
+      <td>154,505</td>
+      <td>7:58</td>
+      <td>286.3</td>
+      <td>&mdash;</td>
+      <td>41.6%</td>
+    </tr>
+    <tr>
+      <td>Shockyy <span class="ref-badge">#1</span></td>
+      <td class="green">218,468</td>
+      <td>8:17</td>
+      <td>286.8</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Lightblooms <span class="ref-badge">#2</span></td>
+      <td class="green">212,487</td>
+      <td>6:51</td>
+      <td>277.0</td>
+      <td><span class="tag tag-warn">8 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Zylche <span class="ref-badge">#3</span></td>
+      <td class="green">209,398</td>
+      <td>8:43</td>
+      <td>274.8</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&Auml;xadudu <span class="ref-badge">#4</span></td>
+      <td class="green">209,167</td>
+      <td>7:10</td>
+      <td>290.3</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Thym&oacute;s <span class="ref-badge">#5 PRIMARY</span></td>
+      <td class="green">207,776</td>
+      <td>7:57</td>
+      <td>273.9</td>
+      <td><span class="tag tag-same">3 diff</span></td>
+      <td>39.2%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Note: All 5 references survived their kills. Thym&oacute;s is the closest talent match (only 3 differences) and has a nearly identical kill time (7:57 vs 7:58). S&igrave;lencio has the highest ilvl (286.3) in the comparison group but the lowest HPS, indicating the gap is in play, not gear. The 3 talent differences are minor choice-node variants.</p>
+
+<!-- BOSS TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major healing events. Fungal Blooms fire at 2:00, 4:16, and 6:32 (136s cycle). Festering Vines root players at 7 fixed intervals. S&igrave;lencio survived the full fight.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Alive zone (full fight) -->
+  <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(63,185,80,0.04);"></div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<!-- BLOOM RAMP ANALYSIS -->
+<h2>Bloom #1 Ramp Analysis</h2>
+<p class="section-intro">Resto Druid ramp: pre-hot with Rejuvenation + Wild Growth before damage, then deploy Tranquility/Convoke during or immediately after damage hits. Bloom #1 fires at 120s.</p>
+
+<div class="side-by-side">
+  <!-- THYMOS (REFERENCE) -->
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="green">Thym&oacute;s</span> <span class="ref-badge">Reference</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">110.5s</span> <span class="cast good">Rejuvenation</span></div>
+      <div><span class="dim">111.6s</span> <span class="cast good">Rejuvenation</span></div>
+      <div><span class="dim">113.7s</span> <span class="cast good">Regrowth + Swiftmend</span></div>
+      <div><span class="dim">115.9s</span> <span class="cast good">Wild Growth</span></div>
+      <div><span class="dim">116.9s</span> <span class="cast good">Regrowth + Rejuvenation</span></div>
+      <div><span class="dim">118.2s</span> <span class="cast good">Convoke the Spirits</span> <span class="dim">(1.8s before Bloom)</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (120s)</div>
+      <div><span class="dim">122.0s</span> <span class="cast good">Tranquility</span> <span class="dim">(channel 122-126s)</span></div>
+      <div><span class="dim">127.7s</span> <span class="cast good">Wild Growth + Swiftmend</span></div>
+      <div><span class="dim">128.8s</span> <span class="cast good">Rejuv + Germ</span></div>
+      <div><span class="dim">130-139s</span> <span class="cast good">Regrowth x8</span> <span class="dim">(sustained throughput)</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Convoke pre-loaded, Tranq immediately after Bloom</strong></div>
+    </div>
+  </div>
+
+  <!-- SILENCIO -->
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="orange">S&igrave;lencio</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">110.8s</span> <span class="cast good">Swiftmend</span></div>
+      <div><span class="dim">112.0s</span> <span class="cast good">Rejuvenation</span></div>
+      <div><span class="dim">114.2s</span> <span class="cast good">Wild Growth + Rejuv + Germ</span></div>
+      <div><span class="dim">115.3s</span> <span class="cast good">Rejuvenation</span></div>
+      <div><span class="dim">116.4s</span> <span class="cast good">Rejuvenation</span></div>
+      <div><span class="dim">118.6s</span> <span class="cast neutral">Regrowth</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (120s)</div>
+      <div><span class="dim">120.8s</span> <span class="cast neutral">Rejuv + Germ</span></div>
+      <div><span class="dim">121.9s</span> <span class="cast neutral">Rejuv + Germ</span></div>
+      <div><span class="dim">123.1s</span> <span class="cast bad">Tranquility</span> <span class="dim">(3.1s after Bloom)</span></div>
+      <div><span class="dim">128.8s</span> <span class="cast neutral">Wild Growth + Swiftmend</span></div>
+      <div><span class="dim">129-139s</span> <span class="cast neutral">Regrowth x7</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">No Convoke at Bloom #1 &mdash; Tranq 3.1s late</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Bloom #1 Comparison</div>
+  <p style="font-size: 14px;">Thym&oacute;s fires <strong>Convoke the Spirits 1.8s before</strong> Bloom hits, stacking HoTs during the 4-second channel, then immediately starts <strong>Tranquility at +2s</strong> for sustained throughput through the damage window. S&igrave;lencio's pre-hotting is decent (Rejuv/Wild Growth are up), but the <strong>Convoke is missing</strong> at this window entirely (it was used at 0:06 and 1:22 instead) and <strong>Tranquility starts 3.1s after the Bloom</strong> rather than immediately. The damage peaks in the first 2 seconds after Bloom &mdash; having Convoke or Tranq active when it hits is significantly more effective.</p>
+</div>
+
+<!-- BLOOM 2 RAMP -->
+<h2>Bloom #2 Ramp Analysis</h2>
+<p class="section-intro">Bloom #2 at 256s (4:16). Both players deploy Convoke here.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="green">Thym&oacute;s</span> <span class="ref-badge">Reference</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">245-255s</span> <span class="cast good">Rejuv, Regrowth, Wild Growth, Swiftmend</span></div>
+      <div><span class="dim">256.0s</span> <span class="cast good">Convoke the Spirits</span> <span class="dim">(exactly at Bloom)</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (256s)</div>
+      <div><span class="dim">260-275s</span> <span class="cast good">Regrowth spam + Wild Growth + Swiftmend</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Convoke precisely at Bloom timing</strong></div>
+    </div>
+  </div>
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="orange">S&igrave;lencio</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">245-256s</span> <span class="cast good">Wild Growth, Rejuv, Swiftmend, Lifebloom</span></div>
+      <div><span class="dim">256.4s</span> <span class="cast neutral">Healthstone</span> <span class="dim">(personal defensive)</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (256s)</div>
+      <div><span class="dim">257-266s</span> <span class="cast neutral">Rejuv + Regrowth spam</span></div>
+      <div><span class="dim">267.9s</span> <span class="cast bad">Convoke the Spirits</span> <span class="dim">(11.9s after Bloom)</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">Convoke 11.9s late &mdash; healing after damage already resolved</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- BLOOM 3 RAMP -->
+<h2>Bloom #3 Ramp Analysis</h2>
+<p class="section-intro">Bloom #3 at 392s (6:32). Thym&oacute;s layers Convoke + Tranq again. S&igrave;lencio uses Convoke but 16s late.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card ramp">
+    <div class="card-header"><span class="green">Thym&oacute;s</span> <span class="ref-badge">Reference</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">381-390s</span> <span class="cast good">Regrowth, Rejuv, Swiftmend, Wild Growth</span></div>
+      <div><span class="dim">391.1s</span> <span class="cast good">Convoke the Spirits</span> <span class="dim">(0.9s before Bloom)</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (392s)</div>
+      <div><span class="dim">395.0s</span> <span class="cast good">Tranquility</span> <span class="dim">(channel 395-399s)</span></div>
+      <div><span class="dim">400-414s</span> <span class="cast good">Wild Growth, Swiftmend, Regrowth spam</span></div>
+      <div style="margin-top: 8px;"><strong class="green">Convoke + Tranq layered perfectly</strong></div>
+    </div>
+  </div>
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="orange">S&igrave;lencio</span></div>
+    <div class="ramp-timeline">
+      <div><span class="dim">380-394s</span> <span class="cast good">Rejuv, Wild Growth, Swiftmend, Regrowth</span></div>
+      <div class="bloom-hit">&#x1F33A; BLOOM HITS (392s)</div>
+      <div><span class="dim">394-403s</span> <span class="cast neutral">Regrowth spam, Wild Growth, Swiftmend</span></div>
+      <div><span class="dim">400.1s</span> <span class="cast neutral">Lightfused Mana Potion</span></div>
+      <div><span class="dim">405.7s</span> <span class="cast neutral">Ironbark</span></div>
+      <div><span class="dim">408.5s</span> <span class="cast bad">Convoke the Spirits</span> <span class="dim">(16.5s after Bloom)</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">No CD at Bloom window &mdash; Convoke 16.5s late</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Ramp Summary</div>
+  <p style="font-size: 14px;">Across all 3 Blooms, Thym&oacute;s deploys a major CD (Convoke or Convoke + Tranq) <strong>at or within 2 seconds of the Bloom</strong>. S&igrave;lencio's Tranquility on Bloom #1 was <strong>3.1s late</strong>, Convoke on Bloom #2 was <strong>11.9s late</strong>, and Convoke on Bloom #3 was <strong>16.5s late</strong>. The pre-hotting (Rejuv, Wild Growth) is present in all 3 windows, which is good fundamentals. The issue is purely <strong>CD deployment timing</strong> &mdash; the major CDs are fired after the damage window rather than during it.</p>
+</div>
+
+<!-- TEAM CD COORDINATION -->
+<h2>Team CD Coordination</h2>
+<p class="section-intro">Which healing CDs covered each Bloom across all 4 healers. S&igrave;lencio's row is highlighted. Tiareynna (Disc Priest) died at 3:07 and contributed no CDs to Blooms #2 and #3.</p>
+
+<div class="card">
+  <!-- BLOOM 1 -->
+  <h3 style="margin-bottom: 12px;">Bloom #1 &mdash; 2:00</h3>
+  <div class="healer-cd-row" style="background: rgba(255,125,10,0.06);">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio <span class="dim">(RDruid)</span></div>
+    <span class="cd-pill druid">Tranquility (2:03)</span>
+    <span class="tag tag-warn" style="font-size: 10px;">3.1s late</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #0070de;">Brewtote <span class="dim">(RSham)</span></div>
+    <span class="cd-pill shaman">Ascendance (1:58)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna <span class="dim">(Disc)</span></div>
+    <span class="cd-pill priest-disc">Evangelism (2:05)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #fff569;">Void&eacute;art <span class="dim">(HPriest)</span></div>
+    <span class="cd-pill priest-holy">Apotheosis (2:04)</span>
+    <span class="cd-pill priest-holy">Divine Hymn (2:26)</span>
+  </div>
+
+  <!-- BLOOM 2 -->
+  <h3 style="margin: 20px 0 12px;">Bloom #2 &mdash; 4:16</h3>
+  <div class="healer-cd-row" style="background: rgba(255,125,10,0.06);">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio</div>
+    <span class="cd-pill druid">Convoke (4:27)</span>
+    <span class="tag tag-warn" style="font-size: 10px;">11.9s late</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #0070de;">Brewtote</div>
+    <span class="cd-pill missing">No major CD</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna</div>
+    <span class="cd-pill missing">DEAD</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #fff569;">Void&eacute;art</div>
+    <span class="cd-pill priest-holy">Apotheosis (4:20)</span>
+    <span class="cd-pill priest-holy">Divine Hymn (4:44)</span>
+  </div>
+
+  <!-- BLOOM 3 -->
+  <h3 style="margin: 20px 0 12px;">Bloom #3 &mdash; 6:32</h3>
+  <div class="healer-cd-row" style="background: rgba(255,125,10,0.06);">
+    <div class="healer-name" style="color: #ff7d0a;">S&igrave;lencio</div>
+    <span class="cd-pill druid">Convoke (6:48)</span>
+    <span class="tag tag-warn" style="font-size: 10px;">16.5s late</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #0070de;">Brewtote</div>
+    <span class="cd-pill shaman">Spirit Link Totem (6:33)</span>
+    <span class="cd-pill shaman">Ascendance (6:40)</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name">Tiareynna</div>
+    <span class="cd-pill missing">DEAD</span>
+  </div>
+  <div class="healer-cd-row">
+    <div class="healer-name" style="color: #fff569;">Void&eacute;art</div>
+    <span class="cd-pill priest-holy">Apotheosis (6:36)</span>
+    <span class="cd-pill priest-holy">Divine Hymn (6:58)</span>
+  </div>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Blooms #2 and #3 had only 2-3 healer CDs active because Tiareynna was dead. S&igrave;lencio had CDs available for all 3 Blooms but deployed them <strong>after the damage window closed</strong> rather than during it. On Bloom #2, the Convoke at 4:27 was the team's only Druid CD &mdash; firing it 11.9s earlier would have significantly helped the team absorb Bloom damage with only 3 healers alive.</p>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for S&igrave;lencio (7:58 full fight) vs Thym&oacute;s (7:57 full fight). Abilities sorted by Resto Druid priority.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>S&igrave;lencio CPM</th>
+      <th>Casts</th>
+      <th>Thym&oacute;s CPM</th>
+      <th>Casts</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Wild Growth</strong></td>
+      <td>4.6</td>
+      <td>37</td>
+      <td>5.0</td>
+      <td>40</td>
+      <td class="dim">&minus;8%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Rejuvenation</strong></td>
+      <td class="yellow">14.3</td>
+      <td>114</td>
+      <td>18.2</td>
+      <td>145</td>
+      <td class="yellow">&minus;21%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Swiftmend</strong></td>
+      <td class="yellow">3.3</td>
+      <td>26</td>
+      <td>4.5</td>
+      <td>36</td>
+      <td class="yellow">&minus;27%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Lifebloom</strong></td>
+      <td>3.0</td>
+      <td>24</td>
+      <td>1.5</td>
+      <td>12</td>
+      <td class="green">+100%</td>
+      <td><span class="tag tag-info">Higher</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Regrowth</strong></td>
+      <td class="yellow">15.1</td>
+      <td>120</td>
+      <td>18.4</td>
+      <td>146</td>
+      <td class="yellow">&minus;18%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Rejuvenation (Germ.)</td>
+      <td>4.6</td>
+      <td>37</td>
+      <td>5.4</td>
+      <td>43</td>
+      <td class="dim">&minus;15%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Tranquility</td>
+      <td>2.0</td>
+      <td>16</td>
+      <td>2.0</td>
+      <td>16</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Convoke the Spirits</td>
+      <td>1.0</td>
+      <td>8</td>
+      <td>0.9</td>
+      <td>7</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Nature's Swiftness</td>
+      <td>1.0</td>
+      <td>8</td>
+      <td>0.8</td>
+      <td>6</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Ironbark</td>
+      <td>0.4</td>
+      <td>3</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Innervate</td>
+      <td>0.4</td>
+      <td>3</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Wrath</strong> <span class="dim">(DPS filler)</span></td>
+      <td class="red">1.0</td>
+      <td>8</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">See DPS</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rake</strong> <span class="dim">(DPS filler)</span></td>
+      <td>&mdash;</td>
+      <td>0</td>
+      <td>2.8</td>
+      <td>22</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">Missing</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rip</strong> <span class="dim">(DPS filler)</span></td>
+      <td>&mdash;</td>
+      <td>0</td>
+      <td>0.9</td>
+      <td>7</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">Missing</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Under-casting Core Fillers</div>
+    <p style="font-size: 14px;">Rejuvenation (14.3 vs 18.2 CPM, <strong>&minus;21%</strong>), Regrowth (15.1 vs 18.4 CPM, <strong>&minus;18%</strong>), and Swiftmend (3.3 vs 4.5 CPM, <strong>&minus;27%</strong>) are all below the reference. Over a 7:58 fight, that is <strong>~31 fewer Rejuvenations, ~26 fewer Regrowths, and ~10 fewer Swiftmends</strong>. Each of these casts generates direct healing plus Mastery stacks (Harmony). More casts = more HoTs out = more Mastery healing on every subsequent heal. This cascading effect explains much of the HPS gap.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">No Cat Form DPS Weaving</div>
+    <p style="font-size: 14px;">Thym&oacute;s shifts into Cat Form during low-damage windows to deal damage with <strong>Rake (22 casts), Rip (7 casts), and Feral Frenzy</strong>. S&igrave;lencio uses only <strong>Wrath (8 casts)</strong> for DPS. Cat Form weaving is a major DPS gain for Resto Druids &mdash; Rake/Rip tick damage generates healing through Symbiotic Blooms, so it contributes to both DPS and HPS. This is the largest difference between the two profiles and accounts for the <strong>6,550 vs 2,582 DPS gap</strong>.</p>
+  </div>
+</div>
+
+<!-- HEALING BREAKDOWN -->
+<h2>Healing Breakdown</h2>
+<p class="section-intro">Top healing sources with overheal percentage. S&igrave;lencio's full fight vs Thym&oacute;s's full fight. Both fights are nearly identical in duration (7:58 vs 7:57).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>S&igrave;lencio Eff.</th><th>OH%</th><th></th><th>Thym&oacute;s Eff.</th><th>OH%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Regrowth</strong></td>
+      <td>11,050K</td>
+      <td class="yellow">47%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 53%"></div>
+          <div class="oh-over" style="width: 47%"></div>
+        </div>
+      </td>
+      <td>16,134K</td>
+      <td class="yellow">41%</td>
+    </tr>
+    <tr>
+      <td><strong>Wild Growth</strong></td>
+      <td>10,649K</td>
+      <td>34%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 66%"></div>
+          <div class="oh-over" style="width: 34%"></div>
+        </div>
+      </td>
+      <td>14,369K</td>
+      <td>34%</td>
+    </tr>
+    <tr>
+      <td><strong>Everbloom</strong></td>
+      <td>10,256K</td>
+      <td>21%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 79%"></div>
+          <div class="oh-over" style="width: 21%"></div>
+        </div>
+      </td>
+      <td>14,417K</td>
+      <td>25%</td>
+    </tr>
+    <tr>
+      <td><strong>Rejuvenation</strong></td>
+      <td>6,829K</td>
+      <td class="yellow">41%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 59%"></div>
+          <div class="oh-over" style="width: 41%"></div>
+        </div>
+      </td>
+      <td>10,721K</td>
+      <td>36%</td>
+    </tr>
+    <tr>
+      <td>Tranquility</td>
+      <td>4,160K</td>
+      <td class="orange">57%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 43%"></div>
+          <div class="oh-over" style="width: 57%"></div>
+        </div>
+      </td>
+      <td>5,520K</td>
+      <td class="yellow">49%</td>
+    </tr>
+    <tr>
+      <td>Lifebloom</td>
+      <td>3,626K</td>
+      <td class="orange">68%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 32%"></div>
+          <div class="oh-over" style="width: 68%"></div>
+        </div>
+      </td>
+      <td>4,836K</td>
+      <td class="orange">66%</td>
+    </tr>
+    <tr>
+      <td>Symbiotic Blooms</td>
+      <td>3,190K</td>
+      <td>36%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 64%"></div>
+          <div class="oh-over" style="width: 36%"></div>
+        </div>
+      </td>
+      <td>3,767K</td>
+      <td class="yellow">40%</td>
+    </tr>
+    <tr>
+      <td>Efflorescence</td>
+      <td>3,080K</td>
+      <td>21%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 79%"></div>
+          <div class="oh-over" style="width: 21%"></div>
+        </div>
+      </td>
+      <td>3,362K</td>
+      <td>28%</td>
+    </tr>
+    <tr>
+      <td>Nature's Bounty</td>
+      <td>2,888K</td>
+      <td class="orange">53%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 47%"></div>
+          <div class="oh-over" style="width: 53%"></div>
+        </div>
+      </td>
+      <td>5,337K</td>
+      <td class="yellow">44%</td>
+    </tr>
+    <tr>
+      <td>Swiftmend</td>
+      <td>2,652K</td>
+      <td class="yellow">46%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 54%"></div>
+          <div class="oh-over" style="width: 46%"></div>
+        </div>
+      </td>
+      <td>2,117K</td>
+      <td class="orange">58%</td>
+    </tr>
+    <tr>
+      <td>Rejuvenation (Germ.)</td>
+      <td>2,490K</td>
+      <td class="orange">54%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 46%"></div>
+          <div class="oh-over" style="width: 54%"></div>
+        </div>
+      </td>
+      <td>3,444K</td>
+      <td class="yellow">48%</td>
+    </tr>
+    <tr>
+      <td>Verdancy</td>
+      <td>2,307K</td>
+      <td>35%</td>
+      <td>
+        <div class="oh-bar" style="width: 120px;">
+          <div class="oh-eff" style="width: 65%"></div>
+          <div class="oh-over" style="width: 35%"></div>
+        </div>
+      </td>
+      <td>3,573K</td>
+      <td>32%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">S&igrave;lencio's Regrowth does <strong>11,050K vs 16,134K</strong> effective healing (31% less) and Wild Growth does <strong>10,649K vs 14,369K</strong> (26% less). These are the two highest-throughput abilities and together account for ~8.8M of the effective healing gap. Tranquility overheal at <strong>57%</strong> is elevated (ref 49%) &mdash; consistent with the late CD timing observed in the ramp analysis. Lifebloom at 68% overheal is expected for a maintenance HoT and matches the reference (66%).</p>
+
+<!-- DPS CONTRIBUTION -->
+<h2>DPS Contribution</h2>
+<p class="section-intro">Resto Druid DPS comes from Wrath/Moonfire (caster) or Cat Form weaving (Rake/Rip/Feral Frenzy). Higher DPS also generates healing through Symbiotic Blooms.</p>
+
+<div class="grid-3">
+  <div class="card stat">
+    <div class="stat-value red">2,582</div>
+    <div class="stat-label">S&igrave;lencio DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">6,550</div>
+    <div class="stat-label">Thym&oacute;s DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">1,233K</div>
+    <div class="stat-label">Total Damage Done</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">DPS Breakdown</div>
+  <table>
+    <thead>
+      <tr><th>Source</th><th>S&igrave;lencio</th><th>Thym&oacute;s</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Wrath</td>
+        <td>639K</td>
+        <td>268K</td>
+        <td class="dim">Caster filler</td>
+      </tr>
+      <tr>
+        <td>Moonfire</td>
+        <td>410K</td>
+        <td>201K</td>
+        <td class="dim">Maintenance DoT</td>
+      </tr>
+      <tr style="background: rgba(248,81,73,0.05);">
+        <td>Rake</td>
+        <td class="red">67K</td>
+        <td>274K</td>
+        <td class="dim">Cat Form &mdash; <strong class="red">S&igrave;lencio did not Cat weave</strong></td>
+      </tr>
+      <tr style="background: rgba(248,81,73,0.05);">
+        <td>Rip</td>
+        <td class="red">0</td>
+        <td>687K</td>
+        <td class="dim">Cat Form bleed &mdash; <strong class="red">Missing entirely</strong></td>
+      </tr>
+      <tr style="background: rgba(248,81,73,0.05);">
+        <td>Feral Frenzy</td>
+        <td class="red">0</td>
+        <td>1,212K</td>
+        <td class="dim">Cat Form burst &mdash; <strong class="red">Missing entirely</strong></td>
+      </tr>
+      <tr>
+        <td>Ferocious Bite</td>
+        <td>0</td>
+        <td>88K</td>
+        <td class="dim">Cat Form finisher</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Thym&oacute;s's Cat Form weaving (Feral Frenzy 1,212K + Rip 687K + Rake 274K) accounts for <strong>2,173K damage</strong> that S&igrave;lencio is not generating. Cat weave damage also produces Symbiotic Bloom healing &mdash; the reference gets 3,767K from Symbiotic Blooms vs S&igrave;lencio's 3,190K. This is the single largest area for improvement: learning to shift into Cat Form during low-damage windows would boost both DPS and HPS simultaneously.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">S&igrave;lencio's HPS across all 20 pulls on Mythic Rotmire. Clear improvement trajectory &mdash; early pulls (54-85K HPS) climbed to 140K+ by mid-night. Kill fight (154.5K) was the best performance.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 35%; background: var(--red);" data-tooltip="F2: 54.5K HPS (1:13)"></div>
+    <div class="prog-bar" style="height: 33%; background: var(--red);" data-tooltip="F3: 50.9K HPS (1:11)"></div>
+    <div class="prog-bar" style="height: 40%; background: var(--red);" data-tooltip="F4: 61.5K HPS (0:51)"></div>
+    <div class="prog-bar" style="height: 48%; background: var(--red);" data-tooltip="F5: 74.1K HPS (2:42)"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--orange);" data-tooltip="F7: 104.7K HPS (2:18)"></div>
+    <div class="prog-bar" style="height: 56%; background: var(--red);" data-tooltip="F8: 85.7K HPS (2:17)"></div>
+    <div class="prog-bar" style="height: 69%; background: var(--orange);" data-tooltip="F9: 106.0K HPS (3:14)"></div>
+    <div class="prog-bar" style="height: 74%; background: var(--orange);" data-tooltip="F10: 114.6K HPS (5:37)"></div>
+    <div class="prog-bar" style="height: 73%; background: var(--orange);" data-tooltip="F11: 112.5K HPS (4:48)"></div>
+    <div class="prog-bar" style="height: 77%; background: var(--orange);" data-tooltip="F12: 118.1K HPS (5:42)"></div>
+    <div class="prog-bar" style="height: 52%; background: var(--red);" data-tooltip="F13: 80.6K HPS (2:51)"></div>
+    <div class="prog-bar" style="height: 48%; background: var(--red);" data-tooltip="F14: 73.4K HPS (1:15)"></div>
+    <div class="prog-bar" style="height: 80%; background: var(--yellow);" data-tooltip="F15: 122.9K HPS (5:05)"></div>
+    <div class="prog-bar" style="height: 53%; background: var(--red);" data-tooltip="F16: 81.6K HPS (0:53)"></div>
+    <div class="prog-bar" style="height: 93%; background: var(--yellow);" data-tooltip="F17: 142.8K HPS (5:45)"></div>
+    <div class="prog-bar" style="height: 93%; background: var(--yellow);" data-tooltip="F18: 142.8K HPS (6:52)"></div>
+    <div class="prog-bar" style="height: 92%; background: var(--yellow);" data-tooltip="F19: 141.3K HPS (5:01)"></div>
+    <div class="prog-bar" style="height: 42%; background: var(--red);" data-tooltip="F20: 65.4K HPS (0:54)"></div>
+    <div class="prog-bar" style="height: 89%; background: var(--yellow);" data-tooltip="F21: 137.7K HPS (7:15)"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F22 KILL: 154.5K HPS (7:58)"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Short wipes (F2-F4, F14, F16, F20 under 1:15) have lower HPS because the fight hadn't reached the first major healing window yet. The longest pre-kill pulls (F17: 5:45, F18: 6:52, F19: 5:01, F21: 7:15) all exceeded 137K HPS, showing consistent performance in extended fights. The kill (F22) peaked at <strong>154.5K HPS</strong> &mdash; the best pull of the night and a clear positive trajectory.</p>
+
+<!-- HEALER RANKING -->
+<h2>Healer Ranking &mdash; Kill Fight</h2>
+<p class="section-intro">All 4 dedicated healers on the Mythic Rotmire kill, sorted by total HPS. Tiareynna died at 3:07 but still placed #2 due to very high early throughput.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>#</th><th>Player</th><th>Spec</th><th>Total Healing</th><th>HPS</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Brewtote</strong></td>
+      <td>Resto Shaman</td>
+      <td>78,240K</td>
+      <td class="green">163,840</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Tiareynna</strong></td>
+      <td>Disc Priest</td>
+      <td>74,262K</td>
+      <td>155,511</td>
+      <td><span class="tag tag-crit">Died 3:07</span></td>
+    </tr>
+    <tr style="background: rgba(255,125,10,0.06);">
+      <td>3</td>
+      <td><strong>S&igrave;lencio</strong></td>
+      <td>Resto Druid</td>
+      <td>73,782K</td>
+      <td>154,505</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Void&eacute;art</strong></td>
+      <td>Holy Priest</td>
+      <td>64,494K</td>
+      <td>135,056</td>
+      <td><span class="tag tag-same">Survived</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">S&igrave;lencio placed #3 of 4 healers. Notably, Tiareynna died at 3:07 but had higher total HPS because Disc Priest shield-based healing inflates early throughput. With Tiareynna dead for 62% of the fight, the remaining 3 healers carried increased load &mdash; S&igrave;lencio's 154.5K HPS in a 3-healer scenario for most of the fight is reasonable output. The gap vs reference (208K) is about filling more globals and deploying CDs with tighter timing.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Deploy major CDs AT Bloom, not after.</strong> Across all 3 Fungal Blooms, S&igrave;lencio's Convoke/Tranquility arrived 3-17 seconds after the damage window. Blooms are on a fixed 136-second timer (2:00, 4:16, 6:32). The reference fires Convoke 0.9-1.8s before Bloom hits and chains Tranquility immediately after. Start Convoke at <strong>1:58, 4:14, and 6:30</strong>. If Convoke is on cooldown, start Tranquility at the Bloom second. The first 2-3 seconds of a Bloom contain the most damage &mdash; every second of delay means healing lands on targets that are already topped by other healers.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Learn Cat Form weaving for DPS windows.</strong> The reference deals <strong>6,550 DPS</strong> vs S&igrave;lencio's <strong>2,582 DPS</strong>. The gap is entirely Cat Form abilities: Feral Frenzy (1,212K damage), Rip (687K), and Rake (274K). During the 15-25s gaps between damage events, shift to Cat Form, apply Rake and Rip, then shift back to heal. This is the single biggest HPS + DPS improvement available &mdash; Cat Form damage generates Symbiotic Bloom healing, so it contributes to both metrics simultaneously.
+</div>
+
+<div class="action-item">
+  <strong>3. Increase Rejuvenation and Regrowth CPM.</strong> Rejuvenation is <strong>14.3 CPM vs 18.2</strong> (&minus;21%) and Regrowth is <strong>15.1 CPM vs 18.4</strong> (&minus;18%). Over the full fight, that is <strong>~31 fewer Rejuvenations and ~26 fewer Regrowths</strong>. Each additional HoT active means more Mastery (Harmony) stacking, which amplifies all other healing. The GCD downtime that could fill these casts is where the Cat Form weaving from item #2 should go &mdash; either Cat damage or more HoTs, but never idle globals.
+</div>
+
+<div class="action-item">
+  <strong>4. Swiftmend on cooldown.</strong> 3.3 CPM vs reference's 4.5 CPM (&minus;27%, 10 fewer casts). Swiftmend is instant, costs no mana, triggers key talents (Soul of the Forest/Verdancy), and removes a HoT to create an Efflorescence puddle. Using it on cooldown during damage windows maximizes passive throughput from talent procs.
+</div>
+
+<div class="action-item">
+  <strong>5. Reduce Tranquility overheal.</strong> Tranquility overheal is <strong>57%</strong> vs the reference's 49%. The late deployment timing (3.1s after Bloom #1) is the direct cause &mdash; by the time Tranquility is channeling, other healers have already handled the spike. Deploying Tranquility immediately at or within 1 second of Bloom will ensure it heals into active damage rather than topping already-full targets.
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: Thym&oacute;s (#5 ranked Resto Druid, report <code>LMg1nakF2BYbWp3C</code>, Fight 5). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 3 differences between S&igrave;lencio and Thym&oacute;s (minor choice-node variants, no major CD/talent differences). The CPM, CD timing, and Cat weave gaps above are talent-independent.</p>
+  <p style="margin-top: 4px;">Positional note: S&igrave;lencio took <strong>zero Festering Vines hits</strong> across the entire fight &mdash; excellent positioning awareness. No deaths on any of the 3 Bloom windows. Solid survivability.</p>
+</div>
+
+</body>
+</html>

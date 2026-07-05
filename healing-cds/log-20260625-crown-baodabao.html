@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baodabao - Frost Mage - Crown of the Cosmos (Prog Night 4)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --mage: #3fc7eb;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--mage); }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.prog-tag { display: inline-block; background: var(--orange); color: #000; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+.night-tag { display: inline-block; background: var(--purple); color: #000; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .detail { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+th { color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+tr:hover { background: rgba(88, 166, 255, 0.05); }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge-orange { background: rgba(219, 109, 40, 0.15); color: var(--orange); }
+.badge-purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+.badge-blue { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+
+.callout { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.callout-green { border-left: 4px solid var(--green); }
+.callout-red { border-left: 4px solid var(--red); }
+.callout-yellow { border-left: 4px solid var(--yellow); }
+.callout-blue { border-left: 4px solid var(--accent); }
+.callout-purple { border-left: 4px solid var(--purple); }
+.callout .callout-title { font-weight: 600; margin-bottom: 4px; }
+
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 200px; padding-top: 20px; position: relative; }
+.bar-chart .bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+.bar-chart .bar { width: 100%; min-width: 20px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s; }
+.bar-chart .bar:hover { opacity: 0.8; }
+.bar-chart .bar-label { font-size: 10px; color: var(--dim); margin-top: 4px; writing-mode: vertical-lr; text-orientation: mixed; max-height: 50px; overflow: hidden; }
+.bar-chart .bar-value { font-size: 9px; color: var(--dim); margin-bottom: 2px; text-align: center; }
+.avg-line { position: absolute; width: 100%; border-top: 2px dashed var(--yellow); z-index: 1; }
+.avg-line-label { position: absolute; right: 0; top: -14px; font-size: 10px; color: var(--yellow); }
+
+.phase-bar { height: 8px; border-radius: 4px; display: flex; overflow: hidden; margin-bottom: 8px; }
+.phase-bar .segment { height: 100%; }
+
+.ref-table .primary { background: rgba(188, 140, 255, 0.08); }
+.ref-table .player-row { background: rgba(63, 199, 235, 0.08); }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+}
+
+.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--dim); }
+
+.phase-reach-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.phase-reach-bar .phase-name { width: 110px; font-size: 13px; font-weight: 500; }
+.phase-reach-bar .bar-bg { flex: 1; height: 24px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; position: relative; }
+.phase-reach-bar .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 12px; font-weight: 600; }
+.phase-reach-bar .bar-count { width: 60px; text-align: right; font-size: 13px; color: var(--dim); }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.legend { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--dim); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+.death-timeline { position: relative; padding: 8px 0; }
+.death-marker { position: absolute; top: 0; width: 2px; height: 100%; }
+.death-marker::after { content: attr(data-label); position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; white-space: nowrap; color: var(--dim); }
+
+.trend-arrow { font-size: 14px; }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+.trend-flat { color: var(--dim); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25 Crown Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Baodabao</span> &mdash; Frost Mage
+    <span class="prog-tag">PROGRESSION</span>
+    <span class="night-tag">NIGHT 4</span>
+  </h1>
+  <div class="subtitle">
+    Crown of the Cosmos &bull; Mythic &bull; 19 pulls &bull; June 25, 2026 &bull;
+    Report <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">XYtJ3R1qjdFpM4cT</a>
+  </div>
+  <div class="subtitle" style="margin-top: 4px;">
+    Deepest pulls: Fight 14 (7:12), Fight 6 (7:03), Fight 28 (6:59) &mdash; all deep P3
+  </div>
+  <div class="subtitle" style="margin-top: 4px;">
+    Comp: 2T / 4H / 14D &bull; Healers: Senssay (MW), Dueche (HPal), Silencio (RDruid), Voidheart (Disc)
+  </div>
+</div>
+
+<!-- ============ SUMMARY CARDS ============ -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS (Long Pulls)</div>
+    <div class="value" style="color: var(--mage);">60.9K</div>
+    <div class="detail">Across 11 pulls &gt;300s</div>
+    <div class="detail">Best: 65.7K (F28) &bull; Median: 58.9K</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="detail">Crit 1050 &bull; Haste 772</div>
+    <div class="detail">Mastery 1002 &bull; Vers 0</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color: var(--green);">18/19 cascade</div>
+    <div class="detail">Only 1 actionable death (first 2 to die)</div>
+    <div class="detail">Typically among last to die in wipes</div>
+  </div>
+  <div class="card">
+    <div class="label">Deepest Pull</div>
+    <div class="value">7:12</div>
+    <div class="detail">Fight 14 &bull; Deep P3</div>
+    <div class="detail">65.7K DPS on best pull (F28)</div>
+  </div>
+</div>
+
+<!-- ============ PERFORMANCE ACROSS ALL PULLS ============ -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background: var(--green);"></div> Survived to wipe</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--cyan);"></div> Died late (cascade, not actionable)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--red);"></div> Died early (actionable)</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--yellow); height: 2px; width: 16px; border-radius: 0;"></div> Long pull average (60.9K)</div>
+  </div>
+
+  <div class="chart-container">
+    <div class="bar-chart" id="dps-chart">
+      <!-- F1: 45.3K, 300s, cascade death -->
+      <div class="bar-wrapper">
+        <div class="bar-value">45.3K</div>
+        <div class="bar" style="height: 12.5%; background: var(--cyan);" title="Fight 1: 45,319 DPS (5:00, P2)"></div>
+        <div class="bar-label">F1</div>
+      </div>
+      <!-- F2: 53.7K, 414s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">53.7K</div>
+        <div class="bar" style="height: 14.9%; background: var(--cyan);" title="Fight 2: 53,742 DPS (6:54, P3)"></div>
+        <div class="bar-label">F2</div>
+      </div>
+      <!-- F3: 314.5K, 111s, survived (P1 only) -->
+      <div class="bar-wrapper">
+        <div class="bar-value">314K</div>
+        <div class="bar" style="height: 87%; background: var(--green);" title="Fight 3: 314,485 DPS (1:51, P1 wipe)"></div>
+        <div class="bar-label">F3</div>
+      </div>
+      <!-- F5: 275.2K, 111s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">275K</div>
+        <div class="bar" style="height: 76%; background: var(--cyan);" title="Fight 5: 275,243 DPS (1:51, P1 wipe)"></div>
+        <div class="bar-label">F5</div>
+      </div>
+      <!-- F6: 63.4K, 423s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">63.4K</div>
+        <div class="bar" style="height: 17.6%; background: var(--cyan);" title="Fight 6: 63,409 DPS (7:03, P3)"></div>
+        <div class="bar-label">F6</div>
+      </div>
+      <!-- F8: 282.4K, 72s, ACTIONABLE death -->
+      <div class="bar-wrapper">
+        <div class="bar-value">282K</div>
+        <div class="bar" style="height: 78%; background: var(--red);" title="Fight 8: 282,353 DPS (1:12, P1) - ACTIONABLE DEATH at 0:59"></div>
+        <div class="bar-label">F8</div>
+      </div>
+      <!-- F12: 353.1K, 130s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">353K</div>
+        <div class="bar" style="height: 98%; background: var(--cyan);" title="Fight 12: 353,145 DPS (2:10, P1 wipe)"></div>
+        <div class="bar-label">F12</div>
+      </div>
+      <!-- F13: 361K, 82s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">361K</div>
+        <div class="bar" style="height: 100%; background: var(--cyan);" title="Fight 13: 361,001 DPS (1:22, P1 wipe)"></div>
+        <div class="bar-label">F13</div>
+      </div>
+      <!-- F14: 63.5K, 433s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">63.5K</div>
+        <div class="bar" style="height: 17.6%; background: var(--cyan);" title="Fight 14: 63,452 DPS (7:12, P3 - DEEPEST)"></div>
+        <div class="bar-label">F14</div>
+      </div>
+      <!-- F17: 64.9K, 418s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">64.9K</div>
+        <div class="bar" style="height: 18%; background: var(--cyan);" title="Fight 17: 64,890 DPS (6:58, P3)"></div>
+        <div class="bar-label">F17</div>
+      </div>
+      <!-- F18: 52.7K, 306s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">52.7K</div>
+        <div class="bar" style="height: 14.6%; background: var(--cyan);" title="Fight 18: 52,740 DPS (5:06, P2)"></div>
+        <div class="bar-label">F18</div>
+      </div>
+      <!-- F19: 326.9K, 79s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">327K</div>
+        <div class="bar" style="height: 91%; background: var(--cyan);" title="Fight 19: 326,857 DPS (1:19, P1 wipe)"></div>
+        <div class="bar-label">F19</div>
+      </div>
+      <!-- F21: 312.4K, 91s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">312K</div>
+        <div class="bar" style="height: 87%; background: var(--cyan);" title="Fight 21: 312,449 DPS (1:31, P1 wipe)"></div>
+        <div class="bar-label">F21</div>
+      </div>
+      <!-- F22: 279.5K, 78s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">280K</div>
+        <div class="bar" style="height: 78%; background: var(--cyan);" title="Fight 22: 279,524 DPS (1:18, P1 wipe)"></div>
+        <div class="bar-label">F22</div>
+      </div>
+      <!-- F23: 58.9K, 314s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">58.9K</div>
+        <div class="bar" style="height: 16.3%; background: var(--cyan);" title="Fight 23: 58,942 DPS (5:14, P2)"></div>
+        <div class="bar-label">F23</div>
+      </div>
+      <!-- F24: 54.3K, 337s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">54.3K</div>
+        <div class="bar" style="height: 15.1%; background: var(--cyan);" title="Fight 24: 54,349 DPS (5:36, P3)"></div>
+        <div class="bar-label">F24</div>
+      </div>
+      <!-- F26: 60.8K, 418s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">60.8K</div>
+        <div class="bar" style="height: 16.8%; background: var(--cyan);" title="Fight 26: 60,757 DPS (6:58, P3)"></div>
+        <div class="bar-label">F26</div>
+      </div>
+      <!-- F27: 58.9K, 336s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">58.9K</div>
+        <div class="bar" style="height: 16.3%; background: var(--cyan);" title="Fight 27: 58,904 DPS (5:36, P3)"></div>
+        <div class="bar-label">F27</div>
+      </div>
+      <!-- F28: 65.7K, 419s, cascade -->
+      <div class="bar-wrapper">
+        <div class="bar-value">65.7K</div>
+        <div class="bar" style="height: 18.2%; background: var(--cyan);" title="Fight 28: 65,653 DPS (6:59, P3)"></div>
+        <div class="bar-label">F28</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-blue">
+    <div class="callout-title">Understanding the DPS Bimodality</div>
+    <p style="font-size: 13px; color: var(--dim);">
+      Short P1-only wipes (F3, F5, F8, F12, F13, F19, F21, F22) show 275K-361K DPS because the entire pull is burst phase with CDs active and AoE on P1 adds (Void Droplets). Long multi-phase pulls (5-7+ minutes) show 45K-66K DPS averaged over the full duration, including intermission downtime and P3 chaos. Both numbers are correct for their context. The long pull DPS is what matters for kill comparison.
+    </p>
+  </div>
+
+  <div class="grid-2">
+    <div class="callout callout-green">
+      <div class="callout-title">Session Trend</div>
+      <p style="font-size: 13px;">
+        Long pull DPS improved <span class="trend-arrow trend-up">+4.3%</span> from first half (57.3K avg) to second half (59.7K avg) of the session.
+        Best three pulls were F14 (63.5K), F17 (64.9K), and F28 (65.7K) &mdash; the last pull of the night was the best DPS.
+      </p>
+    </div>
+    <div class="callout callout-blue">
+      <div class="callout-title">Consistency</div>
+      <p style="font-size: 13px;">
+        Long pull DPS range: 45.3K (F1, first pull) to 65.7K (F28, last pull).
+        Excluding the rocky first pull, the range narrows to 52.7K-65.7K &mdash; a 20% spread, which is reasonable for prog night variance.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DEATH PATTERN ANALYSIS ============ -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Exceptional Survival</div>
+    <p style="font-size: 13px;">
+      Baodabao died in 18/19 pulls, but applying the <strong>2-death threshold rule</strong>, only <strong>1 death was actionable</strong> (first 2 to die in the pull). In 17 of 18 deaths, multiple players had already died before Baodabao &mdash; these are cascade deaths from raid wipes, not individual mistakes. Baodabao is consistently among the last players standing.
+    </p>
+  </div>
+
+  <h3>Actionable Death (1 total)</h3>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Time</th><th>Phase</th><th>Death #</th><th>Killing Ability</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Fight 8</td>
+        <td>0:59</td>
+        <td>P1</td>
+        <td>#1 (first death in pull)</td>
+        <td style="color: var(--red);">Bursting Emptiness</td>
+        <td><span class="badge badge-red">Avoidable</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <div class="callout-title">Fight 8 Death: Bursting Emptiness at 0:59</div>
+    <p style="font-size: 13px;">
+      Baodabao was the first player to die in this pull, killed by Bursting Emptiness (a Void Droplet explosion in P1). This is an avoidable mechanic &mdash; Void Droplets need to be killed before they reach the raid, or players need to be positioned away from their detonation. This was the only pull all night where Baodabao's death contributed to the wipe rather than being a symptom of it.
+    </p>
+  </div>
+
+  <h3>Cascade Deaths (context only &mdash; not actionable)</h3>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    These deaths occurred after 2+ players had already died. They reflect raid state deterioration, not individual mistakes.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Death Time</th><th>Pull Dur</th><th>Death #</th><th>Killing Ability</th><th>Phase</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>F1</td><td>4:45</td><td>5:00</td><td>#6</td><td>Void Expulsion</td><td>P2</td></tr>
+      <tr><td>F2</td><td>6:07</td><td>6:54</td><td>#8</td><td>Unknown</td><td>P3</td></tr>
+      <tr><td>F5</td><td>1:51</td><td>1:51</td><td>#21</td><td>Echoing Darkness</td><td>P1 (end)</td></tr>
+      <tr><td>F6</td><td>6:54</td><td>7:03</td><td>#19</td><td>Gravity Collapse</td><td>P3</td></tr>
+      <tr><td>F12</td><td>2:05</td><td>2:10</td><td>#12</td><td>Void Remnants</td><td>P1 (end)</td></tr>
+      <tr><td>F13</td><td>1:14</td><td>1:22</td><td>#18</td><td>Melee</td><td>P1</td></tr>
+      <tr><td>F14</td><td>7:07</td><td>7:12</td><td>#20</td><td>Voidstalker Sting</td><td>P3 (end)</td></tr>
+      <tr><td>F17</td><td>6:49</td><td>6:58</td><td>#20</td><td>Voidstalker Sting</td><td>P3 (end)</td></tr>
+      <tr><td>F18</td><td>4:51</td><td>5:06</td><td>#10</td><td>Simulacrum Backlash</td><td>P2</td></tr>
+      <tr><td>F19</td><td>1:07</td><td>1:19</td><td>#11</td><td>Void Expulsion</td><td>P1</td></tr>
+      <tr><td>F21</td><td>1:22</td><td>1:31</td><td>#12</td><td>Silverstrike Arrow</td><td>P1</td></tr>
+      <tr><td>F22</td><td>1:15</td><td>1:18</td><td>#17</td><td>Void Remnants</td><td>P1</td></tr>
+      <tr><td>F23</td><td>5:10</td><td>5:14</td><td>#19</td><td>Melee</td><td>P2 (end)</td></tr>
+      <tr><td>F24</td><td>5:26</td><td>5:37</td><td>#17</td><td>Melee</td><td>P3 (start)</td></tr>
+      <tr><td>F26</td><td>6:49</td><td>6:58</td><td>#18</td><td>Bursting Emptiness</td><td>P3</td></tr>
+      <tr><td>F27</td><td>5:29</td><td>5:36</td><td>#17</td><td>Dimensional Slash</td><td>P3</td></tr>
+      <tr><td>F28</td><td>6:38</td><td>6:59</td><td>#8</td><td>Gravity Collapse</td><td>P3</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Pattern: Baodabao Dies Late in Every Pull</div>
+    <p style="font-size: 13px;">
+      In long pulls (F6, F14, F17, F26), Baodabao survived to within 5-15 seconds of the raid wipe as the 18th-20th death. In short P1 wipes, died as the 11th-21st death. This player is using personal defensives (Ice Block, Alter Time, Blink) effectively and is not a source of early raid deaths.
+    </p>
+  </div>
+</div>
+
+<!-- ============ PER-PHASE PERFORMANCE BREAKDOWN ============ -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    This is the most important section for progression. Overall DPS is misleading because it blends a high-damage P1 burst with intermission downtime and chaotic P3 survival. The phase breakdown shows exactly where performance falls off and why.
+  </p>
+
+  <h3>Phase Reach Rate</h3>
+  <div style="margin-bottom: 20px;">
+    <div class="phase-reach-bar">
+      <div class="phase-name">P1: Sentinels</div>
+      <div class="bar-bg">
+        <div class="bar-fill" style="width: 100%; background: var(--green);">19/19</div>
+      </div>
+      <div class="bar-count">100%</div>
+    </div>
+    <div class="phase-reach-bar">
+      <div class="phase-name">Intermission</div>
+      <div class="bar-bg">
+        <div class="bar-fill" style="width: 57.9%; background: var(--yellow);">11/19</div>
+      </div>
+      <div class="bar-count">57.9%</div>
+    </div>
+    <div class="phase-reach-bar">
+      <div class="phase-name">P2: Rift</div>
+      <div class="bar-bg">
+        <div class="bar-fill" style="width: 57.9%; background: var(--yellow);">11/19</div>
+      </div>
+      <div class="bar-count">57.9%</div>
+    </div>
+    <div class="phase-reach-bar">
+      <div class="phase-name">P3: Cosmos</div>
+      <div class="bar-bg">
+        <div class="bar-fill" style="width: 42.1%; background: var(--red);">8/19</div>
+      </div>
+      <div class="bar-count">42.1%</div>
+    </div>
+  </div>
+
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    8 of 19 pulls were P1 wipes (raid issues, not Baodabao-specific). Of the 11 pulls that reached intermission, 8 made it to P3. The raid's P1 consistency needs improvement &mdash; 42% of pulls never made it past P1.
+  </p>
+
+  <h3>Per-Phase DPS Table</h3>
+  <p style="font-size: 12px; color: var(--dim); margin-bottom: 8px;">
+    P1 DPS calculated from multi-phase pulls only (134s P1 window). Short P1-only wipes excluded to avoid burst inflation.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Worst DPS</th>
+        <th>Deaths in Phase</th>
+        <th>Top Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>P1: Sentinels</strong></td>
+        <td>11 (multi-phase)</td>
+        <td style="color: var(--green);">111.0K</td>
+        <td>136.0K (F14)</td>
+        <td>78.0K (F1)</td>
+        <td>0 actionable / 7 cascade</td>
+        <td style="color: var(--dim);">Void Remnants (2)</td>
+      </tr>
+      <tr>
+        <td><strong>Intermission</strong></td>
+        <td>11/19</td>
+        <td style="color: var(--dim);">1.9K</td>
+        <td>4.3K (F26)</td>
+        <td>0 (F23, F24)</td>
+        <td>0</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td><strong>P2: Rift</strong></td>
+        <td>11/19</td>
+        <td style="color: var(--yellow);">44.5K</td>
+        <td>58.7K (F28)</td>
+        <td>27.7K (F1)</td>
+        <td>0 actionable / 4 cascade</td>
+        <td style="color: var(--dim);">Melee (2)</td>
+      </tr>
+      <tr>
+        <td><strong>P3: Cosmos</strong></td>
+        <td>8/19</td>
+        <td style="color: var(--orange);">15.8K</td>
+        <td>27.5K (F28)</td>
+        <td>50 (F27)</td>
+        <td>0 actionable / 7 cascade</td>
+        <td style="color: var(--dim);">Voidstalker Sting (2), Gravity Collapse (2)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2">
+    <div class="callout callout-blue">
+      <div class="callout-title">P1 Performance: Strong</div>
+      <p style="font-size: 13px;">
+        111K avg P1 DPS across multi-phase pulls is solid. Best P1 was 136K on the deepest pull (F14). P1 is where Frost Mage shines with burst CDs (Icy Veins, Frozen Orb) and AoE on Void Droplets. Zero actionable deaths in P1.
+      </p>
+    </div>
+    <div class="callout callout-yellow">
+      <div class="callout-title">Intermission: Expected Near-Zero</div>
+      <p style="font-size: 13px;">
+        The intermission is Stellar Emission channel + Silverstrike Barrage &mdash; pure survival with minimal DPS targets. 1.9K DPS here is normal. Frost Mage has nothing meaningful to hit during this phase. Zero deaths in intermission.
+      </p>
+    </div>
+    <div class="callout callout-yellow">
+      <div class="callout-title">P2 Performance: Moderate Drop</div>
+      <p style="font-size: 13px;">
+        44.5K avg P2 DPS represents a 60% drop from P1. P2 (Rift phase) involves heavy target switching between Rift Simulacrum, Undying Voidspawn, and Silver Simulacrum. Movement mechanics and spread requirements reduce Frostbolt/Frostfire Bolt uptime. The best P2 performance (58.7K, F28) was on the last pull of the night, suggesting improvement through the session.
+      </p>
+    </div>
+    <div class="callout callout-red">
+      <div class="callout-title">P3 Performance: Low But Contextual</div>
+      <p style="font-size: 13px;">
+        15.8K avg P3 DPS looks alarming, but context matters: P3 is chaotic with overlapping mechanics (Cosmic Radiation, Dimensional Slash, everything at once). By P3 in most of these pulls, 10-15 players were already dead, making the raid state unsustainable. F28 showed 27.5K P3 DPS with better raid state &mdash; this is the ceiling to aim for as the raid gets cleaner P3 transitions.
+        <br><br>
+        F27 shows 50 DPS in P3 because Baodabao died almost immediately upon entering P3 (death at 5:29, P3 starts at ~5:21).
+      </p>
+    </div>
+  </div>
+
+  <h3>Phase DPS Trend (Multi-Phase Pulls Only)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Fight</th>
+        <th>Duration</th>
+        <th>Deepest Phase</th>
+        <th>P1 DPS</th>
+        <th>P2 DPS</th>
+        <th>P3 DPS</th>
+        <th>Overall DPS</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>F1</td><td>5:00</td><td>P2</td><td>78.0K</td><td>27.7K</td><td>&mdash;</td><td>45.3K</td></tr>
+      <tr><td>F2</td><td>6:54</td><td>P3</td><td>110.8K</td><td>44.2K</td><td style="color: var(--dim);">9.7K</td><td>53.7K</td></tr>
+      <tr><td>F6</td><td>7:03</td><td>P3</td><td>129.6K</td><td>50.8K</td><td>18.6K</td><td>63.4K</td></tr>
+      <tr style="background: rgba(63, 185, 80, 0.05);"><td><strong>F14</strong></td><td><strong>7:12</strong></td><td><strong>P3</strong></td><td><strong>136.0K</strong></td><td><strong>53.0K</strong></td><td>16.4K</td><td><strong>63.5K</strong></td></tr>
+      <tr><td>F17</td><td>6:58</td><td>P3</td><td>130.4K</td><td>52.5K</td><td>20.8K</td><td>64.9K</td></tr>
+      <tr><td>F18</td><td>5:06</td><td>P2</td><td>86.4K</td><td>38.2K</td><td>&mdash;</td><td>52.7K</td></tr>
+      <tr><td>F23</td><td>5:14</td><td>P2</td><td>99.5K</td><td>38.0K</td><td>&mdash;</td><td>58.9K</td></tr>
+      <tr><td>F24</td><td>5:37</td><td>P3</td><td>95.4K</td><td>36.1K</td><td style="color: var(--dim);">0</td><td>54.3K</td></tr>
+      <tr><td>F26</td><td>6:58</td><td>P3</td><td>126.1K</td><td>48.5K</td><td>17.4K</td><td>60.8K</td></tr>
+      <tr><td>F27</td><td>5:36</td><td>P3</td><td>102.0K</td><td>41.4K</td><td style="color: var(--dim);">50</td><td>58.9K</td></tr>
+      <tr style="background: rgba(63, 185, 80, 0.05);"><td><strong>F28</strong></td><td><strong>6:59</strong></td><td><strong>P3</strong></td><td><strong>126.8K</strong></td><td><strong>58.7K</strong></td><td><strong>27.5K</strong></td><td><strong>65.7K</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Clear Improvement Through the Night</div>
+    <p style="font-size: 13px;">
+      F1 (45.3K overall) vs F28 (65.7K overall) shows a 45% improvement across the session. P2 DPS grew from 27.7K (F1) to 58.7K (F28). P3 DPS grew from 9.7K (F2) to 27.5K (F28). Baodabao is learning the fight and adapting well.
+    </p>
+  </div>
+</div>
+
+<!-- ============ REFERENCE CONTEXT ============ -->
+<div class="section">
+  <h2>Reference Context <span class="badge badge-purple">De-emphasized for Prog</span></h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    These are top-ranked Frost Mage kill performances on Mythic Crown. They represent the ceiling for a clean kill &mdash; not a direct comparison to progression wipes. All references filtered to 4-healer comps (matching this raid), US/EU regions only.
+  </p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Player</th><th>Guild</th><th>DPS</th><th>Kill Time</th><th>iLvl</th><th>Talent Delta</th></tr>
+    </thead>
+    <tbody>
+      <tr class="primary">
+        <td><span style="color: var(--purple);">Yrsngrtrd</span> (Drak'thul-EU)</td>
+        <td>Exposed</td>
+        <td style="color: var(--purple);">105.6K</td>
+        <td>7:35</td>
+        <td>290</td>
+        <td><span class="badge badge-green">1 diff</span></td>
+      </tr>
+      <tr>
+        <td>Envimage (Stormreaver-EU)</td>
+        <td>Salted</td>
+        <td>104.3K</td>
+        <td>8:50</td>
+        <td>291</td>
+        <td><span class="badge badge-green">2 diffs</span></td>
+      </tr>
+      <tr>
+        <td>Asimage (Proudmoore-US)</td>
+        <td>Room Forty</td>
+        <td>108.2K</td>
+        <td>9:05</td>
+        <td>290</td>
+        <td><span class="badge badge-yellow">4 diffs</span></td>
+      </tr>
+      <tr>
+        <td>Zoltanimus (Emerald Dream-US)</td>
+        <td>Diversus</td>
+        <td>106.7K</td>
+        <td>7:57</td>
+        <td>289</td>
+        <td><span class="badge badge-yellow">5 diffs</span></td>
+      </tr>
+      <tr>
+        <td>Feriblastv (Tarren Mill-EU)</td>
+        <td>Salted</td>
+        <td>106.9K</td>
+        <td>8:30</td>
+        <td>289</td>
+        <td><span class="badge badge-orange">7 diffs</span></td>
+      </tr>
+      <tr class="player-row">
+        <td><span style="color: var(--mage);">Baodabao</span> (Thunderlord-US)</td>
+        <td>&mdash;</td>
+        <td style="color: var(--mage);">65.7K (best)</td>
+        <td>6:59 (wipe)</td>
+        <td>291</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-purple">
+    <div class="callout-title">Primary Reference: Yrsngrtrd (1 talent diff)</div>
+    <p style="font-size: 13px;">
+      Closest talent match with only 1 talent difference. Similar item level (290 vs 291). Their 105.6K DPS over a 7:35 clean kill represents the ceiling. Baodabao's best pull (65.7K, F28) was 62% of reference &mdash; but this was a wipe pull where the raid collapsed in P3, not a clean kill. A meaningful comparison would require Baodabao to see a full clean fight.
+    </p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="label">Baodabao P1 DPS (best)</div>
+      <div class="value" style="color: var(--mage);">136.0K</div>
+      <div class="detail">Fight 14 &bull; 134s P1 window</div>
+    </div>
+    <div class="card">
+      <div class="label">Reference Full-Fight DPS</div>
+      <div class="value" style="color: var(--purple);">105.6K</div>
+      <div class="detail">Yrsngrtrd &bull; 7:35 clean kill</div>
+      <div class="detail" style="color: var(--green);">P1 DPS exceeds reference overall DPS</div>
+    </div>
+  </div>
+
+  <p style="font-size: 13px; color: var(--dim); margin-top: 12px;">
+    Baodabao's best P1 DPS (136K) exceeds the reference's full-fight average (105.6K), which is expected &mdash; P1 includes burst CDs and AoE padding on adds. The DPS gap on long pulls is primarily from P2/P3 performance, which will naturally improve as the raid sees cleaner phase transitions and Baodabao gets more reps in those phases.
+  </p>
+</div>
+
+<!-- ============ GEAR & TALENTS ============ -->
+<div class="section">
+  <h2>Gear & Talents</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="label">Stats</div>
+      <div class="stat-row"><span class="stat-label">Intellect</span><span>2,676</span></div>
+      <div class="stat-row"><span class="stat-label">Critical Strike</span><span>1,050</span></div>
+      <div class="stat-row"><span class="stat-label">Haste</span><span>772</span></div>
+      <div class="stat-row"><span class="stat-label">Mastery</span><span>1,002</span></div>
+      <div class="stat-row"><span class="stat-label">Versatility</span><span>0</span></div>
+    </div>
+    <div class="card">
+      <div class="label">Buffs & Consumables</div>
+      <div class="stat-row"><span class="stat-label">Flask</span><span>Flask of the Shattered Sun</span></div>
+      <div class="stat-row"><span class="stat-label">Food</span><span>Hearty Well Fed</span></div>
+      <div class="stat-row"><span class="stat-label">Vantus Rune</span><span style="color: var(--green);">Crown of the Cosmos</span></div>
+      <div class="stat-row"><span class="stat-label">Weapon Enchant</span><span>Active (temp enchant)</span></div>
+    </div>
+  </div>
+
+  <div class="callout callout-blue" style="margin-top: 16px;">
+    <div class="callout-title">Talent Comparison vs Primary Reference</div>
+    <p style="font-size: 13px;">
+      Only <strong>1 talent difference</strong> from the closest reference (Yrsngrtrd). This means the DPS gap between Baodabao and reference players is execution-based, not build-based. Both are running the same Frost Mage framework. Baodabao's stat priority (high Crit/Mastery, moderate Haste, zero Vers) aligns with the spec's standard prioritization.
+    </p>
+  </div>
+</div>
+
+<!-- ============ CONSISTENCY ANALYSIS ============ -->
+<div class="section">
+  <h2>Consistency Analysis</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="label">Long Pull DPS: Survival vs Death</div>
+      <div class="stat-row"><span class="stat-label">Only survived pull (F3)</span><span>314.5K (P1 only)</span></div>
+      <div class="stat-row"><span class="stat-label">Avg on cascade death pulls</span><span>60.2K</span></div>
+      <div class="detail" style="margin-top: 8px; color: var(--dim);">Not a meaningful comparison &mdash; F3 was a P1-only pull with burst CDs. The cascade deaths are late-pull raid wipes.</div>
+    </div>
+    <div class="card">
+      <div class="label">Session Halves (Long Pulls)</div>
+      <div class="stat-row"><span class="stat-label">First 6 pulls (F1-F17)</span><span>57.3K avg</span></div>
+      <div class="stat-row"><span class="stat-label">Last 5 pulls (F18-F28)</span><span>59.7K avg</span></div>
+      <div class="stat-row"><span class="stat-label">Trend</span><span style="color: var(--green);">+4.3% improvement</span></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 16px;">Best 5 vs Worst 5 Long Pulls</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="label" style="color: var(--green);">Best 5 Long Pulls</div>
+      <div class="stat-row"><span class="stat-label">F28</span><span>65.7K (6:59, P3)</span></div>
+      <div class="stat-row"><span class="stat-label">F17</span><span>64.9K (6:58, P3)</span></div>
+      <div class="stat-row"><span class="stat-label">F14</span><span>63.5K (7:12, P3)</span></div>
+      <div class="stat-row"><span class="stat-label">F6</span><span>63.4K (7:03, P3)</span></div>
+      <div class="stat-row"><span class="stat-label">F26</span><span>60.8K (6:58, P3)</span></div>
+      <div class="detail" style="margin-top: 8px;">Avg: 63.7K &mdash; all deep P3 pulls</div>
+    </div>
+    <div class="card">
+      <div class="label" style="color: var(--red);">Worst 5 Long Pulls</div>
+      <div class="stat-row"><span class="stat-label">F1</span><span>45.3K (5:00, P2)</span></div>
+      <div class="stat-row"><span class="stat-label">F18</span><span>52.7K (5:06, P2)</span></div>
+      <div class="stat-row"><span class="stat-label">F2</span><span>53.7K (6:54, P3)</span></div>
+      <div class="stat-row"><span class="stat-label">F24</span><span>54.3K (5:37, P3)</span></div>
+      <div class="stat-row"><span class="stat-label">F23</span><span>58.9K (5:14, P2)</span></div>
+      <div class="detail" style="margin-top: 8px;">Avg: 53.0K &mdash; shorter pulls / earlier in session</div>
+    </div>
+  </div>
+
+  <div class="callout callout-green" style="margin-top: 16px;">
+    <div class="callout-title">Correlation: Pull Length = Higher DPS</div>
+    <p style="font-size: 13px;">
+      The best 5 long pulls are all 6:58+ and reached deep P3. The worst 5 are all shorter (5:00-6:54). This is because longer pulls mean Baodabao gets more cooldown cycles &mdash; a second Icy Veins window, additional Frozen Orb uses &mdash; and more time in sustained damage phases. The correlation suggests that as the raid consistently reaches P3, Baodabao's DPS will naturally rise. This is not a player issue; it is a raid survival issue.
+    </p>
+  </div>
+</div>
+
+<!-- ============ ACTIONABLE ITEMS ============ -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="callout callout-green" style="margin-bottom: 20px;">
+    <div class="callout-title">#1: Survival is Already Excellent</div>
+    <p style="font-size: 13px;">
+      <strong>Only 1 actionable death in 19 pulls.</strong> This is the single best survival rate on the team. Baodabao is using Ice Block, Alter Time, and Blink effectively to stay alive through raid-collapsing situations. The focus should not be on "dying less" &mdash; that is already near-perfect.
+    </p>
+  </div>
+
+  <div class="callout callout-yellow">
+    <div class="callout-title">#2: P2 Uptime Improvement</div>
+    <p style="font-size: 13px;">
+      P2 DPS (44.5K avg) is 60% lower than P1 (111K avg). Some drop is expected from target switching and movement, but the range within P2 (27.7K to 58.7K) suggests inconsistency. The best P2 performance (58.7K, F28) shows what is achievable. Focus areas:
+    </p>
+    <ul style="font-size: 13px; margin-top: 8px; padding-left: 20px; color: var(--dim);">
+      <li>Pre-position for Rift Simulacrum spawns to minimize movement</li>
+      <li>Use Shimmer/Blink for repositioning rather than running &mdash; maintain Frostbolt casts during transitions</li>
+      <li>Ensure Frozen Orb is used on cooldown in P2 for consistent proc generation</li>
+      <li>Use Ice Lance and instant-cast procs during heavy movement windows</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-yellow" style="margin-top: 16px;">
+    <div class="callout-title">#3: P3 Damage Contribution</div>
+    <p style="font-size: 13px;">
+      P3 avg DPS (15.8K) is very low, but this is heavily skewed by raid state &mdash; most P3 entries had 10-15 dead players. The best P3 (27.5K, F28) shows promise. As the raid survives longer into P3, Baodabao should:
+    </p>
+    <ul style="font-size: 13px; margin-top: 8px; padding-left: 20px; color: var(--dim);">
+      <li>Save second Icy Veins for P3 if the pull is going deep &mdash; P3 is where DPS matters most</li>
+      <li>Prioritize staying alive over maximizing damage &mdash; a dead Mage does zero DPS, and survival is already strong</li>
+      <li>Use Ice Block proactively for Cosmic Radiation overlaps rather than holding it for emergency</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-blue" style="margin-top: 16px;">
+    <div class="callout-title">#4: Void Droplet Awareness (P1)</div>
+    <p style="font-size: 13px;">
+      The one actionable death (F8) was from Bursting Emptiness &mdash; a Void Droplet explosion. While this only happened once, Droplet positioning is the one P1 mechanic that caught Baodabao out. Maintain awareness of Droplet positions and be ready to Blink or Ice Block if one detonates nearby.
+    </p>
+  </div>
+
+  <div class="callout callout-blue" style="margin-top: 16px;">
+    <div class="callout-title">#5: P1 DPS Variance</div>
+    <p style="font-size: 13px;">
+      P1 DPS ranges from 78K (F1) to 136K (F14) &mdash; a 74% spread. The low end (F1: 78K, F18: 86K) may indicate suboptimal cooldown alignment or missed burst windows on some pulls. Ensure the opener is consistent: pre-cast Frostbolt/Frostfire Bolt into Ray of Frost, Frozen Orb, and the standard burst sequence every pull.
+    </p>
+  </div>
+</div>
+
+<!-- ============ CONTEXT FOOTER ============ -->
+<div class="section">
+  <h2>Overall Assessment</h2>
+
+  <div class="callout callout-green">
+    <div class="callout-title">Verdict: Strong Performer, Raid Needs Cleaner Execution</div>
+    <p style="font-size: 13px;">
+      Baodabao is one of the most reliable players on this team. With only 1 actionable death in 19 pulls, survival is not a concern. P1 DPS is competitive (111K avg, 136K best), and there is a clear upward trend through the session (+4.3% improvement, best pull was the last one).
+      <br><br>
+      The DPS gap vs reference kills (65.7K best vs 105.6K reference) is largely explained by two factors: (1) wipe pulls never complete a full damage cycle that kill pulls do, and (2) P3 raid state is consistently degraded with 10-15 dead players. As the raid improves P1 consistency (42% of pulls wiped in P1) and P3 survival, Baodabao's numbers will naturally climb.
+      <br><br>
+      The primary opportunity for individual improvement is P2 uptime consistency. The 27.7K-to-58.7K P2 DPS range shows room to stabilize around the higher end through better positioning and movement efficiency.
+    </p>
+  </div>
+
+  <div class="grid-2" style="margin-top: 16px;">
+    <div class="card">
+      <div class="label" style="color: var(--green);">What Is Already Good</div>
+      <ul style="font-size: 13px; padding-left: 16px; color: var(--dim);">
+        <li>Survival: 1 actionable death in 19 pulls (best on team)</li>
+        <li>P1 burst: 136K best, 111K avg across multi-phase pulls</li>
+        <li>Session improvement: DPS trending up through the night</li>
+        <li>Consumables: Flask, food, Vantus Rune all active</li>
+        <li>Talents: Only 1 diff from top reference &mdash; correct build</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="label" style="color: var(--yellow);">Focus Areas for Next Session</div>
+      <ul style="font-size: 13px; padding-left: 16px; color: var(--dim);">
+        <li>P2 uptime: stabilize toward 55K+ consistently</li>
+        <li>P3 CD timing: save Icy Veins for P3 on deep pulls</li>
+        <li>Opener consistency: reduce P1 DPS variance</li>
+        <li>Droplet awareness: one-time issue but worth noting</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<div class="footer">
+  <p>
+    Generated by WCL Analyzer &bull; Data from <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">Warcraft Logs</a> &bull;
+    Reference players: Yrsngrtrd, Envimage, Asimage, Zoltanimus, Feriblastv (4-heal comps, US/EU only)
+  </p>
+  <p style="margin-top: 4px;">
+    Analysis mode: PROG &bull; 2-death threshold applied &bull; Phase-aware breakdown &bull; Crown of the Cosmos (encounterID 3181, difficulty 5)
+  </p>
+</div>
+
+</body>
+</html>

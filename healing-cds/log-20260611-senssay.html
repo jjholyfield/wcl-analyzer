@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Senssay &mdash; Mistweaver Monk &mdash; Mythic Crown of the Cosmos Prog Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+    --monk: #00ff96;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  .monk-color { color: var(--monk); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 80px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 16px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; margin: 2px; white-space: nowrap; }
+  .cd-monk { background: rgba(0,255,150,0.15); color: #00ff96; }
+  .cd-paladin { background: rgba(244,140,186,0.15); color: #f48cba; }
+  .cd-shaman { background: rgba(0,112,222,0.15); color: #0070de; }
+  .cd-druid { background: rgba(255,125,10,0.15); color: #ff7d0a; }
+  .cd-raid { background: rgba(139,148,158,0.12); color: var(--dim); }
+  .cd-dead { background: rgba(248,81,73,0.15); color: var(--red); font-style: italic; }
+  .cd-none { background: rgba(139,148,158,0.08); color: var(--dim); font-style: italic; }
+  .death-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .death-timeline .dmg { color: var(--red); }
+  .death-timeline .heal { color: var(--green); }
+  .death-timeline .absorb { color: var(--cyan); }
+  .oh-bar { display: flex; height: 14px; border-radius: 3px; overflow: hidden; font-size: 0; }
+  .oh-eff { height: 100%; background: var(--green); }
+  .oh-over { height: 100%; background: var(--red); opacity: 0.6; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Senssay <span class="dim">&mdash; Mistweaver Monk</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (26 wipes, no kill) &middot; Best Pull: Fight 23 (4:52) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY CARDS -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value monk-color">171K</div>
+    <div class="stat-label">HPS (Alive Time)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289.5</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">0.01%</div>
+    <div class="stat-label">Best Pull (Boss %)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">26.8%</div>
+    <div class="stat-label">Overheal %</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">Senssay dealt <strong class="monk-color">171K HPS</strong> over 4:24 alive time in the longest pull (Fight 23, 4:52 total). Died at <strong class="red">4:24</strong> to Void Barrage near the end of a group wipe &mdash; 13 of 20 raiders died in the final 50 seconds, so this is a raid failure, not an individual positioning error. Compared to the <strong class="purple">#1 ranked Mistweaver Ringofpiss (238K HPS, 7:44 kill)</strong> with <strong class="green">identical talents (0 diffs)</strong>, the core rotation gaps are: <strong class="red">Renewing Mist at 7.3 CPM vs 11.1 (&minus;35%)</strong>, <strong class="yellow">Vivify at 10.5 vs 13.4 (&minus;22%)</strong>, and <strong class="yellow">Rushing Wind Kick at 9.1 vs 11.1 (&minus;18%)</strong>. Renewing Mist coverage is the single biggest issue &mdash; it is the foundation of MW healing through Rising Mist interactions and Vivify cleave targeting. Overheal at <strong class="green">26.8%</strong> is healthy (reference is 33.8%), and <strong class="green">Enveloping Mist CPM is above reference (+22%)</strong>, showing strong tank/spot healing. Mana Tea usage is notably low at <strong class="red">1.6 CPM vs 4.7 (&minus;66%)</strong>, which may be limiting spell throughput.</p>
+</div>
+
+<!-- NOTE: PROG VS KILL -->
+<div class="card" style="border-left: 3px solid var(--purple); margin-top: 8px;">
+  <div class="card-header purple">Progression vs Kill Context</div>
+  <p style="font-size: 13px;">This analysis compares a <strong>4:24 wipe pull</strong> against a <strong>7:44 kill</strong>. The reference player had a full-length fight with all 3 phases completed. Senssay's pull only reached ~77% boss health. CPM comparisons are duration-normalized (casts per minute), but the reference had more time to optimize mana usage and establish rotational rhythm. HPS comparisons should be interpreted directionally, not as a definitive gap.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Mistweaver Monks on Mythic Crown of the Cosmos. Primary reference: <strong>Ringofpiss</strong> (identical talent build, 0 diffs, #1 ranked at 249K HPS).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>HPS</th><th>Fight Time</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(0,255,150,0.06);">
+      <td><strong>Senssay</strong></td>
+      <td>171,249</td>
+      <td>4:24 alive (4:52 pull)</td>
+      <td>289.5</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Prog wipe</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Ringofpiss <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">249,277</td>
+      <td>7:44</td>
+      <td>291.1</td>
+      <td><span class="tag tag-same">0 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Cloudstorm <span class="ref-badge">#2</span></td>
+      <td class="green">226,025</td>
+      <td>7:56</td>
+      <td>290.8</td>
+      <td><span class="tag tag-same">0 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Zedave <span class="ref-badge">#3</span></td>
+      <td class="green">225,241</td>
+      <td>8:21</td>
+      <td>288.9</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Shimfist <span class="ref-badge">#4</span></td>
+      <td class="green">224,680</td>
+      <td>7:07</td>
+      <td>291.1</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#26449;&#21475;&#22823;&#21242; <span class="ref-badge">#5</span></td>
+      <td class="green">224,019</td>
+      <td>8:20</td>
+      <td>290.1</td>
+      <td><span class="tag tag-diff">15 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Both Ringofpiss (#1) and Cloudstorm (#2) have identical talent builds to Senssay. Ringofpiss is the primary reference due to highest HPS and identical talents. The ilvl gap is minimal (289.5 vs 291.1). All references are from kills (7&ndash;8 min fights) while Senssay's data is from a 4:52 wipe &mdash; keep this context in mind.</p>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Boss Mechanic Timeline &mdash; Fight 23</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase fight: Sentinels (Phase 1) &rarr; Rift Simulacrum (Intermission) &rarr; Devouring Cosmos (Phase 3). Fight 23 reached Phase 3 before the raid wiped. Major healing checks are Void Expulsion (periodic raid AoE), Simulacrum Backlash (intermission burst), and the escalating Phase 3 damage.</p>
+
+<div class="timeline">
+  <!-- Phase markers -->
+  <div style="position:absolute; left:0; width:55%; height:100%; background: rgba(88,166,255,0.05); border-right: 2px dashed rgba(88,166,255,0.3);">
+    <span class="timeline-label" style="top: 2px; left: 4px; color: var(--accent); font-weight: 600;">Phase 1: Sentinels</span>
+  </div>
+  <div style="position:absolute; left:55%; width:7%; height:100%; background: rgba(188,140,255,0.08); border-right: 2px dashed rgba(188,140,255,0.3);">
+    <span class="timeline-label" style="top: 2px; left: 4px; color: var(--purple); font-weight: 600; font-size: 9px;">Inter</span>
+  </div>
+  <div style="position:absolute; left:62%; width:38%; height:100%; background: rgba(248,81,73,0.05);">
+    <span class="timeline-label" style="top: 2px; left: 4px; color: var(--red); font-weight: 600;">Phase 3: Devouring Cosmos</span>
+  </div>
+
+  <!-- Void Expulsion markers -->
+  <div class="timeline-marker" style="left: 4.5%; border-color: var(--yellow);">
+    <span class="timeline-label" style="top: 18px; left: 4px; color: var(--yellow); font-size: 9px;">VoidExp</span>
+  </div>
+  <div class="timeline-marker" style="left: 18.1%; border-color: var(--yellow);"></div>
+  <div class="timeline-marker" style="left: 29.2%; border-color: var(--yellow);"></div>
+  <div class="timeline-marker" style="left: 38.4%; border-color: var(--yellow);"></div>
+
+  <!-- Silversunder -->
+  <div class="timeline-marker" style="left: 45.8%; border-color: var(--orange); width: 3px;">
+    <span class="timeline-label" style="top: 18px; left: 4px; color: var(--orange); font-size: 9px;">Silversunder</span>
+  </div>
+
+  <!-- Phase 3 Void Expulsions -->
+  <div class="timeline-marker" style="left: 66.2%; border-color: var(--yellow);"></div>
+  <div class="timeline-marker" style="left: 74.7%; border-color: var(--yellow);"></div>
+  <div class="timeline-marker" style="left: 83.9%; border-color: var(--yellow);"></div>
+  <div class="timeline-marker" style="left: 92.4%; border-color: var(--yellow);"></div>
+
+  <!-- Death marker for Senssay -->
+  <div class="timeline-marker" style="left: 90.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--red); font-size: 9px;">&#x2620; Senssay (4:24)</span>
+  </div>
+
+  <!-- Wipe zone -->
+  <div style="position:absolute; left:86%; width:14%; height:100%; background: rgba(248,81,73,0.1); border-left: 1px dashed var(--red);">
+    <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--red); font-size: 9px;">Raid wipe</span>
+  </div>
+
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">2:26</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:52</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Fight 23 Raid State</div>
+  <p>0:00&ndash;2:30 = 20/20 alive &middot; 2:30&ndash;3:46 = first deaths (Alitheria, Smokinthisza to Silverstrike Barrage) &middot; 3:46&ndash;4:04 = cascade deaths begin (Invincibale, Son&igrave;c, Orichamaru, Starfighter) &middot; 4:04&ndash;4:24 = 8 more deaths including all 4 healers &middot; 4:24 onward = only tanks alive briefly.</p>
+  <p style="margin-top: 4px; color: var(--yellow);">Senssay died at 4:24 (263.9s) to Void Barrage during a full raid collapse. All 4 healers died within 1 second of each other (263.9s), indicating a shared lethal mechanic, not individual failure.</p>
+</div>
+
+<!-- TEAM CD COORDINATION -->
+<h2>Team CD Coordination &mdash; Fight 23</h2>
+<p class="section-intro">Healing CDs deployed by all 4 healers across Fight 23. Crown&rsquo;s healing checks include Void Expulsion (periodic AoE at ~0:13, ~0:53, ~1:26, ~1:53, ~3:14, ~3:39, ~4:06, ~4:31) and Phase 3 escalating damage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th style="width:140px;">Healer</th><th>Phase 1 (0:00&ndash;2:14)</th><th>Intermission (2:14&ndash;2:54)</th><th>Phase 3 (2:54&ndash;4:52)</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(0,255,150,0.06);">
+      <td><strong style="color: var(--monk);">Senssay</strong><br><span class="dim" style="font-size:11px;">MW Monk</span></td>
+      <td>
+        <span class="cd-pill cd-monk">Celestial Conduit 0:32</span>
+        <span class="cd-pill cd-monk">Yu'lon 1:05</span>
+        <span class="cd-pill cd-monk">Revival 1:45</span>
+      </td>
+      <td>&mdash;</td>
+      <td>
+        <span class="cd-pill cd-monk">Celestial Conduit 3:13</span>
+        <span class="cd-pill cd-monk">Yu'lon 3:30</span>
+      </td>
+    </tr>
+    <tr>
+      <td><strong style="color: #f48cba;">Dueche</strong><br><span class="dim" style="font-size:11px;">Holy Paladin</span></td>
+      <td>
+        <span class="cd-pill cd-paladin">Avenging Wrath 0:04</span>
+        <span class="cd-pill cd-paladin">Aura Mastery 1:09</span>
+      </td>
+      <td>&mdash;</td>
+      <td>
+        <span class="cd-pill cd-paladin">Avenging Wrath 2:57</span>
+      </td>
+    </tr>
+    <tr>
+      <td><strong style="color: #0070de;">Brewtote</strong><br><span class="dim" style="font-size:11px;">Resto Shaman</span></td>
+      <td>
+        <span class="cd-pill cd-shaman">Ascendance 0:07</span>
+        <span class="cd-pill cd-shaman">Spirit Link 0:27</span>
+      </td>
+      <td>&mdash;</td>
+      <td>
+        <span class="cd-pill cd-shaman">Ascendance 3:57</span>
+      </td>
+    </tr>
+    <tr>
+      <td><strong style="color: #ff7d0a;">S&igrave;lencio</strong><br><span class="dim" style="font-size:11px;">Resto Druid</span></td>
+      <td>
+        <span class="cd-pill cd-druid">Convoke 0:12</span>
+        <span class="cd-pill cd-druid">Tranquility 0:15</span>
+        <span class="cd-pill cd-druid">Convoke 1:37</span>
+      </td>
+      <td>&mdash;</td>
+      <td>
+        <span class="cd-pill cd-druid">Convoke 3:01</span>
+        <span class="cd-pill cd-druid">Convoke 4:16</span>
+      </td>
+    </tr>
+    <tr>
+      <td><strong class="dim">Raid CDs</strong></td>
+      <td>
+        <span class="cd-pill cd-raid">VE 0:33 (Nurnyx)</span>
+        <span class="cd-pill cd-raid">Rally 1:11 (Starfighter)</span>
+        <span class="cd-pill cd-raid">AMZ 1:13 (Unholyftw)</span>
+      </td>
+      <td>&mdash;</td>
+      <td>
+        <span class="cd-pill cd-raid">VE 3:53 (Nurnyx)</span>
+        <span class="cd-pill cd-raid">AMZ 4:15 (Bebeshakur)</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header">CD Coverage Assessment</div>
+  <p style="font-size: 14px;">
+    <strong class="green">Phase 1 coverage is solid</strong> &mdash; CDs are spread across the first 2 minutes with Celestial Conduit (0:32), Aura Mastery (1:09), Rally+AMZ (1:11&ndash;1:13), Revival (1:45), and Convoke (1:37).
+    <br><br>
+    <strong class="yellow">Intermission has zero CDs from any healer</strong> &mdash; this is a gap. Silversunder Catastrophe fires at 2:14 and the intermission transition at 2:54 has burst damage from Simulacrum Backlash. The raid may be handling this purely through throughput healing.
+    <br><br>
+    <strong class="yellow">Phase 3 has a front-loaded CD pattern</strong> &mdash; Senssay's Celestial Conduit (3:13) and Yu'lon (3:30) plus Dueche's Avenging Wrath (2:57) all fire within the first 40 seconds. After 3:57 (Brewtote Ascendance), the only remaining CD before the wipe is Convoke at 4:16. As Phase 3 escalates, CD coverage thins out.
+  </p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Senssay (4:24 alive time) vs Ringofpiss (#1 ranked, 7:44 kill). CPM normalizes for different fight lengths. Mistweaver rotation centers on maintaining Renewing Mist coverage, casting Rushing Wind Kick on cooldown for Rising Mist HoT extension, and filling with Vivify for cleave healing.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Renewing Mist</strong></td>
+      <td>32</td>
+      <td class="red">7.3</td>
+      <td>86</td>
+      <td>11.1</td>
+      <td class="red">&minus;35%</td>
+      <td><span class="tag tag-crit">Critical</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Rushing Wind Kick</strong></td>
+      <td>40</td>
+      <td class="yellow">9.1</td>
+      <td>86</td>
+      <td>11.1</td>
+      <td class="yellow">&minus;18%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Vivify</strong></td>
+      <td>46</td>
+      <td class="yellow">10.5</td>
+      <td>104</td>
+      <td>13.4</td>
+      <td class="yellow">&minus;22%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(63,185,80,0.05);">
+      <td><strong>Enveloping Mist</strong></td>
+      <td>36</td>
+      <td class="green">8.2</td>
+      <td>52</td>
+      <td>6.7</td>
+      <td class="green">+22%</td>
+      <td><span class="tag tag-same">Above Ref</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Thunder Focus Tea</td>
+      <td>10</td>
+      <td class="yellow">2.3</td>
+      <td>22</td>
+      <td>2.8</td>
+      <td class="yellow">&minus;20%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Celestial Conduit</td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>5</td>
+      <td>0.6</td>
+      <td class="dim">&minus;30%</td>
+      <td><span class="tag tag-info">Fight length</span></td>
+    </tr>
+    <tr>
+      <td>Revival</td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td class="dim">&minus;41%</td>
+      <td><span class="tag tag-info">Fight length</span></td>
+    </tr>
+    <tr>
+      <td>Invoke Yu'lon</td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td class="green">+17%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Life Cocoon</td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>6</td>
+      <td>0.8</td>
+      <td class="dim">&minus;41%</td>
+      <td><span class="tag tag-info">Reactive</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Mana Tea</strong></td>
+      <td>7</td>
+      <td class="red">1.6</td>
+      <td>36</td>
+      <td>4.7</td>
+      <td class="red">&minus;66%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Fortifying Brew</td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="green">+252%</td>
+      <td><span class="tag tag-same">Good (defensive)</span></td>
+    </tr>
+    <tr>
+      <td>Roll</td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>11</td>
+      <td>1.4</td>
+      <td class="dim">&minus;68%</td>
+      <td><span class="tag tag-info">Movement</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- CAST ANALYSIS CARDS -->
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Renewing Mist Coverage Gap</div>
+    <p style="font-size: 14px;">Renewing Mist at <strong>7.3 CPM vs 11.1 CPM</strong> is 35% below reference &mdash; roughly <strong>17 fewer casts</strong> over the fight (scaled for time). Renewing Mist is the foundation of the Mistweaver Conduit of the Celestials build: it drives Vivify cleave targeting (Vivify bounces to targets with Renewing Mist), Rising Mist HoT extension via Rushing Wind Kick, and generates procs for the talent tree. With fewer Renewing Mists out, every Vivify and every Rushing Wind Kick heals fewer targets. This single gap cascades into lower throughput on multiple abilities. The reference never lets Renewing Mist reach 2 charges &mdash; it should be cast on cooldown at all times.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Mana Tea Under-Use</div>
+    <p style="font-size: 14px;">Mana Tea at <strong>1.6 CPM vs 4.7 CPM</strong> (&minus;66%) means Senssay is consuming Mana Tea stacks far less frequently than the reference. In the current Mistweaver design, Mana Tea stacks accumulate passively and should be consumed regularly to sustain higher cast volume. The reference uses Mana Tea nearly 5 times per minute to keep mana flowing into additional Vivifies and Renewing Mists. Under-consuming Mana Tea likely contributes to the lower Vivify and Renewing Mist CPM &mdash; there may be mana pressure preventing more casts that Mana Tea would alleviate.</p>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Enveloping Mist Usage</div>
+    <p style="font-size: 14px;">Enveloping Mist at <strong>8.2 CPM vs 6.7 CPM</strong> (+22%) is above the reference. This indicates strong spot-healing and tank maintenance &mdash; Enveloping Mist provides significant single-target HoT and amplifies healing received. The higher CPM suggests Senssay is proactive with targeted healing on players taking damage. However, some of these globals might be better spent on Renewing Mist if targets are not critically low.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--cyan);">
+    <div class="card-header cyan">Rushing Wind Kick &amp; Rising Mist</div>
+    <p style="font-size: 14px;">Rushing Wind Kick at <strong>9.1 CPM vs 11.1 CPM</strong> (&minus;18%) means fewer Rising Mist triggers to extend HoTs across the raid. Each Rushing Wind Kick heals all targets with Renewing Mist or Enveloping Mist and extends those HoTs by 4 seconds. With both Rushing Wind Kick AND Renewing Mist below reference, the compounding effect is significant &mdash; fewer HoTs out AND fewer extensions. This directly explains why Renewing Mist effective healing (10.3M vs 27.3M) scales disproportionately with the CPM gap.</p>
+  </div>
+</div>
+
+<!-- HEALING BREAKDOWN -->
+<h2>Healing Breakdown</h2>
+<p class="section-intro">Effective healing by ability. Senssay total: 45.2M (171K HPS) vs Ringofpiss: 110.6M (238K HPS). Overheal: 26.8% vs 33.8%. Lower overheal on a wipe is expected &mdash; more damage to heal means less overhealing.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Player Effective</th><th>Player OH%</th><th style="width:100px;">OH Bar</th><th>Ref Effective</th><th>Ref OH%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Renewing Mist</strong></td>
+      <td>10.25M</td>
+      <td class="green">22%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:78%"></div><div class="oh-over" style="width:22%"></div></div></td>
+      <td>27.29M</td>
+      <td>32%</td>
+    </tr>
+    <tr>
+      <td><strong>Enveloping Mist</strong></td>
+      <td>6.20M</td>
+      <td>36%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:64%"></div><div class="oh-over" style="width:36%"></div></div></td>
+      <td>15.19M</td>
+      <td>37%</td>
+    </tr>
+    <tr>
+      <td><strong>Invigorating Mists</strong></td>
+      <td>6.05M</td>
+      <td class="green">24%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:76%"></div><div class="oh-over" style="width:24%"></div></div></td>
+      <td>18.84M</td>
+      <td>31%</td>
+    </tr>
+    <tr>
+      <td><strong>Rushing Wind Kick</strong></td>
+      <td>4.06M</td>
+      <td class="green">12%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:88%"></div><div class="oh-over" style="width:12%"></div></div></td>
+      <td>7.76M</td>
+      <td>25%</td>
+    </tr>
+    <tr>
+      <td><strong>Chi Cocoon</strong></td>
+      <td>2.93M</td>
+      <td class="green">0%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:100%"></div></div></td>
+      <td>4.82M</td>
+      <td>0%</td>
+    </tr>
+    <tr>
+      <td>Litany of Lightblind Wrath</td>
+      <td>1.90M</td>
+      <td class="green">0%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:100%"></div></div></td>
+      <td>6.62M</td>
+      <td>0%</td>
+    </tr>
+    <tr>
+      <td><strong>Vivify</strong></td>
+      <td>1.70M</td>
+      <td class="yellow">44%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:56%"></div><div class="oh-over" style="width:44%"></div></div></td>
+      <td>2.84M</td>
+      <td>57%</td>
+    </tr>
+    <tr>
+      <td>Gust of Mists</td>
+      <td>1.50M</td>
+      <td>34%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:66%"></div><div class="oh-over" style="width:34%"></div></div></td>
+      <td>2.67M</td>
+      <td>35%</td>
+    </tr>
+    <tr>
+      <td>Soothing Breath (Yu'lon)</td>
+      <td>1.50M</td>
+      <td>31%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:69%"></div><div class="oh-over" style="width:31%"></div></div></td>
+      <td>2.02M</td>
+      <td>41%</td>
+    </tr>
+    <tr>
+      <td>Leech</td>
+      <td>1.27M</td>
+      <td class="green">10%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:90%"></div><div class="oh-over" style="width:10%"></div></div></td>
+      <td>3.42M</td>
+      <td>27%</td>
+    </tr>
+    <tr>
+      <td>Soothing Mist</td>
+      <td>1.12M</td>
+      <td class="green">2%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:98%"></div><div class="oh-over" style="width:2%"></div></div></td>
+      <td>2.18M</td>
+      <td>5%</td>
+    </tr>
+    <tr>
+      <td>Courage of the White Tiger</td>
+      <td>1.02M</td>
+      <td class="red">63%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:37%"></div><div class="oh-over" style="width:63%"></div></div></td>
+      <td>2.15M</td>
+      <td>40%</td>
+    </tr>
+    <tr>
+      <td>Celestial Conduit</td>
+      <td>0.95M</td>
+      <td class="red">62%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:38%"></div><div class="oh-over" style="width:62%"></div></div></td>
+      <td>3.06M</td>
+      <td>78%</td>
+    </tr>
+    <tr>
+      <td>Zen Pulse</td>
+      <td>0.95M</td>
+      <td class="yellow">46%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:54%"></div><div class="oh-over" style="width:46%"></div></div></td>
+      <td>3.27M</td>
+      <td>44%</td>
+    </tr>
+    <tr>
+      <td>Revival</td>
+      <td>0.68M</td>
+      <td class="yellow">47%</td>
+      <td><div class="oh-bar"><div class="oh-eff" style="width:53%"></div><div class="oh-over" style="width:47%"></div></div></td>
+      <td>2.25M</td>
+      <td>15%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Healing Profile Notes</div>
+  <p style="font-size: 14px;">
+    <strong class="green">Low overheal on core abilities.</strong> Renewing Mist (22%), Rushing Wind Kick (12%), and Soothing Mist (2%) are all efficiently targeted. Chi Cocoon and Litany of Lightblind Wrath at 0% overheal are absorbs/passives that never waste throughput.
+    <br><br>
+    <strong class="yellow">Celestial Conduit overheal (62%) is high but reference is even higher (78%).</strong> This is normal for Celestial Conduit &mdash; it channels indiscriminate healing across the raid. Using it during damage windows helps, but some overheal is inherent to the spell.
+    <br><br>
+    <strong class="yellow">Revival at 47% overheal vs 15% for reference.</strong> Senssay's Revival at 1:45 may have been timed during a relatively healthy raid, while the reference likely used Revival during heavy damage windows deeper in the fight. Better Revival timing during peak damage (like Void Expulsion or Phase 3 damage) would convert more of its healing into effective throughput.
+  </p>
+</div>
+
+<!-- DPS CONTRIBUTION -->
+<h2>DPS Contribution</h2>
+<p class="section-intro">Healer DPS during downtime windows. Mistweaver contributes damage through Rushing Wind Kick (primary damage+heal ability) and passive damage from Conduit of the Celestials procs.</p>
+
+<div class="grid-3">
+  <div class="card stat">
+    <div class="stat-value">15.5K</div>
+    <div class="stat-label">DPS (Alive Time)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">4.08M</div>
+    <div class="stat-label">Total Damage</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value dim">16.0K</div>
+    <div class="stat-label">Ref DPS (Ringofpiss)</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header">Damage by Ability</div>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Player Damage</th><th>Ref Damage</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Rushing Wind Kick</strong></td>
+        <td>2,590K</td>
+        <td>4,015K</td>
+        <td>Primary damage source &mdash; fewer casts = less damage</td>
+      </tr>
+      <tr>
+        <td>Courage of the White Tiger</td>
+        <td>948K</td>
+        <td>1,368K</td>
+        <td>Passive Conduit proc damage</td>
+      </tr>
+      <tr>
+        <td>Beacon of Lightblind Wrath</td>
+        <td>321K</td>
+        <td>1,318K</td>
+        <td class="yellow">Significantly lower &mdash; fewer casts trigger fewer procs</td>
+      </tr>
+      <tr>
+        <td>Chi Wave</td>
+        <td>120K</td>
+        <td>198K</td>
+        <td>Passive bouncing damage</td>
+      </tr>
+      <tr>
+        <td>Celestial Conduit</td>
+        <td>&mdash;</td>
+        <td>494K</td>
+        <td>Reference gets damage from more CC casts (5 vs 2)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">DPS at 15.5K vs 16.0K reference is nearly identical on a per-minute basis. The total damage gap (4.08M vs 7.43M) is primarily from fight length, not rotation issues. Mistweaver DPS is inherently intertwined with healing &mdash; Rushing Wind Kick heals and damages simultaneously, so DPS fillers and healing output are the same buttons.</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Senssay during Fight 23. Crown of the Cosmos deals significant unavoidable damage through Echoing Darkness (periodic raid ticks), Simulacrum Backlash (intermission burst), and Phase 3 mechanics.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Type</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>2,946K</td>
+      <td>118</td>
+      <td>645K</td>
+      <td><span class="tag tag-same">Unavoidable &mdash; periodic raid ticks</span></td>
+    </tr>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>2,250K</td>
+      <td>83</td>
+      <td>139K</td>
+      <td><span class="tag tag-same">Unavoidable &mdash; intermission AoE</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,206K</td>
+      <td>30</td>
+      <td>110K</td>
+      <td><span class="tag tag-same">Unavoidable &mdash; periodic AoE</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>666K</td>
+      <td>24</td>
+      <td>114K</td>
+      <td><span class="tag tag-info">Phase 3 mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>582K</td>
+      <td>11</td>
+      <td>21K</td>
+      <td><span class="tag tag-info">Phase 3 mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>523K</td>
+      <td>21</td>
+      <td>23K</td>
+      <td><span class="tag tag-same">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>480K</td>
+      <td>2</td>
+      <td>19K</td>
+      <td><span class="tag tag-info">Phase 1 targeted</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>387K</td>
+      <td>6</td>
+      <td>21K</td>
+      <td><span class="tag tag-warn">Killing blow &mdash; 6 hits</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>381K</td>
+      <td>14</td>
+      <td>74K</td>
+      <td><span class="tag tag-same">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>188K</td>
+      <td>2</td>
+      <td>0K</td>
+      <td><span class="tag tag-warn">Avoidable &mdash; 2 falls</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Barrage</td>
+      <td>187K</td>
+      <td>2</td>
+      <td>12K</td>
+      <td><span class="tag tag-info">Phase 1</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <p style="font-size: 14px;">
+    <strong class="green">Mostly unavoidable damage.</strong> The top 3 sources (Echoing Darkness, Simulacrum Backlash, Void Expulsion) are all raid-wide unavoidable mechanics.
+    <strong class="yellow">2 Falling damage instances</strong> (188K total) are the only clearly avoidable damage &mdash; likely from Phase 3 platform transitions or knockback mechanics. Minor in context of a 10.3K total damage taken profile.
+    <strong>Void Barrage</strong> (387K, 6 hits) was the killing blow at 4:24, but this occurred during a full raid collapse with all healers dying within 1 second.
+  </p>
+</div>
+
+<!-- DEATH FORENSICS -->
+<h2>Death Forensics</h2>
+<p class="section-intro">Senssay died at 4:24 (263.9s) to Void Barrage. This was part of a cascade &mdash; 13 players died in the final 50 seconds of the fight, including all 4 healers within 1 second of each other.</p>
+
+<div class="card" style="border-left: 3px solid var(--red);">
+  <div class="card-header red">Death Timeline (last 30s)</div>
+  <div class="death-timeline">
+    <div><span class="dim">3:46</span> <span class="dmg">Son&igrave;c dies &mdash; Voidstalker Sting</span></div>
+    <div><span class="dim">3:56</span> <span class="dmg">Invincibale dies &mdash; Void Remnants</span></div>
+    <div><span class="dim">4:01</span> <span class="dmg">Orichamaru dies &mdash; Grasp of Emptiness</span></div>
+    <div><span class="dim">4:01</span> <span class="dmg">Starfighter dies &mdash; Void Remnants</span></div>
+    <div><span class="dim">4:03</span> <span class="dmg">Moistbear dies &mdash; Simulacrum Backlash</span></div>
+    <div><span class="dim">4:06</span> <span class="dmg">Zinnks dies &mdash; Void Barrage</span></div>
+    <div><span class="dim">4:12</span> <span class="dmg">Smokinthisza dies &mdash; unknown</span></div>
+    <div><span class="dim">4:14</span> <span class="dmg">Unholyftw dies &mdash; Simulacrum Backlash</span></div>
+    <div><span class="dim">4:14</span> <span class="dmg">Nurnyx dies &mdash; Void Remnants</span></div>
+    <div><span class="dim">4:23</span> <span class="dmg">Snackznchill dies &mdash; Void Remnants</span></div>
+    <div style="margin: 4px 0; border-top: 2px solid var(--red);"></div>
+    <div><span class="dim">4:24</span> <span class="dmg" style="font-weight:700;">&#x2620; SENSSAY dies &mdash; Void Barrage</span></div>
+    <div><span class="dim">4:24</span> <span class="dmg">&#x2620; Brewtote dies &mdash; Bursting Emptiness</span></div>
+    <div><span class="dim">4:24</span> <span class="dmg">&#x2620; Dueche dies &mdash; Bursting Emptiness</span></div>
+    <div><span class="dim">4:24</span> <span class="dmg">&#x2620; Baodabao dies &mdash; Bursting Emptiness</span></div>
+    <div><span class="dim">4:24</span> <span class="dmg">&#x2620; Bebeshakur dies &mdash; Bursting Emptiness</span></div>
+  </div>
+  <p style="margin-top: 12px; font-size: 13px;">
+    <strong class="yellow">Assessment:</strong> This is a raid wipe, not an individual error. By the time Senssay died, the raid had already lost 11 of 20 players over the preceding 40 seconds. All 4 healers (Senssay, Brewtote, Dueche, Baodabao/S&igrave;lencio) died at the exact same timestamp (263.9s), indicating a lethal raid-wide mechanic that overwhelmed the remaining group. Senssay used Fortifying Brew twice during the fight and a Healthstone, showing defensive awareness. The death is attributable to raid-level failure in Phase 3 execution, not healer positioning or cooldown misuse.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header">Time Dead Impact</div>
+  <p style="font-size: 14px;">Dead for <strong>29.1 seconds</strong> of a 292.9s fight = <strong>9.9% of fight time missed</strong>. Since this was the final seconds before a full wipe, the practical impact is zero &mdash; the fight was already over. No healing CDs were wasted by dying because there was no salvageable fight time remaining.</p>
+</div>
+
+<!-- HEALER TEAM RANKING -->
+<h2>Healer Team Ranking &mdash; Fight 23</h2>
+<p class="section-intro">All 4 healers on the longest pull. All died at the same time (4:24) during the raid wipe.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>#</th><th>Name</th><th>Spec</th><th>Total Healing</th><th>HPS</th><th>Overheal</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong style="color: #f48cba;">Dueche</strong></td>
+      <td>Holy Paladin</td>
+      <td>51.3M</td>
+      <td class="green">175.0K</td>
+      <td>24.4%</td>
+      <td><span class="tag tag-diff">Died 4:24</span></td>
+    </tr>
+    <tr style="background: rgba(0,255,150,0.06);">
+      <td>2</td>
+      <td><strong style="color: var(--monk);">Senssay</strong></td>
+      <td>Mistweaver Monk</td>
+      <td>47.1M</td>
+      <td>160.8K</td>
+      <td>25.3%</td>
+      <td><span class="tag tag-diff">Died 4:24</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong style="color: #0070de;">Brewtote</strong></td>
+      <td>Resto Shaman</td>
+      <td>41.0M</td>
+      <td>139.9K</td>
+      <td>16.3%</td>
+      <td><span class="tag tag-diff">Died 4:24</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong style="color: #ff7d0a;">S&igrave;lencio</strong></td>
+      <td>Resto Druid</td>
+      <td>37.4M</td>
+      <td>127.5K</td>
+      <td>35.0%</td>
+      <td><span class="tag tag-diff">Died 4:25</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Senssay is #2 of 4 healers, tracking slightly behind the Holy Paladin (Dueche). All healers had similar alive times, making this a fair comparison. Brewtote's 16.3% overheal is notably low, potentially indicating under-healing on some windows. S&igrave;lencio's 35.0% overheal is the highest &mdash; consistent with Resto Druid HoT blankets that overheal when damage is light.</p>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Senssay</th><th>Ringofpiss (Ref)</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>289.5</td>
+      <td>291.1</td>
+      <td><span class="tag tag-same">&minus;1.6 ilvl (negligible)</span></td>
+    </tr>
+    <tr>
+      <td>Intellect</td>
+      <td>2,637</td>
+      <td>2,629</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="yellow">923</td>
+      <td>1,110</td>
+      <td>Player has &minus;17% Crit</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="green">1,358</td>
+      <td>1,277</td>
+      <td>Player has +6% Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="yellow">364</td>
+      <td>240</td>
+      <td>Player has +52% Mastery (low priority stat)</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>75</td>
+      <td>87</td>
+      <td><span class="dim">Both very low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Stats are broadly similar. Senssay has slightly more Haste (+6%) which should actually help cast more spells per minute &mdash; the lower Renewing Mist and Vivify CPM cannot be attributed to stats. The Crit gap (&minus;17%) reduces proc rates on some abilities but is not the primary issue. Mastery (Gust of Mists) is a lower-priority stat for Mistweaver in raid, so the extra mastery is neutral.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Senssay's HPS across all 26 Crown of the Cosmos pulls. Bars colored by boss % reached: <span class="green">green (&lt;10%)</span> = deep pull, <span class="yellow">yellow (10&ndash;50%)</span>, <span class="orange">orange (50&ndash;90%)</span>, <span class="red">red (&gt;90%)</span> = early wipe. Boss % labels show how far the raid progressed (lower = deeper).</p>
+
+<div class="card">
+  <div class="progression-chart" style="height: 160px; padding-bottom: 24px;">
+    <!-- F1: 2K HPS, 28s, boss 99.45% -->
+    <div class="prog-bar" style="height: 1%; background: var(--red);" data-tooltip="F1: 2K HPS (0:28) Boss: 99.5%">
+      <span class="prog-label">1</span>
+    </div>
+    <!-- F2: 130K HPS, 63s, boss 51.98% -->
+    <div class="prog-bar" style="height: 66%; background: var(--orange);" data-tooltip="F2: 130K HPS (1:03) Boss: 52.0%">
+      <span class="prog-label">2</span>
+    </div>
+    <!-- F3: 86K HPS, 117s, boss 54.75% -->
+    <div class="prog-bar" style="height: 43%; background: var(--orange);" data-tooltip="F3: 86K HPS (1:57) Boss: 54.8%">
+      <span class="prog-label">3</span>
+    </div>
+    <!-- F4: 156K HPS, 76s, boss 54.62% -->
+    <div class="prog-bar" style="height: 79%; background: var(--orange);" data-tooltip="F4: 156K HPS (1:16) Boss: 54.6%">
+      <span class="prog-label">4</span>
+    </div>
+    <!-- F5: 183K HPS, 60s, boss 74.02% -->
+    <div class="prog-bar" style="height: 93%; background: var(--orange);" data-tooltip="F5: 183K HPS (1:00) Boss: 74.0%">
+      <span class="prog-label">5</span>
+    </div>
+    <!-- F6: 140K HPS, 143s, boss 19.48% -->
+    <div class="prog-bar" style="height: 71%; background: var(--yellow);" data-tooltip="F6: 140K HPS (2:23) Boss: 19.5%">
+      <span class="prog-label">6</span>
+    </div>
+    <!-- F7: 148K HPS, 89s, boss 41.72% -->
+    <div class="prog-bar" style="height: 75%; background: var(--yellow);" data-tooltip="F7: 148K HPS (1:29) Boss: 41.7%">
+      <span class="prog-label">7</span>
+    </div>
+    <!-- F8: 167K HPS, 142s, boss 0.01% -->
+    <div class="prog-bar" style="height: 84%; background: var(--green);" data-tooltip="F8: 167K HPS (2:22) Boss: 0.01%">
+      <span class="prog-label">8</span>
+    </div>
+    <!-- F9: 154K HPS, 152s, boss 7.27% -->
+    <div class="prog-bar" style="height: 78%; background: var(--green);" data-tooltip="F9: 154K HPS (2:32) Boss: 7.3%">
+      <span class="prog-label">9</span>
+    </div>
+    <!-- F10: 121K HPS, 220s, boss 98.36% -->
+    <div class="prog-bar" style="height: 61%; background: var(--red);" data-tooltip="F10: 121K HPS (3:40) Boss: 98.4%">
+      <span class="prog-label">10</span>
+    </div>
+    <!-- F11: 119K HPS, 122s, boss 30.29% -->
+    <div class="prog-bar" style="height: 60%; background: var(--yellow);" data-tooltip="F11: 119K HPS (2:02) Boss: 30.3%">
+      <span class="prog-label">11</span>
+    </div>
+    <!-- F12: 158K HPS, 234s, boss 92.06% -->
+    <div class="prog-bar" style="height: 80%; background: var(--red);" data-tooltip="F12: 158K HPS (3:54) Boss: 92.1%">
+      <span class="prog-label">12</span>
+    </div>
+    <!-- F13: 129K HPS, 75s, boss 60.77% -->
+    <div class="prog-bar" style="height: 65%; background: var(--orange);" data-tooltip="F13: 129K HPS (1:15) Boss: 60.8%">
+      <span class="prog-label">13</span>
+    </div>
+    <!-- F14: 155K HPS, 231s, boss 95.25% -->
+    <div class="prog-bar" style="height: 79%; background: var(--red);" data-tooltip="F14: 155K HPS (3:51) Boss: 95.3%">
+      <span class="prog-label">14</span>
+    </div>
+    <!-- F15: 132K HPS, 149s, boss 9.05% -->
+    <div class="prog-bar" style="height: 67%; background: var(--green);" data-tooltip="F15: 132K HPS (2:29) Boss: 9.1%">
+      <span class="prog-label">15</span>
+    </div>
+    <!-- F16: 156K HPS, 130s, boss 21.23% -->
+    <div class="prog-bar" style="height: 79%; background: var(--yellow);" data-tooltip="F16: 156K HPS (2:10) Boss: 21.2%">
+      <span class="prog-label">16</span>
+    </div>
+    <!-- F17: 162K HPS, 144s, boss 0.01% -->
+    <div class="prog-bar" style="height: 82%; background: var(--green);" data-tooltip="F17: 162K HPS (2:24) Boss: 0.01%">
+      <span class="prog-label">17</span>
+    </div>
+    <!-- F18: 63K HPS, 236s, boss 95.72% -->
+    <div class="prog-bar" style="height: 32%; background: var(--red);" data-tooltip="F18: 63K HPS (3:56) Boss: 95.7%">
+      <span class="prog-label">18</span>
+    </div>
+    <!-- F19: 166K HPS, 114s, boss 34.53% -->
+    <div class="prog-bar" style="height: 84%; background: var(--yellow);" data-tooltip="F19: 166K HPS (1:54) Boss: 34.5%">
+      <span class="prog-label">19</span>
+    </div>
+    <!-- F20: 132K HPS, 120s, boss 35.43% -->
+    <div class="prog-bar" style="height: 67%; background: var(--yellow);" data-tooltip="F20: 132K HPS (2:00) Boss: 35.4%">
+      <span class="prog-label">20</span>
+    </div>
+    <!-- F21: 197K HPS, 147s, boss 0.22% -->
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F21: 197K HPS (2:27) Boss: 0.22%">
+      <span class="prog-label">21</span>
+    </div>
+    <!-- F22: 1K HPS, 25s, boss 99.7% -->
+    <div class="prog-bar" style="height: 1%; background: var(--red);" data-tooltip="F22: 1K HPS (0:25) Boss: 99.7%">
+      <span class="prog-label">22</span>
+    </div>
+    <!-- F23: 161K HPS, 293s, boss 77.31% - LONGEST PULL -->
+    <div class="prog-bar" style="height: 82%; background: var(--orange); border: 2px solid var(--accent);" data-tooltip="F23: 161K HPS (4:52) Boss: 77.3% ★ LONGEST PULL">
+      <span class="prog-label" style="color: var(--accent); font-weight: 600;">23</span>
+    </div>
+    <!-- F24: 143K HPS, 229s, boss 92.92% -->
+    <div class="prog-bar" style="height: 72%; background: var(--red);" data-tooltip="F24: 143K HPS (3:49) Boss: 92.9%">
+      <span class="prog-label">24</span>
+    </div>
+    <!-- F25: 130K HPS, 188s, boss 99.88% -->
+    <div class="prog-bar" style="height: 66%; background: var(--red);" data-tooltip="F25: 130K HPS (3:08) Boss: 99.9%">
+      <span class="prog-label">25</span>
+    </div>
+    <!-- F26: 98K HPS, 220s, boss 96.91% -->
+    <div class="prog-bar" style="height: 49%; background: var(--red);" data-tooltip="F26: 98K HPS (3:40) Boss: 96.9%">
+      <span class="prog-label">26</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px; margin-top: 4px;">
+    <span>Fight 1</span>
+    <span><span class="green">&#9632;</span> Deep (&lt;10%) &bull; <span class="yellow">&#9632;</span> Mid (10&ndash;50%) &bull; <span class="orange">&#9632;</span> Far (50&ndash;90%) &bull; <span class="red">&#9632;</span> Early (&gt;90%) &bull; <span class="accent">&#9632;</span> Analyzed</span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">
+    <strong class="green">Best boss % pulls:</strong> Fight 8 (0.01%), Fight 17 (0.01%), Fight 21 (0.22%) &mdash; these reached near-kill range. Senssay's HPS on these deep pulls: 167K, 162K, and <strong class="green">197K</strong> (highest of the night).
+    <br><br>
+    <strong class="accent">Fight 23 (analyzed)</strong> was the longest pull at 4:52 but only reached 77.3% boss &mdash; a Phase 3 wipe. HPS was 161K, consistent with the 140&ndash;170K range on longer pulls.
+    <br><br>
+    <strong class="yellow">Fight 18 anomaly:</strong> 63K HPS on a 3:56 pull is extremely low. Senssay may have died very early in this fight or been disconnected.
+    <br><br>
+    <strong>Overall pattern:</strong> HPS is higher on shorter, more intense pulls (183K on F5, 197K on F21) and settles around 130&ndash;165K on longer pulls. This is normal &mdash; shorter pulls have more burst damage relative to duration. The key improvement area is sustaining higher throughput into Phase 3 where escalating damage demands more.
+  </p>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Renewing Mist coverage &mdash; never let it reach 2 charges.</strong> At 7.3 CPM vs the reference's 11.1 CPM, roughly 35% fewer Renewing Mists are being applied. This is the single highest-impact improvement available. Renewing Mist is the foundation of the Conduit of the Celestials Mistweaver build: Vivify cleaves to targets with Renewing Mist, Rushing Wind Kick extends Renewing Mist via Rising Mist, and multiple talent procs trigger from Renewing Mist applications. With fewer HoTs out, every subsequent ability is less effective. The reference casts Renewing Mist every 5.4 seconds on average &mdash; it should be treated as the #1 priority button at all times. Set a weakaura to alert when Renewing Mist has 2 charges to prevent overcapping.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Consume Mana Tea stacks more frequently.</strong> At 1.6 CPM vs 4.7 CPM, Mana Tea is being used roughly a third as often as the reference. Mana Tea stacks passively and should be consumed on cooldown to sustain spell output. The reference uses it nearly 5 times per minute, which enables the higher Vivify and Renewing Mist casting rates. Under-consuming Mana Tea likely creates mana pressure that forces fewer casts overall. Build a habit of consuming Mana Tea as part of the core rotation cycle, not just when low on mana.
+</div>
+
+<div class="action-item">
+  <strong>3. Increase Rushing Wind Kick usage to maximize Rising Mist extension.</strong> At 9.1 CPM vs 11.1 CPM (&minus;18%), Rushing Wind Kick is being used less frequently than the reference. Each Rushing Wind Kick heals all targets with active HoTs AND extends those HoTs by 4 seconds via Rising Mist. Combined with the lower Renewing Mist coverage, this compounds &mdash; fewer HoTs out AND fewer extensions means the HoT blanket decays faster. Rushing Wind Kick should be cast on cooldown, even during low-damage windows, because the HoT extension value is always relevant.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Vivify usage during damage windows.</strong> Vivify at 10.5 CPM vs 13.4 CPM (&minus;22%) means approximately 13 fewer Vivify casts over the fight (time-adjusted). Vivify is the primary burst heal and cleaves to targets with Renewing Mist. With more Renewing Mists out (item #1) and more frequent Mana Tea (item #2), there should be both more mana and more valid targets to make each Vivify more impactful. The Enveloping Mist CPM is +22% above reference &mdash; some of those globals may be better invested in Vivify when multiple targets need healing simultaneously.
+</div>
+
+<div class="action-item">
+  <strong>5. Time Revival for maximum effective healing.</strong> Revival at 1:45 had 47% overheal vs the reference's 15%. Revival is a 3-minute cooldown that should be reserved for the highest raid-wide damage windows. In Crown of the Cosmos, Phase 3 mechanics (Void Expulsion + escalating Echoing Darkness + Voidstalker Sting) create the most healing pressure. Consider holding Revival for Phase 3 rather than using it in Phase 1 where damage is more manageable with standard throughput.
+</div>
+
+<!-- WHAT'S GOOD -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Enveloping Mist usage (+22% vs ref):</strong> Senssay is proactive with targeted spot healing, keeping tanks and vulnerable players alive. This shows good awareness of who needs healing urgently.
+    <br><br>
+    <strong>Low overheal (26.8% vs 33.8%):</strong> Senssay's healing is well-targeted &mdash; less wasted throughput than the top-ranked reference. This suggests good judgment about WHEN to heal, even if the overall cast volume is lower.
+    <br><br>
+    <strong>DPS contribution (15.5K vs 16.0K):</strong> Nearly identical DPS-per-minute to the #1 reference. The healing-damage integration from Rushing Wind Kick is being used effectively when it is cast.
+    <br><br>
+    <strong>Defensive awareness:</strong> Two Fortifying Brew uses, a Healthstone, and a Silvermoon Health Potion show active use of personals. The death at 4:24 was a shared raid wipe, not a preventable death.
+    <br><br>
+    <strong>Consistent performance:</strong> HPS across longer pulls (Fights 6, 8, 9, 12, 14, 17, 23) stays in the 130&ndash;167K range with no major dips except Fight 18. The best pull (F21, 197K) shows the potential is there when the raid survives long enough for Phase 3 to demand full output.
+  </p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (longest pull, 4:52). Progression night: 26 wipes on Mythic Crown of the Cosmos, no kill. Reference: Ringofpiss (#1 ranked Mistweaver Monk, report <code>HfaTRn9JwV1KmkPd</code>, Fight 26, 7:44 kill). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: <strong>0 differences</strong> between Senssay and Ringofpiss &mdash; identical talent build. Item level difference: &minus;1.6 (289.5 vs 291.1). The performance gap is primarily cast volume (Renewing Mist CPM, Vivify CPM, Mana Tea consumption) rather than talent choice, gear, or spec understanding.</p>
+  <p style="margin-top: 8px; color: var(--dim); font-size: 11px;">Generated by WCL Analyzer &middot; Spec guide reference: Icy Veins Mistweaver Monk 12.0.7 &middot; Data cached to <code>data/log-20260611/senssay/</code></p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starfighter — Arms Warrior — Mythic Crown of the Cosmos Prog Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 160px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .prog-boss-pct { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Starfighter <span class="dim">&mdash; Arms Warrior</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (26 wipes, no kill) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">132.6K</div>
+    <div class="stat-label">DPS (Fight 23, 4:52)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">288</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">0.01%</div>
+    <div class="stat-label">Best Pull (F8 &amp; F17)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">44.5</div>
+    <div class="stat-label">Rotational CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Prog Assessment</div>
+  <p style="font-size: 15px;">Starfighter is running <strong>Slayer Arms</strong> on Mythic Crown of the Cosmos progression. Across 26 pulls, the raid reached <strong class="green">0.01% boss HP</strong> on two attempts (F8, F17) but never closed the kill. On the longest pull (Fight 23, 4:52), Starfighter dealt <strong class="yellow">132.6K DPS</strong> before dying at <strong class="red">4:01</strong> to Void Remnants during what appears to be the P2 transition. Compared to the #2 ranked Arms Warrior kill (90.8K DPS over 8:14), Starfighter's CPM-adjusted damage output is reasonable for prog &mdash; the reference has a full kill's worth of execute phase and consistent uptime that a wipe pull cannot match. The key differences: <strong class="red">Mortal Strike CPM is 15% below reference</strong> (12.6 vs 14.9), <strong class="red">Execute usage is 42% lower</strong> (5.7 vs 9.8 CPM &mdash; expected since wipes cut short the sub-35% execute window), <strong class="red">Rend uptime is severely low</strong> (0.6 vs 3.0 CPM), and <strong class="yellow">Slam is overcasted</strong> (+39%) at the expense of higher-priority abilities. Cooldown alignment is <strong class="green">clean</strong> &mdash; all 3 Avatar uses synced with Colossus Smash and Bladestorm. The rotational CPM gap (<strong class="yellow">44.5 vs 52.6</strong>) accounts for roughly <strong class="red">8 missed GCDs per minute</strong>, partially explained by intermission downtime and early death.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Arms Warriors on Mythic Crown of the Cosmos (kill data). Primary reference: closest talent match. Note: references are from <strong>full kills</strong> (8-9 min fights with complete execute phases) while Starfighter's data is from a <strong>4:52 wipe</strong> where he died at 4:01. Direct DPS comparison is not apples-to-apples.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Starfighter</strong></td>
+      <td>132,630</td>
+      <td>4:52 (wipe)</td>
+      <td>288.0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Died 4:01</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>&#31070;&#31192;&#25384;&#25171;&#23569;&#22899; <span class="ref-badge">#2 PRIMARY</span></td>
+      <td class="purple">90,758</td>
+      <td>8:14 (kill)</td>
+      <td>290.8</td>
+      <td><span class="tag tag-same">3 diff</span></td>
+      <td>Slayer build</td>
+    </tr>
+    <tr>
+      <td>&#27542;&#32418;&#39141;&#23476; <span class="ref-badge">#1</span></td>
+      <td class="purple">95,806</td>
+      <td>9:02 (kill)</td>
+      <td>290.3</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td>Slayer build</td>
+    </tr>
+    <tr>
+      <td>&#34880;&#33394;&#24067;&#36947; <span class="ref-badge">#3</span></td>
+      <td class="purple">90,096</td>
+      <td>8:21 (kill)</td>
+      <td>289.1</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>Slayer build</td>
+    </tr>
+    <tr>
+      <td>&#39556;&#29378; <span class="ref-badge">#4</span></td>
+      <td class="purple">90,040</td>
+      <td>8:24 (kill)</td>
+      <td>290.3</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td>Slayer build</td>
+    </tr>
+    <tr>
+      <td>&#23433;&#29123;&#26080;&#24665;&#20024; <span class="ref-badge">#5</span></td>
+      <td class="purple">89,820</td>
+      <td>8:04 (kill)</td>
+      <td>290.6</td>
+      <td><span class="tag tag-diff">6 diff</span></td>
+      <td>Slayer build</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong>Context:</strong> The reference DPS numbers (89-96K) reflect full 8-9 minute kills that include intermissions and downtime phases. Starfighter's 132K DPS on a 4:52 wipe is inflated by having proportionally more active combat time (burst phases, fewer intermissions). The meaningful comparison is <strong>CPM and ability priority</strong>, not raw DPS. The primary reference has only 3 talent differences and similar item level (290.8 vs 288.0).</p>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Fight Timeline &mdash; Fight 23 (4:52)</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase fight: Sentinels (P1) &rarr; Rift Simulacrum (P2) &rarr; Devouring Cosmos (P3). Fight 23 had a ~51-second intermission between P1 and P2 (2:06&ndash;2:57) where the boss was untargetable.</p>
+
+<div class="timeline" style="height: 90px;">
+  <!-- Phase markers -->
+  <div style="position:absolute; left:0; width:43%; height:100%; background: rgba(63,185,80,0.06); border-right: 2px dashed var(--green);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--green); font-weight: 600;">Phase 1 (Sentinels)</span>
+  </div>
+  <div style="position:absolute; left:43%; width:17%; height:100%; background: rgba(139,148,158,0.08); border-right: 2px dashed var(--dim);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--dim); font-weight: 600;">Intermission</span>
+  </div>
+  <div style="position:absolute; left:60%; width:23%; height:100%; background: rgba(88,166,255,0.06); border-right: 2px dashed var(--accent);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--accent); font-weight: 600;">Phase 2</span>
+  </div>
+  <div style="position:absolute; left:83%; width:17%; height:100%; background: rgba(248,81,73,0.06);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--red); font-weight: 600;">Wipe</span>
+  </div>
+
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left: 51.7%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="bottom: 4px; left: 6px; color: var(--red); font-size: 9px;">&#x2620; 2:31 (2 deaths)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.4%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="bottom: 4px; left: 6px; color: var(--red); font-size: 9px;">&#x2620; Starfighter (4:01)</span>
+  </div>
+
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 35%; color: var(--dim);">2:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:52</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State (Fight 23)</div>
+  <p>0:00&ndash;2:31 = 20/20 alive &middot; 2:31 = 18/20 (Alitheria + Smokinthisza killed by Silverstrike Barrage) &middot; 2:42 = 17/20 (Invincibale) &middot; 3:46 = 16/20 (Son&igrave;c) &middot; 3:56&ndash;4:06 = rapid cascade: Invincibale(BR), Orichamaru, <strong class="red">Starfighter</strong>, Moistbear, Zinnks all die &middot; 4:12&ndash;4:53 = full wipe (remaining 11 players die)</p>
+  <p style="margin-top: 4px; color: var(--yellow);">Starfighter died at 4:01 to <strong>Void Remnants</strong> during the P2 phase. The raid cascaded into a wipe shortly after. Starfighter was active for approximately 190 seconds of combat time (241s alive minus ~51s intermission).</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Starfighter (~3.2 min active combat) vs primary reference (&#31070;&#31192;&#25384;&#25171;&#23569;&#22899;, ~7.3 min active, full kill). CPM is calculated using active combat time (excluding intermission downtime). Abilities sorted by priority impact.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Mortal Strike</strong></td>
+      <td>40</td>
+      <td class="yellow">12.6</td>
+      <td>109</td>
+      <td>14.9</td>
+      <td class="red">&minus;15%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Execute</strong></td>
+      <td>18</td>
+      <td class="red">5.7</td>
+      <td>72</td>
+      <td>9.8</td>
+      <td class="red">&minus;42%</td>
+      <td><span class="tag tag-info">Prog context</span></td>
+    </tr>
+    <tr>
+      <td><strong>Overpower</strong></td>
+      <td>28</td>
+      <td>8.8</td>
+      <td>70</td>
+      <td>9.6</td>
+      <td class="yellow">&minus;7%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Heroic Strike</td>
+      <td>17</td>
+      <td>5.4</td>
+      <td>43</td>
+      <td>5.9</td>
+      <td class="dim">&minus;9%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Slam</td>
+      <td>21</td>
+      <td class="yellow">6.6</td>
+      <td>35</td>
+      <td>4.8</td>
+      <td class="yellow">+39%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Rend</strong></td>
+      <td>2</td>
+      <td class="red">0.6</td>
+      <td>22</td>
+      <td>3.0</td>
+      <td class="red">&minus;79%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Colossus Smash</td>
+      <td>6</td>
+      <td>1.9</td>
+      <td>16</td>
+      <td>2.2</td>
+      <td class="dim">&minus;13%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Avatar</td>
+      <td>3</td>
+      <td>0.9</td>
+      <td>8</td>
+      <td>1.1</td>
+      <td class="dim">&minus;13%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Bladestorm</td>
+      <td>3</td>
+      <td>0.9</td>
+      <td>8</td>
+      <td>1.1</td>
+      <td class="dim">&minus;13%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Spell Reflection</td>
+      <td>1</td>
+      <td class="red">0.3</td>
+      <td>9</td>
+      <td>1.2</td>
+      <td class="red">&minus;74%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Storm Bolt</td>
+      <td>0</td>
+      <td class="red">0.0</td>
+      <td>8</td>
+      <td>1.1</td>
+      <td class="red">&minus;100%</td>
+      <td><span class="tag tag-info">Talent diff</span></td>
+    </tr>
+    <tr>
+      <td>Charge</td>
+      <td>6</td>
+      <td>1.9</td>
+      <td>16</td>
+      <td>2.2</td>
+      <td class="dim">&minus;13%</td>
+      <td><span class="tag tag-same">Movement</span></td>
+    </tr>
+    <tr>
+      <td>Impending Victory</td>
+      <td>3</td>
+      <td>0.9</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">Talent diff</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Rend Uptime Is Nearly Zero</div>
+    <p style="font-size: 14px;">Starfighter cast Rend only <strong>2 times</strong> across 4 minutes of combat vs the reference's <strong>22 casts</strong> (3.0 CPM). Rend is a high-priority DoT in the Arms rotation &mdash; it should be maintained on all active targets at all times. With the <strong>Bloodletting</strong> talent, Rend auto-applies during execute phase, but outside execute, it must be manually refreshed every 15 seconds. Rend contributed <strong>3.2% of reference damage</strong> (2.79M over the kill). Over 190s of active combat, Starfighter should have cast Rend approximately <strong>6 times</strong> at minimum (initial application + refreshes). The 2-cast count suggests Rend is simply not in the priority rotation, which is a significant damage loss.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Slam Over-Use Displacing Higher-Priority Abilities</div>
+    <p style="font-size: 14px;">Slam at <strong>6.6 CPM (21 casts)</strong> vs the reference's <strong>4.8 CPM (35 casts)</strong> means Slam is being pressed <strong>39% more often per minute</strong>. Slam is the lowest-priority filler in the Arms rotation &mdash; it should only be used when Mortal Strike, Overpower, Execute (Sudden Death), and Rend are all unavailable. The overcasting suggests GCDs are going to Slam when Rend refreshes or Mortal Strike casts should be happening instead. Each Slam that replaces a Mortal Strike costs roughly <strong>150-200K damage per GCD</strong>.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--accent);">
+  <div class="card-header accent">Execute Delta: Prog Context Matters</div>
+  <p style="font-size: 14px;">The <strong>&minus;42% Execute CPM gap</strong> (5.7 vs 9.8) is largely expected. The reference killed the boss and had a full execute phase (sub-35% HP for several minutes). Starfighter's wipe at 77.31% boss HP means most Executes were <strong>Sudden Death procs</strong> only, not sustained sub-35% spam. The 18 Execute casts from 15 Sudden Death procs are actually reasonable usage &mdash; Starfighter is consuming procs when they appear. This gap will naturally close when the boss reaches execute phase on longer pulls.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability on Fight 23. Total damage: <strong>41.5M</strong> (including absorbed). Active DPS: ~172K (over 241s alive) / Full-fight DPS: 132.6K (over 293s). Top 3 damage sources: Mortal Strike (25.1%), Execute (13.2%), Bladestorm (9.7%).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Damage</th><th>% of Total</th><th>Hits</th><th>Role</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Mortal Strike</strong></td>
+      <td>10,421K</td>
+      <td>25.1%</td>
+      <td>51</td>
+      <td><span class="tag tag-same">Core builder</span></td>
+    </tr>
+    <tr>
+      <td><strong>Execute</strong></td>
+      <td>5,463K</td>
+      <td>13.2%</td>
+      <td>26</td>
+      <td><span class="tag tag-same">Sudden Death procs</span></td>
+    </tr>
+    <tr>
+      <td><strong>Bladestorm</strong></td>
+      <td>4,017K</td>
+      <td>9.7%</td>
+      <td>60</td>
+      <td><span class="tag tag-same">Major CD</span></td>
+    </tr>
+    <tr>
+      <td>Heroic Strike</td>
+      <td>3,507K</td>
+      <td>8.4%</td>
+      <td>24</td>
+      <td><span class="tag tag-same">Rage spender</span></td>
+    </tr>
+    <tr>
+      <td>Overpower</td>
+      <td>3,442K</td>
+      <td>8.3%</td>
+      <td>43</td>
+      <td><span class="tag tag-same">Core builder</span></td>
+    </tr>
+    <tr>
+      <td>Slayer's Strike</td>
+      <td>3,148K</td>
+      <td>7.6%</td>
+      <td>21</td>
+      <td><span class="tag tag-info">Hero talent proc</span></td>
+    </tr>
+    <tr>
+      <td>Deep Wounds</td>
+      <td>2,913K</td>
+      <td>7.0%</td>
+      <td>203</td>
+      <td><span class="tag tag-info">Passive DoT</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>2,246K</td>
+      <td>5.4%</td>
+      <td>82</td>
+      <td><span class="tag tag-info">Auto-attack</span></td>
+    </tr>
+    <tr>
+      <td>Reap the Storm</td>
+      <td>2,010K</td>
+      <td>4.8%</td>
+      <td>23</td>
+      <td><span class="tag tag-info">Passive proc</span></td>
+    </tr>
+    <tr>
+      <td>Slam</td>
+      <td>1,087K</td>
+      <td>2.6%</td>
+      <td>28</td>
+      <td><span class="tag tag-warn">Filler</span></td>
+    </tr>
+    <tr>
+      <td>Dreadnaught</td>
+      <td>952K</td>
+      <td>2.3%</td>
+      <td>80</td>
+      <td><span class="tag tag-info">Passive proc</span></td>
+    </tr>
+    <tr>
+      <td>Fatal Mark</td>
+      <td>817K</td>
+      <td>2.0%</td>
+      <td>13</td>
+      <td><span class="tag tag-info">Slayer passive</span></td>
+    </tr>
+    <tr>
+      <td>Colossus Smash</td>
+      <td>540K</td>
+      <td>1.3%</td>
+      <td>16</td>
+      <td><span class="tag tag-same">Debuff applicator</span></td>
+    </tr>
+    <tr>
+      <td>Rend</td>
+      <td>477K</td>
+      <td>1.2%</td>
+      <td>58</td>
+      <td><span class="tag tag-diff">Severely low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- COOLDOWN ALIGNMENT -->
+<h2>Cooldown Alignment</h2>
+<p class="section-intro">Arms Warrior burst windows center on the Avatar + Colossus Smash + Bladestorm trio. Avatar provides 20% damage amp for 20 seconds. Colossus Smash provides a damage debuff on the target. Bladestorm should fire inside the Avatar window for maximum value.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Starfighter</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:03</span> <span class="cast good">Colossus Smash</span></div>
+      <div><span class="dim">0:04</span> <span class="cast good">Avatar</span></div>
+      <div><span class="dim">0:05</span> <span class="cast good">Bladestorm (1s after CDs)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">0:37</span> <span class="cast neutral">Colossus Smash (no Avatar)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:12</span> <span class="cast good">Avatar + Colossus Smash</span></div>
+      <div><span class="dim">1:13</span> <span class="cast good">Bladestorm (1s after CDs)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:50</span> <span class="cast neutral">Colossus Smash (no Avatar)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:10</span> <span class="cast good">Avatar + Colossus Smash</span></div>
+      <div><span class="dim">3:11</span> <span class="cast good">Bladestorm (1s after CDs)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:40</span> <span class="cast neutral">Colossus Smash (no Avatar)</span></div>
+      <div style="margin-top: 8px;"><strong class="green">3/3 Avatar windows have CS+BS synced. Clean alignment.</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="purple">Reference</span> <span class="ref-badge">PRIMARY</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:29</span> <span class="cast good">Avatar + CS + BS</span></div>
+      <div><span class="dim">1:38</span> <span class="cast good">Avatar + CS + BS</span></div>
+      <div><span class="dim">2:58</span> <span class="cast good">Avatar + CS + BS</span></div>
+      <div><span class="dim">3:58</span> <span class="cast good">Avatar + CS + BS</span></div>
+      <div><span class="dim">4:58</span> <span class="cast good">Avatar + CS + BS</span></div>
+      <div><span class="dim">6:06</span> <span class="cast good">Avatar + CS + BS</span></div>
+      <div><span class="dim">7:06</span> <span class="cast good">Avatar + CS + BS</span></div>
+      <div><span class="dim">8:03</span> <span class="cast good">Avatar + CS + BS</span></div>
+      <div style="margin-top: 8px;"><strong class="green">8/8 Avatar windows perfectly synced.</strong></div>
+      <div style="margin-top: 4px;"><span class="dim">+ Storm Bolt inside every Avatar window</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--green);">
+  <div class="card-header green">Cooldown Alignment Is Clean</div>
+  <p style="font-size: 14px;">Starfighter correctly aligns Avatar, Colossus Smash, and Bladestorm on every burst window. All 3 Avatar uses had Colossus Smash and Bladestorm fired within 1-2 seconds. The off-cooldown Colossus Smash uses (0:37, 1:50, 3:40) are correct &mdash; CS has a shorter cooldown than Avatar and should be used independently between Avatar windows. This is proper play. The reference does the same thing but with 8 windows due to the longer fight.</p>
+</div>
+
+<!-- CASTING GAPS -->
+<h2>Casting Gap Analysis</h2>
+<p class="section-intro">Periods where Starfighter went 3+ seconds without pressing a rotational ability (excluding the 51-second intermission). These represent potential lost GCDs.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Time</th><th>Gap</th><th>Before</th><th>After</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0:43</td>
+      <td class="yellow">5.8s</td>
+      <td>Execute</td>
+      <td>Heroic Strike</td>
+      <td><span class="tag tag-warn">Movement?</span></td>
+    </tr>
+    <tr>
+      <td>0:54</td>
+      <td class="red">8.2s</td>
+      <td>Overpower</td>
+      <td>Mortal Strike</td>
+      <td><span class="tag tag-diff">Significant gap</span></td>
+    </tr>
+    <tr>
+      <td>1:21</td>
+      <td class="red">15.9s</td>
+      <td>Execute</td>
+      <td>Mortal Strike</td>
+      <td><span class="tag tag-diff">Major downtime</span></td>
+    </tr>
+    <tr>
+      <td>1:52</td>
+      <td class="red">7.4s</td>
+      <td>Execute</td>
+      <td>Mortal Strike</td>
+      <td><span class="tag tag-warn">~Intermission start?</span></td>
+    </tr>
+    <tr style="background: rgba(139,148,158,0.05);">
+      <td>2:06&ndash;2:57</td>
+      <td class="dim">51.7s</td>
+      <td>Mortal Strike</td>
+      <td>Rend</td>
+      <td><span class="tag tag-info">Intermission (excluded)</span></td>
+    </tr>
+    <tr>
+      <td>3:40</td>
+      <td>3.4s</td>
+      <td>Colossus Smash</td>
+      <td>Mortal Strike</td>
+      <td><span class="tag tag-same">Minor</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Gap Impact Estimate</div>
+  <p style="font-size: 14px;">Excluding the intermission, Starfighter has <strong>~37 seconds of casting gaps</strong> across 190 seconds of active combat. At the reference's average of ~0.88 casts per second (52.6 CPM), that's approximately <strong>32 missed GCDs</strong>. The two largest gaps are the <strong>15.9s gap at 1:21</strong> and the <strong>8.2s gap at 0:54</strong>. These may correspond to movement for mechanics (Silverstrike Arrow positioning, Void Expulsion puddle placement) or target switching during Sentinel kills. Crown of the Cosmos Phase 1 has significant movement requirements &mdash; Grasp of Emptiness beams and Void Expulsion puddle placement both force melee to move away from the boss. Using Charge and Heroic Leap to minimize these gaps would recover the most lost damage.</p>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown &amp; Utility Usage</h2>
+<p class="section-intro">Major cooldowns and utility abilities. Proportional to fight length, most CD usage is on track.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cooldown</th><th>Player Uses</th><th>Ref Uses</th><th>Ref Duration</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Avatar</strong></td>
+      <td>3</td>
+      <td>8</td>
+      <td>8:14</td>
+      <td><span class="tag tag-same">Proportional</span></td>
+    </tr>
+    <tr>
+      <td><strong>Colossus Smash</strong></td>
+      <td>6</td>
+      <td>16</td>
+      <td>8:14</td>
+      <td><span class="tag tag-same">Proportional</span></td>
+    </tr>
+    <tr>
+      <td><strong>Bladestorm</strong></td>
+      <td>3</td>
+      <td>8</td>
+      <td>8:14</td>
+      <td><span class="tag tag-same">Proportional</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Spell Reflection</strong></td>
+      <td>1</td>
+      <td>9</td>
+      <td>8:14</td>
+      <td><span class="tag tag-diff">Under-using</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Storm Bolt</td>
+      <td>0</td>
+      <td>8</td>
+      <td>8:14</td>
+      <td><span class="tag tag-info">Talent diff (3 of 3)</span></td>
+    </tr>
+    <tr>
+      <td>Charge</td>
+      <td>6</td>
+      <td>16</td>
+      <td>8:14</td>
+      <td><span class="tag tag-same">Movement tool</span></td>
+    </tr>
+    <tr>
+      <td>Die by the Sword</td>
+      <td>1</td>
+      <td>1</td>
+      <td>8:14</td>
+      <td><span class="tag tag-same">Defensive</span></td>
+    </tr>
+    <tr>
+      <td>Rallying Cry</td>
+      <td>1</td>
+      <td>1</td>
+      <td>8:14</td>
+      <td><span class="tag tag-same">Raid utility</span></td>
+    </tr>
+    <tr>
+      <td>Pummel</td>
+      <td>1</td>
+      <td>0</td>
+      <td>8:14</td>
+      <td><span class="tag tag-same">Interrupt</span></td>
+    </tr>
+    <tr>
+      <td>Impending Victory</td>
+      <td>3</td>
+      <td>0</td>
+      <td>8:14</td>
+      <td><span class="tag tag-info">Talent diff (self-heal)</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--cyan);">
+  <div class="card-header cyan">Spell Reflection Underuse</div>
+  <p style="font-size: 14px;">The reference used Spell Reflection <strong>9 times</strong> across 8:14 vs Starfighter's <strong>1 use</strong> in 4:01. On Crown of the Cosmos, <strong>Echoing Darkness</strong> deals constant magic damage ticks (118 hits on Starfighter totaling 3M damage). Each Spell Reflection window can reflect multiple ticks for <strong>free damage with no GCD cost</strong>. At roughly one use per minute, Starfighter should have gotten 3-4 uses in 4 minutes. Spell Reflection also provides a brief <strong>20% magic DR</strong>, which helps survivability on a fight with heavy magic damage. This is a free button that provides both DPS and survival.</p>
+</div>
+
+<!-- TALENT DIFFERENCES -->
+<h2>Talent Differences (3 nodes)</h2>
+<p class="section-intro">Starfighter and the primary reference share the same Slayer hero talent tree. They differ on 3 talent nodes.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Difference</th><th>Starfighter</th><th>Reference</th><th>Impact</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Storm Bolt vs Impending Victory</td>
+      <td>Impending Victory (self-heal)</td>
+      <td>Storm Bolt (stun + damage)</td>
+      <td><span class="tag tag-warn">Storm Bolt does damage inside CD windows; Impending Victory is defensive</span></td>
+    </tr>
+    <tr>
+      <td colspan="4" style="color: var(--dim); font-size: 13px;">The remaining 2 differences are minor talent point allocations that don't fundamentally change the rotation.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during Fight 23.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism</strong></td>
+      <td>2:59 (after intermission)</td>
+      <td><span class="tag tag-same">Aligned with Avatar #3 at 3:10</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>6 applications</td>
+      <td><span class="tag tag-same">Aug Evoker support present</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>2 applications</td>
+      <td><span class="tag tag-same">Crit buff from Aug</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td><span class="tag tag-info">Not received</span></td>
+    </tr>
+    <tr>
+      <td>Anti-Magic Zone</td>
+      <td>1 application</td>
+      <td><span class="tag tag-same">Raid defensive</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Starfighter during Fight 23. Total: ~10.8M across 292 hits. Crown of the Cosmos is a high-damage fight with constant Echoing Darkness ticks, Grasp beams, and Arrow mechanics.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>3,011K</td>
+      <td>118</td>
+      <td><span class="tag tag-same">No &mdash; constant raid ticks</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>1,534K</td>
+      <td>30</td>
+      <td><span class="tag tag-warn">Partially &mdash; beam positioning</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,105K</td>
+      <td>26</td>
+      <td><span class="tag tag-warn">Partially &mdash; puddle placement</span></td>
+    </tr>
+    <tr>
+      <td>Simulacrum Backlash</td>
+      <td>986K</td>
+      <td>36</td>
+      <td><span class="tag tag-same">No &mdash; raid mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>833K</td>
+      <td>3</td>
+      <td><span class="tag tag-warn">Targeted mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>768K</td>
+      <td>31</td>
+      <td><span class="tag tag-same">No &mdash; phase damage</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>532K</td>
+      <td>21</td>
+      <td><span class="tag tag-same">No &mdash; phase mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>398K</td>
+      <td>2</td>
+      <td><span class="tag tag-warn">Platform transitions</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>308K</td>
+      <td>13</td>
+      <td><span class="tag tag-same">No &mdash; intermission ticks</span></td>
+    </tr>
+    <tr>
+      <td>Other (5 sources)</td>
+      <td>1,291K</td>
+      <td>13</td>
+      <td><span class="tag tag-info">Various</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">The damage profile is mostly unavoidable raid-wide mechanics. <strong>Falling damage (398K, 2 hits)</strong> from platform transitions is the most controllable source &mdash; using Heroic Leap to land on platforms can eliminate this. The <strong>Void Remnants</strong> that killed Starfighter at 4:01 dealt 111K as the final hit. More Spell Reflection usage would have mitigated more of the Echoing Darkness and Grasp ticks.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Starfighter's DPS across all 26 Crown of the Cosmos pulls. Bars colored by boss HP reached: <span class="green">green = &lt;10%</span>, <span class="yellow">yellow = 10-50%</span>, <span class="orange">orange = 50-90%</span>, <span class="red">red = &gt;90%</span>. Boss % labels on each bar.</p>
+
+<div class="card">
+  <div class="progression-chart" style="margin-bottom: 24px;">
+    <!-- F1: 28s, 99.45%, DPS 0 -->
+    <div class="prog-bar" style="height: 2%; background: var(--red);" data-tooltip="F1: 0 DPS (0:28) — 99.5% boss">
+      <span class="prog-boss-pct">99%</span>
+    </div>
+    <!-- F2: 63s, 51.98%, DPS 192772 -->
+    <div class="prog-bar" style="height: 68%; background: var(--orange);" data-tooltip="F2: 193K DPS (1:03) — 52.0% boss">
+      <span class="prog-boss-pct">52%</span>
+    </div>
+    <!-- F3: 117s, 54.75%, DPS 28714 -->
+    <div class="prog-bar" style="height: 10%; background: var(--orange);" data-tooltip="F3: 29K DPS (1:57) — 54.8% boss">
+      <span class="prog-boss-pct">55%</span>
+    </div>
+    <!-- F4: 76s, 54.62%, DPS 163410 -->
+    <div class="prog-bar" style="height: 57%; background: var(--orange);" data-tooltip="F4: 163K DPS (1:15) — 54.6% boss">
+      <span class="prog-boss-pct">55%</span>
+    </div>
+    <!-- F5: 60s, 74.02%, DPS 169310 -->
+    <div class="prog-bar" style="height: 59%; background: var(--orange);" data-tooltip="F5: 169K DPS (0:59) — 74.0% boss">
+      <span class="prog-boss-pct">74%</span>
+    </div>
+    <!-- F6: 143s, 19.48%, DPS 284748 -->
+    <div class="prog-bar" style="height: 100%; background: var(--yellow);" data-tooltip="F6: 285K DPS (2:23) — 19.5% boss">
+      <span class="prog-boss-pct">19%</span>
+    </div>
+    <!-- F7: 89s, 41.72%, DPS 174217 -->
+    <div class="prog-bar" style="height: 61%; background: var(--yellow);" data-tooltip="F7: 174K DPS (1:29) — 41.7% boss">
+      <span class="prog-boss-pct">42%</span>
+    </div>
+    <!-- F8: 142s, 0.01%, DPS 181152 -->
+    <div class="prog-bar" style="height: 64%; background: var(--green);" data-tooltip="F8: 181K DPS (2:22) — 0.01% boss ★">
+      <span class="prog-boss-pct" style="color: var(--green);">0%!</span>
+    </div>
+    <!-- F9: 152s, 7.27%, DPS 154719 -->
+    <div class="prog-bar" style="height: 54%; background: var(--green);" data-tooltip="F9: 155K DPS (2:32) — 7.3% boss">
+      <span class="prog-boss-pct">7%</span>
+    </div>
+    <!-- F10: 220s, 98.36%, DPS 215212 -->
+    <div class="prog-bar" style="height: 76%; background: var(--red);" data-tooltip="F10: 215K DPS (3:39) — 98.4% boss">
+      <span class="prog-boss-pct">98%</span>
+    </div>
+    <!-- F11: 122s, 30.29%, DPS 93507 -->
+    <div class="prog-bar" style="height: 33%; background: var(--yellow);" data-tooltip="F11: 94K DPS (2:02) — 30.3% boss">
+      <span class="prog-boss-pct">30%</span>
+    </div>
+    <!-- F12: 234s, 92.06%, DPS 153283 -->
+    <div class="prog-bar" style="height: 54%; background: var(--red);" data-tooltip="F12: 153K DPS (3:53) — 92.1% boss">
+      <span class="prog-boss-pct">92%</span>
+    </div>
+    <!-- F13: 75s, 60.77%, DPS 159992 -->
+    <div class="prog-bar" style="height: 56%; background: var(--orange);" data-tooltip="F13: 160K DPS (1:15) — 60.8% boss">
+      <span class="prog-boss-pct">61%</span>
+    </div>
+    <!-- F14: 231s, 95.25%, DPS 126366 -->
+    <div class="prog-bar" style="height: 44%; background: var(--red);" data-tooltip="F14: 126K DPS (3:51) — 95.3% boss">
+      <span class="prog-boss-pct">95%</span>
+    </div>
+    <!-- F15: 149s, 9.05%, DPS 273686 -->
+    <div class="prog-bar" style="height: 96%; background: var(--green);" data-tooltip="F15: 274K DPS (2:29) — 9.1% boss">
+      <span class="prog-boss-pct">9%</span>
+    </div>
+    <!-- F16: 130s, 21.23%, DPS 212566 -->
+    <div class="prog-bar" style="height: 75%; background: var(--yellow);" data-tooltip="F16: 213K DPS (2:09) — 21.2% boss">
+      <span class="prog-boss-pct">21%</span>
+    </div>
+    <!-- F17: 144s, 0.01%, DPS 258288 -->
+    <div class="prog-bar" style="height: 91%; background: var(--green);" data-tooltip="F17: 258K DPS (2:24) — 0.01% boss ★">
+      <span class="prog-boss-pct" style="color: var(--green);">0%!</span>
+    </div>
+    <!-- F18: 236s, 95.72%, DPS 79513 -->
+    <div class="prog-bar" style="height: 28%; background: var(--red);" data-tooltip="F18: 80K DPS (3:55) — 95.7% boss">
+      <span class="prog-boss-pct">96%</span>
+    </div>
+    <!-- F19: 114s, 34.53%, DPS 190797 -->
+    <div class="prog-bar" style="height: 67%; background: var(--yellow);" data-tooltip="F19: 191K DPS (1:53) — 34.5% boss">
+      <span class="prog-boss-pct">35%</span>
+    </div>
+    <!-- F20: 120s, 35.43%, DPS 99884 -->
+    <div class="prog-bar" style="height: 35%; background: var(--yellow);" data-tooltip="F20: 100K DPS (2:00) — 35.4% boss">
+      <span class="prog-boss-pct">35%</span>
+    </div>
+    <!-- F21: 147s, 0.22%, DPS 193298 -->
+    <div class="prog-bar" style="height: 68%; background: var(--green);" data-tooltip="F21: 193K DPS (2:26) — 0.22% boss ★">
+      <span class="prog-boss-pct" style="color: var(--green);">0.2%</span>
+    </div>
+    <!-- F22: 25s, 99.7%, DPS 13305 -->
+    <div class="prog-bar" style="height: 5%; background: var(--red);" data-tooltip="F22: 13K DPS (0:25) — 99.7% boss">
+      <span class="prog-boss-pct">99%</span>
+    </div>
+    <!-- F23: 293s, 77.31%, DPS 132630 - analyzed pull -->
+    <div class="prog-bar" style="height: 47%; background: var(--orange); border: 2px solid var(--accent);" data-tooltip="F23: 133K DPS (4:52) — 77.3% boss ← ANALYZED">
+      <span class="prog-boss-pct" style="color: var(--accent);">77%</span>
+    </div>
+    <!-- F24: 229s, 92.92%, DPS 150316 -->
+    <div class="prog-bar" style="height: 53%; background: var(--red);" data-tooltip="F24: 150K DPS (3:49) — 92.9% boss">
+      <span class="prog-boss-pct">93%</span>
+    </div>
+    <!-- F25: 188s, 99.88%, DPS 205711 -->
+    <div class="prog-bar" style="height: 72%; background: var(--red);" data-tooltip="F25: 206K DPS (3:07) — 99.9% boss">
+      <span class="prog-boss-pct">99%</span>
+    </div>
+    <!-- F26: 220s, 96.91%, DPS 176531 -->
+    <div class="prog-bar" style="height: 62%; background: var(--red);" data-tooltip="F26: 177K DPS (3:40) — 96.9% boss">
+      <span class="prog-boss-pct">97%</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 1</span>
+    <span><span class="green">&lt;10% boss</span> &bull; <span class="yellow">10-50%</span> &bull; <span class="orange">50-90%</span> &bull; <span class="red">&gt;90%</span> &bull; <span class="accent">&#9654; analyzed</span></span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">The raid hit <strong class="green">0.01% boss HP</strong> on Fights 8 and 17 &mdash; within a single GCD of a kill. Fight 21 also reached 0.22%. However, the <strong>last 5 pulls (F22-F26)</strong> all wiped above 77% boss HP, suggesting fatigue or strategy changes late in the night. Starfighter's DPS is highly variable (29K-285K) which is normal for progression &mdash; short P1 wipes inflate DPS while long pulls that reach intermissions naturally show lower overall DPS due to downtime. The <strong>best sustained DPS pulls</strong> (filtering to pulls &gt;2 min): F6 (285K), F15 (274K), F17 (258K), F10 (215K), F16 (213K). These are all pulls where the raid pushed efficiently through P1 and Starfighter had strong burst windows aligned with Sentinel kills.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Starfighter</th><th>Reference</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>288.0</td>
+      <td>290.8</td>
+      <td><span class="tag tag-same">&minus;2.8 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Strength</td>
+      <td>2,374</td>
+      <td>2,275</td>
+      <td>Player has +4% more</td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="green">1,462</td>
+      <td>1,148</td>
+      <td>Player has +27% more Crit</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td>1,129</td>
+      <td>1,132</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="red">198</td>
+      <td>553</td>
+      <td>Player has &minus;64% less Mastery</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>0</td>
+      <td>38</td>
+      <td><span class="dim">Both very low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Haste is nearly identical (1,129 vs 1,132), which means Starfighter has the same GCD speed as the reference. The <strong>Mortal Strike CPM gap (12.6 vs 14.9) is therefore entirely execution-based</strong>, not gear-driven. Starfighter has significantly more Crit (+27%) but far less Mastery (&minus;64%). For Arms Warriors, Mastery (Deep Wounds and Colossus Smash damage bonus) is a strong secondary &mdash; the Mastery deficit partially explains lower Deep Wounds contribution. Current stat priority for Arms Slayer is <strong>Haste &ge; Crit &gt; Mastery &gt; Versatility</strong>.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Maintain Rend at all times outside execute phase.</strong> Starfighter cast Rend only <strong>2 times</strong> in 4 minutes of combat vs the reference's <strong>22 casts</strong> (3.0 CPM). Rend is a high-priority DoT that should be refreshed before expiration (15s duration, refresh at &lt;5s remaining). With Bloodletting, it auto-applies during execute phase, but in P1/P2 phases (which is all prog pulls right now), it must be manually maintained. Rend contributed <strong>3.2% of reference total damage</strong> &mdash; extrapolated to Starfighter's 190s of active time, that's roughly <strong>1.3M missing damage</strong>. Add it to the priority: after Mortal Strike, before Slam.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Reduce Slam usage &mdash; fill with higher-priority abilities.</strong> Slam at <strong>6.6 CPM</strong> is 39% above the reference's 4.8 CPM. Slam is the <strong>lowest-priority filler</strong> in the Arms rotation. Each Slam GCD that could have been a Mortal Strike loses ~150K damage; each one that could have been an Overpower loses ~80K. The rotation priority above Slam: <strong>Mortal Strike &gt; Execute (Sudden Death) &gt; Overpower &gt; Rend refresh &gt; Heroic Strike &gt; Slam</strong>. If Slam is coming up frequently, Mortal Strike or Overpower are likely being delayed.
+</div>
+
+<div class="action-item">
+  <strong>3. Use Spell Reflection on cooldown for free damage and DR.</strong> The reference used it <strong>9 times in 8:14</strong> (~1.1 CPM). Starfighter used it <strong>once</strong>. On Crown of the Cosmos, Echoing Darkness deals constant magic ticks (Starfighter took 3M from 118 hits). Each Spell Reflection reflects damage back and provides a brief magic damage reduction. This is <strong>off-GCD and free</strong> &mdash; no rotation disruption. Aim for 1 use per minute. Over 4 minutes, that's 3-4 missed uses worth of free damage and survivability. This could have helped survive the Void Remnants that killed Starfighter at 4:01.
+</div>
+
+<div class="action-item">
+  <strong>4. Minimize casting gaps during P1 movement mechanics.</strong> Starfighter had <strong>~37 seconds of dead time</strong> in 190 seconds of active combat. The largest gaps (15.9s at 1:21, 8.2s at 0:54) correspond to P1 mechanics. Crown P1 has Grasp of Emptiness beams and Void Expulsion puddles that force melee movement. Use <strong>Charge</strong> (already at 6 casts) and <strong>Heroic Leap</strong> (only 1 cast &mdash; should be more) to return to melee range faster. Wrecking Throw and Heroic Throw can fill ranged GCDs during forced movement. Each recovered second is roughly 1 additional GCD.
+</div>
+
+<div class="action-item">
+  <strong>5. Consider Storm Bolt over Impending Victory.</strong> The 3 talent differences include Storm Bolt (reference) vs Impending Victory (Starfighter). Storm Bolt is a <strong>30s CD stun that deals damage</strong> and fires inside every Avatar window. The reference used it <strong>8 times</strong>, always synced with burst. Impending Victory is a self-heal GCD &mdash; it costs a global that could go to damage. If survivability is covered by healers and Spell Reflection usage improves, Storm Bolt adds more DPS. However, if the self-heal is keeping Starfighter alive through mechanics, keep Impending Victory until the raid's healing stabilizes.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Cooldown alignment is excellent.</strong> All 3 Avatar windows had Colossus Smash and Bladestorm synced within 1-2 seconds. Off-cooldown Colossus Smash uses between Avatar windows are correctly timed. This is proper Arms Warrior play and matches the reference pattern exactly.<br><br>
+    <strong>Sudden Death Execute usage is solid.</strong> 18 Execute casts from 15 Sudden Death procs in a non-execute phase shows good proc consumption. The 42% CPM gap vs reference is entirely because the reference had a full sub-35% execute window that this prog pull never reached.<br><br>
+    <strong>Overpower usage is near-reference.</strong> 8.8 CPM vs 9.6 CPM (&minus;7%) &mdash; Overpower is being prioritized correctly after Mortal Strike.<br><br>
+    <strong>Best pulls nearly killed the boss.</strong> Fights 8 and 17 both reached 0.01% &mdash; a single GCD from a kill. The team knows the fight. The kill is there.<br><br>
+    <strong>Defensive awareness:</strong> Die by the Sword at 3:15, Defensive Stance during intermission, Rallying Cry at 1:10. Starfighter is using defensives proactively, not reactively.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">This is <strong>progression data, not a kill</strong> &mdash; raw DPS comparison against ranked kills is misleading. The meaningful gaps are rotational: <strong>Rend uptime is near-zero</strong> (biggest single fix), <strong>Slam overcasting displaces higher-priority abilities</strong>, and <strong>Spell Reflection is essentially unused</strong>. Cooldown alignment is already excellent. The CPM gap (44.5 vs 52.6) is partially intermission/downtime and partially the casting gaps during P1 movement. Fixing Rend uptime alone would add an estimated <strong>1-2M damage per pull</strong>. Reducing Slam in favor of Mortal Strike adds another <strong>1-2M</strong>. Adding consistent Spell Reflection usage provides free damage plus survivability that may prevent the 4:01 death. Combined, these changes could add <strong>15-25K DPS</strong> on a full pull &mdash; meaningful on a boss the team has already brought to 0.01%.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (longest pull, 4:52 wipe). Reference: &#31070;&#31192;&#25384;&#25171;&#23569;&#22899; (#2 ranked Arms Warrior, report <code>YR6CpvnWLwt7dZaQ</code>, Fight 30, 8:14 kill). All times relative to fight start.</p>
+  <p style="margin-top: 4px;">Talent delta: 3 differences. Item level difference: &minus;2.8 (288.0 vs 290.8). Haste nearly identical (1,129 vs 1,132). Primary reference chosen for fewest talent diffs. Both running Slayer hero talents. Spec guide sources: Icy Veins 12.0.7, Maxroll Raid Guide 12.0.7.</p>
+  <p style="margin-top: 4px;">Progression context: 26 pulls, no kill. Best pulls: F8 (0.01%), F17 (0.01%), F21 (0.22%). Crown of the Cosmos is a 3-phase fight with intermission downtime that naturally reduces full-fight DPS.</p>
+</div>
+
+</body>
+</html>

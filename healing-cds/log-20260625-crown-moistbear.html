@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moistbear (Feral Druid) - Crown of the Cosmos Prog Night 4</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --druid: #ff7c0a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; color: var(--druid); margin-bottom: 4px; }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.prog-tag { display: inline-block; background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; letter-spacing: 0.5px; }
+.night-tag { display: inline-block; background: var(--purple); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+section { margin-bottom: 32px; }
+section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+th { text-align: left; font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+tr:hover { background: rgba(88,166,255,0.04); }
+
+.bar-container { display: flex; align-items: center; gap: 8px; }
+.bar { height: 18px; border-radius: 3px; min-width: 2px; }
+.bar-green { background: var(--green); }
+.bar-red { background: var(--red); }
+.bar-yellow { background: var(--yellow); }
+.bar-orange { background: var(--orange); }
+.bar-accent { background: var(--accent); }
+.bar-purple { background: var(--purple); }
+.bar-dim { background: var(--dim); opacity: 0.3; }
+
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.pull-chart { display: flex; align-items: flex-end; gap: 3px; height: 200px; padding: 0 4px; }
+.pull-bar-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.pull-bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 4px; position: relative; cursor: default; }
+.pull-bar:hover { opacity: 0.85; }
+.pull-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-rl; text-orientation: mixed; max-height: 40px; overflow: hidden; }
+.pull-dps { font-size: 9px; color: var(--dim); margin-bottom: 2px; }
+.avg-line { position: relative; width: 100%; margin-top: -200px; margin-bottom: 200px; pointer-events: none; }
+.avg-line-inner { border-top: 1px dashed var(--yellow); position: absolute; width: 100%; }
+.avg-line-label { position: absolute; right: 0; top: -14px; font-size: 10px; color: var(--yellow); }
+
+.callout { background: var(--surface); border-left: 3px solid var(--orange); border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 16px; }
+.callout.red { border-left-color: var(--red); }
+.callout.green { border-left-color: var(--green); }
+.callout.blue { border-left-color: var(--accent); }
+.callout-title { font-weight: 600; margin-bottom: 4px; }
+
+.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+.badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
+.badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+.badge-dim { background: rgba(139,148,158,0.15); color: var(--dim); }
+
+.phase-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.phase-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.phase-card h4 { font-size: 12px; color: var(--dim); margin-bottom: 4px; }
+.phase-card .reach { font-size: 20px; font-weight: 700; }
+
+.death-timeline { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.death-dot { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
+.death-dot.actionable { background: rgba(248,81,73,0.2); color: var(--red); border: 1px solid var(--red); }
+.death-dot.cascade { background: rgba(139,148,158,0.1); color: var(--dim); border: 1px solid var(--border); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .phase-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>Moistbear <span style="font-size:16px;color:var(--dim);font-weight:400;">Feral Druid</span>
+    <span class="prog-tag">PROGRESSION</span>
+    <span class="night-tag">NIGHT 4</span>
+  </h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &mdash; 19 pulls, 0 kills &mdash; June 25, 2026 &mdash;
+    <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">WCL Report</a>
+  </div>
+</div>
+
+<!-- ============ SUMMARY CARDS ============ -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS (all pulls)</div>
+    <div class="card-value" style="color:var(--druid);">176.5K</div>
+    <div class="card-sub">Long pulls (5min+): 137.8K</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">293</div>
+    <div class="card-sub">5/5 Tier &bull; Wildstalker</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Actionable Deaths</div>
+    <div class="card-value" style="color:var(--green);">4 / 19</div>
+    <div class="card-sub">79% not his fault (cascade)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Deepest Pull</div>
+    <div class="card-value">7:12</div>
+    <div class="card-sub">Fight 14 &mdash; deep P3</div>
+  </div>
+</div>
+
+<!-- ============ PERFORMANCE ACROSS ALL PULLS ============ -->
+<section>
+  <h2>Performance Across All Pulls</h2>
+  <div class="chart-container">
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+      <span style="font-size:12px;color:var(--dim);">DPS per pull (all damage including adds)</span>
+      <span style="font-size:12px;">
+        <span style="color:var(--green);">&#9632;</span> Cascade death (not actionable)
+        <span style="color:var(--red);margin-left:8px;">&#9632;</span> Actionable death (first 2 in raid)
+        <span style="color:var(--yellow);margin-left:8px;">- -</span> Average
+      </span>
+    </div>
+    <div class="pull-chart">
+      <div class="pull-bar-wrap"><div class="pull-dps">153K</div><div class="pull-bar bar-green" style="height:56.2%" title="F1: 153,207 DPS (5:00) - Cascade death #15"></div><div class="pull-label">F1</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">147K</div><div class="pull-bar bar-green" style="height:53.9%" title="F2: 147,045 DPS (6:54) - Cascade death #11"></div><div class="pull-label">F2</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">243K</div><div class="pull-bar bar-green" style="height:89.2%" title="F3: 243,465 DPS (1:51) - Cascade death #6"></div><div class="pull-label">F3</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">159K</div><div class="pull-bar bar-red" style="height:58.4%" title="F5: 159,274 DPS (1:51) - ACTIONABLE death #1 to Void Expulsion"></div><div class="pull-label">F5</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">108K</div><div class="pull-bar bar-red" style="height:39.4%" title="F6: 107,502 DPS (7:03) - ACTIONABLE death #2"></div><div class="pull-label">F6</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">273K</div><div class="pull-bar bar-green" style="height:100%" title="F8: 272,863 DPS (1:12) - Cascade death #8"></div><div class="pull-label">F8</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">269K</div><div class="pull-bar bar-red" style="height:98.6%" title="F12: 269,028 DPS (2:10) - ACTIONABLE death #1 to Grasp of Emptiness"></div><div class="pull-label">F12</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">224K</div><div class="pull-bar bar-green" style="height:82.0%" title="F13: 223,621 DPS (1:22) - Cascade death #11"></div><div class="pull-label">F13</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">129K</div><div class="pull-bar bar-green" style="height:47.4%" title="F14: 129,359 DPS (7:12) - Cascade death #10"></div><div class="pull-label">F14</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">122K</div><div class="pull-bar bar-green" style="height:44.7%" title="F17: 121,992 DPS (6:58) - Cascade death #16"></div><div class="pull-label">F17</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">151K</div><div class="pull-bar bar-green" style="height:55.3%" title="F18: 150,785 DPS (5:06) - Cascade death #17"></div><div class="pull-label">F18</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">225K</div><div class="pull-bar bar-red" style="height:82.6%" title="F19: 225,435 DPS (1:19) - ACTIONABLE death #2"></div><div class="pull-label">F19</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">245K</div><div class="pull-bar bar-green" style="height:89.7%" title="F21: 244,647 DPS (1:31) - Cascade death #5"></div><div class="pull-label">F21</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">200K</div><div class="pull-bar bar-green" style="height:73.3%" title="F22: 199,957 DPS (1:17) - Cascade death #9"></div><div class="pull-label">F22</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">136K</div><div class="pull-bar bar-green" style="height:49.9%" title="F23: 136,343 DPS (5:14) - Cascade death #7"></div><div class="pull-label">F23</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">155K</div><div class="pull-bar bar-green" style="height:56.7%" title="F24: 154,596 DPS (5:36) - Cascade death #11"></div><div class="pull-label">F24</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">142K</div><div class="pull-bar bar-green" style="height:51.9%" title="F26: 141,610 DPS (6:58) - Cascade death #11"></div><div class="pull-label">F26</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">136K</div><div class="pull-bar bar-green" style="height:49.7%" title="F27: 135,660 DPS (5:36) - Cascade death #9"></div><div class="pull-label">F27</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps">138K</div><div class="pull-bar bar-green" style="height:50.5%" title="F28: 137,608 DPS (6:59) - Cascade death #13"></div><div class="pull-label">F28</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="callout green">
+      <div class="callout-title">Session Trend</div>
+      Early session avg: 189.5K (first 9 pulls) vs Late session avg: 164.9K (last 10 pulls). The drop is expected because the raid pushed into longer, later-phase pulls where overall DPS naturally decreases (P2/P3 DPS is lower than P1 burst).
+    </div>
+    <div class="callout blue">
+      <div class="callout-title">Consistency</div>
+      Median DPS: 153.2K. Std Dev: 51.8K. High variance is driven by pull length -- short P1 wipes inflate DPS (243-273K) while deep pulls dilute it (108-138K). When comparing long pulls only (5min+), DPS is much more consistent: 108K-155K range.
+    </div>
+  </div>
+</section>
+
+<!-- ============ PER-PHASE PERFORMANCE ============ -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="color:var(--dim);margin-bottom:16px;">This is the most important section. Overall DPS is misleading because it blends a 248K P1 burst window with a 41K P3 sustained window. The phase breakdown shows exactly where performance falls off and why.</p>
+
+  <h3>Phase Reach Rate</h3>
+  <div class="phase-grid">
+    <div class="phase-card">
+      <h4>P1: Sentinels</h4>
+      <div class="reach" style="color:var(--green);">19/19</div>
+      <div style="font-size:11px;color:var(--dim);">100% of pulls</div>
+    </div>
+    <div class="phase-card">
+      <h4>Intermission</h4>
+      <div class="reach" style="color:var(--yellow);">11/19</div>
+      <div style="font-size:11px;color:var(--dim);">58% of pulls</div>
+    </div>
+    <div class="phase-card">
+      <h4>P2: Rift</h4>
+      <div class="reach" style="color:var(--yellow);">11/19</div>
+      <div style="font-size:11px;color:var(--dim);">58% of pulls</div>
+    </div>
+    <div class="phase-card">
+      <h4>P3: Devouring Cosmos</h4>
+      <div class="reach" style="color:var(--red);">9/19</div>
+      <div style="font-size:11px;color:var(--dim);">47% of pulls</div>
+    </div>
+  </div>
+
+  <h3>Per-Phase DPS</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Worst DPS</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--green);">P1: Sentinels</strong></td>
+        <td>19/19</td>
+        <td style="color:var(--druid);font-weight:600;">247,821</td>
+        <td>303,607 <span style="color:var(--dim);font-size:11px;">(F2)</span></td>
+        <td>159,274 <span style="color:var(--dim);font-size:11px;">(F5)</span></td>
+        <td><span class="badge badge-green">Strong</span> Sentinel cleave is Feral's strength with Swipe + Rake cycling</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--dim);">Intermission</strong></td>
+        <td>11/19</td>
+        <td style="color:var(--dim);">~0</td>
+        <td>866 <span style="color:var(--dim);font-size:11px;">(F1)</span></td>
+        <td>0</td>
+        <td><span class="badge badge-dim">Survival</span> No DPS targets during Stellar Emission channel. Expected.</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--accent);">P2: Rift</strong></td>
+        <td>11/19</td>
+        <td style="color:var(--druid);font-weight:600;">94,972</td>
+        <td>110,223 <span style="color:var(--dim);font-size:11px;">(F27)</span></td>
+        <td>78,951 <span style="color:var(--dim);font-size:11px;">(F23)</span></td>
+        <td><span class="badge badge-green">Solid</span> Consistent across all 11 pulls that reached P2</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--purple);">P3: Devouring Cosmos</strong></td>
+        <td>9/19</td>
+        <td style="color:var(--druid);font-weight:600;">41,001</td>
+        <td>66,981 <span style="color:var(--dim);font-size:11px;">(F26)</span></td>
+        <td>14,869 <span style="color:var(--dim);font-size:11px;">(F27)</span></td>
+        <td><span class="badge badge-yellow">Variable</span> DPS drops 57% from P2 -- high variance, partially survival-related</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-title">Phase Analysis</div>
+    <ul style="margin-top:8px;padding-left:20px;color:var(--text);">
+      <li><strong>P1 is excellent.</strong> 247.8K avg with all 19 pulls reaching this phase. This is Feral's strongest window with multi-target Rake cycling on Sentinels + Void Droplets. Best pull hit 303.6K.</li>
+      <li><strong>P2 is consistent and solid.</strong> 95.0K avg across 11 pulls with only a 31K range (79K-110K). Moistbear is maintaining bleeds and managing the Rift Simulacrum adds well. Berserk/Convoke windows are being deployed effectively here.</li>
+      <li><strong>P3 DPS drops 57% from P2</strong> (95.0K &rarr; 41.0K). This is the biggest growth area. Excludes the 2 sub-30s P3 entries (F23 at 5s, F27 at 27s), the avg across pulls with meaningful P3 time (100s+) is 52.9K. The drop is driven by: increased movement from Cosmic Radiation, Bear Form usage for survival, and raid deaths reducing healing/support.</li>
+      <li><strong>Intermission is a non-factor.</strong> Near-zero DPS is correct during the Stellar Emission survival check.</li>
+    </ul>
+  </div>
+
+  <h3>P2 Pull-by-Pull</h3>
+  <div class="chart-container">
+    <div class="pull-chart" style="height:140px;">
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">87K</div><div class="pull-bar bar-accent" style="height:78.7%" title="F1: 86,751 P2 DPS"></div><div class="pull-label">F1</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">103K</div><div class="pull-bar bar-accent" style="height:93.5%" title="F2: 103,118 P2 DPS"></div><div class="pull-label">F2</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">91K</div><div class="pull-bar bar-accent" style="height:82.7%" title="F6: 91,344 P2 DPS"></div><div class="pull-label">F6</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">88K</div><div class="pull-bar bar-accent" style="height:79.5%" title="F14: 87,630 P2 DPS"></div><div class="pull-label">F14</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">97K</div><div class="pull-bar bar-accent" style="height:88.1%" title="F17: 97,231 P2 DPS"></div><div class="pull-label">F17</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">93K</div><div class="pull-bar bar-accent" style="height:84.6%" title="F18: 93,372 P2 DPS"></div><div class="pull-label">F18</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">79K</div><div class="pull-bar bar-accent" style="height:71.7%" title="F23: 78,951 P2 DPS"></div><div class="pull-label">F23</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">104K</div><div class="pull-bar bar-accent" style="height:94.1%" title="F24: 103,745 P2 DPS"></div><div class="pull-label">F24</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">93K</div><div class="pull-bar bar-accent" style="height:84.4%" title="F26: 93,099 P2 DPS"></div><div class="pull-label">F26</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">110K</div><div class="pull-bar bar-accent" style="height:100%" title="F27: 110,223 P2 DPS (best)"></div><div class="pull-label">F27</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">99K</div><div class="pull-bar bar-accent" style="height:90.0%" title="F28: 99,231 P2 DPS"></div><div class="pull-label">F28</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--dim);margin-top:8px;">P2 DPS across all 11 pulls that reached Rift phase. Avg: 95.0K. Very consistent execution.</div>
+  </div>
+
+  <h3>P3 Pull-by-Pull (9 pulls reached)</h3>
+  <div class="chart-container">
+    <div class="pull-chart" style="height:120px;">
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">58K</div><div class="pull-bar bar-purple" style="height:87.0%" title="F2: 58,289 P3 DPS (105s)"></div><div class="pull-label">F2</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">21K</div><div class="pull-bar bar-purple" style="height:32.1%" title="F6: 21,499 P3 DPS (114s) - died as actionable death"></div><div class="pull-label">F6</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">54K</div><div class="pull-bar bar-purple" style="height:81.3%" title="F14: 54,449 P3 DPS (124s)"></div><div class="pull-label">F14</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">56K</div><div class="pull-bar bar-purple" style="height:83.2%" title="F17: 55,699 P3 DPS (109s)"></div><div class="pull-label">F17</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">0K</div><div class="pull-bar bar-dim" style="height:3%" title="F23: 0 P3 DPS (5s) - entered P3 and wiped immediately"></div><div class="pull-label">F23</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">34K</div><div class="pull-bar bar-purple" style="height:50.8%" title="F24: 34,054 P3 DPS (27s) - brief P3 before wipe"></div><div class="pull-label">F24</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">67K</div><div class="pull-bar bar-purple" style="height:100%" title="F26: 66,981 P3 DPS (109s) - BEST P3"></div><div class="pull-label">F26</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">15K</div><div class="pull-bar bar-purple" style="height:22.2%" title="F27: 14,869 P3 DPS (27s) - brief P3"></div><div class="pull-label">F27</div></div>
+      <div class="pull-bar-wrap"><div class="pull-dps" style="font-size:10px;">63K</div><div class="pull-bar bar-purple" style="height:94.3%" title="F28: 63,165 P3 DPS (110s)"></div><div class="pull-label">F28</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--dim);margin-top:8px;">P3 DPS is highly variable. Best deep-P3 pulls (F26, F28) show 63-67K which is the ceiling to aim for consistently.</div>
+  </div>
+</section>
+
+<!-- ============ DEATH ANALYSIS ============ -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout green">
+    <div class="callout-title">2-Death Threshold Applied</div>
+    Moistbear died in all 19 pulls, but only <strong>4 deaths</strong> were actionable (he was one of the first 2 raiders to die). The other 15 deaths were cascade wipe deaths after the pull was already compromised. This means <strong>79% of Moistbear's deaths were not individual mistakes</strong> -- they were consequences of other players dying first.
+  </div>
+
+  <h3>Death Visualization (all 19 pulls)</h3>
+  <div class="death-timeline">
+    <div class="death-dot cascade" title="F1: Cascade death #15 at 4:54">1</div>
+    <div class="death-dot cascade" title="F2: Cascade death #11 at 6:40">2</div>
+    <div class="death-dot cascade" title="F3: Cascade death #6 at 1:40">3</div>
+    <div class="death-dot actionable" title="F5: ACTIONABLE death #1 at 1:07 to Void Expulsion">5</div>
+    <div class="death-dot actionable" title="F6: ACTIONABLE death #2 at 5:59">6</div>
+    <div class="death-dot cascade" title="F8: Cascade death #8 at 1:07">8</div>
+    <div class="death-dot actionable" title="F12: ACTIONABLE death #1 at 1:26 to Grasp of Emptiness">12</div>
+    <div class="death-dot cascade" title="F13: Cascade death #11 at 1:08">13</div>
+    <div class="death-dot cascade" title="F14: Cascade death #10 at 6:40">14</div>
+    <div class="death-dot cascade" title="F17: Cascade death #16 at 6:38">17</div>
+    <div class="death-dot cascade" title="F18: Cascade death #17 at 4:57">18</div>
+    <div class="death-dot actionable" title="F19: ACTIONABLE death #2 at 1:04">19</div>
+    <div class="death-dot cascade" title="F21: Cascade death #5 at 1:14">21</div>
+    <div class="death-dot cascade" title="F22: Cascade death #9 at 1:09">22</div>
+    <div class="death-dot cascade" title="F23: Cascade death #7 at 4:59">23</div>
+    <div class="death-dot cascade" title="F24: Cascade death #11 at 5:24">24</div>
+    <div class="death-dot cascade" title="F26: Cascade death #11 at 6:28">26</div>
+    <div class="death-dot cascade" title="F27: Cascade death #9 at 5:17">27</div>
+    <div class="death-dot cascade" title="F28: Cascade death #13 at 6:39">28</div>
+  </div>
+  <div style="font-size:11px;color:var(--dim);margin-bottom:16px;">
+    <span style="color:var(--red);">&#9632;</span> Actionable (first 2 deaths in raid) &nbsp;
+    <span style="color:var(--dim);">&#9632;</span> Cascade (after 2+ raiders already dead)
+  </div>
+
+  <h3>Actionable Deaths Detail</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Fight</th>
+        <th>Time</th>
+        <th>Death #</th>
+        <th>Killing Ability</th>
+        <th>Phase</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Fight 5</td>
+        <td>1:07</td>
+        <td><span class="badge badge-red">1st</span></td>
+        <td style="color:var(--red);font-weight:600;">Void Expulsion</td>
+        <td>P1</td>
+        <td>Killed by Void Droplet explosion. Positioning issue near Droplets.</td>
+      </tr>
+      <tr>
+        <td>Fight 6</td>
+        <td>5:59</td>
+        <td><span class="badge badge-yellow">2nd</span></td>
+        <td style="color:var(--dim);">Unknown</td>
+        <td>P3</td>
+        <td>Deep P3 death. Likely combination of Cosmic Radiation + stacking damage.</td>
+      </tr>
+      <tr>
+        <td>Fight 12</td>
+        <td>1:26</td>
+        <td><span class="badge badge-red">1st</span></td>
+        <td style="color:var(--red);font-weight:600;">Grasp of Emptiness</td>
+        <td>P1</td>
+        <td>Failed to escape Grasp mechanic. Movement ability (Wild Charge) may have been on CD.</td>
+      </tr>
+      <tr>
+        <td>Fight 19</td>
+        <td>1:04</td>
+        <td><span class="badge badge-yellow">2nd</span></td>
+        <td style="color:var(--dim);">Unknown</td>
+        <td>P1</td>
+        <td>Early P1 death shortly after pull. Unknown killing blow suggests burst damage overlap.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col">
+    <div class="callout">
+      <div class="callout-title">Death Cause Breakdown (Actionable Only)</div>
+      <ul style="margin-top:8px;padding-left:20px;">
+        <li><strong>Void Expulsion:</strong> 1 death (P1) -- Droplet explosion</li>
+        <li><strong>Grasp of Emptiness:</strong> 1 death (P1) -- movement mechanic</li>
+        <li><strong>Unknown:</strong> 2 deaths (P1/P3) -- burst damage overlap</li>
+      </ul>
+      <p style="margin-top:8px;font-size:12px;color:var(--dim);">No repeated mechanic failures. Each actionable death was to a different ability. This suggests awareness issues are situational, not systematic.</p>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Cascade Death Causes (for context)</div>
+      <ul style="margin-top:8px;padding-left:20px;">
+        <li><strong>Voidstalker Sting:</strong> 4 cascade deaths (P3 poison)</li>
+        <li><strong>Cosmic Barrier:</strong> 2 cascade deaths (P3 mechanic)</li>
+        <li><strong>Bursting Emptiness:</strong> 1 cascade death (P2 add)</li>
+        <li><strong>Simulacrum Backlash:</strong> 1 cascade death (P2 add)</li>
+        <li><strong>Unknown:</strong> 7 cascade deaths (wipe damage)</li>
+      </ul>
+      <p style="margin-top:8px;font-size:12px;color:var(--dim);">These are not counted against Moistbear. Voidstalker Sting deaths in P3 are particularly common raid-wide cascade kills.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CAST PROFILE ============ -->
+<section>
+  <h2>Cast Profile (Fight 14 -- Best Pull, 7:12)</h2>
+  <p style="color:var(--dim);margin-bottom:16px;">Aggregate cast data from the deepest pull. Moistbear's sourceID is 17.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Casts</th>
+        <th>Role</th>
+        <th style="width:40%;">Visual</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--druid);font-weight:600;">Shred</td>
+        <td>71</td>
+        <td><span class="badge badge-green">Builder</span></td>
+        <td><div class="bar-container"><div class="bar bar-green" style="width:100%"></div></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);font-weight:600;">Ferocious Bite</td>
+        <td>46</td>
+        <td><span class="badge badge-green">Spender</span></td>
+        <td><div class="bar-container"><div class="bar bar-green" style="width:64.8%"></div></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);">Swipe</td>
+        <td>22</td>
+        <td><span class="badge badge-dim">AoE Builder</span></td>
+        <td><div class="bar-container"><div class="bar bar-accent" style="width:31.0%"></div></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);">Rake</td>
+        <td>21</td>
+        <td><span class="badge badge-green">DoT</span></td>
+        <td><div class="bar-container"><div class="bar bar-green" style="width:29.6%"></div></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);">Rip</td>
+        <td>14</td>
+        <td><span class="badge badge-green">DoT</span></td>
+        <td><div class="bar-container"><div class="bar bar-green" style="width:19.7%"></div></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--druid);">Moonfire</td>
+        <td>13</td>
+        <td><span class="badge badge-dim">DoT</span></td>
+        <td><div class="bar-container"><div class="bar bar-accent" style="width:18.3%"></div></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--yellow);">Tiger's Fury</td>
+        <td>10</td>
+        <td><span class="badge badge-yellow">CD (30s)</span></td>
+        <td><div class="bar-container"><div class="bar bar-yellow" style="width:14.1%"></div><span style="font-size:11px;color:var(--dim);margin-left:4px;">~1 per 43s (expected: 30s)</span></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--yellow);">Feral Frenzy</td>
+        <td>10</td>
+        <td><span class="badge badge-yellow">CD</span></td>
+        <td><div class="bar-container"><div class="bar bar-yellow" style="width:14.1%"></div></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--red);">Berserk</td>
+        <td>3</td>
+        <td><span class="badge badge-red">Major CD</span></td>
+        <td><div class="bar-container"><div class="bar bar-red" style="width:4.2%"></div><span style="font-size:11px;color:var(--dim);margin-left:4px;">3 uses in 7:12</span></div></td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">Convoke the Spirits</td>
+        <td>3</td>
+        <td><span class="badge badge-purple">Major CD</span></td>
+        <td><div class="bar-container"><div class="bar bar-purple" style="width:4.2%"></div><span style="font-size:11px;color:var(--dim);margin-left:4px;">3 uses in 7:12 (60s CD)</span></div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Defensive Usage (Aggregate across 11 long pulls)</h3>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Total Uses</th><th>Fights Used</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Barkskin</td>
+        <td>37</td>
+        <td>11/11</td>
+        <td><span class="badge badge-green">Good</span> Consistent usage across all long pulls</td>
+      </tr>
+      <tr>
+        <td>Bear Form</td>
+        <td>47</td>
+        <td>11/11</td>
+        <td><span class="badge badge-green">Good</span> Using Bear Form for survival in dangerous windows</td>
+      </tr>
+      <tr>
+        <td>Frenzied Regeneration</td>
+        <td>21</td>
+        <td>11/11</td>
+        <td><span class="badge badge-green">Good</span> Self-healing in Bear Form during damage spikes</td>
+      </tr>
+      <tr>
+        <td>Survival Instincts</td>
+        <td>6</td>
+        <td>6/11</td>
+        <td><span class="badge badge-yellow">Could improve</span> Only used in 55% of long pulls. This is a strong 50% DR CD.</td>
+      </tr>
+      <tr>
+        <td>Healthstone</td>
+        <td>5</td>
+        <td>5/11</td>
+        <td><span class="badge badge-dim">Situational</span></td>
+      </tr>
+      <tr>
+        <td>Health Potion</td>
+        <td>8</td>
+        <td>8/11</td>
+        <td><span class="badge badge-green">Good</span> Using health pots for survival</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Utility</h3>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Total Uses</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Skull Bash (Interrupt)</td><td>22</td><td><span class="badge badge-green">Good</span> Active interrupt usage across 8 fights</td></tr>
+      <tr><td>Stampeding Roar</td><td>15</td><td><span class="badge badge-green">Good</span> Raid utility contribution</td></tr>
+      <tr><td>War Stomp</td><td>8</td><td>Racial stun used for add control</td></tr>
+      <tr><td>Innervate</td><td>5</td><td><span class="badge badge-green">Good</span> Giving Innervate to healers</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ REFERENCE CONTEXT ============ -->
+<section>
+  <h2>Reference Context <span style="font-size:13px;font-weight:400;color:var(--dim);">(De-emphasized -- Prog Mode)</span></h2>
+  <p style="color:var(--dim);margin-bottom:16px;">These are the top 5 Feral Druid kill rankings for Mythic Crown of the Cosmos, filtered to 4-healer comps (matching our raid) from US/EU only. These represent the DPS ceiling for kills, not a direct comparison target during prog.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Player</th>
+        <th>Guild</th>
+        <th>DPS</th>
+        <th>Kill Time</th>
+        <th>ilvl</th>
+        <th>Talent Delta</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td style="color:var(--purple);font-weight:600;">Minkoff</td>
+        <td>Kлод Монэ <span class="badge badge-dim">EU</span></td>
+        <td>92,536</td>
+        <td>7:52</td>
+        <td>292</td>
+        <td><span class="badge badge-green">0 diffs</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td style="color:var(--purple);">Joicountdown</td>
+        <td>Do Over <span class="badge badge-dim">US</span></td>
+        <td>89,290</td>
+        <td>8:03</td>
+        <td>291</td>
+        <td><span class="badge badge-yellow">4 diffs</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td style="color:var(--purple);">Utalomaciga</td>
+        <td>Bravo Six <span class="badge badge-dim">EU</span></td>
+        <td>87,394</td>
+        <td>8:15</td>
+        <td>289</td>
+        <td><span class="badge badge-yellow">4 diffs</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td style="color:var(--purple);">Asgard</td>
+        <td>Obscura Legio <span class="badge badge-dim">EU</span></td>
+        <td>86,426</td>
+        <td>8:19</td>
+        <td>292</td>
+        <td><span class="badge badge-yellow">5 diffs</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td style="color:var(--purple);">Bleeding</td>
+        <td>Average Pillagers <span class="badge badge-dim">EU</span></td>
+        <td>84,404</td>
+        <td>7:45</td>
+        <td>293</td>
+        <td><span class="badge badge-yellow">—</span></td>
+      </tr>
+      <tr style="background:rgba(255,124,10,0.08);">
+        <td></td>
+        <td style="color:var(--druid);font-weight:600;">Moistbear</td>
+        <td>Prog Night 4</td>
+        <td>137,792*</td>
+        <td>—</td>
+        <td>293</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:11px;color:var(--dim);margin-top:4px;">* Moistbear's long-pull avg (5min+) is 137.8K. This is NOT comparable to kill DPS. Kill fights have a full 7-8 minute duration with sustained P3, which dilutes the avg. When this raid kills the boss, expect Moistbear's kill DPS to land in the 80-95K range based on current phase performance.</p>
+
+  <div class="callout blue">
+    <div class="callout-title">Talent Comparison</div>
+    The #1 ranked Feral (Minkoff) runs the <strong>exact same talent build</strong> as Moistbear (0 talent differences). This means any DPS gaps are purely execution-based, not build-based. Both run Wildstalker with Convoke/Berserk. Moistbear's ilvl (293) is 1 point above the reference's (292) -- gear is not a factor.
+  </div>
+</section>
+
+<!-- ============ GEAR & CONSUMABLES ============ -->
+<section>
+  <h2>Gear &amp; Consumables</h2>
+  <div class="two-col">
+    <div>
+      <h3>Stats</h3>
+      <table>
+        <tr><td>Agility</td><td style="font-weight:600;">2,057</td></tr>
+        <tr><td>Mastery</td><td style="font-weight:600;">1,957</td><td style="color:var(--dim);font-size:11px;">Highest secondary (Feral priority)</td></tr>
+        <tr><td>Haste</td><td style="font-weight:600;">785</td></tr>
+        <tr><td>Crit</td><td style="font-weight:600;">774</td></tr>
+        <tr><td>Versatility</td><td style="font-weight:600;">65</td><td style="color:var(--dim);font-size:11px;">Very low</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Consumables</h3>
+      <table>
+        <tr><td>Flask</td><td><span class="badge badge-green">Flask of the Magisters</span></td></tr>
+        <tr><td>Food</td><td><span class="badge badge-green">Hearty Well Fed</span></td></tr>
+        <tr><td>Augment Rune</td><td><span class="badge badge-green">Ethereal Augmentation</span></td></tr>
+        <tr><td>Vantus Rune</td><td><span class="badge badge-green">Crown of the Cosmos</span></td></tr>
+        <tr><td>Weapon Oil</td><td><span class="badge badge-green">Applied</span></td></tr>
+        <tr><td>Tier Set</td><td><span class="badge badge-green">5/5</span></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACTIONABLE ITEMS ============ -->
+<section>
+  <h2>Actionable Items</h2>
+
+  <div class="callout red">
+    <div class="callout-title">1. Improve P3 Consistency (Biggest Growth Area)</div>
+    <p>P3 DPS ranges from 15K to 67K, a 4.5x spread. The best P3 pulls (F26: 67K, F28: 63K) show what Moistbear is capable of. The low pulls (F6: 21K, F27: 15K) correlate with Bear Form uptime for survival and early deaths after cascade begins. <strong>Action:</strong> On deep P3 pulls, prioritize maintaining Cat Form uptime. Use Survival Instincts (50% DR, 6s duration) proactively during Cosmic Radiation overlaps rather than shifting to Bear Form. This preserves DPS while providing similar survivability.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">2. Use Survival Instincts More Aggressively</div>
+    <p>Only used in 6 of 11 long pulls (55%). Survival Instincts is a 50% damage reduction for 6 seconds on a 3-minute cooldown with 2 charges. In a 7-minute fight, that is 4 potential uses. Using SI instead of Bear Form during predictable damage windows (Cosmic Radiation, Voidstalker Sting ticks) maintains DPS uptime. <strong>Action:</strong> Pre-plan SI usage for P3 Cosmic Radiation windows. Two charges means one for the first wave, one for the second.</p>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">3. Tiger's Fury Usage Efficiency</div>
+    <p>On the best pull (F14, 7:12), Tiger's Fury was cast 10 times, which works out to roughly once every 43 seconds. The cooldown is 30 seconds. Losing ~13 seconds per cycle means ~3-4 missed casts per fight, each of which would have provided 15% damage amp for bleeds and an energy refill. <strong>Action:</strong> Track Tiger's Fury cooldown more tightly. It should be pressed almost on cooldown (slight delay to align with Rip/Rake refreshes for snapshotting is fine, but 43s gaps are too long).</p>
+  </div>
+
+  <div class="callout green">
+    <div class="callout-title">4. P1 and P2 Execution Are Strong</div>
+    <p>P1 avg 247.8K with consistent cleave damage across all 19 pulls. P2 avg 95.0K with tight variance (79K-110K range). These phases are well-executed. Moistbear is cycling Rake on adds, using Berserk/Convoke windows effectively, and maintaining bleed uptime. The interrupt count (22 Skull Bash casts across 8 fights) and utility (15 Stampeding Roars, 5 Innervates) show strong raid awareness.</p>
+  </div>
+
+  <div class="callout green">
+    <div class="callout-title">5. Death Profile is Clean</div>
+    <p>Only 4 actionable deaths in 19 pulls, and none are to the same mechanic twice. This means Moistbear is not repeatedly failing any specific mechanic. The two P1 actionable deaths (Void Expulsion, Grasp of Emptiness) are different abilities requiring different responses. There is no "death wall" pattern. The main survival work is in P3 where the raid as a whole is learning the phase.</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<div class="footer">
+  <p>
+    Generated by WCL Analyzer &bull;
+    Data from <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">WCL Report XYtJ3R1qjdFpM4cT</a> &bull;
+    Reference: Top 5 Feral Druid kills (4-heal comp, US/EU) &bull;
+    Primary reference: Minkoff (0 talent diffs, ilvl 292)
+  </p>
+  <p style="margin-top:4px;">
+    Phase boundaries: P1 0:00-2:14, Intermission 2:14-2:53, P2 2:53-5:09, P3 5:09+ &bull;
+    2-Death Threshold applied: only deaths where Moistbear was one of the first 2 raid deaths are counted as actionable
+  </p>
+</div>
+
+</body>
+</html>

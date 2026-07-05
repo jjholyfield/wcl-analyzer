@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smokinthisza - MM Hunter - Crown of the Cosmos Prog Night 5</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --hunter: #aad372;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 16px; font-weight: 600; margin: 20px 0 10px; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.back-link:hover { color: var(--accent); }
+
+.header-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.prog-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+  background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.night-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+  background: rgba(88, 166, 255, 0.15); color: var(--accent); border: 1px solid rgba(88, 166, 255, 0.3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+.subtitle span { margin-right: 16px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px;
+  text-align: center;
+}
+.card-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+.card-value.green { color: var(--green); }
+.card-value.yellow { color: var(--yellow); }
+.card-value.red { color: var(--red); }
+.card-value.hunter { color: var(--hunter); }
+
+table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); font-weight: 600; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.3px; }
+td { padding: 8px 12px; border: 1px solid var(--border); }
+tr:nth-child(even) td { background: rgba(22, 27, 34, 0.5); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; margin: 16px 0; padding: 0 4px; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.bar {
+  width: 100%; min-width: 18px; border-radius: 3px 3px 0 0; position: relative; transition: opacity 0.2s;
+}
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-rl; text-orientation: mixed; height: 40px; overflow: hidden; }
+.bar-value { font-size: 9px; color: var(--text); margin-bottom: 2px; font-weight: 600; }
+.bar.survived { background: var(--green); }
+.bar.died { background: var(--red); }
+.bar.died-cascade { background: var(--orange); }
+.bar.short { background: var(--border); }
+
+.avg-line { position: relative; width: 100%; margin-top: -1px; }
+.avg-line::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0;
+  border-top: 2px dashed var(--accent); opacity: 0.5;
+}
+.avg-line-label { position: absolute; right: 0; top: -14px; font-size: 10px; color: var(--accent); }
+
+.callout {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin: 16px 0;
+}
+.callout.green { border-left: 3px solid var(--green); }
+.callout.red { border-left: 3px solid var(--red); }
+.callout.yellow { border-left: 3px solid var(--yellow); }
+.callout.blue { border-left: 3px solid var(--accent); }
+.callout.purple { border-left: 3px solid var(--purple); }
+.callout-title { font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+.callout-body { font-size: 13px; color: var(--dim); }
+.callout-body strong { color: var(--text); }
+
+.phase-bar { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin: 12px 0; border: 1px solid var(--border); }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--text); }
+.phase-segment.p1 { background: rgba(63, 185, 80, 0.25); }
+.phase-segment.inter { background: rgba(210, 153, 34, 0.25); }
+.phase-segment.p2 { background: rgba(88, 166, 255, 0.25); }
+.phase-segment.p3 { background: rgba(248, 81, 73, 0.25); }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge.green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge.red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge.yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge.blue { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+.badge.purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+.improvement-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin: 10px 0;
+}
+.improvement-item .number {
+  display: inline-block; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent); color: var(--bg); font-size: 13px; font-weight: 700;
+  text-align: center; line-height: 24px; margin-right: 8px;
+}
+.improvement-item .title { font-weight: 600; font-size: 15px; display: inline; }
+.improvement-item .detail { font-size: 13px; color: var(--dim); margin-top: 8px; }
+.improvement-item .detail strong { color: var(--text); }
+
+.ref-note { font-size: 12px; color: var(--dim); font-style: italic; margin: 8px 0; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.stat-comparison { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; }
+.stat-pair { text-align: center; }
+.stat-pair .label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-pair .value { font-size: 16px; font-weight: 600; }
+.stat-pair .ref { font-size: 12px; color: var(--purple); }
+
+.trend-arrow { font-size: 14px; margin-left: 4px; }
+.trend-arrow.up { color: var(--green); }
+.trend-arrow.down { color: var(--red); }
+
+.dps-inline { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260630-crown" class="back-link">&larr; June 30, 2026 Log Analysis</a>
+
+<div class="header-row">
+  <h1 style="color: var(--hunter);">Smokinthisza</h1>
+  <span class="prog-tag">Progression</span>
+  <span class="night-tag">Night 5</span>
+</div>
+<p style="font-size: 16px; color: var(--dim); margin-bottom: 4px;">Marksmanship Hunter &middot; Dark Ranger</p>
+<div class="subtitle">
+  <span>Mythic Crown of the Cosmos</span>
+  <span>June 30, 2026</span>
+  <span>20 pulls (14 qualifying)</span>
+  <span>Report: qDfTzvAyV3pRb6rG</span>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS</div>
+    <div class="card-value hunter">50.3K</div>
+    <div class="card-sub">14 pulls &gt;60s</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">274</div>
+    <div class="card-sub">Ref avg: 287</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value green">93%</div>
+    <div class="card-sub">1 actionable death in 14 pulls</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value">65.5K</div>
+    <div class="card-sub">Fight 11 (7:45)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Avg Raid Rank</div>
+    <div class="card-value yellow">8.1</div>
+    <div class="card-sub">of ~13 DPS</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Session Trend</div>
+    <div class="card-value green">+15%</div>
+    <div class="card-sub">Improving through night</div>
+  </div>
+</div>
+
+<!-- Phase Timeline Visual -->
+<h2>Fight Phase Structure</h2>
+<div class="phase-bar">
+  <div class="phase-segment p1" style="width:28%;">P1: Sentinels (0:00-2:14)</div>
+  <div class="phase-segment inter" style="width:8%;">Inter</div>
+  <div class="phase-segment p2" style="width:29%;">P2: Rift (2:53-5:09)</div>
+  <div class="phase-segment p3" style="width:35%;">P3: Cosmos (5:09+)</div>
+</div>
+<p style="font-size: 12px; color: var(--dim); margin-bottom: 8px;">
+  P1: Alleria + Sentinels + Void Droplets. Intermission: Stellar Emission channel (survival). P2: Rift Simulacrum + Voidspawn + Silver Simulacrum. P3: Cosmic Radiation overlaps everything.
+</p>
+
+<!-- Phase Reach Rate -->
+<h2>Phase Reach Rate</h2>
+<table>
+  <tr>
+    <th>Phase</th>
+    <th class="num">Pulls Reached</th>
+    <th class="num">Reach Rate</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>P1: Sentinels</td>
+    <td class="num">14 / 14</td>
+    <td class="num">100%</td>
+    <td><span class="badge green">Full</span></td>
+  </tr>
+  <tr>
+    <td>Intermission</td>
+    <td class="num">14 / 14</td>
+    <td class="num">100%</td>
+    <td><span class="badge green">Full</span></td>
+  </tr>
+  <tr>
+    <td>P2: Rift</td>
+    <td class="num">14 / 14</td>
+    <td class="num">100%</td>
+    <td><span class="badge green">Full</span></td>
+  </tr>
+  <tr>
+    <td>P3: Devouring Cosmos</td>
+    <td class="num">11 / 14</td>
+    <td class="num">79%</td>
+    <td><span class="badge yellow">Good</span></td>
+  </tr>
+</table>
+<p class="ref-note">3 pulls ended in P2 (fights 5, 9, 24). All were raid wipes -- not individual deaths ending the pull early for Smokinthisza.</p>
+
+<!-- Per-Phase Performance Breakdown -->
+<h2>Per-Phase Performance Breakdown</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">This is the most important section. Overall DPS is misleading because it blends a 291K P1 burst with a 50K P3. The phase breakdown shows exactly where performance sits and why.</p>
+
+<table>
+  <tr>
+    <th>Phase</th>
+    <th class="num">Pulls</th>
+    <th class="num">Avg DPS</th>
+    <th class="num">Best DPS</th>
+    <th class="num">Worst DPS</th>
+    <th class="num">Std Dev</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td style="border-left: 3px solid var(--green);">P1: Sentinels</td>
+    <td class="num">14</td>
+    <td class="num dps-inline"><strong>290,920</strong></td>
+    <td class="num dps-inline">328,267</td>
+    <td class="num dps-inline">258,639</td>
+    <td class="num">19,478</td>
+    <td>Burst phase with Trueshot + lust. Very consistent.</td>
+  </tr>
+  <tr>
+    <td style="border-left: 3px solid var(--yellow);">Intermission</td>
+    <td class="num">14</td>
+    <td class="num dps-inline"><strong>~0</strong></td>
+    <td class="num dps-inline">2,985</td>
+    <td class="num dps-inline">0</td>
+    <td class="num">--</td>
+    <td>Survival phase. Near-zero DPS expected.</td>
+  </tr>
+  <tr>
+    <td style="border-left: 3px solid var(--accent);">P2: Rift</td>
+    <td class="num">14</td>
+    <td class="num dps-inline"><strong>65,698</strong></td>
+    <td class="num dps-inline">82,993</td>
+    <td class="num dps-inline">7,173</td>
+    <td class="num">19,234</td>
+    <td>Second Trueshot window around 2:56. Wide variance.</td>
+  </tr>
+  <tr>
+    <td style="border-left: 3px solid var(--red);">P3: Devouring Cosmos</td>
+    <td class="num">11</td>
+    <td class="num dps-inline"><strong>49,730</strong></td>
+    <td class="num dps-inline">67,410</td>
+    <td class="num dps-inline">6,357</td>
+    <td class="num">16,615</td>
+    <td>Third Trueshot at 5:51. DPS drops as raid deteriorates.</td>
+  </tr>
+</table>
+
+<div class="two-col">
+  <div class="callout blue">
+    <div class="callout-title">P1 Analysis</div>
+    <div class="callout-body">
+      Extremely consistent burst phase. <strong>291K avg</strong> with only 7% coefficient of variation. Trueshot + lust at pull is being executed well. This is the strongest phase of the fight for Smokinthisza. Best P1 (328K, fight 6) vs worst P1 (259K, fight 5) is a 27% spread, but even the worst P1 is strong burst.
+    </div>
+  </div>
+  <div class="callout yellow">
+    <div class="callout-title">P2 Analysis</div>
+    <div class="callout-body">
+      <strong>66K avg</strong> with high variance. The outlier is fight 5 (7.2K) where Smokinthisza died early in P2 as the 4th death (cascade). Excluding that outlier, P2 avg is <strong>70.2K</strong>. Second Trueshot is being deployed around 2:56, aligning well with P2 start (2:53). Movement from Rift mechanics is the main DPS loss here.
+    </div>
+  </div>
+</div>
+
+<div class="callout purple">
+  <div class="callout-title">P3 Analysis -- Progression Edge</div>
+  <div class="callout-body">
+    <strong>50K avg across 11 pulls</strong> that reached P3. This is expected to be lower -- Cosmic Radiation overlaps drive heavy movement, and the raid is typically losing players by this point. Best P3 (67K, fight 10) shows the ceiling when the raid stays alive. Fight 3 had 6.4K because Smokinthisza died at 5:12 (just 3 seconds into P3) as the 2nd death. Third Trueshot at ~5:51 is correctly timed. More P3 exposure will improve consistency here as the team learns the overlap patterns.
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<h2>Performance Across All Pulls</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 8px;">
+  DPS per pull. <span style="color: var(--green);">Green</span> = survived to wipe. <span style="color: var(--orange);">Orange</span> = died (cascade, after 2+ raid deaths). <span style="color: var(--red);">Red</span> = actionable death (first 2 deaths). Dashed line = session average (50.3K).
+</p>
+
+<div style="position: relative;">
+<div class="bar-chart" id="dps-chart">
+  <!-- Fight 1: 61549 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">61.5K</div>
+    <div class="bar died-cascade" style="height: calc(61549 / 65477 * 150px);" title="Fight 1: 61,549 DPS (7:18) - Died #10 cascade"></div>
+    <div class="bar-label">F1</div>
+  </div>
+  <!-- Fight 3: 34873 DPS, died actionable -->
+  <div class="bar-wrapper">
+    <div class="bar-value">34.9K</div>
+    <div class="bar died" style="height: calc(34873 / 65477 * 150px);" title="Fight 3: 34,873 DPS (7:07) - Died #2 actionable (Void Expulsion)"></div>
+    <div class="bar-label">F3</div>
+  </div>
+  <!-- Fight 5: 21866 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">21.9K</div>
+    <div class="bar died-cascade" style="height: calc(21866 / 65477 * 150px);" title="Fight 5: 21,866 DPS (5:06) - Died #4 cascade"></div>
+    <div class="bar-label">F5</div>
+  </div>
+  <!-- Fight 6: 49966 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">50.0K</div>
+    <div class="bar died-cascade" style="height: calc(49966 / 65477 * 150px);" title="Fight 6: 49,966 DPS (6:11) - Died #20 cascade (end of wipe)"></div>
+    <div class="bar-label">F6</div>
+  </div>
+  <!-- Fight 7: 55756 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">55.8K</div>
+    <div class="bar died-cascade" style="height: calc(55756 / 65477 * 150px);" title="Fight 7: 55,756 DPS (7:07) - Died #6 cascade"></div>
+    <div class="bar-label">F7</div>
+  </div>
+  <!-- Fight 9: 40291 DPS, survived -->
+  <div class="bar-wrapper">
+    <div class="bar-value">40.3K</div>
+    <div class="bar survived" style="height: calc(40291 / 65477 * 150px);" title="Fight 9: 40,291 DPS (5:08) - SURVIVED"></div>
+    <div class="bar-label">F9</div>
+  </div>
+  <!-- Fight 10: 63168 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">63.2K</div>
+    <div class="bar died-cascade" style="height: calc(63168 / 65477 * 150px);" title="Fight 10: 63,168 DPS (6:17) - Died #18 cascade"></div>
+    <div class="bar-label">F10</div>
+  </div>
+  <!-- Fight 11: 65477 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value" style="color: var(--green);">65.5K</div>
+    <div class="bar died-cascade" style="height: 150px;" title="Fight 11: 65,477 DPS (7:45) - BEST PULL - Died #12 cascade"></div>
+    <div class="bar-label">F11</div>
+  </div>
+  <!-- Fight 12: 56998 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">57.0K</div>
+    <div class="bar died-cascade" style="height: calc(56998 / 65477 * 150px);" title="Fight 12: 56,998 DPS (7:34) - Died #5 cascade"></div>
+    <div class="bar-label">F12</div>
+  </div>
+  <!-- Fight 15: 52025 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">52.0K</div>
+    <div class="bar died-cascade" style="height: calc(52025 / 65477 * 150px);" title="Fight 15: 52,025 DPS (7:38) - Died #7 cascade"></div>
+    <div class="bar-label">F15</div>
+  </div>
+  <!-- Fight 17: 54541 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">54.5K</div>
+    <div class="bar died-cascade" style="height: calc(54541 / 65477 * 150px);" title="Fight 17: 54,541 DPS (7:48) - Died #6 cascade"></div>
+    <div class="bar-label">F17</div>
+  </div>
+  <!-- Fight 23: 53202 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">53.2K</div>
+    <div class="bar died-cascade" style="height: calc(53202 / 65477 * 150px);" title="Fight 23: 53,202 DPS (5:52) - Died #21 cascade"></div>
+    <div class="bar-label">F23</div>
+  </div>
+  <!-- Fight 24: 37076 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">37.1K</div>
+    <div class="bar died-cascade" style="height: calc(37076 / 65477 * 150px);" title="Fight 24: 37,076 DPS (3:59) - Died #20 cascade"></div>
+    <div class="bar-label">F24</div>
+  </div>
+  <!-- Fight 25: 58014 DPS, died cascade -->
+  <div class="bar-wrapper">
+    <div class="bar-value">58.0K</div>
+    <div class="bar died-cascade" style="height: calc(58014 / 65477 * 150px);" title="Fight 25: 58,014 DPS (7:56) - Died #17 cascade"></div>
+    <div class="bar-label">F25</div>
+  </div>
+</div>
+</div>
+
+<div class="two-col">
+  <div class="callout green">
+    <div class="callout-title">Session Trend: Improving (+15.2%)</div>
+    <div class="callout-body">
+      First 7 pulls averaged <strong>46,781 DPS</strong>. Last 7 pulls averaged <strong>53,905 DPS</strong>. Clear upward trend as the night progressed. The best DPS came in fight 11 (65.5K) during a 7:45 pull, and the last 5 pulls were consistently in the 52-58K range. This is a positive learning curve.
+    </div>
+  </div>
+  <div class="callout blue">
+    <div class="callout-title">Consistency Analysis</div>
+    <div class="callout-body">
+      <strong>Median: 53.2K</strong> vs Average: 50.3K. The median is higher because fights 3 and 5 (both early deaths) drag the average down. Standard deviation of 12.0K (24% CV) is moderate for progression -- most of the variance comes from early-wipe pulls rather than inconsistent play. Excluding the 2 worst pulls, average jumps to <strong>54.6K</strong>.
+    </div>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="callout green">
+  <div class="callout-title">Excellent Survival: 1 Actionable Death in 14 Qualifying Pulls</div>
+  <div class="callout-body">
+    Smokinthisza died in 13 of 14 qualifying pulls, but <strong>only 1 death was actionable</strong> (where they were one of the first 2 players to die). Every other death was a cascade wipe -- the raid was already falling apart. This is outstanding survival discipline for a progression night.
+  </div>
+</div>
+
+<h3>Actionable Deaths (First 2 in Pull)</h3>
+<table>
+  <tr>
+    <th>Fight</th>
+    <th>Time</th>
+    <th>Phase</th>
+    <th>Death Order</th>
+    <th>Killing Ability</th>
+    <th>Context</th>
+  </tr>
+  <tr>
+    <td>Fight 3</td>
+    <td>5:12</td>
+    <td><span class="badge blue">P3 Start</span></td>
+    <td>#2</td>
+    <td style="color: var(--red);">Void Expulsion</td>
+    <td>Died 3 seconds into P3 as the 2nd raid death. Void Expulsion is a P2/P3 overlap ability -- likely caught by transition damage.</td>
+  </tr>
+</table>
+
+<h3>Cascade Deaths (Post-2nd Raid Death -- Not Actionable)</h3>
+<table>
+  <tr>
+    <th>Fight</th>
+    <th>Death Time</th>
+    <th>Death Order</th>
+    <th>Killing Ability</th>
+    <th>Phase</th>
+  </tr>
+  <tr><td>Fight 1</td><td>6:41</td><td>#10</td><td>Gravity Collapse</td><td>P3</td></tr>
+  <tr><td>Fight 5</td><td>3:17</td><td>#4</td><td>Bursting Emptiness</td><td>P2</td></tr>
+  <tr><td>Fight 6</td><td>6:10</td><td>#20</td><td>Grasp of Emptiness</td><td>P3</td></tr>
+  <tr><td>Fight 7</td><td>6:56</td><td>#6</td><td>Bursting Emptiness</td><td>P3</td></tr>
+  <tr><td>Fight 10</td><td>6:08</td><td>#18</td><td>Melee</td><td>P3</td></tr>
+  <tr><td>Fight 11</td><td>7:34</td><td>#12</td><td>Cosmic Barrier</td><td>P3</td></tr>
+  <tr><td>Fight 12</td><td>6:50</td><td>#5</td><td>Gravity Collapse</td><td>P3</td></tr>
+  <tr><td>Fight 15</td><td>6:44</td><td>#7</td><td>Gravity Collapse</td><td>P3</td></tr>
+  <tr><td>Fight 17</td><td>6:58</td><td>#6</td><td>Gravity Collapse</td><td>P3</td></tr>
+  <tr><td>Fight 23</td><td>5:48</td><td>#21</td><td>Wipe cleanup</td><td>P3</td></tr>
+  <tr><td>Fight 24</td><td>3:58</td><td>#20</td><td>Wipe cleanup</td><td>P2</td></tr>
+  <tr><td>Fight 25</td><td>7:40</td><td>#17</td><td>Gravity Collapse</td><td>P3</td></tr>
+</table>
+
+<div class="callout yellow">
+  <div class="callout-title">Cascade Death Pattern: Gravity Collapse is the Cleanup Killer</div>
+  <div class="callout-body">
+    5 of 12 cascade deaths are to <strong>Gravity Collapse</strong>, which is the P3 mechanic that becomes increasingly lethal as players die and healing thins out. This is not an individual issue -- it is the natural death spiral of P3 wipes. The fact that Smokinthisza is consistently among the <strong>last to die</strong> (death orders 5-21) confirms they are using defensives effectively and staying alive as long as possible during wipe scenarios.
+  </div>
+</div>
+
+<!-- Defensive & Utility Usage -->
+<h2>Defensive & Utility Usage</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 8px;">Aggregate across all 14 qualifying pulls (92.8 minutes total fight time).</p>
+
+<table>
+  <tr>
+    <th>Ability</th>
+    <th class="num">Total Uses</th>
+    <th class="num">Per Pull</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td>Survival of the Fittest</td>
+    <td class="num">42</td>
+    <td class="num">3.0</td>
+    <td>Primary defensive. Used actively every pull.</td>
+  </tr>
+  <tr>
+    <td>Exhilaration</td>
+    <td class="num">33</td>
+    <td class="num">2.4</td>
+    <td>Self-heal. Consistent usage during damage spikes.</td>
+  </tr>
+  <tr>
+    <td>Aspect of the Turtle</td>
+    <td class="num">16</td>
+    <td class="num">1.1</td>
+    <td>Immunity. Used for big P2/P3 mechanics.</td>
+  </tr>
+  <tr>
+    <td>Disengage</td>
+    <td class="num">46</td>
+    <td class="num">3.3</td>
+    <td>Movement utility. Active usage for positioning.</td>
+  </tr>
+  <tr>
+    <td>Aspect of the Cheetah</td>
+    <td class="num">32</td>
+    <td class="num">2.3</td>
+    <td>Sprint. Regular use for phase transitions.</td>
+  </tr>
+  <tr>
+    <td>Counter Shot</td>
+    <td class="num">6</td>
+    <td class="num">0.4</td>
+    <td>Interrupt. Used when assigned.</td>
+  </tr>
+  <tr>
+    <td>Healthstone</td>
+    <td class="num">7</td>
+    <td class="num">0.5</td>
+    <td>Emergency heal.</td>
+  </tr>
+  <tr>
+    <td>Health Potion</td>
+    <td class="num">9</td>
+    <td class="num">0.6</td>
+    <td>Silvermoon Health Potion. Used during heavy damage.</td>
+  </tr>
+</table>
+
+<!-- Cast Profile -->
+<h2>Cast Profile</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 8px;">Aggregate rotational CPM across all 14 qualifying pulls (92.8 total minutes).</p>
+
+<table>
+  <tr>
+    <th>Ability</th>
+    <th class="num">Total Casts</th>
+    <th class="num">CPM</th>
+    <th>Role</th>
+  </tr>
+  <tr>
+    <td style="color: var(--hunter);">Aimed Shot</td>
+    <td class="num">588</td>
+    <td class="num"><strong>6.3</strong></td>
+    <td>Primary damage. Generates Precise Shots.</td>
+  </tr>
+  <tr>
+    <td style="color: var(--purple);">Black Arrow</td>
+    <td class="num">581</td>
+    <td class="num"><strong>6.3</strong></td>
+    <td>Dark Ranger hero talent proc. Fires alongside Aimed Shot.</td>
+  </tr>
+  <tr>
+    <td>Steady Shot</td>
+    <td class="num">376</td>
+    <td class="num">4.1</td>
+    <td>Focus generator / filler.</td>
+  </tr>
+  <tr>
+    <td>Rapid Fire</td>
+    <td class="num">299</td>
+    <td class="num">3.2</td>
+    <td>Channel. Reduces Aimed Shot CD via Take Aim.</td>
+  </tr>
+  <tr>
+    <td style="color: var(--cyan);">Arcane Shot</td>
+    <td class="num">260</td>
+    <td class="num">2.8</td>
+    <td>Precise Shots spender.</td>
+  </tr>
+  <tr>
+    <td>Volley</td>
+    <td class="num">92</td>
+    <td class="num">1.0</td>
+    <td>AoE + Double Tap activation. Good uptime.</td>
+  </tr>
+  <tr>
+    <td style="color: var(--accent);">Trueshot</td>
+    <td class="num">37</td>
+    <td class="num">0.4</td>
+    <td>Major CD. ~2.6 uses per pull avg.</td>
+  </tr>
+  <tr>
+    <td style="color: var(--red);">Wailing Arrow</td>
+    <td class="num">37</td>
+    <td class="num">0.4</td>
+    <td>Dark Ranger burst. Matched 1:1 with Trueshot.</td>
+  </tr>
+  <tr>
+    <td>Explosive Shot</td>
+    <td class="num">10</td>
+    <td class="num">0.1</td>
+    <td>Situational filler. Low usage.</td>
+  </tr>
+</table>
+
+<div class="callout blue">
+  <div class="callout-title">Cast Profile Assessment</div>
+  <div class="callout-body">
+    <strong>Aimed Shot at 6.3 CPM</strong> is solid for progression with movement-heavy mechanics. Black Arrow tracking 1:1 with Aimed Shot confirms the Dark Ranger procs are being consumed correctly. <strong>Wailing Arrow matching Trueshot 1:1</strong> (37 each) shows proper burst window execution. Arcane Shot at 2.8 CPM is the Precise Shots spender -- this should ideally be closer to Aimed Shot CPM (every Aimed Shot generates Precise Shots that need spending). The gap suggests some Precise Shots procs are being overwritten or dropped during movement.
+  </div>
+</div>
+
+<!-- Trueshot Timing (Fight 25 Deep Dive) -->
+<h2>Trueshot Timing -- Fight 25 Deep Dive (7:56)</h2>
+<table>
+  <tr>
+    <th>Cast</th>
+    <th>Time</th>
+    <th>Phase</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td>Trueshot 1</td>
+    <td>0:01</td>
+    <td><span class="badge green">P1</span></td>
+    <td>Opener with lust. Correct.</td>
+  </tr>
+  <tr>
+    <td>Trueshot 2</td>
+    <td>2:56</td>
+    <td><span class="badge blue">P2 Start</span></td>
+    <td>3 seconds into P2. Aligns with new targets spawning. Good timing.</td>
+  </tr>
+  <tr>
+    <td>Trueshot 3</td>
+    <td>5:51</td>
+    <td><span class="badge red">P3</span></td>
+    <td>2:55 gap (within 90s CD). Deployed during P3 -- correct.</td>
+  </tr>
+</table>
+
+<div class="callout green">
+  <div class="callout-title">Trueshot Usage: Well Timed</div>
+  <div class="callout-body">
+    All three Trueshot windows are correctly placed: pull opener with lust, P2 entry for new target burst, and P3 for the final push. The <strong>2:55 gap between uses</strong> is near the minimum cooldown, indicating no significant CD waste. Volley is being used every 45-55 seconds (9 casts in 476s = every 53s), maintaining Double Tap uptime well.
+  </div>
+</div>
+
+<!-- External Buffs -->
+<h2>External Buffs Received (Fight 25)</h2>
+<table>
+  <tr>
+    <th>Buff</th>
+    <th>Time</th>
+    <th>Phase</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td style="color: var(--purple);">Power Infusion</td>
+    <td>0:09</td>
+    <td>P1</td>
+    <td>Paired with Trueshot opener. Correct alignment.</td>
+  </tr>
+  <tr>
+    <td style="color: var(--cyan);">Ebon Might</td>
+    <td>0:02, 0:36, 1:05, 1:35, 2:56, 3:58, 4:57, 5:39, 6:10, 6:41, 7:10</td>
+    <td>All phases</td>
+    <td>11 applications from Aug Evoker (Zinnks). Good coverage throughout.</td>
+  </tr>
+  <tr>
+    <td style="color: var(--cyan);">Prescience</td>
+    <td>6:02</td>
+    <td>P3</td>
+    <td>Single Prescience in P3. May indicate Aug was prioritizing other targets earlier.</td>
+  </tr>
+</table>
+
+<p class="ref-note">PI at pull + Ebon Might throughout is standard. Reference kills may have different external buff distributions, which affects DPS comparison. The ilvl gap (274 vs 287-291) is the larger factor.</p>
+
+<!-- Damage Taken Analysis (Fight 25) -->
+<h2>Damage Taken Analysis (Fight 25 -- 7:56)</h2>
+<table>
+  <tr>
+    <th>Ability</th>
+    <th class="num">Total Damage</th>
+    <th class="num">Hits</th>
+    <th>Type</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td>Voidstalker Sting</td>
+    <td class="num">3,368,217</td>
+    <td class="num">150</td>
+    <td><span class="badge yellow">Unavoidable</span></td>
+    <td>Passive DoT applied by boss. Ticking throughout fight.</td>
+  </tr>
+  <tr>
+    <td>Echoing Darkness</td>
+    <td class="num">2,143,403</td>
+    <td class="num">117</td>
+    <td><span class="badge yellow">Unavoidable</span></td>
+    <td>Raid-wide periodic damage. Expected.</td>
+  </tr>
+  <tr>
+    <td>Void Expulsion</td>
+    <td class="num">1,646,294</td>
+    <td class="num">50</td>
+    <td><span class="badge yellow">Partially Avoidable</span></td>
+    <td>Sentinel/Voidspawn ability. Some hits are positional.</td>
+  </tr>
+  <tr>
+    <td>Simulacrum Backlash</td>
+    <td class="num">1,619,353</td>
+    <td class="num">58</td>
+    <td><span class="badge yellow">Unavoidable</span></td>
+    <td>P2 mechanic from Simulacrum targets.</td>
+  </tr>
+  <tr>
+    <td>Cosmic Barrier</td>
+    <td class="num">1,214,603</td>
+    <td class="num">72</td>
+    <td><span class="badge yellow">Unavoidable</span></td>
+    <td>P3 raid damage. Stacking mechanic.</td>
+  </tr>
+  <tr>
+    <td>Gravity Collapse</td>
+    <td class="num">917,636</td>
+    <td class="num">11</td>
+    <td><span class="badge red">Partially Avoidable</span></td>
+    <td>P3 pull-in mechanic. Some hits are positional.</td>
+  </tr>
+  <tr>
+    <td>Interrupting Tremor</td>
+    <td class="num">429,620</td>
+    <td class="num">4</td>
+    <td><span class="badge yellow">Unavoidable</span></td>
+    <td>Raid-wide interrupt + damage.</td>
+  </tr>
+  <tr>
+    <td>Falling</td>
+    <td class="num">371,905</td>
+    <td class="num">2</td>
+    <td><span class="badge red">Avoidable</span></td>
+    <td>Fall damage. Likely from Gravity Collapse displacement.</td>
+  </tr>
+  <tr>
+    <td>Cosmic Radiation</td>
+    <td class="num">364,682</td>
+    <td class="num">15</td>
+    <td><span class="badge yellow">Unavoidable</span></td>
+    <td>P3 constant radiation damage.</td>
+  </tr>
+  <tr>
+    <td>Grasp of Emptiness</td>
+    <td class="num">347,377</td>
+    <td class="num">10</td>
+    <td><span class="badge yellow">Partially Avoidable</span></td>
+    <td>Grip mechanic. Some unavoidable ticks.</td>
+  </tr>
+  <tr>
+    <td>Stellar Emission</td>
+    <td class="num">210,102</td>
+    <td class="num">14</td>
+    <td><span class="badge yellow">Unavoidable</span></td>
+    <td>Intermission channel damage. Survived it.</td>
+  </tr>
+</table>
+
+<div class="callout green">
+  <div class="callout-title">Damage Taken Assessment: Clean</div>
+  <div class="callout-body">
+    The majority of damage taken is from <strong>unavoidable raid mechanics</strong> (Voidstalker Sting, Echoing Darkness, Cosmic Barrier, Stellar Emission). The 2 Falling hits (372K) are the only clearly avoidable damage -- likely from Gravity Collapse knockback positioning. This is minor and consistent with learning the P3 displacement timing. No pattern of repeatedly standing in avoidable damage.
+  </div>
+</div>
+
+<!-- Reference Comparison (De-emphasized) -->
+<h2>Reference Context</h2>
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Reference kills from 4-heal comps (matching your raid's healer count). These are completed kills -- use as a ceiling to aim for, not a direct comparison during progression.</p>
+
+<table>
+  <tr>
+    <th>Player</th>
+    <th>Region</th>
+    <th class="num">DPS</th>
+    <th class="num">Kill Time</th>
+    <th class="num">ilvl</th>
+    <th class="num">Talent Diff</th>
+    <th>Notes</th>
+  </tr>
+  <tr style="background: rgba(188, 140, 255, 0.08);">
+    <td style="color: var(--purple);"><strong>Patriotwrath</strong></td>
+    <td>US</td>
+    <td class="num"><strong>119,510</strong></td>
+    <td class="num">8:18</td>
+    <td class="num">290</td>
+    <td class="num"><span class="badge green">4</span></td>
+    <td>Primary reference. Nearly identical build.</td>
+  </tr>
+  <tr>
+    <td>Bestrob</td>
+    <td>US</td>
+    <td class="num">105,422</td>
+    <td class="num">7:55</td>
+    <td class="num">290</td>
+    <td class="num"><span class="badge green">4</span></td>
+    <td>Same talent build as Patriotwrath.</td>
+  </tr>
+  <tr>
+    <td>Woogiee</td>
+    <td>EU</td>
+    <td class="num">107,824</td>
+    <td class="num">8:01</td>
+    <td class="num">273</td>
+    <td class="num"><span class="badge yellow">8</span></td>
+    <td>Similar ilvl to Smokinthisza (273 vs 274).</td>
+  </tr>
+  <tr>
+    <td>Huntopere</td>
+    <td>EU</td>
+    <td class="num">105,386</td>
+    <td class="num">7:24</td>
+    <td class="num">290</td>
+    <td class="num"><span class="badge red">38</span></td>
+    <td>Very different build. Likely different hero tree.</td>
+  </tr>
+  <tr>
+    <td>Punisherinho</td>
+    <td>EU</td>
+    <td class="num">116,942</td>
+    <td class="num">7:04</td>
+    <td class="num">291</td>
+    <td class="num"><span class="badge red">41</span></td>
+    <td>Very different build. Likely different hero tree.</td>
+  </tr>
+  <tr style="border-top: 2px solid var(--border);">
+    <td style="color: var(--hunter);"><strong>Smokinthisza</strong></td>
+    <td>US</td>
+    <td class="num"><strong>65,477</strong></td>
+    <td class="num">7:45 best</td>
+    <td class="num">274</td>
+    <td class="num">--</td>
+    <td>Best pull. Prog night, no kill.</td>
+  </tr>
+</table>
+
+<div class="two-col">
+  <div class="callout purple">
+    <div class="callout-title">ilvl Gap: 274 vs 287-291</div>
+    <div class="callout-body">
+      The primary reference (Patriotwrath) is <strong>16 ilvl higher</strong> (290 vs 274). This translates to roughly <strong>10-15% more raw stats</strong> (Agility, Crit, Mastery). Woogiee at 273 ilvl is the closest gear comparison at 107,824 DPS -- but that is a completed kill with full execute phase (Bullseye stacks). A significant portion of the DPS gap is gear-driven.
+    </div>
+  </div>
+  <div class="callout purple">
+    <div class="callout-title">Talent Build: Nearly Identical to Top Players</div>
+    <div class="callout-body">
+      Only <strong>4 talent differences</strong> from both Patriotwrath (#1) and Bestrob (#4). This is excellent -- the build is correct. The 38-41 talent diff players (Huntopere, Punisherinho) are likely running a different hero talent tree entirely. Performance gaps are <strong>execution and gear</strong>, not spec.
+    </div>
+  </div>
+</div>
+
+<div class="callout blue">
+  <div class="callout-title">Kill vs Prog DPS Context</div>
+  <div class="callout-body">
+    Reference DPS numbers come from <strong>completed kills</strong> where the player survives the full fight, gets full execute phase (Bullseye stacks below 20% HP), and the raid's damage is optimized around kill timing. Smokinthisza's best pull (65.5K) is from a 7:45 wipe where the raid was collapsing. A direct percentage comparison is misleading -- the important metric is whether execution fundamentals (CD timing, cast profile, survival) are sound. They are.
+  </div>
+</div>
+
+<!-- Stat Comparison -->
+<h3>Stat Comparison vs Primary Reference</h3>
+<div class="stat-comparison">
+  <div class="stat-pair">
+    <div class="label">Agility</div>
+    <div class="value">2,204</div>
+    <div class="ref">Ref: 2,220</div>
+  </div>
+  <div class="stat-pair">
+    <div class="label">Crit</div>
+    <div class="value">1,395</div>
+    <div class="ref">Ref: 1,522</div>
+  </div>
+  <div class="stat-pair">
+    <div class="label">Haste</div>
+    <div class="value">433</div>
+    <div class="ref">Ref: 363</div>
+  </div>
+  <div class="stat-pair">
+    <div class="label">Mastery</div>
+    <div class="value">1,840</div>
+    <div class="ref">Ref: 819</div>
+  </div>
+  <div class="stat-pair">
+    <div class="label">Versatility</div>
+    <div class="value">154</div>
+    <div class="ref">Ref: 189</div>
+  </div>
+</div>
+<p class="ref-note">Smokinthisza runs significantly more Mastery (1,840 vs 819) and less Crit (1,395 vs 1,522). This is a notable stat weight difference -- top MM Hunters typically favor Crit for Precise Shots and proc interactions. Check if Mastery-heavy gear is a choice or simply what has dropped.</p>
+
+<!-- Actionable Improvements -->
+<h2>Actionable Improvements</h2>
+
+<div class="improvement-item">
+  <span class="number">1</span>
+  <div class="title">Close the Precise Shots Spending Gap</div>
+  <div class="detail">
+    Aimed Shot at <strong>6.3 CPM</strong> generates a Precise Shots proc every cast. Arcane Shot (the spender) is at <strong>2.8 CPM</strong> -- less than half. Every unspent Precise Shots proc before the next Aimed Shot is wasted damage AND a weaker next Aimed Shot (Spotter's Mark buff). During movement phases (P2/P3), prioritize spending Precise Shots with Arcane Shot before casting Aimed Shot again. This is the single largest rotational improvement available.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">2</span>
+  <div class="title">Stat Rebalancing: Crit Over Mastery</div>
+  <div class="detail">
+    Smokinthisza has <strong>1,840 Mastery vs 1,395 Crit</strong>. The primary reference runs the opposite priority (819 Mastery / 1,522 Crit). For Dark Ranger MM, Crit drives proc frequency and Precise Shots damage. While gear choices are limited by what drops, any opportunity to trade Mastery for Crit should be taken. This won't change overnight but should guide upgrade decisions.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">3</span>
+  <div class="title">P3 Positioning for Gravity Collapse</div>
+  <div class="detail">
+    2 instances of <strong>Falling damage</strong> (372K total) in fight 25 suggest displacement from Gravity Collapse is catching Smokinthisza near edges. In P3, position further from platform edges so the pull-in does not result in fall damage. Use <strong>Disengage</strong> (already at 3.3 per pull) reactively during Gravity Collapse to counteract the displacement.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">4</span>
+  <div class="title">Maintain P2 DPS Consistency</div>
+  <div class="detail">
+    P2 DPS ranges from <strong>7K to 83K</strong>. Excluding the death outlier (fight 5), the range is 56-83K. The variance comes from movement during Rift Simulacrum mechanics. As a ranged player, Smokinthisza should be able to maintain higher uptime during P2 repositioning. Focus on pre-positioning for Rift spawns and using instant-cast abilities (Arcane Shot, Volley, Rapid Fire) during forced movement.
+  </div>
+</div>
+
+<div class="improvement-item">
+  <span class="number">5</span>
+  <div class="title">Gear Progression -- 16 ilvl Gap to Close</div>
+  <div class="detail">
+    At <strong>274 ilvl</strong>, Smokinthisza is 16 ilvl below the top-performing reference (290). This is a ~10-15% raw stat deficit that directly impacts DPS ceiling. The closest ilvl comparison (Woogiee at 273) did 107K on a kill -- suggesting that when Smokinthisza's team gets a kill, DPS should be competitive at current gear level if execution is clean. Vault choices and targeted upgrades will help close this gap over time.
+  </div>
+</div>
+
+<!-- What's Going Well -->
+<h2>What's Going Well</h2>
+
+<div class="callout green">
+  <div class="callout-title">Strengths</div>
+  <div class="callout-body">
+    <strong>1. Exceptional Survival.</strong> Only 1 actionable death in 14 pulls is outstanding for a prog night. Smokinthisza is consistently among the last to die in wipe scenarios, using defensives (Survival of the Fittest 3x/pull, Exhilaration 2.4x/pull, Turtle as needed) effectively.<br><br>
+    <strong>2. Trueshot Timing.</strong> Major cooldown is deployed at the correct moments: pull opener with lust, P2 entry, and P3 push. No wasted CDs or held-too-long patterns.<br><br>
+    <strong>3. Improving Through the Night.</strong> +15% DPS gain from first half to second half of the session. This is a clear learning curve, not a plateau. The last 5 pulls were the most consistent block of the night (52-58K range).<br><br>
+    <strong>4. Correct Build.</strong> Only 4 talent differences from the #1 ranked MM Hunter. Dark Ranger hero tree with proper Wailing Arrow/Trueshot pairing. The build is not the issue.<br><br>
+    <strong>5. Consistent P1 Burst.</strong> 291K average with 7% variance. The opener is locked in.
+  </div>
+</div>
+
+<!-- Context Footer -->
+<div class="callout blue">
+  <div class="callout-title">Overall Assessment</div>
+  <div class="callout-body">
+    The DPS gap between Smokinthisza and ranked kills is a combination of <strong>gear (ilvl 274 vs 287-291)</strong>, <strong>kill vs prog context</strong> (no execute phase, raid deteriorating), and <strong>rotational efficiency</strong> (Precise Shots spending gap). Survival discipline is already at a high level. The primary improvement available through pure execution is tightening the Arcane Shot usage to match Aimed Shot procs. As the team progresses deeper into P3 and eventually secures a kill, DPS will naturally climb from better raid states and execute-phase access (Bullseye stacks).
+  </div>
+</div>
+
+<!-- Night-Over-Night Progress -->
+<h2>Night-Over-Night Progress</h2>
+<div class="callout yellow">
+  <div class="callout-title">Night 4 vs Night 5</div>
+  <div class="callout-body">
+    Night 4's deepest pull was <strong>7:12</strong>. Night 5's deepest was <strong>7:56</strong> -- 44 seconds deeper into P3. The team had 5 pulls past 7:30 tonight (fights 11, 12, 15, 17, 25) compared to likely fewer last night. P3 is still the progression wall, but the team is spending more time there each session. The boss does not have an enrage timer issue -- the challenge is surviving the P3 overlaps.
+  </div>
+</div>
+
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/qDfTzvAyV3pRb6rG">Warcraft Logs Report qDfTzvAyV3pRb6rG</a></p>
+  <p>Primary reference: Patriotwrath-Sargeras (US) &middot; 119,510 DPS &middot; 8:18 kill &middot; 4 talent diffs &middot; 4-heal comp</p>
+  <p>Phase boundaries: P1 0:00-2:14, Intermission 2:14-2:53, P2 2:53-5:09, P3 5:09+</p>
+  <p>Analysis mode: PROG (aggregate across 14 qualifying pulls, 20 total attempts)</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mythic Vaelgor &amp; Ezzorak &mdash; Healing CD Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 900px; margin: 0 auto; line-height: 1.5; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: #c4a1ff; margin-top: 36px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  .cycle-header { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-top: 28px; margin-bottom: 12px; text-align: center; }
+  .event { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; padding: 14px 18px; margin-bottom: 10px; }
+  .event-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .event-time { font-size: 13px; font-weight: 700; color: #888; font-family: 'Courier New', monospace; min-width: 42px; }
+  .event-name { font-size: 14px; font-weight: 600; }
+  .event-note { font-size: 12px; color: #666; margin-left: auto; }
+  .event-burst .event-name { color: #ff6b6b; }
+  .event-burst { border-left: 3px solid #ff6b6b; background: #1a1212; }
+  .event-heavy .event-name { color: #ffa940; }
+  .event-heavy { border-left: 3px solid #ffa940; background: #1a1710; }
+  .event-intermission .event-name { color: #ffd966; }
+  .event-intermission { border-left: 3px solid #ffd966; background: #1a1710; }
+  .event-standard .event-name { color: #5b9bd5; }
+  .cd-list { display: grid; grid-template-columns: 72px 1fr; gap: 2px 12px; font-size: 13px; padding-left: 52px; }
+  .cd-role { color: #888; font-weight: 500; text-align: right; }
+  .cd-role.hpal { color: #f48cba; }
+  .cd-role.rsham { color: #0070dd; }
+  .cd-role.mw { color: #00ff98; }
+  .cd-role.pevo { color: #33937f; }
+  .cd-role.raid { color: #a0a0a0; }
+  .cd-ability { color: #ddd; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+  .tag-danger { background: #3d0011; color: #ff6b6b; }
+  .tag-warn { background: #3d2200; color: #ffa940; }
+  .tag-info { background: #002a3d; color: #5bc0de; }
+  .reactive { background: #111; border: 1px dashed #333; border-radius: 6px; padding: 14px 18px; margin-top: 16px; }
+  .reactive-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 8px; }
+  .copy-block { background: #0d0d0d; border: 1px solid #222; border-radius: 6px; padding: 16px 20px; margin-top: 24px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: #ccc; position: relative; }
+  .copy-block .label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif; }
+  .copy-btn { position: absolute; top: 12px; right: 12px; background: #222; border: 1px solid #333; color: #aaa; font-size: 12px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .copy-btn:hover { background: #333; color: #fff; }
+  .mrt-section { margin-top: 36px; }
+  .mrt-block { background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px 20px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; color: #ccc; position: relative; margin-top: 8px; }
+  .mrt-block .copy-btn { position: absolute; top: 8px; right: 8px; }
+  .mrt-hint { color: #888; font-size: 13px; margin-bottom: 8px; }
+  .pattern { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 14px 20px; margin-bottom: 24px; font-size: 13px; color: #999; }
+  .pattern strong { color: #ccc; }
+  details { margin-top: 36px; }
+  summary { font-size: 14px; font-weight: 600; color: #666; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #999; }
+  .details-inner { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #888; line-height: 1.7; }
+  .details-inner a { color: #7cacf8; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Mythic Vaelgor &amp; Ezzorak &mdash; Healing CD Plan</h1>
+<p class="subtitle">Four Dads One Pizza &mdash; HPal / RSham / MW / PEvo &mdash; 5 teams analyzed (397s&ndash;427s)</p>
+
+<div class="pattern">
+  Two dragons active the entire fight &mdash; must die within <strong>10% HP</strong> of each other or they get a 100% damage buff. Keep them 15+ yards apart. <strong>P1</strong> (0:00&ndash;2:08) &rarr; <strong>Int 1</strong> (Midnight Flames, stack in barrier) &rarr; <strong>P2</strong> (2:33&ndash;4:59) &rarr; <strong>Int 2</strong> (Midnight Flames + boss abilities fire during) &rarr; <strong>P3 / Burn</strong> (5:24+). RSham runs Ascendance + SLT only (0/5 use HTT). PEvo does not use Emerald Communion (0/5).
+</div>
+
+<!-- ─── CD ASSIGNMENTS ─── -->
+
+<div class="cycle-header">&mdash;&mdash;&mdash; Phase 1 (0:00 &ndash; 2:08) &mdash;&mdash;&mdash;</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">0:38</span>
+    <span class="event-name">Void Howl 1 + Implosion 1 (0:46)</span>
+    <span class="event-note">spread, kill adds, then stack for Nullzone</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon + Celestial Conduit</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight + Tip the Scales</span>
+  </div>
+</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">1:18</span>
+    <span class="event-name">Void Howl 2 + Implosion 2 (1:35)</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Revival</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Rewind</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+  </div>
+</div>
+
+<!-- INTERMISSION 1 -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Intermission 1 (2:08 &ndash; ~2:33) &mdash;&mdash;&mdash;</div>
+
+<div class="event event-intermission">
+  <div class="event-header">
+    <span class="event-time">2:08</span>
+    <span class="event-name">Midnight Flames</span>
+    <span class="event-note">stack in barrier, kill Manifestation add fast</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Darkness</span>
+  </div>
+</div>
+
+<!-- PHASE 2 -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Phase 2 (2:33 &ndash; 4:59) &mdash;&mdash;&mdash;</div>
+
+<div class="event event-standard">
+  <div class="event-header">
+    <span class="event-time">2:38</span>
+    <span class="event-name">Implosion 3 + Void Howl 3 (2:51)</span>
+    <span class="event-note">coming out of intermission</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Vampiric Embrace</span>
+  </div>
+</div>
+
+<div class="event event-standard">
+  <div class="event-header">
+    <span class="event-time">3:13</span>
+    <span class="event-name">Implosion 4</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Aura Mastery</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight</span>
+  </div>
+</div>
+
+<div class="event event-heavy">
+  <div class="event-header">
+    <span class="event-time">4:03</span>
+    <span class="event-name">Implosion 5</span>
+    <span class="tag tag-warn">HEAVY</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Revival</span>
+  </div>
+</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">4:54</span>
+    <span class="event-name">Implosion 6</span>
+    <span class="tag tag-warn">STACKED</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Rewind</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Vampiric Embrace</span>
+  </div>
+</div>
+
+<!-- INTERMISSION 2 -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Intermission 2 (4:59 &ndash; ~5:24) &mdash;&mdash;&mdash;</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">4:59</span>
+    <span class="event-name">Midnight Flames + Boss Abilities</span>
+    <span class="tag tag-danger">HARDEST</span>
+    <span class="event-note">Void Howl + Gloom fire during this</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Rallying Cry</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Darkness</span>
+  </div>
+</div>
+
+<!-- PHASE 3 -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Phase 3 / Burn (5:24 &ndash; kill) &mdash;&mdash;&mdash;</div>
+
+<div class="event event-standard">
+  <div class="event-header">
+    <span class="event-time">6:13</span>
+    <span class="event-name">Void Howl 7</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Aura Mastery</span>
+  </div>
+</div>
+
+<div class="event event-standard">
+  <div class="event-header">
+    <span class="event-time">6:32</span>
+    <span class="event-name">Implosion 7</span>
+    <span class="event-note">if boss isn't dead, dump everything off CD</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit + Yu'lon (if back)</span>
+  </div>
+</div>
+
+<!-- REACTIVE -->
+<div class="reactive">
+  <div class="reactive-title">Reactive &mdash; use on the fly</div>
+  <div class="cd-list" style="padding-left: 16px;">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Blessing of Sacrifice, Lay on Hands</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Life Cocoon</span>
+  </div>
+</div>
+
+<!-- ─── DISCORD COPY BLOCK ─── -->
+<h2>Discord Copy/Paste</h2>
+<div class="copy-block" id="discord-block">
+<span class="label">Click to copy</span>
+<button class="copy-btn" onclick="copyDiscord()">Copy</button>
+MYTHIC VAELGOR &amp; EZZORAK &mdash; HEALING CDs
+HPal / RSham / MW / PEvo
+
+━━━ PHASE 1 (0:00 &ndash; 2:08) ━━━
+
+VH1 (0:38) + IMP1 (0:46)
+  HPal   &mdash; Avenging Wrath
+  RSham  &mdash; Ascendance
+  MW     &mdash; Yu'lon + Celestial Conduit
+  PEvo   &mdash; Dream Flight + Tip the Scales
+
+VH2 (1:18) + IMP2 (1:35)
+  MW     &mdash; Revival
+  PEvo   &mdash; Rewind
+  RSham  &mdash; Spirit Link Totem
+
+━━━ INTERMISSION 1 (2:08) ━━━
+
+MIDNIGHT FLAMES
+  MW     &mdash; Celestial Conduit
+  Raid   &mdash; Darkness
+
+━━━ PHASE 2 (2:33 &ndash; 4:59) ━━━
+
+IMP3 (2:38) + VH3 (2:51)
+  HPal   &mdash; Avenging Wrath
+  MW     &mdash; Yu'lon
+  Raid   &mdash; Vampiric Embrace
+
+IMP4 (3:13)
+  HPal   &mdash; Aura Mastery
+  PEvo   &mdash; Dream Flight
+
+IMP5 (4:03) [HEAVY]
+  RSham  &mdash; Ascendance
+  MW     &mdash; Revival
+
+IMP6 (4:54) [STACKED]
+  HPal   &mdash; Avenging Wrath
+  MW     &mdash; Yu'lon
+  PEvo   &mdash; Rewind
+  RSham  &mdash; Spirit Link Totem
+  Raid   &mdash; Vampiric Embrace
+
+━━━ INTERMISSION 2 (4:59) !! HARDEST !! ━━━
+
+MIDNIGHT FLAMES + BOSS ABILITIES
+  MW     &mdash; Celestial Conduit
+  PEvo   &mdash; Dream Flight
+  Raid   &mdash; Rallying Cry
+  Raid   &mdash; Darkness
+
+━━━ PHASE 3 / BURN (5:24+) ━━━
+
+VH7 (6:13)
+  HPal   &mdash; Aura Mastery
+
+IMP7 (6:32) &mdash; dump everything off CD
+  MW     &mdash; Celestial Conduit + Yu'lon (if back)
+
+Reactive: BoSac / LoH / Life Cocoon</div>
+
+<!-- ─── MRT NOTE ─── -->
+<div class="mrt-section">
+<h2>MRT Note</h2>
+<p class="mrt-hint">Paste into MRT &rarr; Note &rarr; Edit</p>
+<div class="mrt-block" id="mrt-block">
+<button class="copy-btn" onclick="copyMRT()">Copy</button>
+|cffFFFFFFMYTHIC VAELGOR & EZZORAK - HEALING CDs|r
+|cff888888RSham = Ascendance + SLT only. PEvo = no EC.|r
+
+{time:0:38} |cffAA44FFVOID HOWL 1|r + {time:0:46} |cffFF4444IMPLOSION 1|r
+  |cffF48CBAHPal|r Avenging Wrath  |cff0070DDRSham|r Ascendance  |cff00FF98MW|r Yu'lon + Celestial Conduit  |cff33937FPEvo|r Dream Flight + Tip the Scales
+
+{time:1:18} |cffAA44FFVOID HOWL 2|r + {time:1:35} |cffFF4444IMPLOSION 2|r
+  |cff00FF98MW|r Revival  |cff33937FPEvo|r Rewind  |cff0070DDRSham|r Spirit Link Totem
+
+{time:2:08} |cffFFD966MIDNIGHT FLAMES|r
+  |cff00FF98MW|r Celestial Conduit  |cffAAAAAARaid|r Darkness
+
+{time:2:38} |cffFF4444IMPLOSION 3|r + {time:2:51} |cffAA44FFVOID HOWL 3|r
+  |cffF48CBAHPal|r Avenging Wrath  |cff00FF98MW|r Yu'lon  |cffAAAAAARaid|r Vampiric Embrace
+
+{time:3:13} |cffFF4444IMPLOSION 4|r
+  |cffF48CBAHPal|r Aura Mastery  |cff33937FPEvo|r Dream Flight
+
+{time:4:03} |cffFF4444IMPLOSION 5|r |cffFF9966HEAVY|r
+  |cff0070DDRSham|r Ascendance  |cff00FF98MW|r Revival
+
+{time:4:54} |cffFF4444IMPLOSION 6|r |cffFF9966STACKED|r
+  |cffF48CBAHPal|r Avenging Wrath  |cff00FF98MW|r Yu'lon  |cff33937FPEvo|r Rewind  |cff0070DDRSham|r Spirit Link Totem  |cffAAAAAARaid|r Vampiric Embrace
+
+{time:4:59} |cffFF3333INTERMISSION 2|r |cffFF0000!! HARDEST !!|r
+  |cff00FF98MW|r Celestial Conduit  |cff33937FPEvo|r Dream Flight  |cffAAAAAARaid|r Rallying Cry + Darkness
+
+{time:6:13} |cffAA44FFVOID HOWL 7|r
+  |cffF48CBAHPal|r Aura Mastery
+
+{time:6:32} |cffFF4444IMPLOSION 7|r
+  |cff00FF98MW|r Celestial Conduit + Yu'lon (if back)
+
+|cff888888Reactive: Blessing of Sacrifice / Lay on Hands / Life Cocoon|r
+</div>
+
+<!-- ─── LOGS + FINDINGS ─── -->
+<details>
+  <summary>Logs analyzed + condensed findings</summary>
+  <div class="details-inner">
+    <strong>5 teams analyzed (18 matching comp found)</strong><br>
+    <a href="https://www.warcraftlogs.com/reports/mtJnrPkdGWjMzQ6y#fight=40" target="_blank">Hyjal (EU) &mdash; 397s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/kWtChn3w6r9LKcFZ#fight=7" target="_blank">Gordunni (EU) &mdash; 399s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/b8hRNHAgPK3qca1M#fight=16" target="_blank">Blackhand (EU) &mdash; 402s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/1LG7Nrw3BZThAt9W#fight=33" target="_blank">Ysondre (EU) &mdash; 406s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/C42df6Ybj7gzVH8F#fight=32" target="_blank">Illidan (NA) &mdash; 427s</a><br>
+    <br>
+    <strong>Findings:</strong> RSham only has Asc + SLT (0/5 use HTT or AG). PEvo does NOT use Emerald Communion (0/5). Asc at opener + Imp5 is universal (5/5). AW used 3x: opener, post-Int 1, Imp6. Yu'lon is a 2min CD (not 3). CC (90s) fills every gap &mdash; 4&ndash;5 uses per fight. Rally at 5:06 is strongest raid CD consensus (3/5). VE bridges Imp6 into Int 2 (15s duration).<br>
+    <br>
+    <strong>Guides:</strong>
+    <a href="https://www.wowhead.com/guide/midnight/raids/the-voidspire-vaelgor-and-ezzorak-boss-strategy-abilities" target="_blank">Wowhead</a> &middot;
+    <a href="https://www.mythictrap.com/en/vs-dr-mqd/vaelgor-and-ezzorak" target="_blank">Mythic Trap</a> &middot;
+    <a href="https://www.icy-veins.com/wow/vaelgor-and-ezzorak-raid-guide" target="_blank">Icy Veins</a> &middot;
+    <a href="https://www.youtube.com/watch?v=rjJmQ8pBhyo" target="_blank">Liquid (YouTube)</a>
+  </div>
+</details>
+
+<div class="footer">
+  Data from WCL v2 API &mdash; per-player sourceID queries, all CD timers verified.
+</div>
+
+<script>
+function copyMRT() {
+  const block = document.getElementById('mrt-block');
+  const text = block.innerText.replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+function copyDiscord() {
+  const block = document.getElementById('discord-block');
+  const text = block.innerText.replace('Click to copy', '').replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#discord-block .copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+
+</body>
+</html>

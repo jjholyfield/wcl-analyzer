@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nucke — Vengeance DH — Crown of the Cosmos Prog</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+h2 { font-size:20px; font-weight:600; margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+h3 { font-size:16px; font-weight:600; margin:24px 0 12px; color:var(--dim); }
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.prog-tag { display:inline-block; background:var(--orange); color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:8px; vertical-align:middle; letter-spacing:0.5px; }
+.header-meta { font-size:14px; color:var(--dim); margin:4px 0; }
+.class-color-dh { color: #a330c9; }
+.class-color-dk { color: #c41e3a; }
+.summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:24px 0; }
+.summary-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; text-align:center; }
+.summary-card .label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.summary-card .value { font-size:28px; font-weight:700; }
+.summary-card .sub { font-size:12px; color:var(--dim); margin-top:2px; }
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:13px; }
+th { background:var(--surface); padding:8px 12px; text-align:left; font-weight:600; border-bottom:2px solid var(--border); font-size:12px; text-transform:uppercase; letter-spacing:0.3px; color:var(--dim); }
+td { padding:8px 12px; border-bottom:1px solid var(--border); }
+tr:hover { background:rgba(88,166,255,0.04); }
+.tag { display:inline-block; font-size:11px; font-weight:600; padding:2px 6px; border-radius:3px; }
+.tag-crit { background:rgba(248,81,73,0.15); color:var(--red); }
+.tag-diff { background:rgba(219,109,40,0.15); color:var(--orange); }
+.tag-warn { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.tag-same { background:rgba(63,185,80,0.15); color:var(--green); }
+.tag-info { background:rgba(88,166,255,0.15); color:var(--accent); }
+.tag-build { background:rgba(188,140,255,0.15); color:var(--purple); }
+.verdict { background:var(--surface); border-radius:8px; padding:16px 20px; margin:16px 0; font-size:14px; line-height:1.7; }
+.verdict-green { border-left:4px solid var(--green); }
+.verdict-yellow { border-left:4px solid var(--yellow); }
+.verdict-red { border-left:4px solid var(--red); }
+strong.green { color:var(--green); }
+strong.red { color:var(--red); }
+strong.yellow { color:var(--yellow); }
+strong.orange { color:var(--orange); }
+strong.cyan { color:var(--cyan); }
+strong.purple { color:var(--purple); }
+.progression-chart { display:flex; align-items:flex-end; gap:3px; height:180px; margin:16px 0; padding:0 4px; }
+.prog-bar { flex:1; min-width:18px; border-radius:3px 3px 0 0; position:relative; cursor:pointer; transition:opacity 0.15s; }
+.prog-bar:hover { opacity:0.8; }
+.prog-bar .tooltip { display:none; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:#1c2128; border:1px solid var(--border); border-radius:6px; padding:8px 12px; font-size:12px; white-space:nowrap; z-index:10; pointer-events:none; }
+.prog-bar:hover .tooltip { display:block; }
+.phase-table td:first-child { font-weight:600; }
+.bar-container { display:flex; align-items:center; gap:8px; }
+.bar { height:6px; border-radius:3px; min-width:2px; }
+.bar-green { background:var(--green); }
+.bar-yellow { background:var(--yellow); }
+.bar-red { background:var(--red); }
+.bar-accent { background:var(--accent); }
+.action-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px 18px; margin:8px 0; }
+.action-item.critical { border-left:3px solid var(--red); }
+.action-item.warning { border-left:3px solid var(--yellow); }
+.action-item.info { border-left:3px solid var(--accent); }
+.action-item.success { border-left:3px solid var(--green); }
+.action-item strong { display:block; margin-bottom:4px; font-size:14px; }
+.action-item p { font-size:13px; color:var(--dim); margin:0; }
+.ref-row { background:rgba(188,140,255,0.06); }
+.player-row { background:rgba(88,166,255,0.08); }
+.footer { margin-top:48px; padding-top:16px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); text-align:center; }
+.section-note { font-size:13px; color:var(--dim); margin:8px 0 16px; font-style:italic; }
+.swap-timeline { display:flex; flex-direction:column; gap:2px; margin:12px 0; }
+.swap-row { display:flex; align-items:center; gap:8px; font-size:12px; height:22px; }
+.swap-label { width:100px; text-align:right; font-weight:600; font-size:11px; }
+.swap-track { flex:1; background:var(--surface); border-radius:3px; height:16px; position:relative; overflow:visible; }
+.swap-dot { position:absolute; width:8px; height:16px; border-radius:2px; top:0; }
+.swap-dot-nucke { background:#a330c9; }
+.swap-dot-glazed { background:#c41e3a; }
+.phase-marker { position:absolute; top:-4px; bottom:-4px; width:1px; border-left:1px dashed var(--dim); opacity:0.4; }
+.dtps-chart { display:flex; align-items:flex-end; gap:3px; height:140px; margin:16px 0; }
+.dtps-bar { flex:1; min-width:18px; border-radius:3px 3px 0 0; position:relative; cursor:pointer; }
+.dtps-bar .tooltip { display:none; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); background:#1c2128; border:1px solid var(--border); border-radius:6px; padding:8px 12px; font-size:12px; white-space:nowrap; z-index:10; }
+.dtps-bar:hover .tooltip { display:block; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+@media (max-width:800px) { .grid-2, .summary-grid { grid-template-columns:1fr; } }
+.uptime-bar-bg { width:100%; height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.uptime-bar-fill { height:100%; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18, 2026 Log Analysis</a>
+
+<h1>
+  <span class="class-color-dh">Nucke</span> &mdash; Vengeance Demon Hunter
+  <span class="prog-tag">PROGRESSION</span>
+</h1>
+<div class="header-meta">
+  <strong>Crown of the Cosmos</strong> &mdash; Mythic &mdash; 27 pulls, best 31.27%
+</div>
+<div class="header-meta">
+  June 18, 2026 &mdash; <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs Report</a>
+</div>
+<div class="header-meta" style="margin-top:4px;">
+  Co-tank: <span class="class-color-dk">Glazedwhole</span> (Blood Death Knight) &mdash; Annihilator Hero Talents
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color:var(--accent);">20.0K</div>
+    <div class="sub">15 pulls with data</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Avg DTPS</div>
+    <div class="value" style="color:var(--yellow);">63.6K</div>
+    <div class="sub">26 pulls &gt;60s</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--green);">27/27</div>
+    <div class="sub">0 deaths all night</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">290</div>
+    <div class="sub">same tier as rank 1</div>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div class="verdict verdict-yellow">
+  <strong class="green">Zero deaths across all 27 pulls</strong> is an exceptional prog night survival record. Nucke maintained <strong class="green">84.5% Demon Spikes uptime</strong> on the longest pull (F23, 6:05) with consistent defensive discipline across all phases. DTPS trended downward through the session &mdash; <strong class="green">68.9K early vs 58.1K late</strong> &mdash; showing clear learning on damage intake. The main growth area is <strong class="yellow">DPS contribution</strong>: averaging ~20K DPS against a rank-1 reference at 53.5K on the kill (a 63% gap). Core rotation CPM is 10-29% below reference across Fracture, Soul Cleave, Immolation Aura, and Demon Spikes. <strong class="yellow">Fel Devastation usage at 0.4 CPM vs reference 1.2 CPM</strong> (75% deficit) is the largest single-ability gap. Metamorphosis usage is also roughly half the reference rate. The <strong class="orange">taunt imbalance</strong> (Nucke 105 vs Glazedwhole 266) suggests Glazedwhole is carrying more of the active tanking burden, which may partially explain the lower DPS if Nucke is off-tanking more. On a fight with zero kills yet, survival is king &mdash; and Nucke is delivering that. DPS optimization is the natural next step as the fight becomes more comfortable.
+</div>
+
+<!-- Phase Reach -->
+<h2>Phase Reach Across 27 Pulls</h2>
+<table>
+  <tr><th>Phase</th><th>Pulls Reached</th><th>Rate</th><th style="width:40%">Reach</th></tr>
+  <tr>
+    <td><strong>P1: Sentinels</strong></td><td>27 / 27</td><td><strong class="green">100%</strong></td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:100%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Intermission</strong></td><td>19 / 27</td><td><strong class="yellow">70%</strong></td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-yellow" style="width:70%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>P2: Rift</strong></td><td>16 / 27</td><td><strong class="yellow">59%</strong></td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-yellow" style="width:59%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>P3: Devouring Cosmos</strong></td><td>6 / 27</td><td><strong class="orange">22%</strong></td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill" style="width:22%; background:var(--orange)"></div></div></td>
+  </tr>
+</table>
+<p class="section-note">8 of 27 pulls died in P1 before intermission (sub-2:14). Most progression is happening in P2. P3 was reached 6 times with best pull (F27) hitting 31.27%.</p>
+
+<!-- Per-Phase Performance Breakdown -->
+<h2>Per-Phase Performance Breakdown</h2>
+<p class="section-note">Phase stats aggregated from 6 representative P3-reaching fights (F15, F18, F20, F23, F27, F28). Defensive counts aggregated from all pulls reaching each phase.</p>
+
+<table class="phase-table">
+  <tr>
+    <th>Phase</th><th>Pulls Seen</th><th>Avg DTPS</th><th>Avg DPS</th><th>Deaths</th>
+    <th>Demon Spikes Uptime</th><th>Fiery Brand</th><th>Metamorphosis</th><th>Fel Devastation</th>
+  </tr>
+  <tr>
+    <td><strong>P1: Sentinels</strong><br><span style="font-size:11px;color:var(--dim)">0:00 &ndash; 2:14</span></td>
+    <td>27/27</td>
+    <td><strong class="yellow">51.7K</strong></td>
+    <td>143.2K</td>
+    <td><strong class="green">0</strong></td>
+    <td>
+      <div class="bar-container">
+        <div class="uptime-bar-bg" style="width:100px"><div class="uptime-bar-fill bar-green" style="width:86%"></div></div>
+        <span style="font-size:12px">86%</span>
+      </div>
+    </td>
+    <td>68 casts<br><span style="font-size:11px;color:var(--dim)">27/27 pulls</span></td>
+    <td>69 casts<br><span style="font-size:11px;color:var(--dim)">25/27 pulls</span></td>
+    <td>22 casts<br><span style="font-size:11px;color:var(--dim)">18/27 pulls</span></td>
+  </tr>
+  <tr>
+    <td><strong>Intermission</strong><br><span style="font-size:11px;color:var(--dim)">2:14 &ndash; 2:53</span></td>
+    <td>19/27</td>
+    <td><strong class="green">17.8K</strong></td>
+    <td>0</td>
+    <td><strong class="green">0</strong></td>
+    <td>
+      <div class="bar-container">
+        <div class="uptime-bar-bg" style="width:100px"><div class="uptime-bar-fill bar-green" style="width:86%"></div></div>
+        <span style="font-size:12px">~86%</span>
+      </div>
+    </td>
+    <td colspan="3" style="color:var(--dim);font-size:12px">12 Demon Spikes in 9/19 pulls. No major CDs needed &mdash; Stellar Emission is healable without tank CDs.</td>
+  </tr>
+  <tr>
+    <td><strong>P2: Rift</strong><br><span style="font-size:11px;color:var(--dim)">2:53 &ndash; ~5:04</span></td>
+    <td>16/27</td>
+    <td><strong class="yellow">47.9K</strong></td>
+    <td>54.2K</td>
+    <td><strong class="green">0</strong></td>
+    <td>
+      <div class="bar-container">
+        <div class="uptime-bar-bg" style="width:100px"><div class="uptime-bar-fill bar-yellow" style="width:82%"></div></div>
+        <span style="font-size:12px">82%</span>
+      </div>
+    </td>
+    <td>38 casts<br><span style="font-size:11px;color:var(--dim)">15/16 pulls</span></td>
+    <td>34 casts<br><span style="font-size:11px;color:var(--dim)">14/16 pulls</span></td>
+    <td>12 casts<br><span style="font-size:11px;color:var(--dim)">10/16 pulls</span></td>
+  </tr>
+  <tr>
+    <td><strong>P3: Devouring Cosmos</strong><br><span style="font-size:11px;color:var(--dim)">~5:04+</span></td>
+    <td>6/27</td>
+    <td><strong class="green">43.9K</strong></td>
+    <td>20.3K</td>
+    <td><strong class="green">0</strong></td>
+    <td>
+      <div class="bar-container">
+        <div class="uptime-bar-bg" style="width:100px"><div class="uptime-bar-fill bar-green" style="width:88%"></div></div>
+        <span style="font-size:12px">88%</span>
+      </div>
+    </td>
+    <td>2 casts<br><span style="font-size:11px;color:var(--dim)">2/6 pulls</span></td>
+    <td>1 cast<br><span style="font-size:11px;color:var(--dim)">1/6 pulls</span></td>
+    <td>1 cast<br><span style="font-size:11px;color:var(--dim)">1/6 pulls</span></td>
+  </tr>
+</table>
+
+<div class="verdict verdict-green" style="margin-top:16px">
+  <strong>Phase analysis highlights:</strong> DTPS actually <em>decreases</em> from P1 (51.7K) through P3 (43.9K), which is unusual and suggests Nucke is playing more conservatively (possibly off-tanking more) in later phases. Demon Spikes uptime stays consistently above 80% across all phases. P1 has the highest DPS (143K) because adds are active and taking cleave damage. P3 DPS drops to 20K with only 6 pulls of data &mdash; limited sample size. The biggest concern is <strong class="yellow">P3 defensive CD usage</strong>: only 2 Fiery Brands, 1 Metamorphosis, and 1 Fel Devastation across 6 pulls. As P3 gets longer on closer attempts, more defensive CDs will need to be available.
+</div>
+
+<!-- DTPS Across All Pulls -->
+<h2>DTPS Across All Pulls</h2>
+<p class="section-note">Lower is better. Color indicates pull duration: <span style="color:var(--red)">short wipe</span>, <span style="color:#ffa940">medium pull</span>, <span style="color:var(--green)">long pull / P3</span>. Trend shows DTPS decreasing through the session.</p>
+
+<div class="dtps-chart">
+  <div class="dtps-bar" style="height:72%; background:var(--red)"><div class="tooltip">F1 &bull; 63s &bull; 75.1K DTPS &bull; 87%</div></div>
+  <div class="dtps-bar" style="height:100%; background:var(--red)"><div class="tooltip">F2 &bull; 67s &bull; 103.6K DTPS &bull; 81%</div></div>
+  <div class="dtps-bar" style="height:54%; background:#ffa940"><div class="tooltip">F3 &bull; 227s &bull; 55.8K DTPS &bull; 58%</div></div>
+  <div class="dtps-bar" style="height:65%; background:var(--red)"><div class="tooltip">F4 &bull; 68s &bull; 67.0K DTPS &bull; 80%</div></div>
+  <div class="dtps-bar" style="height:57%; background:#ffa940"><div class="tooltip">F5 &bull; 137s &bull; 59.4K DTPS &bull; 62%</div></div>
+  <div class="dtps-bar" style="height:61%; background:var(--red)"><div class="tooltip">F6 &bull; 47s &bull; 62.8K DTPS &bull; 86%</div></div>
+  <div class="dtps-bar" style="height:48%; background:#ffa940"><div class="tooltip">F7 &bull; 154s &bull; 50.1K DTPS &bull; 62%</div></div>
+  <div class="dtps-bar" style="height:53%; background:#ffa940"><div class="tooltip">F8 &bull; 239s &bull; 55.1K DTPS &bull; 55%</div></div>
+  <div class="dtps-bar" style="height:59%; background:#ffa940"><div class="tooltip">F9 &bull; 179s &bull; 61.1K DTPS &bull; 62%</div></div>
+  <div class="dtps-bar" style="height:84%; background:#ffa940"><div class="tooltip">F10 &bull; 138s &bull; 86.7K DTPS &bull; 62%</div></div>
+  <div class="dtps-bar" style="height:72%; background:#ffa940"><div class="tooltip">F11 &bull; 245s &bull; 74.8K DTPS &bull; 55%</div></div>
+  <div class="dtps-bar" style="height:75%; background:var(--red)"><div class="tooltip">F12 &bull; 63s &bull; 77.6K DTPS &bull; 87%</div></div>
+  <div class="dtps-bar" style="height:71%; background:var(--red)"><div class="tooltip">F13 &bull; 64s &bull; 73.6K DTPS &bull; 87%</div></div>
+  <div class="dtps-bar" style="height:51%; background:#ffa940"><div class="tooltip">F14 &bull; 242s &bull; 53.2K DTPS &bull; 57%</div></div>
+  <div class="dtps-bar" style="height:51%; background:var(--green)"><div class="tooltip">F15 &bull; 292s &bull; 53.1K DTPS &bull; 46%</div></div>
+  <div class="dtps-bar" style="height:50%; background:var(--green)"><div class="tooltip">F16 &bull; 303s &bull; 52.3K DTPS &bull; 43%</div></div>
+  <div class="dtps-bar" style="height:71%; background:var(--red)"><div class="tooltip">F17 &bull; 61s &bull; 73.5K DTPS &bull; 88%</div></div>
+  <div class="dtps-bar" style="height:61%; background:var(--green)"><div class="tooltip">F18 &bull; 356s &bull; 63.6K DTPS &bull; 39%</div></div>
+  <div class="dtps-bar" style="height:58%; background:var(--green)"><div class="tooltip">F19 &bull; 316s &bull; 60.4K DTPS &bull; 44%</div></div>
+  <div class="dtps-bar" style="height:60%; background:var(--green)"><div class="tooltip">F20 &bull; 323s &bull; 62.7K DTPS &bull; 37%</div></div>
+  <div class="dtps-bar" style="height:48%; background:var(--green)"><div class="tooltip">F21 &bull; 289s &bull; 50.0K DTPS &bull; 43%</div></div>
+  <div class="dtps-bar" style="height:52%; background:#ffa940"><div class="tooltip">F22 &bull; 253s &bull; 53.5K DTPS &bull; 50%</div></div>
+  <div class="dtps-bar" style="height:57%; background:var(--green)"><div class="tooltip">F23 &bull; 365s &bull; 59.4K DTPS &bull; 37%</div></div>
+  <div class="dtps-bar" style="height:51%; background:var(--green)"><div class="tooltip">F24 &bull; 284s &bull; 52.4K DTPS &bull; 42%</div></div>
+  <div class="dtps-bar" style="height:71%; background:var(--red)"><div class="tooltip">F25 &bull; 61s &bull; 73.6K DTPS &bull; 86%</div></div>
+  <div class="dtps-bar" style="height:52%; background:var(--green)"><div class="tooltip">F27 &bull; 361s &bull; 54.0K DTPS &bull; 31%</div></div>
+  <div class="dtps-bar" style="height:49%; background:var(--green)"><div class="tooltip">F28 &bull; 343s &bull; 51.2K DTPS &bull; 37%</div></div>
+</div>
+
+<h3>DTPS Trend</h3>
+<table>
+  <tr><th>Window</th><th>Avg DTPS</th><th>Change</th></tr>
+  <tr><td>First 10 pulls (F1&ndash;F10)</td><td>68,855</td><td>&mdash;</td></tr>
+  <tr><td>Last 10 pulls (F20&ndash;F28)</td><td>58,067</td><td><strong class="green">&darr; 15.7%</strong></td></tr>
+</table>
+
+<!-- Death Pattern Analysis -->
+<h2>Death Pattern Analysis</h2>
+<div class="verdict verdict-green">
+  <strong class="green">Zero deaths across all 27 pulls.</strong> Nucke survived every single pull this session. No death causes to analyze. This is the gold standard for tank prog &mdash; staying alive is job #1 and Nucke executed it perfectly. The raid's wipes were driven by other factors, not tank deaths.
+</div>
+
+<!-- Defensive CD Discipline -->
+<h2>Defensive CD Discipline</h2>
+<p class="section-note">Usage across all pulls. Vengeance DH key defensives: Demon Spikes (active mitigation, ~20s charges), Fiery Brand (40% DR, ~60s CD), Metamorphosis (major defensive + offensive, ~3-4min), Fel Devastation (frontal + self-heal, ~40s CD).</p>
+
+<table>
+  <tr><th>Defensive</th><th>Total Casts</th><th>Pulls Used</th><th>Avg per Pull</th><th>Assessment</th></tr>
+  <tr>
+    <td><strong>Demon Spikes</strong></td>
+    <td>387</td><td>27/27</td><td>14.3</td>
+    <td><span class="tag tag-same">Consistent</span></td>
+  </tr>
+  <tr>
+    <td><strong>Fiery Brand</strong></td>
+    <td>108</td><td>27/27</td><td>4.0</td>
+    <td><span class="tag tag-same">Good</span></td>
+  </tr>
+  <tr>
+    <td><strong>Metamorphosis</strong></td>
+    <td>104</td><td>25/27</td><td>3.9</td>
+    <td><span class="tag tag-warn">High usage</span></td>
+  </tr>
+  <tr>
+    <td><strong>Fel Devastation</strong></td>
+    <td>35</td><td>18/27</td><td>1.3</td>
+    <td><span class="tag tag-diff">Underused</span></td>
+  </tr>
+  <tr>
+    <td><strong>Sigil of Spite</strong></td>
+    <td>73</td><td>&mdash;</td><td>2.7</td>
+    <td><span class="tag tag-same">Active</span></td>
+  </tr>
+  <tr>
+    <td><strong>Healthstone / Potion</strong></td>
+    <td>19</td><td>&mdash;</td><td>&mdash;</td>
+    <td><span class="tag tag-info">Emergency use</span></td>
+  </tr>
+</table>
+
+<div class="verdict verdict-yellow" style="margin-top:12px">
+  <strong>Defensive discipline notes:</strong> Demon Spikes usage is excellent at 14.3 casts per pull with 27/27 coverage. Fiery Brand is used every single pull. <strong class="yellow">Metamorphosis at 104 casts across 27 pulls (3.9/pull)</strong> is notably high &mdash; with a ~3-4 minute cooldown, 3-4 casts per pull means it's being used almost on cooldown in P1, which is good for DPS contribution. However, <strong class="yellow">Fel Devastation at only 35 casts across 27 pulls</strong> (missing from 9 pulls entirely) means this self-heal + damage ability is being neglected. The reference player uses it at 1.2 CPM vs Nucke's 0.4 CPM &mdash; a 75% deficit. Fel Devastation should be part of the core rotation, not a situational emergency button.
+</div>
+
+<!-- Demon Spikes Uptime by Phase (Fight 23) -->
+<h3>Demon Spikes Uptime by Phase (Best Pull &mdash; F23, 6:05)</h3>
+<table>
+  <tr><th>Phase</th><th>Uptime</th><th>Duration</th><th style="width:30%">Coverage</th></tr>
+  <tr>
+    <td>P1: Sentinels</td><td><strong class="green">85.9%</strong></td><td>115s / 134s</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:86%"></div></div></td>
+  </tr>
+  <tr>
+    <td>Intermission</td><td><strong class="green">85.6%</strong></td><td>33s / 39s</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:86%"></div></div></td>
+  </tr>
+  <tr>
+    <td>P2: Rift</td><td><strong class="yellow">81.5%</strong></td><td>111s / 136s</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-yellow" style="width:82%"></div></div></td>
+  </tr>
+  <tr>
+    <td>P3: Devouring Cosmos</td><td><strong class="green">87.6%</strong></td><td>50s / 56s</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:88%"></div></div></td>
+  </tr>
+  <tr style="background:rgba(88,166,255,0.06);">
+    <td><strong>Overall</strong></td><td><strong class="green">84.5%</strong></td><td>309s / 365s</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:85%"></div></div></td>
+  </tr>
+</table>
+
+<!-- Reference Comparison -->
+<h2>Reference Comparison</h2>
+<p class="section-note">De-emphasized for prog. Comparing Nucke's best pull (F23, 6:05) against rank-1 Melvabeam's 8:26 kill. Both run Annihilator hero talents at 290-291 ilvl with only 4 talent differences. Context: reference had a full kill (longer fight = more damage, more defensive windows).</p>
+
+<table>
+  <tr><th>#</th><th>Player</th><th>DPS</th><th>DTPS</th><th>Self-HPS</th><th>Fight</th><th>ilvl</th><th>Talent &Delta;</th><th>Hero</th></tr>
+  <tr class="player-row">
+    <td>&mdash;</td>
+    <td><strong class="class-color-dh">Nucke</strong></td>
+    <td>24.2K</td>
+    <td>59.4K</td>
+    <td>37.6K</td>
+    <td>6:05 (wipe 37%)</td>
+    <td>290</td>
+    <td><span class="tag tag-same">4</span></td>
+    <td>Annihilator</td>
+  </tr>
+  <tr class="ref-row">
+    <td style="color:var(--purple)">#1</td>
+    <td><strong style="color:var(--purple)">Melvabeam</strong></td>
+    <td>53.5K</td>
+    <td>38.0K</td>
+    <td>36.2K</td>
+    <td>8:26 (kill)</td>
+    <td>291</td>
+    <td><span class="tag tag-same">4</span></td>
+    <td>Annihilator</td>
+  </tr>
+</table>
+
+<div class="grid-2" style="margin-top:8px">
+  <div>
+    <h3>Stat Comparison</h3>
+    <table>
+      <tr><th>Stat</th><th>Nucke</th><th>Ref</th><th>Note</th></tr>
+      <tr><td>Mastery</td><td><strong>649</strong></td><td>316</td><td><span class="tag tag-info">+105%</span></td></tr>
+      <tr><td>Versatility</td><td>182</td><td><strong>623</strong></td><td><span class="tag tag-diff">-71%</span></td></tr>
+      <tr><td>Haste</td><td><strong>1206</strong></td><td>826</td><td><span class="tag tag-info">+46%</span></td></tr>
+      <tr><td>Crit</td><td>755</td><td><strong>928</strong></td><td><span class="tag tag-warn">-19%</span></td></tr>
+      <tr><td>Armor</td><td><strong>6168</strong></td><td>3790</td><td><span class="tag tag-info">+63%</span></td></tr>
+    </table>
+  </div>
+  <div>
+    <h3>Stat Notes</h3>
+    <p style="font-size:13px; color:var(--dim); line-height:1.7;">
+      Nucke stacks <strong>Mastery + Haste</strong> while the reference stacks <strong>Versatility + Crit</strong>. Nucke's higher armor (6168 vs 3790) provides better physical damage reduction. The Versatility deficit means less flat damage reduction and less healing amplification. Haste advantage means faster Soul Fragment generation via Fracture, which supports the Mastery-stacking build. Both builds are viable for Vengeance &mdash; Mastery increases attack power from Demon Spikes, while Versatility provides a more consistent damage profile.
+    </p>
+  </div>
+</div>
+
+<!-- Cast Profile Comparison -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-note">Nucke F23 (365s) vs Melvabeam kill (506s). CPM = casts per minute. Delta shows how far below reference (&gt;0% = under-casting). Negative delta means over-casting relative to reference.</p>
+
+<table>
+  <tr><th>Ability</th><th>Nucke</th><th>CPM</th><th style="color:var(--purple)">Ref</th><th style="color:var(--purple)">CPM</th><th>&Delta;</th><th>Assessment</th></tr>
+  <tr>
+    <td>Fracture</td><td>230</td><td>37.8</td><td style="color:var(--purple)">356</td><td style="color:var(--purple)">42.2</td><td>-10%</td>
+    <td><span class="tag tag-warn">Slightly Under</span></td>
+  </tr>
+  <tr>
+    <td>Soul Cleave</td><td>62</td><td>10.2</td><td style="color:var(--purple)">114</td><td style="color:var(--purple)">13.5</td><td>-24%</td>
+    <td><span class="tag tag-diff">Under</span></td>
+  </tr>
+  <tr>
+    <td>Demon Spikes</td><td>27</td><td>4.4</td><td style="color:var(--purple)">50</td><td style="color:var(--purple)">5.9</td><td>-25%</td>
+    <td><span class="tag tag-diff">Under</span></td>
+  </tr>
+  <tr>
+    <td>Immolation Aura</td><td>18</td><td>3.0</td><td style="color:var(--purple)">35</td><td style="color:var(--purple)">4.2</td><td>-29%</td>
+    <td><span class="tag tag-diff">Under</span></td>
+  </tr>
+  <tr>
+    <td>Spirit Bomb</td><td>16</td><td>2.6</td><td style="color:var(--purple)">25</td><td style="color:var(--purple)">3.0</td><td>-13%</td>
+    <td><span class="tag tag-warn">Slightly Under</span></td>
+  </tr>
+  <tr>
+    <td>Torment</td><td>8</td><td>1.3</td><td style="color:var(--purple)">22</td><td style="color:var(--purple)">2.6</td><td>-50%</td>
+    <td><span class="tag tag-crit">Tank swap diff</span></td>
+  </tr>
+  <tr>
+    <td>Sigil of Flame</td><td>9</td><td>1.5</td><td style="color:var(--purple)">14</td><td style="color:var(--purple)">1.7</td><td>-12%</td>
+    <td><span class="tag tag-warn">Slightly Under</span></td>
+  </tr>
+  <tr>
+    <td>Metamorphosis</td><td>6</td><td>1.0</td><td style="color:var(--purple)">16</td><td style="color:var(--purple)">1.9</td><td>-47%</td>
+    <td><span class="tag tag-crit">Under &mdash; CD</span></td>
+  </tr>
+  <tr>
+    <td>Fiery Brand</td><td>8</td><td>1.3</td><td style="color:var(--purple)">10</td><td style="color:var(--purple)">1.2</td><td>+8%</td>
+    <td><span class="tag tag-same">Match</span></td>
+  </tr>
+  <tr>
+    <td>Felblade</td><td>14</td><td>2.3</td><td style="color:var(--purple)">0</td><td style="color:var(--purple)">0</td><td>&mdash;</td>
+    <td><span class="tag tag-build">Nucke-only talent</span></td>
+  </tr>
+  <tr>
+    <td>Throw Glaive</td><td>12</td><td>2.0</td><td style="color:var(--purple)">4</td><td style="color:var(--purple)">0.5</td><td>+300%</td>
+    <td><span class="tag tag-info">Over &mdash; filler</span></td>
+  </tr>
+  <tr>
+    <td>Sigil of Spite</td><td>5</td><td>0.8</td><td style="color:var(--purple)">7</td><td style="color:var(--purple)">0.8</td><td>0%</td>
+    <td><span class="tag tag-same">Match</span></td>
+  </tr>
+  <tr>
+    <td>Fel Devastation</td><td>2</td><td>0.3</td><td style="color:var(--purple)">10</td><td style="color:var(--purple)">1.2</td><td>-75%</td>
+    <td><span class="tag tag-crit">Major Deficit</span></td>
+  </tr>
+  <tr>
+    <td>Vengeful Retreat</td><td>0</td><td>0</td><td style="color:var(--purple)">7</td><td style="color:var(--purple)">0.8</td><td>-100%</td>
+    <td><span class="tag tag-diff">Not used</span></td>
+  </tr>
+</table>
+
+<!-- Damage Taken Breakdown -->
+<h2>Damage Taken Breakdown (Best Pull &mdash; F23)</h2>
+<p class="section-note">Top damage sources. Absorbed % shows how much of each hit was mitigated by shields/absorbs (higher = better).</p>
+
+<table>
+  <tr><th>Ability</th><th>Raw + Absorbed</th><th>% of Total</th><th>Hits</th><th>Absorbed %</th><th style="width:20%">Absorption</th></tr>
+  <tr>
+    <td><strong>Melee</strong></td><td>10,385,879</td><td>48.0%</td><td>163</td><td>20%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-yellow" style="width:20%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Voidstalker Sting</strong></td><td>2,504,882</td><td>11.6%</td><td>136</td><td>39%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:39%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Echoing Darkness</strong></td><td>1,922,658</td><td>8.9%</td><td>117</td><td>33%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:33%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Simulacrum Backlash</strong></td><td>1,121,748</td><td>5.2%</td><td>53</td><td>23%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-yellow" style="width:23%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Void Expulsion</strong></td><td>960,650</td><td>4.4%</td><td>36</td><td>18%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-yellow" style="width:18%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Dark Hand</strong></td><td>876,901</td><td>4.1%</td><td>6</td><td>35%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:35%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Rift Slash</strong></td><td>735,261</td><td>3.4%</td><td>5</td><td>6%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-red" style="width:6%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Silverstrike Barrage</strong></td><td>654,724</td><td>3.0%</td><td>3</td><td>0%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-red" style="width:0%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Cosmic Barrier</strong></td><td>591,194</td><td>2.7%</td><td>43</td><td>65%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:65%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Cosmic Radiation</strong></td><td>232,269</td><td>1.1%</td><td>15</td><td>52%</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:52%"></div></div></td>
+  </tr>
+</table>
+
+<p class="section-note"><strong>Key observations:</strong> Melee is 48% of all damage taken &mdash; normal for the active tank. <strong style="color:var(--red)">Rift Slash at only 6% absorption</strong> (P2 ability, 5 hits) suggests Demon Spikes or Fiery Brand may not be active for these hits. <strong style="color:var(--red)">Silverstrike Barrage at 0% absorption</strong> is the intermission ability &mdash; shields are likely not up during the transition. Cosmic Barrier and Cosmic Radiation have strong 52-65% absorption, meaning defensives are properly covering P2/P3 mechanics.</p>
+
+<!-- Self-Healing Breakdown -->
+<h2>Self-Healing Breakdown (Best Pull &mdash; F23)</h2>
+<table>
+  <tr><th>Ability</th><th>Effective</th><th>Overheal</th><th>OH%</th><th>Hits</th><th style="width:15%">Overheal</th></tr>
+  <tr>
+    <td><strong>Consume Soul</strong></td><td>3,687,253</td><td>3,515,079</td><td>49%</td><td>238</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill" style="width:49%; background:var(--yellow)"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Soul Barrier</strong></td><td>2,336,800</td><td>0</td><td>0%</td><td>122</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:0%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Metamorphosis</strong></td><td>1,912,824</td><td>0</td><td>0%</td><td>6</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:0%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Leech</strong></td><td>1,521,470</td><td>428,425</td><td>22%</td><td>114</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill" style="width:22%; background:var(--yellow)"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Frailty</strong></td><td>1,242,176</td><td>3,338,824</td><td>73%</td><td>258</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill" style="width:73%; background:var(--red)"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Last Resort</strong></td><td>671,557</td><td>0</td><td>0%</td><td>1</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:0%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>First In, Last Out</strong></td><td>491,109</td><td>0</td><td>0%</td><td>42</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill bar-green" style="width:0%"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Soul Cleave</strong></td><td>256,210</td><td>503,772</td><td>66%</td><td>62</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill" style="width:66%; background:var(--orange)"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Charred Warblades</strong></td><td>208,367</td><td>587,060</td><td>74%</td><td>261</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill" style="width:74%; background:var(--red)"></div></div></td>
+  </tr>
+  <tr>
+    <td><strong>Fel Devastation</strong></td><td>108,160</td><td>130,705</td><td>55%</td><td>29</td>
+    <td><div class="uptime-bar-bg"><div class="uptime-bar-fill" style="width:55%; background:var(--orange)"></div></div></td>
+  </tr>
+</table>
+
+<p class="section-note"><strong>Self-healing totals:</strong> 13.3M effective healing (36.4K HPS). Top sources are Soul Fragment consumption (Consume Soul + Soul Barrier), Metamorphosis heal-on-cast, and passive Leech. <strong>Last Resort triggered once</strong> (emergency cheat death talent), which means there was one moment Nucke hit 0 HP and the talent saved them. <strong>Frailty at 73% overheal</strong> is expected &mdash; it heals on every Soul Fragment consumed regardless of health. <strong>Soul Cleave at 66% overheal</strong> suggests Nucke is often at high health when spending fragments, which is safe but leaves healing efficiency on the table.</p>
+
+<!-- Tank Swap Pattern -->
+<h2>Tank Swap Pattern</h2>
+<table>
+  <tr><th>Metric</th><th>Nucke</th><th>Glazedwhole</th></tr>
+  <tr><td>Total Taunts</td><td>105</td><td><strong>266</strong></td></tr>
+  <tr><td>Avg per Pull (long pulls)</td><td>4.6</td><td><strong>11.7</strong></td></tr>
+  <tr><td>Avg Swap Interval</td><td colspan="2" style="text-align:center">14 seconds</td></tr>
+</table>
+
+<div class="verdict verdict-yellow" style="margin-top:12px">
+  <strong class="orange">Taunt imbalance: Glazedwhole taunts 2.5x more than Nucke</strong> (266 vs 105 across all pulls). This means Glazedwhole is doing the majority of boss pickups. In several P1 pulls (F4, F7, F12, F13, F17), Nucke used <strong>zero taunts</strong> &mdash; Glazedwhole solo-tanked the boss. This pattern likely contributes to the DPS gap: the active tank takes more damage but gets more melee swings in, while the off-tank has lower threat gen and fewer Fracture targets. The 14-second average swap interval is reasonable when swaps do happen. On long pulls (F23, F27), the swap pattern is more balanced with 8-13 Nucke taunts per pull. <strong>The swap imbalance is more severe in early/short pulls and improves in later, longer pulls</strong> as the fight rhythm gets established.
+</div>
+
+<h3>Swap Timeline (Selected Long Pulls)</h3>
+<p class="section-note">
+  <span style="color:#a330c9">Purple = Nucke taunt</span> &nbsp;|&nbsp;
+  <span style="color:#c41e3a">Red = Glazedwhole taunt</span> &nbsp;|&nbsp;
+  Dashed lines = phase boundaries
+</p>
+
+<div style="margin:16px 0">
+<!-- Fight 23 swap timeline -->
+<div class="swap-row">
+  <div class="swap-label" style="color:var(--dim)">F23 (365s)</div>
+  <div class="swap-track">
+    <div class="phase-marker" style="left:36.7%"></div>
+    <div class="phase-marker" style="left:47.4%"></div>
+    <div class="phase-marker" style="left:84.7%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:0%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:5.8%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:6.0%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:15.3%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:26.8%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:26.8%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:32.6%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:47.7%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:50.4%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:50.7%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:54.2%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:59.2%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:64.9%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:65.2%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:66.6%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:73.7%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:81.9%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:89.0%"></div>
+  </div>
+</div>
+
+<!-- Fight 27 swap timeline -->
+<div class="swap-row" style="margin-top:4px">
+  <div class="swap-label" style="color:var(--dim)">F27 (361s)</div>
+  <div class="swap-track">
+    <div class="phase-marker" style="left:37.1%"></div>
+    <div class="phase-marker" style="left:47.9%"></div>
+    <div class="phase-marker" style="left:85.6%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:0.3%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:10.8%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:11.4%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:15.0%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:15.0%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:18.8%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:24.4%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:28.8%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:33.2%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:33.2%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:48.2%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:53.2%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:56.2%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:65.9%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:66.8%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:72.9%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:78.9%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:78.9%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:82.5%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:82.8%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:88.6%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:89.2%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:95.3%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:95.3%"></div>
+  </div>
+</div>
+
+<!-- Fight 28 swap timeline -->
+<div class="swap-row" style="margin-top:4px">
+  <div class="swap-label" style="color:var(--dim)">F28 (343s)</div>
+  <div class="swap-track">
+    <div class="phase-marker" style="left:39.1%"></div>
+    <div class="phase-marker" style="left:50.4%"></div>
+    <div class="phase-marker" style="left:90.1%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:0%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:13.7%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:19.2%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:19.5%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:21.6%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:34.1%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:40.8%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:50.4%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:56.6%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:63.3%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:68.8%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:69.1%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:72.3%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:77.8%"></div>
+    <div class="swap-dot swap-dot-nucke" style="left:84.3%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:84.5%"></div>
+    <div class="swap-dot swap-dot-glazed" style="left:84.8%"></div>
+  </div>
+</div>
+</div>
+
+<!-- Wipe Progression Chart -->
+<h2>Wipe Progression</h2>
+<p class="section-note">Bar height = fight duration (% of longest pull). Color: <span style="color:var(--red)">short wipe (&lt;2min)</span>, <span style="color:var(--yellow)">medium (2-4min)</span>, <span style="color:#ffa940">long (4-5min)</span>, <span style="color:var(--green)">P3 (5min+)</span>. Hover for details.</p>
+
+<div class="progression-chart">
+  <div class="prog-bar" style="height:17%; background:var(--red)"><div class="tooltip">F1 &bull; 1:03 &bull; 87%<br>DTPS: 75.1K &bull; HPS: 78.0K</div></div>
+  <div class="prog-bar" style="height:18%; background:var(--red)"><div class="tooltip">F2 &bull; 1:07 &bull; 81%<br>DTPS: 103.6K &bull; HPS: 99.7K</div></div>
+  <div class="prog-bar" style="height:62%; background:var(--yellow)"><div class="tooltip">F3 &bull; 3:47 &bull; 58%<br>DPS: 16.5K &bull; DTPS: 55.8K</div></div>
+  <div class="prog-bar" style="height:19%; background:var(--red)"><div class="tooltip">F4 &bull; 1:08 &bull; 80%<br>DTPS: 67.0K &bull; HPS: 60.8K</div></div>
+  <div class="prog-bar" style="height:38%; background:var(--yellow)"><div class="tooltip">F5 &bull; 2:17 &bull; 62%<br>DTPS: 59.4K &bull; HPS: 54.1K</div></div>
+  <div class="prog-bar" style="height:13%; background:var(--red)"><div class="tooltip">F6 &bull; 0:47 &bull; 86%<br>DTPS: 62.8K &bull; HPS: 46.4K</div></div>
+  <div class="prog-bar" style="height:42%; background:var(--yellow)"><div class="tooltip">F7 &bull; 2:34 &bull; 62%<br>DTPS: 50.1K &bull; HPS: 33.7K</div></div>
+  <div class="prog-bar" style="height:65%; background:var(--yellow)"><div class="tooltip">F8 &bull; 3:59 &bull; 55%<br>DPS: 9.4K &bull; DTPS: 55.1K</div></div>
+  <div class="prog-bar" style="height:49%; background:var(--yellow)"><div class="tooltip">F9 &bull; 2:59 &bull; 62%<br>DTPS: 61.1K &bull; HPS: 35.2K</div></div>
+  <div class="prog-bar" style="height:38%; background:var(--yellow)"><div class="tooltip">F10 &bull; 2:18 &bull; 62%<br>DTPS: 86.7K &bull; HPS: 63.8K</div></div>
+  <div class="prog-bar" style="height:67%; background:var(--yellow)"><div class="tooltip">F11 &bull; 4:05 &bull; 55%<br>DPS: 16.7K &bull; DTPS: 74.8K</div></div>
+  <div class="prog-bar" style="height:17%; background:var(--red)"><div class="tooltip">F12 &bull; 1:03 &bull; 87%<br>DTPS: 77.6K &bull; HPS: 63.8K</div></div>
+  <div class="prog-bar" style="height:18%; background:var(--red)"><div class="tooltip">F13 &bull; 1:04 &bull; 87%<br>DTPS: 73.6K &bull; HPS: 70.6K</div></div>
+  <div class="prog-bar" style="height:66%; background:var(--yellow)"><div class="tooltip">F14 &bull; 4:02 &bull; 57%<br>DPS: 11.4K &bull; DTPS: 53.2K</div></div>
+  <div class="prog-bar" style="height:80%; background:#ffa940"><div class="tooltip">F15 &bull; 4:52 &bull; 46%<br>DPS: 18.8K &bull; DTPS: 53.1K</div></div>
+  <div class="prog-bar" style="height:83%; background:var(--green)"><div class="tooltip">F16 &bull; 5:03 &bull; 43%<br>DPS: 22.2K &bull; DTPS: 52.3K</div></div>
+  <div class="prog-bar" style="height:17%; background:var(--red)"><div class="tooltip">F17 &bull; 1:01 &bull; 88%<br>DTPS: 73.5K &bull; HPS: 65.5K</div></div>
+  <div class="prog-bar" style="height:98%; background:var(--green)"><div class="tooltip">F18 &bull; 5:56 &bull; 39%<br>DPS: 23.3K &bull; DTPS: 63.6K</div></div>
+  <div class="prog-bar" style="height:87%; background:var(--green)"><div class="tooltip">F19 &bull; 5:16 &bull; 44%<br>DPS: 21.4K &bull; DTPS: 60.4K</div></div>
+  <div class="prog-bar" style="height:88%; background:var(--green)"><div class="tooltip">F20 &bull; 5:23 &bull; 37%<br>DPS: 20.5K &bull; DTPS: 62.7K</div></div>
+  <div class="prog-bar" style="height:79%; background:#ffa940"><div class="tooltip">F21 &bull; 4:49 &bull; 43%<br>DPS: 24.9K &bull; DTPS: 50.0K</div></div>
+  <div class="prog-bar" style="height:69%; background:var(--yellow)"><div class="tooltip">F22 &bull; 4:13 &bull; 50%<br>DPS: 16.8K &bull; DTPS: 53.5K</div></div>
+  <div class="prog-bar" style="height:100%; background:var(--green)"><div class="tooltip">F23 &bull; 6:05 &bull; 37%<br>DPS: 24.2K &bull; DTPS: 59.4K</div></div>
+  <div class="prog-bar" style="height:78%; background:#ffa940"><div class="tooltip">F24 &bull; 4:44 &bull; 42%<br>DPS: 23.2K &bull; DTPS: 52.4K</div></div>
+  <div class="prog-bar" style="height:17%; background:var(--red)"><div class="tooltip">F25 &bull; 1:01 &bull; 86%<br>DTPS: 73.6K &bull; HPS: 55.6K</div></div>
+  <div class="prog-bar" style="height:99%; background:var(--green)"><div class="tooltip">F27 &bull; 6:01 &bull; 31% (BEST)<br>DPS: 24.4K &bull; DTPS: 54.0K</div></div>
+  <div class="prog-bar" style="height:94%; background:var(--green)"><div class="tooltip">F28 &bull; 5:43 &bull; 37%<br>DPS: 26.7K &bull; DTPS: 51.2K</div></div>
+</div>
+
+<!-- Actionable Items -->
+<h2>Actionable Items</h2>
+
+<div class="action-item success">
+  <strong>Zero Deaths &mdash; Survival Execution is Excellent</strong>
+  <p>Survived all 27 pulls with zero deaths. Last Resort triggered once (F23) showing the cheat death talent did its job when needed. Demon Spikes uptime stayed above 80% in every phase. For prog night 2, this is the foundation everything else builds on &mdash; Nucke is doing the #1 tank job flawlessly.</p>
+</div>
+
+<div class="action-item warning">
+  <strong>Fel Devastation &mdash; 75% Below Reference (0.4 vs 1.2 CPM)</strong>
+  <p>Fel Devastation was only cast 35 times across 27 pulls (1.3/pull average) and was completely absent from 9 pulls. The reference uses it at 1.2 CPM. This ability deals frontal AoE damage AND heals Nucke &mdash; it should be used on cooldown during active tanking windows, not saved for emergencies. On a ~40s cooldown, every long pull should see 5-8 casts.</p>
+</div>
+
+<div class="action-item warning">
+  <strong>Soul Cleave CPM Deficit &mdash; 24% Below Reference (10.2 vs 13.5 CPM)</strong>
+  <p>Soul Cleave is the primary Soul Fragment spender and self-heal. At 10.2 CPM vs reference 13.5 CPM, Nucke is spending fragments ~3.3 fewer times per minute. This directly impacts both DPS and self-healing throughput. With Nucke's high Haste (1206), Fracture should be generating enough fragments to support higher Soul Cleave frequency.</p>
+</div>
+
+<div class="action-item warning">
+  <strong>Immolation Aura CPM Deficit &mdash; 29% Below Reference (3.0 vs 4.2 CPM)</strong>
+  <p>Immolation Aura is a key DPS and Soul Fragment generation ability. At 3.0 CPM vs 4.2 CPM, Nucke is leaving damage and fragment generation on the table. This is a fire-and-forget ability that should be pressed essentially on cooldown.</p>
+</div>
+
+<div class="action-item info">
+  <strong>Taunt Imbalance &mdash; Glazedwhole Taunts 2.5x More</strong>
+  <p>Glazedwhole used 266 taunts to Nucke's 105 across all pulls. In 5 pulls, Nucke used zero taunts. This improved on later pulls (F23: 8 Nucke / 10 Glazed, F27: 13 / 11), suggesting the swap pattern is being learned. Equalizing the tanking burden will improve both tanks' DPS and distribute healer attention more evenly.</p>
+</div>
+
+<div class="action-item info">
+  <strong>DPS Gap is Expected on Prog &mdash; Will Close Naturally</strong>
+  <p>The ~20K avg DPS vs rank-1's 53.5K kill DPS is a large gap, but context matters: rank-1 had a full kill (8:26 with Bloodlust/Hero, more uptime), while Nucke is on prog night 2 with wipes. DPS already trended upward through the session (F28 hit 26.7K). As the fight becomes more comfortable and the rotation becomes automatic, DPS will rise naturally. The priority order remains: survive &gt; mechanics &gt; swap consistency &gt; DPS.</p>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  Generated by WCL Tank Analyzer &bull; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C">Warcraft Logs</a> &bull; Reference: Melvabeam (Rank #1 Vengeance DH, Crown of the Cosmos Mythic)
+</div>
+
+</body>
+</html>

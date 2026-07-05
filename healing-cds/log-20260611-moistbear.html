@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moistbear — Feral Druid — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 160px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .prog-boss-pct { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; white-space: nowrap; font-weight: 600; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Moistbear <span class="dim">&mdash; Feral Druid</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; PROG (26 wipes, no kill) &middot; Best Pull: Fight 23 (4:52) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">115.4K</div>
+    <div class="stat-label">DPS (Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">290</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">0.01%</div>
+    <div class="stat-label">Best Pull (F8, F17)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">38.6</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 16px;">
+  <div class="card-header red">Bottom Line &mdash; Prog Context</div>
+  <p style="font-size: 15px;">Across 26 wipe pulls on Mythic Crown of the Cosmos, Moistbear averaged <strong class="yellow">115.4K DPS</strong> on the longest pull (Fight 23, 4:52) &mdash; a <strong class="red">32.7% gap</strong> behind the #1 ranked Feral Druid kill from <strong class="purple">Minkoff</strong> (92.5K DPS in 7:52, but 171.5K effective DPS). This is <strong>prog data vs a kill</strong> &mdash; Moistbear died at <strong class="red">4:03</strong> (242.8s) while the reference completed a full 7:52 kill. The CPM gap is massive: <strong class="red">38.6 vs 54.5 total CPM</strong>. The core problems are a <strong class="red">51-second dead zone</strong> during the phase transition (129&ndash;180s with no offensive casts), <strong class="red">Shred CPM 44% below reference</strong>, <strong class="red">Swipe being used in single-target instead of Shred</strong> (18 Swipes vs reference's 3), and <strong class="red">zero Regrowth casts</strong> (the reference uses 28 Regrowths to consume Predatory Swiftness for Bloodtalons procs). With <strong class="green">0 talent differences</strong> and similar ilvl (290.3 vs 292.1), these gaps are purely rotational execution. The reference also received <strong class="yellow">3 Power Infusions</strong> while Moistbear received none, which inflates the reference's DPS by an estimated 5-8%.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Feral Druids on Mythic Crown of the Cosmos (encounter 3181). Primary reference: <strong>Minkoff</strong> (identical talent build at 0 diffs, 92.5K DPS, 7:52 kill). Note: all references are from KILLS while Moistbear's data is from a 4:52 prog wipe &mdash; direct DPS comparison is contextual only.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Fight Time</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Moistbear</strong></td>
+      <td>115,440</td>
+      <td>4:52 (wipe)</td>
+      <td>290.3</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Prog &middot; Died 4:03</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Minkoff <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">92,536</td>
+      <td>7:52 (kill)</td>
+      <td>292.1</td>
+      <td><span class="tag tag-same">0 diff</span></td>
+      <td><span class="tag tag-same">Kill &middot; 3x PI</span></td>
+    </tr>
+    <tr>
+      <td>一般不吃人 <span class="ref-badge">#2</span></td>
+      <td class="green">92,034</td>
+      <td>7:43 (kill)</td>
+      <td>273.6</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Catgptee <span class="ref-badge">#3</span></td>
+      <td class="green">82,930</td>
+      <td>7:36 (kill)</td>
+      <td>288.7</td>
+      <td><span class="tag tag-same">2 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>灵壹灵 <span class="ref-badge">#4</span></td>
+      <td class="green">81,604</td>
+      <td>8:14 (kill)</td>
+      <td>291.1</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>卡哞 <span class="ref-badge">#5</span></td>
+      <td class="green">78,375</td>
+      <td>7:09 (kill)</td>
+      <td>272.3</td>
+      <td><span class="tag tag-diff">7 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Moistbear has an identical talent build to the #1 reference Minkoff (0 differences) and comparable ilvl (290.3 vs 292.1). All references are from successful kills (7-8 minute fights). Direct DPS comparison against a 4-minute wipe pull is inherently asymmetric &mdash; the rotation analysis and CPM comparisons are more meaningful than raw DPS numbers. The reference also received 3 Power Infusions; Moistbear received none.</p>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Boss Mechanic Timeline &mdash; Fight 23</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase fight: Sentinels (Phase 1), Rift Simulacrum (Phase 2), and Devouring Cosmos (Phase 3). Fight 23 reached Phase 2 before wiping at 4:52. The phase transition around 2:09&ndash;3:00 is the biggest uptime challenge for melee.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Phase markers -->
+  <div style="position: absolute; top: 0; left: 0; width: 44%; height: 100%; background: rgba(63,185,80,0.06); border-right: 2px dashed var(--green);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--green); font-weight: 600;">Phase 1: Sentinels</span>
+  </div>
+  <div style="position: absolute; top: 0; left: 44%; width: 56%; height: 100%; background: rgba(188,140,255,0.06);">
+    <span class="timeline-label" style="top: 4px; left: 8px; color: var(--purple); font-weight: 600;">Phase 2: Rift Simulacrum</span>
+  </div>
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left: 51.4%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Alitheria + Smokinthisza</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.8%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--red); font-size: 9px;">&#x2620; Moistbear (4:03)</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 42%; color: var(--dim);">~2:09 transition</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:52 (wipe)</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State &mdash; Fight 23</div>
+  <p>0:00&ndash;2:30 = 20/20 alive &middot; 2:30 = 18/20 (Alitheria + Smokinthisza die to Silverstrike Barrage) &middot; 2:42 = 17/20 (Invincibale) &middot; 3:46 = 16/20 (Sonic) &middot; 3:56&ndash;4:03 = deaths cascade (Orichamaru, Starfighter, <strong class="red">Moistbear</strong>) &middot; 4:03&ndash;4:52 = wipe cascades, last player dies at 4:52</p>
+  <p style="margin-top: 4px; color: var(--red);">Moistbear died at 4:03 to <strong>Simulacrum Backlash</strong> &mdash; 50 seconds before the final wipe. This is a Phase 2 mechanic death, not a soft enrage wipe. The raid lost 4 players within 7 seconds around this window (3:56&ndash;4:03), suggesting a mechanic failure affected the group.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Moistbear (4:03 alive time, 242.8s) vs Minkoff (7:52 kill, 471.6s). Rotational abilities sorted by DPS impact. Moistbear's total CPM of <strong class="red">38.6</strong> vs reference's <strong class="green">54.5</strong> represents a <strong class="red">29.2% gap</strong> in raw button presses &mdash; this is the primary performance issue.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Shred</strong></td>
+      <td>33</td>
+      <td class="red">8.2</td>
+      <td>115</td>
+      <td>14.6</td>
+      <td class="red">&minus;44%</td>
+      <td><span class="tag tag-crit">Critical Gap</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Ferocious Bite</strong></td>
+      <td>31</td>
+      <td class="yellow">7.7</td>
+      <td>85</td>
+      <td>10.8</td>
+      <td class="red">&minus;29%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Moonfire</strong></td>
+      <td>8</td>
+      <td class="red">2.0</td>
+      <td>44</td>
+      <td>5.6</td>
+      <td class="red">&minus;65%</td>
+      <td><span class="tag tag-crit">Critical Gap</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Rake</strong></td>
+      <td>13</td>
+      <td class="yellow">3.2</td>
+      <td>39</td>
+      <td>5.0</td>
+      <td class="red">&minus;35%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Rip</strong></td>
+      <td>8</td>
+      <td class="yellow">2.0</td>
+      <td>26</td>
+      <td>3.3</td>
+      <td class="red">&minus;40%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Regrowth</strong></td>
+      <td>0</td>
+      <td class="red">0.0</td>
+      <td>28</td>
+      <td>3.6</td>
+      <td class="red">&minus;100%</td>
+      <td><span class="tag tag-crit">Never Used</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.08);">
+      <td><strong>Swipe</strong></td>
+      <td>18</td>
+      <td class="yellow">4.4</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td class="yellow">+1065%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr>
+      <td>Tiger's Fury</td>
+      <td>6</td>
+      <td>1.5</td>
+      <td>14</td>
+      <td>1.8</td>
+      <td class="dim">&minus;17%</td>
+      <td><span class="tag tag-same">OK (shorter fight)</span></td>
+    </tr>
+    <tr>
+      <td>Feral Frenzy</td>
+      <td>6</td>
+      <td>1.5</td>
+      <td>12</td>
+      <td>1.5</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Berserk</td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Convoke the Spirits</td>
+      <td>2</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="green">0%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Critical: Shred Replaced by Swipe</div>
+    <p style="font-size: 14px;">Shred is the primary combo point generator for Feral in single-target &mdash; it generates combo points, procs Clearcasting, and deals strong direct damage. Moistbear cast Shred at <strong>8.2 CPM (33 casts)</strong> vs the reference's <strong>14.6 CPM (115 casts)</strong> &mdash; a <strong class="red">44% deficit</strong>. Meanwhile, Swipe was cast <strong>18 times (4.4 CPM)</strong> vs just <strong>3 times (0.4 CPM)</strong> by the reference. Swipe is an AoE ability that generates combo points less efficiently in single-target and deals significantly less damage per GCD than Shred. Those 18 Swipes should be Shreds &mdash; this alone accounts for roughly <strong>15 lost Shred GCDs</strong> and cascading combo point / Ferocious Bite losses.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Critical: Zero Regrowth Casts (Bloodtalons)</div>
+    <p style="font-size: 14px;">The reference cast Regrowth <strong>28 times (3.6 CPM)</strong>. Moistbear cast it <strong>zero times</strong>. In the current Feral rotation, Regrowth is consumed via <strong>Predatory Swiftness procs</strong> (which Moistbear earned 9 of) to activate <strong>Bloodtalons</strong> &mdash; a talent that increases the damage of the next 3 Combo Point-generating abilities by 30%. By never casting Regrowth, Moistbear is leaving <strong>every single Bloodtalons window on the table</strong>. The reference gets Bloodtalons-buffed Shreds and Rakes throughout the fight. This is likely the single largest DPS loss per GCD.</p>
+  </div>
+</div>
+
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 12px;">
+  <div class="card-header yellow">Moonfire Uptime Severely Low</div>
+  <p style="font-size: 14px;">With the <strong>Lunar Inspiration</strong> talent (which both Moistbear and the reference use), Moonfire becomes a rotational DoT that should be maintained at near-100% uptime. Moistbear cast Moonfire <strong>8 times (2.0 CPM)</strong> vs the reference's <strong>44 times (5.6 CPM)</strong> &mdash; a <strong class="red">65% deficit</strong>. The reference refreshes Moonfire aggressively, cycling it across targets during add phases and maintaining it as a DoT on the boss. Moonfire accounted for <strong>6.7% of reference damage</strong> and is essentially free DPS when maintained. Missing Moonfire refreshes directly loses <strong>2-3% of total damage output</strong>.</p>
+</div>
+
+<!-- PHASE TRANSITION DEAD ZONE -->
+<h2>Phase Transition Analysis</h2>
+<p class="section-intro">The biggest single block of lost DPS: a <strong class="red">51-second dead zone</strong> from 2:09 to 3:00 where Moistbear cast zero offensive abilities. This is the Phase 1 &rarr; Phase 2 transition.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Moistbear</span> &mdash; Transition (2:09&ndash;3:00)</div>
+    <div class="cd-timeline">
+      <div><span class="dim">2:06</span> <span class="cast good">Swipe (last offensive cast)</span></div>
+      <div><span class="dim">2:09</span> <span class="cast bad">Bear Form</span></div>
+      <div><span class="dim">2:20</span> <span class="cast bad">Cat Form</span></div>
+      <div><span class="dim">2:22</span> <span class="cast neutral">Stampeding Roar</span></div>
+      <div><span class="dim">2:27</span> <span class="cast bad">Cat Form (repeated)</span></div>
+      <div><span class="dim">2:31</span> <span class="cast bad">Cat Form (repeated)</span></div>
+      <div><span class="dim">2:35</span> <span class="cast bad">Cat Form (repeated)</span></div>
+      <div><span class="dim">2:40</span> <span class="cast bad">Cat Form (repeated)</span></div>
+      <div><span class="dim">2:44</span> <span class="cast bad">Cat Form (repeated)</span></div>
+      <div><span class="dim">3:00</span> <span class="cast good">Algeth'ar Puzzle + Tiger's Fury + Berserk</span></div>
+      <div style="margin-top: 8px;"><strong class="red">51 seconds with zero damage output. 6 Cat Form casts suggest movement/repositioning issues.</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">Minkoff</span> <span class="ref-badge">Reference</span> &mdash; Transition (2:08&ndash;2:37)</div>
+    <div class="cd-timeline">
+      <div><span class="dim">2:01</span> <span class="cast good">Moonfire x3 + Rake + Rip (DoTs before moving)</span></div>
+      <div><span class="dim">2:06</span> <span class="cast neutral">Regrowth (instant via Pred Swift)</span></div>
+      <div><span class="dim">2:08</span> <span class="cast neutral">Travel Form + Bear Form</span></div>
+      <div><span class="dim">2:21</span> <span class="cast neutral">Frenzied Regen</span></div>
+      <div><span class="dim">2:30</span> <span class="cast neutral">Travel Form + Bear Form</span></div>
+      <div><span class="dim">2:37</span> <span class="cast good">Cat Form + Moonfire + Rip + Rake</span></div>
+      <div><span class="dim">2:46</span> <span class="cast neutral">Regrowth</span></div>
+      <div><span class="dim">2:53</span> <span class="cast good">Wild Charge + Algeth'ar Puzzle + Berserk</span></div>
+      <div style="margin-top: 8px;"><strong class="green">29 seconds of transition. Maintained DoTs before moving, used instant casts during movement, resumed DPS 22s faster than Moistbear.</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Why This Matters</div>
+  <p style="font-size: 14px;">The reference loses ~29 seconds of melee uptime during the transition but mitigates it by: (1) <strong>refreshing all DoTs before moving</strong> (Moonfire x3, Rake, Rip continue ticking during movement), (2) using instant-cast <strong>Regrowth</strong> via Predatory Swiftness for Bloodtalons, and (3) <strong>resuming offense within 29 seconds</strong>. Moistbear's transition takes <strong>51 seconds</strong> with zero DoTs ticking during most of it and 6 repeated Cat Form casts that suggest difficulty getting back into position. At Moistbear's DPS rate, 51 seconds of total downtime represents roughly <strong>5.9M lost damage</strong> &mdash; the equivalent of ~16% of total fight damage.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Moistbear total: 35.8M (115.4K DPS over 4:52 fight, 147.3K DPS over 4:03 alive time) vs Minkoff: 81.0M (171.8K DPS, 7:52 kill). Sorted by contribution to player damage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Ferocious Bite</strong></td>
+      <td>5,360K</td>
+      <td>15.0%</td>
+      <td class="green">12,370K</td>
+      <td>15.3%</td>
+      <td>Primary finisher &mdash; proportional share OK</td>
+    </tr>
+    <tr>
+      <td><strong>Rip</strong></td>
+      <td>5,150K</td>
+      <td>14.4%</td>
+      <td class="green">13,020K</td>
+      <td>16.1%</td>
+      <td>DoT uptime slightly low</td>
+    </tr>
+    <tr>
+      <td><strong>Rake</strong></td>
+      <td>4,470K</td>
+      <td>12.5%</td>
+      <td class="green">9,970K</td>
+      <td>12.3%</td>
+      <td>Good proportional share</td>
+    </tr>
+    <tr>
+      <td><strong>Melee</strong></td>
+      <td>3,390K</td>
+      <td>9.5%</td>
+      <td>5,660K</td>
+      <td>7.0%</td>
+      <td class="yellow">Higher % = less ability damage filling GCDs</td>
+    </tr>
+    <tr>
+      <td><strong>Feral Frenzy</strong></td>
+      <td>3,190K</td>
+      <td>8.9%</td>
+      <td class="green">7,560K</td>
+      <td>9.3%</td>
+      <td><span class="tag tag-same">Good CPM match</span></td>
+    </tr>
+    <tr>
+      <td><strong>Bloodseeker Vines</strong></td>
+      <td>2,950K</td>
+      <td>8.3%</td>
+      <td>6,320K</td>
+      <td>7.8%</td>
+      <td>Wildstalker passive &mdash; tracks bleed damage</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Shred</strong></td>
+      <td>2,920K</td>
+      <td>8.1%</td>
+      <td class="green">8,370K</td>
+      <td>10.3%</td>
+      <td class="red">-44% CPM = -2.2% damage share gap</td>
+    </tr>
+    <tr>
+      <td><strong>Moonfire</strong></td>
+      <td>2,360K</td>
+      <td>6.6%</td>
+      <td>5,410K</td>
+      <td>6.7%</td>
+      <td>Proportional share OK despite lower CPM</td>
+    </tr>
+    <tr>
+      <td><strong>Bursting Growth</strong></td>
+      <td>2,330K</td>
+      <td>6.5%</td>
+      <td>4,480K</td>
+      <td>5.5%</td>
+      <td>Wildstalker passive &mdash; good</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Unseen Slash</strong></td>
+      <td>1,470K</td>
+      <td>4.1%</td>
+      <td class="green">5,690K</td>
+      <td>7.0%</td>
+      <td class="red">Proc-based &mdash; fewer Shreds = fewer procs</td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Swipe</strong></td>
+      <td>1,040K</td>
+      <td>2.9%</td>
+      <td>240K</td>
+      <td>0.3%</td>
+      <td class="yellow">+2.6% share in a mostly ST fight</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Key Observation: Unseen Slash Gap</div>
+  <p style="font-size: 14px;"><strong>Unseen Slash</strong> (a Wildstalker proc from Shred and other combo-point generators) accounts for <strong>4.1% of Moistbear's damage vs 7.0% of reference damage</strong>. Because Unseen Slash procs from <strong>Shred and Rake</strong> (combo-point generators), the 44% Shred CPM deficit cascades into fewer procs, compounding the damage loss. This is a downstream effect &mdash; fixing Shred usage would also fix Unseen Slash damage automatically.</p>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown Usage</h2>
+<p class="section-intro">Major cooldown alignment. Both players sync Berserk + Tiger's Fury + Convoke correctly. The opener and Phase 2 burst windows match the correct Feral cooldown cadence.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cooldown</th><th>Player Uses</th><th>Player Timings</th><th>Ref Uses (7:52)</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Berserk</strong></td>
+      <td>2</td>
+      <td>0:01, 3:00</td>
+      <td>4</td>
+      <td><span class="tag tag-same">Good &mdash; on CD for fight length</span></td>
+    </tr>
+    <tr>
+      <td><strong>Convoke the Spirits</strong></td>
+      <td>2</td>
+      <td>0:04, 3:06</td>
+      <td>4</td>
+      <td><span class="tag tag-same">Good &mdash; synced with Berserk</span></td>
+    </tr>
+    <tr>
+      <td><strong>Tiger's Fury</strong></td>
+      <td>6</td>
+      <td>0:01, 0:35, 1:19, 1:51, 3:00, 3:32</td>
+      <td>14</td>
+      <td><span class="tag tag-same">Good cadence</span></td>
+    </tr>
+    <tr>
+      <td><strong>Feral Frenzy</strong></td>
+      <td>6</td>
+      <td>0:02, 0:53, 1:08, 1:37, 2:01, 3:03</td>
+      <td>12</td>
+      <td><span class="tag tag-same">Good &mdash; on cooldown</span></td>
+    </tr>
+    <tr>
+      <td>Barkskin</td>
+      <td>3</td>
+      <td>0:04, 1:08, 3:05</td>
+      <td>5</td>
+      <td><span class="tag tag-same">Defensive</span></td>
+    </tr>
+    <tr>
+      <td>Survival Instincts</td>
+      <td>1</td>
+      <td>3:32</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Emergency</span></td>
+    </tr>
+    <tr>
+      <td>Skull Bash</td>
+      <td>2</td>
+      <td>&mdash;</td>
+      <td>2</td>
+      <td><span class="tag tag-same">Interrupts &mdash; matching</span></td>
+    </tr>
+    <tr>
+      <td>Stampeding Roar</td>
+      <td>2</td>
+      <td>0:46, 2:22</td>
+      <td>2</td>
+      <td><span class="tag tag-same">Raid utility</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--green);">
+  <div class="card-header green">Cooldown Discipline Is Good</div>
+  <p style="font-size: 14px;">Moistbear's cooldown usage is solid. <strong>Berserk + Tiger's Fury + Convoke</strong> are properly stacked on the opener (0:01&ndash;0:04) and again for the Phase 2 burst window (3:00&ndash;3:06). Tiger's Fury is used close to on cooldown throughout Phase 1 (30-second cadence). Feral Frenzy is also used on cooldown. The performance gap is not from missed cooldowns &mdash; it is from what happens between cooldown windows: the GCD-level rotation.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers. The reference received significantly more external support than Moistbear.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Moistbear</th><th>Minkoff (Ref)</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism / Time Warp</strong></td>
+      <td>2:59 (Phase 2 start)</td>
+      <td>2:53 (Phase 2 start)</td>
+      <td><span class="tag tag-same">Same timing</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Power Infusion</strong></td>
+      <td class="red">None</td>
+      <td class="green">3 applications (0:02, 3:06, 5:27)</td>
+      <td><span class="tag tag-warn">Ref had 3x PI</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>6 applications</td>
+      <td>11 applications</td>
+      <td><span class="tag tag-warn">Ref had more Aug support</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>Not tracked</td>
+      <td>Not tracked</td>
+      <td><span class="tag tag-info">&mdash;</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="yellow">Important context:</strong> The reference received <strong>3 Power Infusions</strong> while Moistbear received <strong>none</strong>. PI provides ~25% haste for 15 seconds &mdash; over 3 applications that is roughly <strong>5-8% total DPS inflation</strong> for the reference. The reference also had nearly double the Ebon Might applications (11 vs 6) due to the longer fight. When accounting for external buffs, the "true" execution gap is somewhat smaller than the raw DPS numbers suggest.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Moistbear during Fight 23. Mostly unavoidable mechanics with one notable avoidable hit.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>3,046K</td>
+      <td>118</td>
+      <td>365K</td>
+      <td><span class="tag tag-same">No &mdash; passive raid ticks</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,234K</td>
+      <td>26</td>
+      <td>0</td>
+      <td><span class="tag tag-same">No &mdash; pool detonation raid-wide</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>964K</td>
+      <td>40</td>
+      <td>132K</td>
+      <td><span class="tag tag-warn">Partially &mdash; killed Moistbear</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>655K</td>
+      <td>13</td>
+      <td>38K</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning reduces hits</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>644K</td>
+      <td>32</td>
+      <td>73K</td>
+      <td><span class="tag tag-same">No &mdash; applied debuff</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>529K</td>
+      <td>15</td>
+      <td>5K</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>425K</td>
+      <td>21</td>
+      <td>56K</td>
+      <td><span class="tag tag-same">No &mdash; Phase 2 mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>383K</td>
+      <td>5</td>
+      <td>9K</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>309K</td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-diff">Yes &mdash; 2 fall damage hits</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Arrow</td>
+      <td>281K</td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+    <tr>
+      <td>Other</td>
+      <td>839K</td>
+      <td>misc</td>
+      <td>71K</td>
+      <td><span class="tag tag-same">Mixed</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Death cause: <strong class="red">Simulacrum Backlash</strong> at 4:03. This is a Phase 2 mechanic &mdash; the Rift Simulacrum pulses raid-wide damage that stacks over time. With 40 hits of Simulacrum Backlash totaling 964K damage (plus 132K absorbed), this was likely a group-wide failure to burn the Simulacrum fast enough. The <strong>2 Falling damage hits (309K)</strong> suggest platform positioning issues during the phase transition &mdash; possibly related to the long dead zone.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Moistbear's DPS across all 26 Crown of the Cosmos pulls. Bar height = DPS, color = boss % reached (green = deep prog &lt;10%, yellow = 10-50%, orange = 50-90%, red = &gt;90%). Labels show boss % remaining.</p>
+
+<div class="card">
+  <div class="progression-chart" style="height: 200px; padding-bottom: 24px;">
+    <div class="prog-bar" style="height: 0%; background: var(--dim);" data-tooltip="F1: No data (28s)">
+      <span class="prog-label">1</span>
+    </div>
+    <div class="prog-bar" style="height: 62%; background: var(--orange);" data-tooltip="F2: 127.8K DPS (63s) — 52% boss">
+      <span class="prog-boss-pct orange">52%</span>
+      <span class="prog-label">2</span>
+    </div>
+    <div class="prog-bar" style="height: 23%; background: var(--orange);" data-tooltip="F3: 47.0K DPS (117s) — 55% boss">
+      <span class="prog-boss-pct orange">55%</span>
+      <span class="prog-label">3</span>
+    </div>
+    <div class="prog-bar" style="height: 51%; background: var(--orange);" data-tooltip="F4: 105.9K DPS (76s) — 55% boss">
+      <span class="prog-boss-pct orange">55%</span>
+      <span class="prog-label">4</span>
+    </div>
+    <div class="prog-bar" style="height: 68%; background: var(--orange);" data-tooltip="F5: 140.2K DPS (60s) — 74% boss">
+      <span class="prog-boss-pct orange">74%</span>
+      <span class="prog-label">5</span>
+    </div>
+    <div class="prog-bar" style="height: 79%; background: var(--yellow);" data-tooltip="F6: 163.1K DPS (143s) — 19% boss">
+      <span class="prog-boss-pct yellow">19%</span>
+      <span class="prog-label">6</span>
+    </div>
+    <div class="prog-bar" style="height: 61%; background: var(--yellow);" data-tooltip="F7: 126.7K DPS (89s) — 42% boss">
+      <span class="prog-boss-pct yellow">42%</span>
+      <span class="prog-label">7</span>
+    </div>
+    <div class="prog-bar" style="height: 93%; background: var(--green);" data-tooltip="F8: 191.8K DPS (142s) — 0.01% boss ★">
+      <span class="prog-boss-pct green">0%</span>
+      <span class="prog-label">8</span>
+    </div>
+    <div class="prog-bar" style="height: 88%; background: var(--green);" data-tooltip="F9: 181.9K DPS (152s) — 7% boss">
+      <span class="prog-boss-pct green">7%</span>
+      <span class="prog-label">9</span>
+    </div>
+    <div class="prog-bar" style="height: 53%; background: var(--red);" data-tooltip="F10: 110.1K DPS (220s) — 98% boss">
+      <span class="prog-boss-pct red">98%</span>
+      <span class="prog-label">10</span>
+    </div>
+    <div class="prog-bar" style="height: 90%; background: var(--yellow);" data-tooltip="F11: 186.1K DPS (122s) — 30% boss">
+      <span class="prog-boss-pct yellow">30%</span>
+      <span class="prog-label">11</span>
+    </div>
+    <div class="prog-bar" style="height: 61%; background: var(--red);" data-tooltip="F12: 125.9K DPS (234s) — 92% boss">
+      <span class="prog-boss-pct red">92%</span>
+      <span class="prog-label">12</span>
+    </div>
+    <div class="prog-bar" style="height: 79%; background: var(--orange);" data-tooltip="F13: 163.0K DPS (75s) — 61% boss">
+      <span class="prog-boss-pct orange">61%</span>
+      <span class="prog-label">13</span>
+    </div>
+    <div class="prog-bar" style="height: 69%; background: var(--red);" data-tooltip="F14: 143.6K DPS (231s) — 95% boss">
+      <span class="prog-boss-pct red">95%</span>
+      <span class="prog-label">14</span>
+    </div>
+    <div class="prog-bar" style="height: 91%; background: var(--green);" data-tooltip="F15: 187.1K DPS (149s) — 9% boss">
+      <span class="prog-boss-pct green">9%</span>
+      <span class="prog-label">15</span>
+    </div>
+    <div class="prog-bar" style="height: 94%; background: var(--yellow);" data-tooltip="F16: 194.5K DPS (130s) — 21% boss">
+      <span class="prog-boss-pct yellow">21%</span>
+      <span class="prog-label">16</span>
+    </div>
+    <div class="prog-bar" style="height: 76%; background: var(--green);" data-tooltip="F17: 157.0K DPS (144s) — 0.01% boss ★">
+      <span class="prog-boss-pct green">0%</span>
+      <span class="prog-label">17</span>
+    </div>
+    <div class="prog-bar" style="height: 61%; background: var(--red);" data-tooltip="F18: 125.8K DPS (236s) — 96% boss">
+      <span class="prog-boss-pct red">96%</span>
+      <span class="prog-label">18</span>
+    </div>
+    <div class="prog-bar" style="height: 83%; background: var(--yellow);" data-tooltip="F19: 170.9K DPS (114s) — 35% boss">
+      <span class="prog-boss-pct yellow">35%</span>
+      <span class="prog-label">19</span>
+    </div>
+    <div class="prog-bar" style="height: 89%; background: var(--yellow);" data-tooltip="F20: 183.7K DPS (120s) — 35% boss">
+      <span class="prog-boss-pct yellow">35%</span>
+      <span class="prog-label">20</span>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F21: 206.7K DPS (147s) — 0.22% boss ★">
+      <span class="prog-boss-pct green">0%</span>
+      <span class="prog-label">21</span>
+    </div>
+    <div class="prog-bar" style="height: 0%; background: var(--dim);" data-tooltip="F22: No data (25s)">
+      <span class="prog-label">22</span>
+    </div>
+    <div class="prog-bar" style="height: 56%; background: var(--orange);" data-tooltip="F23: 115.4K DPS (293s) — 77% boss (longest pull)">
+      <span class="prog-boss-pct orange">77%</span>
+      <span class="prog-label">23</span>
+    </div>
+    <div class="prog-bar" style="height: 68%; background: var(--red);" data-tooltip="F24: 140.5K DPS (229s) — 93% boss">
+      <span class="prog-boss-pct red">93%</span>
+      <span class="prog-label">24</span>
+    </div>
+    <div class="prog-bar" style="height: 66%; background: var(--red);" data-tooltip="F25: 136.4K DPS (188s) — 100% boss">
+      <span class="prog-boss-pct red">100%</span>
+      <span class="prog-label">25</span>
+    </div>
+    <div class="prog-bar" style="height: 72%; background: var(--red);" data-tooltip="F26: 149.6K DPS (220s) — 97% boss">
+      <span class="prog-boss-pct red">97%</span>
+      <span class="prog-label">26</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px; margin-top: 8px;">
+    <span>Fight 1</span>
+    <span style="color: var(--dim);"><span class="red">90%+</span> &bull; <span class="orange">50-90%</span> &bull; <span class="yellow">10-50%</span> &bull; <span class="green">&lt;10% (deep prog)</span></span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;"><strong>Best DPS pulls:</strong> Fight 21 (<strong class="green">206.7K</strong>, 0.22% boss), Fight 16 (194.5K, 21% boss), Fight 8 (191.8K, 0.01% boss). These are all Phase 1 pulls &mdash; high DPS because the Sentinel phase favors sustained melee uptime. <strong>Longest pulls with deeper progress tend to show lower DPS</strong> (Fight 23 at 115K, Fight 18 at 126K, Fight 14 at 144K) because the Phase 1&rarr;2 transition downtime and subsequent deaths drag the average down. This is normal prog behavior &mdash; the team has not yet optimized the transition.<br><br>
+  <strong>Concerning pattern:</strong> Fights 24-26 (the final three pulls) all show <strong class="red">90%+ boss remaining</strong> with moderate DPS. This suggests the raid was struggling with early Phase 1 execution in later pulls &mdash; possible fatigue or tilt after ~3 hours of progression.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. Similar ilvl with different distributions.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Moistbear</th><th>Minkoff (Ref)</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>290.3</td>
+      <td>292.1</td>
+      <td><span class="tag tag-same">&minus;1.8 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Agility</td>
+      <td>2,038</td>
+      <td>&mdash;</td>
+      <td>Primary stat</td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td>821</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td>879</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td><strong>Mastery</strong></td>
+      <td class="green">1,760</td>
+      <td>&mdash;</td>
+      <td>Feral Mastery = bleed damage. Very high &mdash; good for Wildstalker.</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>37</td>
+      <td>&mdash;</td>
+      <td><span class="dim">Very low</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Moistbear's stat profile heavily favors <strong>Mastery (1,760)</strong>, which is ideal for the Wildstalker hero talent tree &mdash; Mastery increases bleed damage, and Wildstalker amplifies bleeds further through Bloodseeker Vines and Bursting Growth. The ilvl difference of 1.8 is negligible. The performance gap is not gear-related.</p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Use Regrowth to proc Bloodtalons.</strong> This is the single highest-impact change available. Moistbear cast Regrowth <strong>zero times</strong> while the reference cast it <strong>28 times (3.6 CPM)</strong>. Every time Predatory Swiftness procs (after a 5-CP finisher), cast an instant Regrowth. This activates <strong>Bloodtalons</strong>, which increases the damage of the next 3 combo-point-generating abilities (Shred, Rake, Moonfire) by <strong>30%</strong>. Moistbear earned 9 Predatory Swiftness procs and consumed none of them. At the reference's Bloodtalons uptime, this represents roughly <strong>8-12% of total damage</strong> being left on the table. The Regrowth is instant-cast and off the GCD when Predatory Swiftness is active &mdash; it costs no DPS time to press.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Replace Swipe with Shred in single-target.</strong> Moistbear cast Swipe <strong>18 times (4.4 CPM)</strong> vs the reference's <strong>3 times (0.4 CPM)</strong>. Swipe is an AoE ability that does significantly less single-target damage than Shred and generates combo points less efficiently. Shred is at <strong>8.2 CPM vs the reference's 14.6 CPM</strong> &mdash; a 44% deficit. Swapping 15+ Swipes to Shreds would directly increase both direct damage and Unseen Slash proc rate (which scales from Shred hits). Estimated gain: <strong>5-7% total DPS</strong>. Only use Swipe when 3+ targets are stacked.
+</div>
+
+<div class="action-item critical">
+  <strong>3. Cut phase transition downtime from 51s to &lt;30s.</strong> From 2:09 to 3:00, Moistbear had <strong>zero offensive casts</strong> and 6 repeated Cat Form casts suggesting movement/repositioning difficulty. The reference handles the same transition in ~29 seconds by: (a) refreshing all DoTs (Rake, Rip, Moonfire) before leaving melee range, (b) using instant Regrowth during movement, (c) pre-positioning with Travel Form + Wild Charge to return to the boss faster. Saving 22 seconds of downtime at 147K DPS = <strong>~3.2M recovered damage</strong> on this pull alone.
+</div>
+
+<div class="action-item">
+  <strong>4. Maintain Moonfire uptime (Lunar Inspiration).</strong> Moonfire at <strong>2.0 CPM vs 5.6 CPM</strong> is a 65% deficit. With Lunar Inspiration talented, Moonfire is a ranged instant-cast DoT that should be maintained on the primary target at all times and cycled across Sentinels in Phase 1. It is also castable during movement &mdash; the reference uses Moonfire extensively during the phase transition to maintain damage output while repositioning. Refreshing Moonfire within the pandemic window (last 30% of duration) avoids wasting ticks.
+</div>
+
+<div class="action-item">
+  <strong>5. Increase Ferocious Bite frequency through faster combo point generation.</strong> Ferocious Bite at <strong>7.7 CPM vs 10.8 CPM</strong> is a 29% deficit. This is downstream from the Shred deficit &mdash; fewer Shreds = slower combo point generation = fewer Ferocious Bites. Fixing Shred CPM (item #2) and Bloodtalons (item #1) will naturally increase Ferocious Bite frequency. Additionally, ensure Ferocious Bite is always cast at 50+ Energy for the damage bonus &mdash; the Feral rotation rewards pooling Energy briefly before spending finishers.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Cooldown alignment:</strong> Berserk + Tiger's Fury + Convoke are properly stacked for both the opener and Phase 2 re-entry. Tiger's Fury is used on a tight 30-second cadence throughout Phase 1. Feral Frenzy is on cooldown consistently. These are the hardest parts of the Feral rotation to get right and Moistbear does them well.<br><br>
+    <strong>Bleed snapshot awareness:</strong> Rake and Rip are applied during Tiger's Fury windows, which snapshots the 15% damage buff onto the full bleed duration. The damage distribution (Rip 14.4%, Rake 12.5%) is proportionally close to the reference, showing good bleed management between cooldown windows.<br><br>
+    <strong>Utility contribution:</strong> 2 Skull Bash interrupts, 2 Stampeding Roars (raid movement), and Innervate cast on a healer. Moistbear is contributing raid utility alongside personal DPS.<br><br>
+    <strong>Best pulls are strong:</strong> Fight 21 at 206.7K DPS (0.22% boss) shows Moistbear can output competitive damage when the fight stays in Phase 1. The challenge is maintaining that through the phase transition.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary &mdash; Prog Context</div>
+  <p style="font-size: 14px;">This is <strong>progression data</strong> &mdash; 26 wipes with no kill. The CPM and rotation analysis reveals three core issues that account for the bulk of the performance gap: <strong>(1) Bloodtalons completely unused</strong> (zero Regrowths = zero 30% damage buffs on generators), <strong>(2) Swipe replacing Shred in single-target</strong> (18 Swipes vs 3 reference), and <strong>(3) 51 seconds of total downtime during the phase transition</strong>. Fixing items 1 and 2 are pure muscle-memory changes that would immediately improve every pull. Item 3 will improve naturally as the raid learns the transition timing. The reference's DPS advantage is also inflated by <strong>3 Power Infusions</strong> and nearly double the Ebon Might uptime, meaning the actual execution gap is smaller than the raw numbers suggest. Moistbear's best Phase 1 pulls (190-207K DPS) show the ceiling is competitive &mdash; the priority is consistency through transitions and correcting the Regrowth/Swipe rotation habits.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (longest pull, 4:52 wipe, 77.31% boss). Reference: Minkoff (#1 ranked Feral Druid, report <code>8AH9rLym6N2dQbfv</code>, Fight 9, 7:52 kill). All times relative to fight start. Player alive time: 242.8s (died at 4:03 to Simulacrum Backlash).</p>
+  <p style="margin-top: 4px;">Talent delta: 0 differences between Moistbear and Minkoff. Item level difference: &minus;1.8 (290.3 vs 292.1). External buff difference: reference received 3 Power Infusions, Moistbear received 0. Prog vs kill context: all references are from completed kills; Moistbear data is from a wipe pull.</p>
+  <p style="margin-top: 4px; color: var(--dim);">Generated by WCL Analyzer &middot; Spec guide source: Wowhead / Icy Veins / Maxroll (Feral Druid, Patch 12.0.7, TWW Season 2)</p>
+</div>
+
+</body>
+</html>

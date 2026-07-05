@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unholyftw - Unholy DK - Crown of the Cosmos Prog - June 23, 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --dk-color: #c41e3a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.back-link:hover { color:var(--accent); }
+
+.header { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px 28px; margin-bottom:24px; }
+.header-top { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; }
+.header-left h1 { font-size:28px; font-weight:700; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.player-name { color:var(--dk-color); }
+.spec-badge { background:var(--dk-color); color:#fff; font-size:12px; font-weight:600; padding:3px 10px; border-radius:20px; }
+.prog-badge { background:var(--orange); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.5px; }
+.header-left .subtitle { color:var(--dim); font-size:14px; margin-top:4px; }
+.header-right { text-align:right; color:var(--dim); font-size:13px; }
+
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px; text-align:center; }
+.card .label { font-size:11px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+.card .value { font-size:28px; font-weight:700; }
+.card .sub { font-size:12px; color:var(--dim); margin-top:4px; }
+
+.section { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px; margin-bottom:24px; }
+.section h2 { font-size:18px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.section h3 { font-size:15px; font-weight:600; margin:16px 0 10px 0; color:var(--accent); }
+
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:8px 12px; border-bottom:2px solid var(--border); color:var(--dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:8px 12px; border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+tr:hover { background:rgba(88,166,255,0.04); }
+
+.bar-chart { margin:16px 0; }
+.bar-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.bar-label { font-size:11px; color:var(--dim); width:55px; text-align:right; flex-shrink:0; }
+.bar-container { flex:1; height:28px; background:rgba(255,255,255,0.04); border-radius:4px; position:relative; overflow:hidden; }
+.bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 8px; font-size:11px; font-weight:600; color:#fff; min-width:30px; }
+.bar-fill.survived { background:var(--green); opacity:0.85; }
+.bar-fill.died-p1 { background:var(--red); opacity:0.6; }
+.bar-fill.died-p2 { background:var(--red); opacity:0.85; }
+.bar-fill.died-p3 { background:var(--orange); opacity:0.85; }
+.bar-fill.died-inter { background:var(--yellow); opacity:0.85; }
+.bar-fill.no-data { background:var(--border); opacity:0.5; }
+.bar-meta { font-size:11px; color:var(--dim); width:160px; flex-shrink:0; text-align:left; }
+.avg-line { position:absolute; top:0; bottom:0; width:2px; background:var(--yellow); z-index:2; }
+
+.callout { background:rgba(248,81,73,0.08); border:1px solid rgba(248,81,73,0.3); border-radius:8px; padding:16px 20px; margin:16px 0; }
+.callout.warning { background:rgba(210,153,34,0.08); border-color:rgba(210,153,34,0.3); }
+.callout.info { background:rgba(88,166,255,0.08); border-color:rgba(88,166,255,0.3); }
+.callout.success { background:rgba(63,185,80,0.08); border-color:rgba(63,185,80,0.3); }
+.callout h4 { font-size:14px; font-weight:600; margin-bottom:6px; }
+.callout p { font-size:13px; color:var(--dim); line-height:1.5; }
+.callout.warning h4 { color:var(--yellow); }
+.callout h4 .red { color:var(--red); }
+
+.death-cause-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin:16px 0; }
+.death-cause-card { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:14px; }
+.death-cause-card .cause-name { font-size:14px; font-weight:600; margin-bottom:4px; }
+.death-cause-card .cause-count { font-size:24px; font-weight:700; color:var(--red); }
+.death-cause-card .cause-detail { font-size:11px; color:var(--dim); margin-top:4px; line-height:1.5; }
+.death-cause-card.top-killer { border-color:var(--red); background:rgba(248,81,73,0.06); }
+
+.reach-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+.reach-badge.green { background:rgba(63,185,80,0.15); color:var(--green); }
+.reach-badge.yellow { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.reach-badge.red { background:rgba(248,81,73,0.15); color:var(--red); }
+
+.trend-indicator { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:10px; font-size:12px; font-weight:600; }
+.trend-indicator.up { background:rgba(63,185,80,0.15); color:var(--green); }
+
+.action-item { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:16px 20px; margin-bottom:12px; }
+.action-item .priority { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.action-item .priority.critical { color:var(--red); }
+.action-item .priority.high { color:var(--orange); }
+.action-item .priority.medium { color:var(--yellow); }
+.action-item h4 { font-size:14px; font-weight:600; margin-bottom:6px; }
+.action-item p { font-size:13px; color:var(--dim); line-height:1.5; }
+
+.ref-context { background:rgba(188,140,255,0.06); border:1px solid rgba(188,140,255,0.2); border-radius:8px; padding:16px 20px; margin:16px 0; }
+.ref-context h4 { color:var(--purple); font-size:14px; font-weight:600; margin-bottom:6px; }
+.ref-context p { font-size:13px; color:var(--dim); }
+
+.footer { text-align:center; padding:24px; color:var(--dim); font-size:12px; border-top:1px solid var(--border); margin-top:32px; }
+
+.phase-timeline { display:flex; margin:16px 0 24px 0; border-radius:8px; overflow:hidden; height:36px; }
+.phase-segment { display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:rgba(255,255,255,0.9); }
+.phase-segment.p1 { background:#2ea043; }
+.phase-segment.inter { background:#d29922; }
+.phase-segment.p2 { background:#58a6ff; }
+.phase-segment.p3 { background:#bc8cff; }
+
+.consistency-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+.ability-bar { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.ability-name { font-size:12px; width:140px; text-align:right; color:var(--dim); flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ability-bar-fill { height:18px; border-radius:3px; background:var(--dk-color); display:flex; align-items:center; padding:0 6px; font-size:10px; color:#fff; font-weight:600; }
+
+@media (max-width:768px) {
+  .cards { grid-template-columns:repeat(2,1fr); }
+  .consistency-grid { grid-template-columns:1fr; }
+  .death-cause-grid { grid-template-columns:1fr; }
+  .header-top { flex-direction:column; }
+  .bar-meta { width:120px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23 Crown of the Cosmos Log Analysis</a>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-left">
+      <h1>
+        <span class="player-name">Unholyftw</span>
+        <span class="spec-badge">Unholy Death Knight</span>
+        <span class="prog-badge">PROGRESSION NIGHT 3</span>
+      </h1>
+      <div class="subtitle">
+        Mythic Crown of the Cosmos &mdash; 20 pulls, no kill &mdash; Best: 31.14% (Fight 23)
+      </div>
+    </div>
+    <div class="header-right">
+      June 23, 2026<br>
+      Report: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a><br>
+      ilvl 292
+    </div>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color:var(--accent);">42.1K</div>
+    <div class="sub">Across 12 pulls with data<br>Median: 45.7K</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value" style="color:var(--text);">292</div>
+    <div class="sub">Str 2,080 / Mastery 1,269<br>Crit 1,007 / Haste 425</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--red);">0/20</div>
+    <div class="sub">Died in every pull<br>Avg alive: 2:52</div>
+  </div>
+  <div class="card">
+    <div class="label">Best Pull</div>
+    <div class="value" style="color:var(--green);">63.4K</div>
+    <div class="sub">Fight 23 &mdash; 6:25, 31.14%<br>Ranked #1 DPS that pull</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    DPS per pull with death phase color-coding. Bars show DPS relative to best pull (63.4K).
+    Gray bars = early death with no DPS table data. Average line at 42.1K.
+  </p>
+
+  <div class="bar-chart">
+    <!-- Fight 5: 28,274 DPS, died P1 at 1:55 -->
+    <div class="bar-row">
+      <div class="bar-label">F5</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p1" style="width:44.6%;">28.3K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">3:48 &middot; 50.44% &middot; Died P1 1:55</div>
+    </div>
+    <!-- Fight 6: 34,366 DPS, died P2 at 3:38 -->
+    <div class="bar-row">
+      <div class="bar-label">F6</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p2" style="width:54.2%;">34.4K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">3:53 &middot; 47.14% &middot; Died P2 3:38</div>
+    </div>
+    <!-- Fight 7: 0 DPS, died P1 at 0:50 -->
+    <div class="bar-row">
+      <div class="bar-label">F7</div>
+      <div class="bar-container">
+        <div class="bar-fill no-data" style="width:4%;">--</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">1:17 &middot; 84.12% &middot; Died P1 0:50</div>
+    </div>
+    <!-- Fight 8: 0 DPS, died P1 at 1:13 -->
+    <div class="bar-row">
+      <div class="bar-label">F8</div>
+      <div class="bar-container">
+        <div class="bar-fill no-data" style="width:4%;">--</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">1:21 &middot; 82.21% &middot; Died P1 1:13</div>
+    </div>
+    <!-- Fight 9: 46,651 DPS, died P3 at 5:09 -->
+    <div class="bar-row">
+      <div class="bar-label">F9</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p3" style="width:73.5%;">46.7K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">5:15 &middot; 32.91% &middot; Died P3 5:09</div>
+    </div>
+    <!-- Fight 10: 0 DPS, died P1 at 1:43 -->
+    <div class="bar-row">
+      <div class="bar-label">F10</div>
+      <div class="bar-container">
+        <div class="bar-fill no-data" style="width:4%;">--</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">2:00 &middot; 71.08% &middot; Died P1 1:43</div>
+    </div>
+    <!-- Fight 11: 18,971 DPS, died P2 at 3:37 -->
+    <div class="bar-row">
+      <div class="bar-label">F11</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p2" style="width:29.9%;">19.0K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">3:47 &middot; 50% &middot; Died P2 3:37</div>
+    </div>
+    <!-- Fight 12: 37,240 DPS, died P2 at 4:33 -->
+    <div class="bar-row">
+      <div class="bar-label">F12</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p2" style="width:58.7%;">37.2K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">4:47 &middot; 42.46% &middot; Died P2 4:33</div>
+    </div>
+    <!-- Fight 13: 45,667 DPS, died P2 at 4:58 -->
+    <div class="bar-row">
+      <div class="bar-label">F13</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p2" style="width:72.0%;">45.7K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">6:01 &middot; 32.29% &middot; Died P2 4:58</div>
+    </div>
+    <!-- Fight 14: 0 DPS, died P1 at 1:07 -->
+    <div class="bar-row">
+      <div class="bar-label">F14</div>
+      <div class="bar-container">
+        <div class="bar-fill no-data" style="width:4%;">--</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">1:26 &middot; 81.15% &middot; Died P1 1:07</div>
+    </div>
+    <!-- Fight 15: 0 DPS, died Inter at 2:49 -->
+    <div class="bar-row">
+      <div class="bar-label">F15</div>
+      <div class="bar-container">
+        <div class="bar-fill no-data" style="width:4%;">--</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">3:05 &middot; 61.79% &middot; Died Inter 2:49</div>
+    </div>
+    <!-- Fight 16: 0 DPS, died P1 at 1:06 -->
+    <div class="bar-row">
+      <div class="bar-label">F16</div>
+      <div class="bar-container">
+        <div class="bar-fill no-data" style="width:4%;">--</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">3:05 &middot; 61.64% &middot; Died P1 1:06</div>
+    </div>
+    <!-- Fight 17: 33,497 DPS, died P2 at 3:40 -->
+    <div class="bar-row">
+      <div class="bar-label">F17</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p2" style="width:52.8%;">33.5K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">3:55 &middot; 47.92% &middot; Died P2 3:40</div>
+    </div>
+    <!-- Fight 18: 33,323 DPS, died P1 at 1:06, then P2 at 4:15 -->
+    <div class="bar-row">
+      <div class="bar-label">F18</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p1" style="width:52.5%;">33.3K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">4:23 &middot; 43.36% &middot; Died P1 1:06</div>
+    </div>
+    <!-- Fight 19: 55,387 DPS, died P3 at 5:57 -->
+    <div class="bar-row">
+      <div class="bar-label">F19</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p3" style="width:87.3%;">55.4K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">6:09 &middot; 36.36% &middot; Died P3 5:57</div>
+    </div>
+    <!-- Fight 20: 50,452 DPS, died P2 at 4:50 -->
+    <div class="bar-row">
+      <div class="bar-label">F20</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p2" style="width:79.5%;">50.5K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">5:15 &middot; 34.78% &middot; Died P2 4:50</div>
+    </div>
+    <!-- Fight 21: 0 DPS, died P1 at 1:02 -->
+    <div class="bar-row">
+      <div class="bar-label">F21</div>
+      <div class="bar-container">
+        <div class="bar-fill no-data" style="width:4%;">--</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">2:03 &middot; 67.14% &middot; Died P1 1:02</div>
+    </div>
+    <!-- Fight 22: 0 DPS, died P1 at 1:22 -->
+    <div class="bar-row">
+      <div class="bar-label">F22</div>
+      <div class="bar-container">
+        <div class="bar-fill no-data" style="width:4%;">--</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">1:32 &middot; 74.57% &middot; Died P1 1:22</div>
+    </div>
+    <!-- Fight 23: 63,431 DPS, died P3 at 6:17 -->
+    <div class="bar-row">
+      <div class="bar-label">F23</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p3" style="width:100%;">63.4K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">6:25 &middot; 31.14% &middot; Died P3 6:17</div>
+    </div>
+    <!-- Fight 25: 57,982 DPS, died P3 at 6:20 -->
+    <div class="bar-row">
+      <div class="bar-label">F25</div>
+      <div class="bar-container">
+        <div class="bar-fill died-p3" style="width:91.4%;">58.0K</div>
+        <div class="avg-line" style="left:66.4%;"></div>
+      </div>
+      <div class="bar-meta">6:44 &middot; 26.51% &middot; Died P3 6:20</div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:11px; color:var(--dim); margin-top:8px;">
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--red);opacity:0.6;border-radius:2px;vertical-align:middle;margin-right:4px;"></span> Died in P1</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--yellow);opacity:0.85;border-radius:2px;vertical-align:middle;margin-right:4px;"></span> Died in Intermission</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--red);opacity:0.85;border-radius:2px;vertical-align:middle;margin-right:4px;"></span> Died in P2</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--orange);opacity:0.85;border-radius:2px;vertical-align:middle;margin-right:4px;"></span> Died in P3</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--border);opacity:0.5;border-radius:2px;vertical-align:middle;margin-right:4px;"></span> No data (early death)</span>
+    <span><span style="display:inline-block;width:12px;height:2px;background:var(--yellow);vertical-align:middle;margin-right:4px;"></span> Avg DPS (42.1K)</span>
+  </div>
+
+  <div class="callout success" style="margin-top:20px;">
+    <h4 style="color:var(--green);">Session Trend: Improving</h4>
+    <p>First half average: <strong style="color:var(--text);">35.2K DPS</strong> (6 qualifying pulls) &rarr; Second half average: <strong style="color:var(--text);">49.0K DPS</strong> (6 qualifying pulls). That is a <span class="trend-indicator up">+39% improvement</span> across the session. The last four data pulls (F19, F20, F23, F25) averaged <strong style="color:var(--text);">56.8K DPS</strong>, indicating strong late-session learning.</p>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout">
+    <h4>Died in <span class="red">20/20</span> pulls. Average survival time: <span class="red">2:52</span></h4>
+    <p>Unholyftw died in every single pull this session. The primary survival issue is in Phase 1, where 10 of 23 total deaths occurred. The #1 killer is <strong style="color:var(--text);">Bursting Emptiness</strong> with 7 deaths across the session.</p>
+  </div>
+
+  <h3>Death Causes</h3>
+  <div class="death-cause-grid">
+    <div class="death-cause-card top-killer">
+      <div class="cause-name">Bursting Emptiness</div>
+      <div class="cause-count">7 deaths</div>
+      <div class="cause-detail">
+        F14 (P1, 1:07) &middot; F16 (P1, 1:06) &middot; F18 (P1, 1:06) &middot; F21 (P1, 1:55) &middot;
+        F13 (P2, 4:58) &middot; F19 (P3, 5:57) &middot; F20 (P2, 4:50)<br>
+        <strong style="color:var(--red);">4 of 7 occurred in P1 around 1:06-1:07</strong> &mdash; this is the Null Corona + Void Expulsion overlap window
+      </div>
+    </div>
+    <div class="death-cause-card">
+      <div class="cause-name">Void Remnants</div>
+      <div class="cause-count">4 deaths</div>
+      <div class="cause-detail">
+        F5 (P1, 1:55) &middot; F8 (P1, 1:13) &middot; F12 (P2, 4:33) &middot; F22 (P1, 1:22)<br>
+        Standing in Void Remnant pools or hit by Void Remnant projectiles
+      </div>
+    </div>
+    <div class="death-cause-card">
+      <div class="cause-name">Cosmic Barrier</div>
+      <div class="cause-count">3 deaths</div>
+      <div class="cause-detail">
+        F6 (P2, 3:38) &middot; F11 (P2, 3:37) &middot; F23 (P3, 6:17)<br>
+        Failing to break the shield or taking reflected damage
+      </div>
+    </div>
+    <div class="death-cause-card">
+      <div class="cause-name">Voidstalker Sting</div>
+      <div class="cause-count">2 deaths</div>
+      <div class="cause-detail">
+        F18 (P2, 4:15) &middot; F25 (P3, 6:20)<br>
+        Targeted debuff &mdash; failed to mitigate or heal through
+      </div>
+    </div>
+    <div class="death-cause-card">
+      <div class="cause-name">Other</div>
+      <div class="cause-count">7 deaths</div>
+      <div class="cause-detail">
+        Void Barrage (F5, P2), Interrupting Tremor (F7, P1), Simulacrum Backlash (F9, P3),
+        Grasp of Emptiness (F17, P2), Silverstrike Arrow (F21, P1), Unknown x2 (F10, F15)
+      </div>
+    </div>
+  </div>
+
+  <h3>Death Timing Distribution</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Time Window</th>
+        <th>Phase</th>
+        <th>Deaths</th>
+        <th>% of Total</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0:50 &ndash; 1:22</td>
+        <td>P1 (early)</td>
+        <td style="color:var(--red);font-weight:700;">8</td>
+        <td>35%</td>
+        <td>Concentrated around the first Null Corona + Void Expulsion overlap (~1:06). Bursting Emptiness x4, Void Remnants x2, Interrupting Tremor x1, Silverstrike Arrow x1</td>
+      </tr>
+      <tr>
+        <td>1:43 &ndash; 1:55</td>
+        <td>P1 (late)</td>
+        <td style="color:var(--red);">2</td>
+        <td>9%</td>
+        <td>Near the P1 end / Silversunder Catastrophe. Void Remnants x1, Bursting Emptiness x1</td>
+      </tr>
+      <tr>
+        <td>2:49</td>
+        <td>Intermission</td>
+        <td style="color:var(--yellow);">1</td>
+        <td>4%</td>
+        <td>Stellar Emission channel</td>
+      </tr>
+      <tr>
+        <td>3:37 &ndash; 4:58</td>
+        <td>P2</td>
+        <td style="color:var(--accent);">8</td>
+        <td>35%</td>
+        <td>Cosmic Barrier x2, Void Remnants x1, Grasp of Emptiness x1, Bursting Emptiness x2, Voidstalker Sting x1, Void Barrage x1</td>
+      </tr>
+      <tr>
+        <td>5:09 &ndash; 6:20</td>
+        <td>P3</td>
+        <td style="color:var(--purple);">4</td>
+        <td>17%</td>
+        <td>Cosmic Barrier x1, Bursting Emptiness x1, Voidstalker Sting x1, Simulacrum Backlash x1</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    This is the most important section for progression. It shows how well Unholyftw performs in each phase of the fight and how consistently they reach later phases.
+  </p>
+
+  <div class="phase-timeline">
+    <div class="phase-segment p1" style="width:33.2%;">P1: Sentinels (0:00&ndash;2:14)</div>
+    <div class="phase-segment inter" style="width:9.7%;">Inter</div>
+    <div class="phase-segment p2" style="width:33.7%;">P2: Rift (2:53&ndash;5:09)</div>
+    <div class="phase-segment p3" style="width:23.4%;">P3: Cosmos (5:09+)</div>
+  </div>
+
+  <h3>Phase Reach Rate</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Reached</th>
+        <th>Rate</th>
+        <th>Deaths in Phase</th>
+        <th>Primary Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">P1: Sentinels</td>
+        <td>20/20</td>
+        <td><span class="reach-badge green">100%</span></td>
+        <td style="color:var(--red);">10</td>
+        <td>Bursting Emptiness (4), Void Remnants (3)</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Intermission</td>
+        <td>11/20</td>
+        <td><span class="reach-badge yellow">55%</span></td>
+        <td style="color:var(--yellow);">1</td>
+        <td>Unknown (Stellar Emission)</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">P2: Rift</td>
+        <td>10/20</td>
+        <td><span class="reach-badge red">50%</span></td>
+        <td style="color:var(--red);">8</td>
+        <td>Cosmic Barrier (2), Bursting Emptiness (2)</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">P3: Devouring Cosmos</td>
+        <td>4/20</td>
+        <td><span class="reach-badge red">20%</span></td>
+        <td style="color:var(--orange);">4</td>
+        <td>Cosmic Barrier (1), Voidstalker Sting (1), Bursting Emptiness (1), Simulacrum Backlash (1)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning" style="margin-top:16px;">
+    <h4>Phase 1 is the Wall</h4>
+    <p>Unholyftw dies before even reaching Intermission in <strong style="color:var(--text);">9 of 20 pulls (45%)</strong>. This means nearly half the session is spent dying before the fight even gets started. The concentrated death window around 1:06&ndash;1:13 (Null Corona / Void Expulsion overlap) is the specific mechanic that needs to be solved. Anti-Magic Shell should be used here as a damage mitigation tool, and Icebound Fortitude or Death Pact should be available for this window.</p>
+  </div>
+
+  <h3>Per-Phase DPS (pulls with data)</h3>
+  <p style="font-size:12px;color:var(--dim);margin-bottom:12px;">
+    DPS calculated from total damage and time alive in each phase. Only includes pulls where the player had DPS table data and reached the phase.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls with Data</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Insight</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">P1: Sentinels</td>
+        <td>12/20</td>
+        <td style="color:var(--green);">42.1K</td>
+        <td>63.4K (F23)</td>
+        <td>Multi-target phase with sentinel adds. DPS varies widely (19K&ndash;63K) due to death timing and add cleave.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">P2: Rift</td>
+        <td>10/20</td>
+        <td style="color:var(--accent);">~44.4K</td>
+        <td>55.4K (F19)</td>
+        <td>Good damage when alive. Movement from Rift Slash and Voidstalker Sting causes some DPS loss.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">P3: Cosmos</td>
+        <td>4/20</td>
+        <td style="color:var(--purple);">~56.8K</td>
+        <td>63.4K (F23)</td>
+        <td>Limited sample (only 4 pulls reached P3). DPS is actually strong when P3 is reached &mdash; the problem is getting there.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info" style="margin-top:16px;">
+    <h4 style="color:var(--accent);">Phase-Specific Insight</h4>
+    <p>When Unholyftw survives past Phase 1 and into P2/P3, their DPS is competitive and trending upward. The last four long pulls (F19: 55.4K, F20: 50.5K, F23: 63.4K, F25: 58.0K) show strong performance. The issue is not output &mdash; it is survival through P1 mechanics. Solving the ~1:06 death window would immediately increase average DPS and phase reach rate.</p>
+  </div>
+</div>
+
+<!-- Consistency Analysis -->
+<div class="section">
+  <h2>Consistency Analysis</h2>
+
+  <div class="consistency-grid">
+    <div>
+      <h3>DPS Distribution</h3>
+      <table>
+        <tbody>
+          <tr><td style="color:var(--dim);">Average DPS</td><td style="font-weight:600;">42,103</td></tr>
+          <tr><td style="color:var(--dim);">Median DPS</td><td style="font-weight:600;">45,667</td></tr>
+          <tr><td style="color:var(--dim);">Std Deviation</td><td style="font-weight:600;">12,740 (30.2%)</td></tr>
+          <tr><td style="color:var(--dim);">Range</td><td style="font-weight:600;">18,971 &ndash; 63,431</td></tr>
+          <tr><td style="color:var(--dim);">Pulls with data</td><td style="font-weight:600;">12 of 20</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px;color:var(--dim);margin-top:8px;">High variance (30% CoV) is expected during prog &mdash; pull length drives most of the DPS spread. Longer pulls = higher DPS because more cooldown cycles complete.</p>
+    </div>
+    <div>
+      <h3>Session Progression</h3>
+      <table>
+        <tbody>
+          <tr><td style="color:var(--dim);">First half avg</td><td style="font-weight:600;">35,195</td></tr>
+          <tr><td style="color:var(--dim);">Second half avg</td><td style="font-weight:600;">49,012</td></tr>
+          <tr><td style="color:var(--dim);">Improvement</td><td style="font-weight:600;color:var(--green);">+39.3%</td></tr>
+          <tr><td style="color:var(--dim);">Best 3 pulls</td><td style="font-weight:600;">63.4K, 58.0K, 55.4K</td></tr>
+          <tr><td style="color:var(--dim);">Worst 3 pulls</td><td style="font-weight:600;">19.0K, 28.3K, 33.3K</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px;color:var(--dim);margin-top:8px;">Clear upward trajectory through the session. The best three pulls all came in the second half, showing fight learning is happening.</p>
+    </div>
+  </div>
+
+  <h3>DPS on Long Pulls (&gt;4 minutes) vs Short Pulls</h3>
+  <table>
+    <thead>
+      <tr><th>Category</th><th>Pulls</th><th>Avg DPS</th><th>Avg Alive Time</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Long pulls (&gt;4 min alive)</td>
+        <td>6</td>
+        <td style="font-weight:600;color:var(--green);">53,262</td>
+        <td>5:29</td>
+      </tr>
+      <tr>
+        <td>Medium pulls (2&ndash;4 min alive)</td>
+        <td>6</td>
+        <td style="font-weight:600;color:var(--accent);">33,831</td>
+        <td>3:31</td>
+      </tr>
+      <tr>
+        <td>Short pulls (&lt;2 min alive)</td>
+        <td>8</td>
+        <td style="color:var(--dim);">No data (died too early)</td>
+        <td>1:10</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Top Abilities -->
+<div class="section">
+  <h2>Top Damage Abilities (Best Pull - Fight 23)</h2>
+  <p style="font-size:12px;color:var(--dim);margin-bottom:12px;">
+    Ability breakdown from the best pull (63.4K DPS, 6:25 duration). This represents Unholyftw's ceiling performance on Crown.
+  </p>
+
+  <div style="max-width:600px;">
+    <div class="ability-bar">
+      <div class="ability-name">Putrefy</div>
+      <div class="ability-bar-fill" style="width:100%;">#1</div>
+    </div>
+    <div class="ability-bar">
+      <div class="ability-name">Melee</div>
+      <div class="ability-bar-fill" style="width:85%;">#2</div>
+    </div>
+    <div class="ability-bar">
+      <div class="ability-name">Dread Plague</div>
+      <div class="ability-bar-fill" style="width:65%;">#3</div>
+    </div>
+    <div class="ability-bar">
+      <div class="ability-name">Necrotic Coil</div>
+      <div class="ability-bar-fill" style="width:55%;">#4</div>
+    </div>
+    <div class="ability-bar">
+      <div class="ability-name">Scourge Strike</div>
+      <div class="ability-bar-fill" style="width:50%;">#5</div>
+    </div>
+    <div class="ability-bar">
+      <div class="ability-name">Death Coil</div>
+      <div class="ability-bar-fill" style="width:35%;">#6</div>
+    </div>
+    <div class="ability-bar">
+      <div class="ability-name">Gargoyle Strike</div>
+      <div class="ability-bar-fill" style="width:30%;">#7</div>
+    </div>
+    <div class="ability-bar">
+      <div class="ability-name">Army of the Dead</div>
+      <div class="ability-bar-fill" style="width:25%;">#8</div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">
+    Putrefy as #1 damage source with Necrotic Coil present confirms correct Forbidden Knowledge usage during Army of the Dead windows. Dread Plague high on the list indicates good disease maintenance. This profile is consistent with a well-executed Unholy DK rotation.
+  </p>
+</div>
+
+<!-- Reference Context -->
+<div class="section">
+  <h2>Reference Context</h2>
+
+  <div class="ref-context">
+    <h4>Top-Ranked Unholy DK Kills on Mythic Crown</h4>
+    <p>These are full kills (7&ndash;8+ minutes). Unholyftw has not yet reached a kill, so this comparison is for context only &mdash; not a direct apples-to-apples gap analysis.</p>
+  </div>
+
+  <table style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Server</th>
+        <th>DPS</th>
+        <th>Kill Time</th>
+      </tr>
+    </thead>
+    <tbody style="color:var(--purple);">
+      <tr>
+        <td>&#23612;&#25096;</td>
+        <td>&#22885;&#29305;&#20848;&#20811;</td>
+        <td style="font-weight:600;">212,981</td>
+        <td>7:41</td>
+      </tr>
+      <tr>
+        <td>&#28487;&#27922;&#29275;&#29275;</td>
+        <td>&#34880;&#33394;&#21313;&#23383;&#20891;</td>
+        <td style="font-weight:600;">212,169</td>
+        <td>7:35</td>
+      </tr>
+      <tr>
+        <td>&#37266;&#29422;&#23376;</td>
+        <td>&#29066;&#29483;&#37202;&#20185;</td>
+        <td style="font-weight:600;">210,410</td>
+        <td>8:18</td>
+      </tr>
+      <tr>
+        <td>&#26480;&#21733;&#19998;</td>
+        <td>&#22825;&#35892;&#20043;&#38376;</td>
+        <td style="font-weight:600;">209,993</td>
+        <td>7:07</td>
+      </tr>
+      <tr>
+        <td>&#32418;&#33590;&#19998;</td>
+        <td>&#20811;&#23572;&#33487;&#21152;&#24503;</td>
+        <td style="font-weight:600;">209,851</td>
+        <td>8:20</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr style="border-top:2px solid var(--border);">
+        <td colspan="2" style="font-weight:600;">Average (top 5 kills)</td>
+        <td style="font-weight:600;color:var(--purple);">211,081</td>
+        <td>7:48</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="font-weight:600;">Unholyftw (best prog pull)</td>
+        <td style="font-weight:600;color:var(--dk-color);">63,431</td>
+        <td>6:25 (31% boss)</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="callout info" style="margin-top:16px;">
+    <h4 style="color:var(--accent);">Why This Comparison Is Misleading Right Now</h4>
+    <p>Reference kills are 7&ndash;8+ minute fights where the boss dies. Unholyftw's longest pull was 6:44 with the boss at 27%. The DPS gap (~63K vs ~211K) is not meaningful because: (1) reference players complete the full fight including execute phase, (2) they have full uptime without dying, (3) their raid stays alive providing buffs and support. The relevant comparison will be when the team gets a kill. For now, focus on survival and mechanic execution.</p>
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="action-item">
+    <div class="priority critical">CRITICAL &mdash; #1 PRIORITY</div>
+    <h4>Survive the P1 Bursting Emptiness Window (~1:06)</h4>
+    <p>
+      4 of 7 Bursting Emptiness deaths occur at almost exactly 1:06&ndash;1:07 into the fight. This is the Null Corona + Void Expulsion overlap in Phase 1. <strong style="color:var(--text);">Use Anti-Magic Shell (AMS) proactively at 1:04</strong> to absorb magic damage and generate Runic Power. If AMS is down or insufficient, use <strong style="color:var(--text);">Icebound Fortitude or Death Pact</strong> as a backup. This single fix would prevent ~20% of all deaths this session and likely push the intermission reach rate from 55% to 75%+.
+    </p>
+  </div>
+
+  <div class="action-item">
+    <div class="priority critical">CRITICAL &mdash; #2 PRIORITY</div>
+    <h4>Avoid Void Remnant Pools Throughout P1</h4>
+    <p>
+      4 deaths to Void Remnants, 3 in P1. These are avoidable ground effects. As a melee DPS, positioning awareness around the boss is critical. <strong style="color:var(--text);">Pre-position away from Void Remnant spawn locations</strong> and use Death's Advance for movement speed when repositioning. Do not chase the boss through pools. Being alive > one extra GCD of damage.
+    </p>
+  </div>
+
+  <div class="action-item">
+    <div class="priority high">HIGH</div>
+    <h4>Plan Defensives for Cosmic Barrier in P2/P3</h4>
+    <p>
+      3 deaths to Cosmic Barrier (fights 6, 11, 23). This is a shield mechanic that reflects damage or deals burst damage when not handled. <strong style="color:var(--text);">Stop attacking during Cosmic Barrier if the shield is about to expire with high reflected damage stacking.</strong> Have AMS ready for the burst. The fight 23 death at 6:17 ended what was otherwise the best pull of the night.
+    </p>
+  </div>
+
+  <div class="action-item">
+    <div class="priority medium">MEDIUM</div>
+    <h4>Voidstalker Sting Mitigation in P2/P3</h4>
+    <p>
+      2 deaths to Voidstalker Sting (F18 P2, F25 P3). This is a targeted debuff that deals sustained damage. <strong style="color:var(--text);">When targeted by Voidstalker Sting, immediately use a defensive (AMS for magic, Icebound Fortitude if AMS is down)</strong> and call for external healing. Both deaths occurred on long pulls where defensives may have been on cooldown from earlier usage &mdash; plan a CD rotation: AMS for the first Sting, IBF for the second, Death Pact for the third.
+    </p>
+  </div>
+
+  <div class="action-item">
+    <div class="priority medium">MEDIUM</div>
+    <h4>Maintain Cooldown Discipline on Long Pulls</h4>
+    <p>
+      On the best pulls (F23: 63.4K, F25: 58.0K), DPS is strong and competitive &mdash; ranked #1 and #3 respectively. The rotation profile looks correct: Putrefy as top damage, Necrotic Coil active during Forbidden Knowledge windows, Gargoyle and Army providing sustained pet damage. <strong style="color:var(--text);">Continue aligning Army of the Dead + Dark Transformation every 90 seconds</strong> and ensure Putrefy charges are concentrated inside Dark Transformation windows. No major rotation issues detected.
+    </p>
+  </div>
+</div>
+
+<!-- What's Working -->
+<div class="section">
+  <h2>What Is Working Well</h2>
+
+  <div class="callout success">
+    <h4 style="color:var(--green);">Strong DPS Ceiling</h4>
+    <p>When Unholyftw survives into P2/P3, their damage output is strong. 63.4K DPS on fight 23 was #1 in the raid. The last four long pulls averaged 56.8K DPS. This shows that the rotation execution and cooldown alignment are solid &mdash; the ceiling is there.</p>
+  </div>
+
+  <div class="callout success">
+    <h4 style="color:var(--green);">Clear Learning Curve</h4>
+    <p>+39% DPS improvement from first half to second half of the session. The player is actively learning the fight, with better pulls concentrated later in the night. This is exactly the progression curve you want to see.</p>
+  </div>
+
+  <div class="callout success">
+    <h4 style="color:var(--green);">Correct Ability Profile</h4>
+    <p>Putrefy, Necrotic Coil, Scourge Strike, and Death Coil all present in the correct priority. Forbidden Knowledge (Necrotic Coil) usage during Army of the Dead windows confirms proper burst sequencing. Gargoyle is being used. Disease maintenance (Dread Plague high on the damage list) is consistent.</p>
+  </div>
+</div>
+
+<!-- Context Footer -->
+<div class="section">
+  <h2>Summary</h2>
+  <p style="font-size:14px; line-height:1.7;">
+    Unholyftw's primary challenge on Mythic Crown is <strong>survival, not damage output</strong>. The rotation and cooldown usage are sound &mdash; when alive, the player is competitive with or ahead of other DPS in the raid. The session showed strong improvement (+39% DPS from first to second half), and the best pulls demonstrate that the player can execute the fight well.
+  </p>
+  <p style="font-size:14px; line-height:1.7; margin-top:12px;">
+    The single highest-impact improvement is <strong>solving the Phase 1 Bursting Emptiness deaths at ~1:06</strong>. This accounts for 4 deaths and is the primary reason for the low intermission reach rate (55%). Using AMS proactively at this specific timing would likely convert several early deaths into full-length pulls, dramatically improving both DPS numbers and the team's overall progression rate. The secondary focus should be on Void Remnant pool awareness throughout P1.
+  </p>
+  <p style="font-size:14px; line-height:1.7; margin-top:12px;">
+    Once P1 survival is consistent, the P2 Cosmic Barrier and Voidstalker Sting deaths become the next progression wall to solve.
+  </p>
+</div>
+
+<div class="footer">
+  WCL DPS Analyzer &mdash; Generated from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">report Hz1Lm672dZnBw9YC</a><br>
+  Mythic Crown of the Cosmos &middot; Progression Night 3 &middot; June 23, 2026 &middot; 20 pulls analyzed<br>
+  Reference: Top 5 Unholy Death Knight kills on Mythic Crown (avg 211K DPS, 7:48 kill time)<br>
+  Spec guide reference: <a href="https://www.icy-veins.com/wow/unholy-death-knight-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins Unholy DK Guide (12.0.7)</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brewtote (Resto Shaman) - Crown of the Cosmos Prog Night 3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --shaman: #0070dd;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 24px; }
+.header h1 { font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header h1 .player-name { color: var(--shaman); }
+.header .subtitle { color: var(--dim); font-size: 14px; margin-top: 4px; }
+.prog-tag { background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.summary-card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.summary-card .value { font-size: 24px; font-weight: 700; }
+.summary-card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+.verdict { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; border-left: 4px solid var(--red); }
+.verdict h3 { font-size: 14px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.verdict p { font-size: 15px; line-height: 1.7; }
+section { margin-bottom: 32px; }
+section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border: 1px solid var(--border); }
+tr:nth-child(even) { background: rgba(22, 27, 34, 0.5); }
+.highlight-row { background: rgba(0, 112, 221, 0.1) !important; }
+.died { color: var(--red); font-weight: 600; }
+.survived { color: var(--green); font-weight: 600; }
+.phase-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.phase-p1 { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.phase-inter { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.phase-p2 { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+.phase-p3 { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 160px; margin: 16px 0; padding: 0 4px; }
+.bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; min-width: 16px; border-radius: 3px 3px 0 0; position: relative; cursor: default; transition: opacity 0.2s; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); writing-mode: vertical-rl; text-orientation: mixed; white-space: nowrap; }
+.bar-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: #1c2128; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 11px; white-space: nowrap; z-index: 10; pointer-events: none; }
+.bar:hover .bar-tooltip { display: block; }
+.avg-line { position: relative; width: 100%; margin-top: -1px; }
+.cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; margin: 2px; }
+.cd-sham { background: rgba(0,112,222,0.15); color: #0070de; }
+.cd-druid { background: rgba(255,125,10,0.15); color: #ff7d0a; }
+.cd-pal { background: rgba(244,140,186,0.15); color: #f48cba; }
+.cd-monk { background: rgba(0,255,150,0.15); color: #00ff96; }
+.cd-dk { background: rgba(196,30,58,0.15); color: #c41e3a; }
+.cd-dh { background: rgba(163,48,201,0.15); color: #a330c9; }
+.cd-war { background: rgba(198,155,109,0.15); color: #c69b6d; }
+.cd-priest { background: rgba(255,255,255,0.1); color: #e0e0e0; }
+.cd-dead { background: rgba(248,81,73,0.15); color: var(--red); font-style: italic; }
+.actionable { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.actionable.critical { border-left: 4px solid var(--red); }
+.actionable.important { border-left: 4px solid var(--accent); }
+.actionable.positive { border-left: 4px solid var(--green); }
+.actionable h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.actionable p { font-size: 13px; color: var(--dim); line-height: 1.6; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-card .value { font-size: 20px; font-weight: 700; margin: 4px 0; }
+.timeline-bar { height: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; position: relative; margin: 16px 0; overflow: hidden; }
+.timeline-phase { position: absolute; top: 0; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
+.timeline-marker { position: absolute; top: 0; height: 100%; width: 2px; }
+.death-marker { background: var(--red); z-index: 5; }
+.oh-bar { height: 6px; border-radius: 3px; display: flex; overflow: hidden; }
+.oh-eff { background: var(--green); }
+.oh-over { background: var(--red); }
+.footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+.phase-table td:first-child { font-weight: 600; }
+.trend-arrow { font-size: 14px; }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+@media (max-width: 768px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23 Crown of the Cosmos Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Brewtote</span>
+    <span style="color:var(--dim);font-size:16px;font-weight:400;">Restoration Shaman</span>
+    <span class="prog-tag">Progression Night 3</span>
+  </h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &mdash; 20 pulls, best 26.51% (fight 25, 6:44) &mdash; June 23, 2026 &mdash;
+    <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Avg HPS</div>
+    <div class="value" style="color:var(--green);">156.4K</div>
+    <div class="sub">across 20 qualifying pulls</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">288</div>
+    <div class="sub">4pc tier set (1988)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--red);">0 / 20</div>
+    <div class="sub">died in every pull</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Avg Overheal</div>
+    <div class="value" style="color:var(--green);">26.6%</div>
+    <div class="sub">efficient throughput</div>
+  </div>
+</div>
+
+<!-- Bottom Line Verdict -->
+<div class="verdict">
+  <h3>Bottom Line</h3>
+  <p>
+    Brewtote died in all 20 Crown pulls. Average survival time was 210 seconds, meaning most deaths occur late in P2 or early P3 as damage ramps up. The most common death causes are Cosmic Barrier (4), Grasp of Emptiness (3), and Void Remnants (3), with 7 deaths having no single killing blow (accumulated damage). HPS while alive is solid at 156K average with healthy 26.6% overheal, and CD discipline is excellent -- Spirit Link Totem is deployed at exactly ~26.5s into every pull with near-zero variance. The core issue is survival, not throughput. Brewtote needs to use personal defensives (Astral Shift, Spiritwalker's Grace) more aggressively during high-damage windows and prioritize positioning to avoid Grasp of Emptiness and Cosmic Barrier overlap kills.
+  </p>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+
+  <h3>Phase Reach Rate</h3>
+  <div class="summary-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+    <div class="summary-card">
+      <div class="label">Phase 1</div>
+      <div class="value" style="color:var(--green);">20/20</div>
+      <div class="sub">0:00 &ndash; 2:14</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Intermission</div>
+      <div class="value" style="color:var(--accent);">14/20</div>
+      <div class="sub">2:14 &ndash; 2:53</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Phase 2</div>
+      <div class="value" style="color:var(--accent);">14/20</div>
+      <div class="sub">2:53 &ndash; ~5:09</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Phase 3</div>
+      <div class="value" style="color:var(--yellow);">4/20</div>
+      <div class="sub">5:09+</div>
+    </div>
+  </div>
+
+  <h3>Per-Phase Stats</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Pulls Seen</th>
+        <th>Deaths In Phase</th>
+        <th>Top Death Causes</th>
+        <th>CDs Used</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="phase-pill phase-p1">P1: Sentinels</span></td>
+        <td>20/20</td>
+        <td><span class="died">6</span></td>
+        <td>Mixed environmental (4), Silverstrike Arrow (1), Void Remnants (1)</td>
+        <td>Ascendance x19, SLT x20</td>
+      </tr>
+      <tr>
+        <td><span class="phase-pill phase-inter">Intermission</span></td>
+        <td>14/20</td>
+        <td>0</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td><span class="phase-pill phase-p2">P2: Rift</span></td>
+        <td>14/20</td>
+        <td><span class="died">10</span></td>
+        <td>Cosmic Barrier (4), Bursting Emptiness (2), Grasp (1), Simulacrum Backlash (1), Void Remnants (1), Mixed (1)</td>
+        <td>Ascendance x11, SLT x4</td>
+      </tr>
+      <tr>
+        <td><span class="phase-pill phase-p3">P3: Devouring Cosmos</span></td>
+        <td>4/20</td>
+        <td><span class="died">5</span></td>
+        <td>Grasp of Emptiness (2), Cosmic Barrier (1), Mixed (2)</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:12px;font-size:13px;color:var(--dim);">
+    <strong>Key insight:</strong> P2 is the deadliest phase with 10 deaths across 14 visits (71% death rate in P2). Cosmic Barrier is the #1 killer in P2 -- this is the end-of-phase damage check from the Cosmic Barrier intermission wall. Brewtote consistently uses both major CDs in P1 (~7s Ascendance, ~27s SLT) but has limited CD availability entering P2 -- only 11 second Ascendance uses across 14 P2 visits, and only 4 second SLT uses (SLT on 3min CD may not be back for early P2).
+  </div>
+</section>
+
+<!-- HPS Across All Pulls -->
+<section>
+  <h2>HPS Across All Pulls</h2>
+  <div class="bar-chart">
+    <div class="bar-wrapper">
+      <div class="bar" style="height:69%;background:var(--red);">
+        <div class="bar-tooltip">F5: 143.8K HPS<br>3:48 | P2 | 50%<br>Died 3:36 - Grasp</div>
+      </div>
+      <div class="bar-label">5</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:72%;background:var(--red);">
+        <div class="bar-tooltip">F6: 145.9K HPS<br>3:53 | P2 | 47%<br>Died 3:41 - Barrier</div>
+      </div>
+      <div class="bar-label">6</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:87%;background:var(--red);">
+        <div class="bar-tooltip">F7: 168.6K HPS<br>1:17 | P1 | 84%<br>Died 0:59</div>
+      </div>
+      <div class="bar-label">7</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:85%;background:var(--red);">
+        <div class="bar-tooltip">F8: 166.7K HPS<br>1:21 | P1 | 82%<br>Died 1:17 - Arrow</div>
+      </div>
+      <div class="bar-label">8</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:88%;background:var(--orange);">
+        <div class="bar-tooltip">F9: 169.6K HPS<br>5:15 | P2 | 33%<br>Died 4:26 - Burst</div>
+      </div>
+      <div class="bar-label">9</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:78%;background:var(--red);">
+        <div class="bar-tooltip">F10: 156.3K HPS<br>2:00 | P1 | 71%<br>Died 1:41</div>
+      </div>
+      <div class="bar-label">10</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:74%;background:var(--red);">
+        <div class="bar-tooltip">F11: 150.5K HPS<br>3:47 | P2 | 50%<br>Died 3:41 - Barrier</div>
+      </div>
+      <div class="bar-label">11</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:73%;background:var(--red);">
+        <div class="bar-tooltip">F12: 149.5K HPS<br>4:47 | P2 | 42%<br>Died 4:32 - Backlash</div>
+      </div>
+      <div class="bar-label">12</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:80%;background:var(--orange);">
+        <div class="bar-tooltip">F13: 157.7K HPS<br>6:01 | P3 | 32%<br>Died 5:31</div>
+      </div>
+      <div class="bar-label">13</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:88%;background:var(--red);">
+        <div class="bar-tooltip">F14: 170.5K HPS<br>1:26 | P1 | 81%<br>Died 1:15</div>
+      </div>
+      <div class="bar-label">14</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:64%;background:var(--red);">
+        <div class="bar-tooltip">F15: 138.4K HPS<br>3:05 | P2 | 62%<br>Died 3:01</div>
+      </div>
+      <div class="bar-label">15</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:71%;background:var(--red);">
+        <div class="bar-tooltip">F16: 144.2K HPS<br>3:05 | P2 | 62%<br>Died 2:59</div>
+      </div>
+      <div class="bar-label">16</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:62%;background:var(--red);">
+        <div class="bar-tooltip">F17: 136.7K HPS<br>3:55 | P2 | 48%<br>Died 3:46 - Barrier</div>
+      </div>
+      <div class="bar-label">17</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:88%;background:var(--orange);">
+        <div class="bar-tooltip">F18: 169.1K HPS<br>4:23 | P2 | 43%<br>Died 3:59 - Burst</div>
+      </div>
+      <div class="bar-label">18</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:60%;background:var(--orange);">
+        <div class="bar-tooltip">F19: 135.5K HPS<br>6:09 | P3 | 36%<br>Died 5:50 - Grasp</div>
+      </div>
+      <div class="bar-label">19</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:88%;background:var(--orange);">
+        <div class="bar-tooltip">F20: 169.4K HPS<br>5:15 | P2 | 35%<br>Died 5:10 - Remnants</div>
+      </div>
+      <div class="bar-label">20</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:100%;background:var(--red);">
+        <div class="bar-tooltip">F21: 181.5K HPS<br>2:03 | P1 | 67%<br>Died 1:56</div>
+      </div>
+      <div class="bar-label">21</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:83%;background:var(--red);">
+        <div class="bar-tooltip">F22: 163.3K HPS<br>1:32 | P1 | 75%<br>Died 1:22 - Remnants</div>
+      </div>
+      <div class="bar-label">22</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:71%;background:var(--orange);">
+        <div class="bar-tooltip">F23: 144.3K HPS<br>6:25 | P3 | 31%<br>Died 6:18 - Barrier</div>
+      </div>
+      <div class="bar-label">23</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar" style="height:86%;background:var(--green);">
+        <div class="bar-tooltip">F25: 167.1K HPS<br>6:44 | P3 | 27%<br>Died 6:11 - Grasp<br>LONGEST PULL</div>
+      </div>
+      <div class="bar-label">25</div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--dim);display:flex;gap:16px;justify-content:center;margin-top:4px;">
+    <span><span style="color:var(--red);">&#9632;</span> Died in P1</span>
+    <span><span style="color:var(--orange);">&#9632;</span> Reached P2+</span>
+    <span><span style="color:var(--green);">&#9632;</span> Longest pull (P3)</span>
+    <span style="border-left:1px solid var(--border);padding-left:12px;">Avg: 156.4K HPS | Best: 181.5K (F21)</span>
+  </div>
+</section>
+
+<!-- All Pulls Table -->
+<section>
+  <h2>All Pulls Detail</h2>
+  <div style="overflow-x:auto;">
+  <table>
+    <thead>
+      <tr>
+        <th>Pull</th>
+        <th>Duration</th>
+        <th>Boss %</th>
+        <th>Phase</th>
+        <th>HPS</th>
+        <th>OH%</th>
+        <th>Alive</th>
+        <th>Death Cause</th>
+        <th>SLT</th>
+        <th>Asc</th>
+        <th>DPS</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>5</td><td>3:48</td><td>50.4%</td><td><span class="phase-pill phase-p2">P2</span></td><td>143.8K</td><td>25.2%</td><td class="died">3:36</td><td>Grasp of Emptiness</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>6</td><td>3:53</td><td>47.1%</td><td><span class="phase-pill phase-p2">P2</span></td><td>145.9K</td><td>29.6%</td><td class="died">3:41</td><td>Cosmic Barrier</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>7</td><td>1:17</td><td>84.1%</td><td><span class="phase-pill phase-p1">P1</span></td><td>168.6K</td><td>35.1%</td><td class="died">0:59</td><td>Multi-source</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>8</td><td>1:21</td><td>82.2%</td><td><span class="phase-pill phase-p1">P1</span></td><td>166.7K</td><td>34.0%</td><td class="died">1:17</td><td>Silverstrike Arrow</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>9</td><td>5:15</td><td>32.9%</td><td><span class="phase-pill phase-p2">P2</span></td><td>169.6K</td><td>22.3%</td><td class="died">4:26</td><td>Bursting Emptiness</td><td>1</td><td>2</td><td>0</td></tr>
+      <tr><td>10</td><td>2:00</td><td>71.1%</td><td><span class="phase-pill phase-p1">P1</span></td><td>156.3K</td><td>26.5%</td><td class="died">1:41</td><td>Multi-source</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>11</td><td>3:47</td><td>50.0%</td><td><span class="phase-pill phase-p2">P2</span></td><td>150.5K</td><td>25.9%</td><td class="died">3:41</td><td>Cosmic Barrier</td><td>1</td><td>2</td><td>1.5K</td></tr>
+      <tr><td>12</td><td>4:47</td><td>42.5%</td><td><span class="phase-pill phase-p2">P2</span></td><td>149.5K</td><td>25.5%</td><td class="died">4:32</td><td>Simulacrum Backlash</td><td>1</td><td>2</td><td>0</td></tr>
+      <tr><td>13</td><td>6:01</td><td>32.3%</td><td><span class="phase-pill phase-p3">P3</span></td><td>157.7K</td><td>25.4%</td><td class="died">5:31</td><td>Multi-source</td><td>2</td><td>2</td><td>573</td></tr>
+      <tr><td>14</td><td>1:26</td><td>81.2%</td><td><span class="phase-pill phase-p1">P1</span></td><td>170.5K</td><td>24.0%</td><td class="died">1:15</td><td>Multi-source</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>15</td><td>3:05</td><td>61.8%</td><td><span class="phase-pill phase-p2">P2</span></td><td>138.4K</td><td>22.7%</td><td class="died">3:01</td><td>Multi-source</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>16</td><td>3:05</td><td>61.6%</td><td><span class="phase-pill phase-p2">P2</span></td><td>144.2K</td><td>26.9%</td><td class="died">2:59</td><td>Multi-source</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>17</td><td>3:55</td><td>47.9%</td><td><span class="phase-pill phase-p2">P2</span></td><td>136.7K</td><td>35.2%</td><td class="died">3:46</td><td>Cosmic Barrier</td><td>1</td><td>2</td><td>0</td></tr>
+      <tr><td>18</td><td>4:23</td><td>43.4%</td><td><span class="phase-pill phase-p2">P2</span></td><td>169.1K</td><td>16.6%</td><td class="died">3:59</td><td>Bursting Emptiness</td><td>1</td><td>2</td><td>0</td></tr>
+      <tr><td>19</td><td>6:09</td><td>36.4%</td><td><span class="phase-pill phase-p3">P3</span></td><td>135.5K</td><td>28.5%</td><td class="died">5:50</td><td>Grasp of Emptiness</td><td>1</td><td>2</td><td>0</td></tr>
+      <tr><td>20</td><td>5:15</td><td>34.8%</td><td><span class="phase-pill phase-p2">P2</span></td><td>169.4K</td><td>24.6%</td><td class="died">5:10</td><td>Void Remnants</td><td>2</td><td>2</td><td>42</td></tr>
+      <tr><td>21</td><td>2:03</td><td>67.1%</td><td><span class="phase-pill phase-p1">P1</span></td><td style="color:var(--green);font-weight:600;">181.5K</td><td>24.8%</td><td class="died">1:56</td><td>Multi-source</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>22</td><td>1:32</td><td>74.6%</td><td><span class="phase-pill phase-p1">P1</span></td><td>163.3K</td><td>33.0%</td><td class="died">1:22</td><td>Void Remnants</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td>23</td><td>6:25</td><td>31.1%</td><td><span class="phase-pill phase-p3">P3</span></td><td>144.3K</td><td>26.0%</td><td class="died">6:18</td><td>Cosmic Barrier</td><td>2</td><td>2</td><td>707</td></tr>
+      <tr style="background:rgba(63,185,80,0.07);"><td><strong>25</strong></td><td><strong>6:44</strong></td><td><strong>26.5%</strong></td><td><span class="phase-pill phase-p3">P3</span></td><td><strong>167.1K</strong></td><td>19.5%</td><td class="died"><strong>6:11</strong></td><td>Grasp of Emptiness</td><td>2</td><td>2</td><td>567</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- CD Discipline Analysis -->
+<section>
+  <h2>CD Discipline Analysis</h2>
+
+  <div class="two-col" style="margin-bottom:20px;">
+    <div class="actionable positive">
+      <h4>Spirit Link Totem &mdash; 24 uses across 20 pulls</h4>
+      <p>
+        <strong>First use:</strong> Average 26.6s (range 26.0-27.3s) &mdash; extremely consistent, near-zero variance.<br>
+        <strong>By phase:</strong> P1 = 20 uses, P2 = 4 uses, Intermission/P3 = 0.<br>
+        <strong>Assessment:</strong> SLT is deployed at ~26-27s in every single pull, timed to Null Corona (first raid-wide damage in P1). This is excellent CD discipline. Second SLT use appears only in 4 longer pulls during P2, which makes sense given the 3-minute cooldown timer.
+      </p>
+    </div>
+    <div class="actionable positive">
+      <h4>Ascendance &mdash; 30 uses across 20 pulls</h4>
+      <p>
+        <strong>First use:</strong> Average 7.6s in 18/20 pulls (6.0-10.7s range). In fight 5, first Asc was at 186.9s; fight 15 at 69.6s.<br>
+        <strong>By phase:</strong> P1 = 19 uses, P2 = 11 uses, Intermission/P3 = 0.<br>
+        <strong>Assessment:</strong> Ascendance is popped very early (~7s) in most pulls, coinciding with Echoing Darkness buildup. Second Ascendance appears in 11 pulls during P2 (~187-209s), timed roughly to post-intermission damage. Consistent timing shows Brewtote has learned the CD rotation well.
+      </p>
+    </div>
+  </div>
+
+  <h3>CD Timing Pattern</h3>
+  <table>
+    <thead>
+      <tr><th>CD</th><th>Total Uses</th><th>Pulls with 1+ Use</th><th>Avg First Timing</th><th>Phase Distribution</th><th>Timing Std Dev</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td><span class="cd-pill cd-sham">Spirit Link Totem</span></td>
+        <td>24</td>
+        <td>20/20 (100%)</td>
+        <td>26.6s</td>
+        <td>P1: 20 | P2: 4</td>
+        <td>0.4s (excellent)</td>
+      </tr>
+      <tr class="highlight-row">
+        <td><span class="cd-pill cd-sham">Ascendance</span></td>
+        <td>30</td>
+        <td>20/20 (100%)</td>
+        <td>7.6s*</td>
+        <td>P1: 19 | P2: 11</td>
+        <td>1.2s (good)</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size:12px;color:var(--dim);margin-top:8px;">
+    *Excluding 2 outlier pulls where Ascendance was delayed (F5: 186.9s, F15: 69.6s). With outliers: 19.4s avg.
+  </div>
+</section>
+
+<!-- Team CD Coordination (Fight 25 - Longest Pull) -->
+<section>
+  <h2>Team CD Coordination &mdash; Fight 25 (6:44, best pull)</h2>
+
+  <div class="timeline-bar" style="height:120px;margin-bottom:24px;">
+    <!-- Phase backgrounds -->
+    <div class="timeline-phase" style="left:0;width:33.2%;background:rgba(63,185,80,0.08);border-right:1px dashed var(--green);">
+      <span style="color:var(--green);opacity:0.7;">P1</span>
+    </div>
+    <div class="timeline-phase" style="left:33.2%;width:9.7%;background:rgba(210,153,34,0.08);border-right:1px dashed var(--yellow);">
+      <span style="color:var(--yellow);opacity:0.7;font-size:9px;">INT</span>
+    </div>
+    <div class="timeline-phase" style="left:42.9%;width:33.7%;background:rgba(88,166,255,0.08);border-right:1px dashed var(--accent);">
+      <span style="color:var(--accent);opacity:0.7;">P2</span>
+    </div>
+    <div class="timeline-phase" style="left:76.6%;width:23.4%;background:rgba(248,81,73,0.08);">
+      <span style="color:var(--red);opacity:0.7;">P3</span>
+    </div>
+    <!-- Death marker for Brewtote at 370.7s / 404s = 91.8% -->
+    <div class="timeline-marker death-marker" style="left:91.8%;"><div style="position:absolute;top:-16px;left:-6px;font-size:14px;">&#9760;</div></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Healer</th>
+        <th>P1 (0:00-2:14)</th>
+        <th>Intermission (2:14-2:53)</th>
+        <th>P2 (2:53-5:09)</th>
+        <th>P3 (5:09+)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td><strong style="color:var(--shaman);">Brewtote</strong><br><span style="font-size:11px;color:var(--dim);">R. Shaman</span></td>
+        <td>
+          <span class="cd-pill cd-sham">Ascendance 0:06</span>
+          <span class="cd-pill cd-sham">SLT 0:27</span>
+        </td>
+        <td>&mdash;</td>
+        <td>
+          <span class="cd-pill cd-sham">SLT 4:23</span>
+          <span class="cd-pill cd-sham">Ascendance 4:35</span>
+        </td>
+        <td><span class="cd-pill cd-dead">DIED 6:11</span></td>
+      </tr>
+      <tr>
+        <td><strong style="color:#00ff96;">Senssay</strong><br><span style="font-size:11px;color:var(--dim);">MW Monk</span></td>
+        <td>
+          <span class="cd-pill cd-monk">Yu'lon 1:03</span>
+          <span class="cd-pill cd-monk">Revival 1:10</span>
+        </td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td><strong style="color:#ff7d0a;">Silencio</strong><br><span style="font-size:11px;color:var(--dim);">R. Druid</span></td>
+        <td>
+          <span class="cd-pill cd-druid">Convoke 0:01</span>
+          <span class="cd-pill cd-druid">Tranquility 0:10</span>
+          <span class="cd-pill cd-druid">Convoke 1:06</span>
+          <span class="cd-pill cd-druid">Convoke 2:07</span>
+        </td>
+        <td>&mdash;</td>
+        <td>
+          <span class="cd-pill cd-druid">Convoke 3:17</span>
+          <span class="cd-pill cd-druid">Tranquility 3:34</span>
+          <span class="cd-pill cd-druid">Convoke 4:25</span>
+        </td>
+        <td>
+          <span class="cd-pill cd-druid">Convoke 5:25</span>
+        </td>
+      </tr>
+      <tr>
+        <td><strong style="color:#f48cba;">Dueche</strong><br><span style="font-size:11px;color:var(--dim);">H. Paladin</span></td>
+        <td>
+          <span class="cd-pill cd-pal">Avenging Wrath 0:03</span>
+          <span class="cd-pill cd-pal">Aura Mastery 1:26</span>
+        </td>
+        <td>
+          <span class="cd-pill cd-pal">Avenging Wrath 2:48</span>
+        </td>
+        <td>
+          <span class="cd-pill cd-pal">Aura Mastery 4:30</span>
+          <span class="cd-pill cd-pal">Avenging Wrath 4:49</span>
+        </td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px;">
+    <h3>Raid Defensive CDs (Fight 25)</h3>
+    <table>
+      <thead><tr><th>Player</th><th>CD</th><th>Timing</th><th>Phase</th></tr></thead>
+      <tbody>
+        <tr><td style="color:#e0e0e0;">Voidheart (S. Priest)</td><td><span class="cd-pill cd-priest">Vampiric Embrace</span></td><td>4:57</td><td><span class="phase-pill phase-p2">P2</span></td></tr>
+        <tr><td style="color:#c69b6d;">Starfighter (Warrior)</td><td><span class="cd-pill cd-war">Rallying Cry</span></td><td>4:55</td><td><span class="phase-pill phase-p2">P2</span></td></tr>
+      </tbody>
+    </table>
+    <div style="font-size:12px;color:var(--dim);margin-top:8px;">
+      <strong>Coverage gaps:</strong> No raid defensive CDs were used in the Intermission or P3. Darkness and AMZ were not cast in this pull. Rallying Cry and VE both used at ~4:55 in P2 -- overlapping, which wastes value.
+    </div>
+  </div>
+</section>
+
+<!-- Death Pattern Analysis -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:20px;">
+    <div class="summary-card">
+      <div class="label">Total Deaths</div>
+      <div class="value" style="color:var(--red);">21</div>
+      <div class="sub">across 20 pulls (1 double-death in F9)</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Avg Survival Time</div>
+      <div class="value">3:30</div>
+      <div class="sub">210 seconds average</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Longest Survival</div>
+      <div class="value" style="color:var(--green);">6:18</div>
+      <div class="sub">fight 23 (378s)</div>
+    </div>
+  </div>
+
+  <h3>Death Causes Ranked</h3>
+  <table>
+    <thead><tr><th>Killing Ability</th><th>Count</th><th>% of Deaths</th><th>Phase Distribution</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Multi-source / DoT ticks</strong></td>
+        <td>7</td>
+        <td>33%</td>
+        <td>P1: 4, P2: 1, P3: 2</td>
+        <td>No single killing blow -- accumulated damage from multiple sources</td>
+      </tr>
+      <tr>
+        <td><strong>Cosmic Barrier</strong></td>
+        <td>4</td>
+        <td>19%</td>
+        <td>P2: 3, P3: 1</td>
+        <td>The cosmic wall during phase transitions -- positional or throughput failure</td>
+      </tr>
+      <tr>
+        <td><strong>Grasp of Emptiness</strong></td>
+        <td>3</td>
+        <td>14%</td>
+        <td>P2: 1, P3: 2</td>
+        <td>Void grip mechanic -- avoidable with better positioning or Gust of Wind</td>
+      </tr>
+      <tr>
+        <td><strong>Void Remnants</strong></td>
+        <td>3</td>
+        <td>14%</td>
+        <td>P1: 1, P2: 1, P3: 1</td>
+        <td>Ground puddle -- avoidable by repositioning</td>
+      </tr>
+      <tr>
+        <td><strong>Bursting Emptiness</strong></td>
+        <td>2</td>
+        <td>10%</td>
+        <td>P2: 2</td>
+        <td>Burst AoE -- need defensive CD or health to survive</td>
+      </tr>
+      <tr>
+        <td><strong>Silverstrike Arrow</strong></td>
+        <td>1</td>
+        <td>5%</td>
+        <td>P1: 1</td>
+        <td>Boss ranged attack -- unavoidable, defensive needed</td>
+      </tr>
+      <tr>
+        <td><strong>Simulacrum Backlash</strong></td>
+        <td>1</td>
+        <td>5%</td>
+        <td>P2: 1</td>
+        <td>Rift Simulacrum explosion -- positional awareness</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Cast Profile (Fight 25) -->
+<section>
+  <h2>Cast Profile &mdash; Fight 25 (6:11 alive)</h2>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Casts</th><th>CPM</th><th>Role</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Chain Heal</strong></td><td>86</td><td>13.92</td><td>Primary AoE heal</td><td style="color:var(--green);">Heavy Chain Heal usage -- appropriate for raid healing on prog</td></tr>
+      <tr><td><strong>Riptide</strong></td><td>58</td><td>9.39</td><td>Core rotational</td><td style="color:var(--green);">Good uptime, near CD usage</td></tr>
+      <tr><td><strong>Healing Stream Totem</strong></td><td>20</td><td>3.24</td><td>Passive healing</td><td style="color:var(--green);">Consistently deployed</td></tr>
+      <tr><td><strong>Unleash Life</strong></td><td>18</td><td>2.91</td><td>Amplifier + Ancestor spawn</td><td style="color:var(--green);">Good Farseer synergy usage</td></tr>
+      <tr><td><strong>Healing Rain</strong></td><td>12</td><td>1.94</td><td>Ground AoE</td><td style="color:var(--green);">Solid uptime</td></tr>
+      <tr><td><strong>Surging Totem</strong></td><td>12</td><td>1.94</td><td>Totem maintenance</td><td>Active totem management</td></tr>
+      <tr><td><strong>Stormstream Totem</strong></td><td>9</td><td>1.46</td><td>Proc-based healing</td><td>Passive -- procs from Nature's Swiftness</td></tr>
+      <tr><td><strong>Flame Shock</strong></td><td>8</td><td>1.29</td><td>DPS filler</td><td style="color:var(--yellow);">Minimal DPS contribution</td></tr>
+      <tr><td><strong>Lava Burst</strong></td><td>6</td><td>0.97</td><td>DPS filler</td><td style="color:var(--yellow);">Low -- expected on prog</td></tr>
+      <tr><td><strong>Healing Wave</strong></td><td>5</td><td>0.81</td><td>Single-target heal</td><td>Triage usage</td></tr>
+      <tr><td><strong>Nature's Swiftness</strong></td><td>6</td><td>0.97</td><td>Instant cast proc</td><td style="color:var(--green);">Used on CD</td></tr>
+      <tr><td><strong>Spiritwalker's Grace</strong></td><td>6</td><td>0.97</td><td>Movement heal</td><td style="color:var(--green);">Active movement usage</td></tr>
+      <tr><td><strong>Purify Spirit</strong></td><td>4</td><td>0.65</td><td>Dispel</td><td>Dispelling debuffs</td></tr>
+      <tr><td><strong>Astral Shift</strong></td><td>3</td><td>0.49</td><td>Personal defensive</td><td style="color:var(--yellow);">3 uses in 6:11 -- could be higher</td></tr>
+      <tr><td><strong>Lightning Bolt</strong></td><td>0</td><td>0</td><td>DPS filler</td><td style="color:var(--dim);">Zero LB casts -- expected when healing is constant</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:16px;font-size:13px;color:var(--dim);">
+    <strong>Notable:</strong> Brewtote is running the <strong>Farseer</strong> hero talent tree (evidenced by Unleash Life + Ancestor spawning via Nature's Swiftness/Stormstream Totem procs). Chain Heal dominance (13.9 CPM) shows a reactive, high-throughput approach appropriate for mythic progression. Zero Lightning Bolt casts is expected -- there is almost no downtime on this fight. Astral Shift at 3 uses could be improved to match the ~90s cooldown (could get 4 uses in 6:11).
+  </div>
+</section>
+
+<!-- Healing Breakdown (Fight 25) -->
+<section>
+  <h2>Healing Breakdown &mdash; Fight 25</h2>
+
+  <div class="two-col" style="margin-bottom:20px;">
+    <div class="stat-card">
+      <div class="label">Total Effective Healing</div>
+      <div class="value" style="color:var(--green);">64.2M</div>
+      <div class="sub">173,289 HPS (alive time)</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Overheal</div>
+      <div class="value">20.4%</div>
+      <div class="sub">16.5M overhealing -- very efficient</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Effective</th><th>% of Total</th><th>Overheal %</th><th style="width:120px;">Efficiency</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Chain Heal</strong></td>
+        <td>20.7M</td>
+        <td>32.3%</td>
+        <td>22.4%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:77.6%;"></div><div class="oh-over" style="width:22.4%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Earthliving Weapon</strong></td>
+        <td>7.0M</td>
+        <td>10.8%</td>
+        <td>27.5%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:72.5%;"></div><div class="oh-over" style="width:27.5%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Healing Rain</strong></td>
+        <td>5.8M</td>
+        <td>9.1%</td>
+        <td>21.6%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:78.4%;"></div><div class="oh-over" style="width:21.6%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Healing Stream Totem</strong></td>
+        <td>5.8M</td>
+        <td>9.0%</td>
+        <td>9.3%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:90.7%;"></div><div class="oh-over" style="width:9.3%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Spirit Link</strong></td>
+        <td>5.6M</td>
+        <td>8.7%</td>
+        <td>0.0%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:100%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Riptide</strong></td>
+        <td>5.0M</td>
+        <td>7.8%</td>
+        <td>28.2%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:71.8%;"></div><div class="oh-over" style="width:28.2%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Stormstream Totem</strong></td>
+        <td>4.5M</td>
+        <td>7.0%</td>
+        <td>19.0%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:81%;"></div><div class="oh-over" style="width:19%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Earth Shield</strong></td>
+        <td>1.9M</td>
+        <td>2.9%</td>
+        <td>13.8%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:86.2%;"></div><div class="oh-over" style="width:13.8%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Leech</strong></td>
+        <td>1.5M</td>
+        <td>2.3%</td>
+        <td>2.6%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:97.4%;"></div><div class="oh-over" style="width:2.6%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Stormswell</strong></td>
+        <td>1.5M</td>
+        <td>2.4%</td>
+        <td>21.6%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:78.4%;"></div><div class="oh-over" style="width:21.6%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Unleash Life</strong></td>
+        <td>1.2M</td>
+        <td>1.8%</td>
+        <td>39.5%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:60.5%;"></div><div class="oh-over" style="width:39.5%;"></div></div></td>
+      </tr>
+      <tr>
+        <td><strong>Nature's Guardian</strong></td>
+        <td>863K</td>
+        <td>1.3%</td>
+        <td>0.0%</td>
+        <td><div class="oh-bar" style="width:100%;"><div class="oh-eff" style="width:100%;"></div></div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px;font-size:13px;color:var(--dim);">
+    <strong>Analysis:</strong> Chain Heal is the dominant healing source (32%), which is appropriate for a Chain Heal-focused Farseer build on a fight with constant raid damage. 20.4% total overheal is well below the 30% benchmark -- Brewtote is not wasting significant mana on unnecessary healing. Spirit Link redistribution at 0% overheal shows it is being used during actual damage windows, not preemptively. Nature's Guardian (automatic self-heal at low HP) triggered 4 times, confirming Brewtote frequently drops to dangerous health levels.
+  </div>
+</section>
+
+<!-- DPS Contribution -->
+<section>
+  <h2>DPS Contribution</h2>
+
+  <div class="summary-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="stat-card">
+      <div class="label">DPS (Fight 25)</div>
+      <div class="value" style="color:var(--dim);">567</div>
+      <div class="sub">essentially zero</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Pulls with Any DPS</div>
+      <div class="value">5 / 20</div>
+      <div class="sub">F11, F13, F20, F23, F25</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">DPS Spells Used</div>
+      <div class="value">14</div>
+      <div class="sub">8 Flame Shock, 6 Lava Burst in F25</div>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;font-size:13px;color:var(--dim);">
+    <strong>Assessment:</strong> DPS contribution is negligible. On a prog fight with constant raid damage and 20.4% overheal, this is completely expected and not a concern. There are very few safe windows to cast Lightning Bolt, and Brewtote correctly prioritizes healing. The minimal Flame Shock/Lava Burst casts are likely for Lava Surge procs during brief movement windows. DPS optimization should only be revisited once survival is resolved and the fight is on farm.
+  </div>
+</section>
+
+<!-- Reference Comparison (De-Emphasized) -->
+<section>
+  <h2>Reference Comparison <span style="font-size:12px;color:var(--dim);font-weight:400;">(de-emphasized -- prog vs kill is not apples-to-apples)</span></h2>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>Player</th><th>Server</th><th>HPS</th><th>Kill Time</th><th>Context</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>거인병</td><td>아즈샤라</td><td style="color:var(--green);">213.4K</td><td>8:29</td><td>Kill</td></tr>
+      <tr><td>2</td><td>Reykk</td><td>Ysondre</td><td style="color:var(--green);">212.7K</td><td>8:57</td><td>Kill</td></tr>
+      <tr><td>3</td><td>Totemfear</td><td>Tarren Mill</td><td style="color:var(--green);">210.4K</td><td>8:03</td><td>Kill</td></tr>
+      <tr><td>4</td><td>Tigerlily</td><td>血色十字军</td><td style="color:var(--green);">206.5K</td><td>8:37</td><td>Kill</td></tr>
+      <tr><td>5</td><td>爱尔奎特</td><td>金色平原</td><td style="color:var(--green);">198.3K</td><td>8:03</td><td>Kill</td></tr>
+      <tr class="highlight-row">
+        <td>&mdash;</td>
+        <td><strong style="color:var(--shaman);">Brewtote</strong></td>
+        <td>&mdash;</td>
+        <td><strong>156.4K avg</strong></td>
+        <td>prog (6:11 best alive)</td>
+        <td>Prog night 3</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:12px;font-size:13px;color:var(--dim);">
+    <strong>Context:</strong> Top-ranked Resto Shamans on Mythic Crown achieve 198-213K HPS in 8-9 minute kill fights. Brewtote averages 156K across prog pulls where fights last 1-7 minutes and damage profiles are truncated. The 30-37% HPS gap is expected for prog vs kill -- kill fights reach P3 (the highest-damage phase) and last longer, significantly inflating total HPS. Brewtote's HPS while alive on longer pulls (F25: 173K at 6:11) is tracking closer to kill benchmarks.
+  </div>
+</section>
+
+<!-- Healer Team Ranking -->
+<section>
+  <h2>Healer Team Context</h2>
+
+  <table>
+    <thead>
+      <tr><th>Healer</th><th>Class / Spec</th><th>Role Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:#00ff96;">Senssay</strong></td>
+        <td>Mistweaver Monk</td>
+        <td>Revival + Yu'lon primarily in P1; appears to die early in many pulls</td>
+      </tr>
+      <tr class="highlight-row">
+        <td><strong style="color:var(--shaman);">Brewtote</strong></td>
+        <td>Restoration Shaman</td>
+        <td>Consistent CD deployment, Chain Heal focused, Farseer spec</td>
+      </tr>
+      <tr>
+        <td><strong style="color:#ff7d0a;">Silencio</strong></td>
+        <td>Restoration Druid</td>
+        <td>High Convoke uptime (6 uses in F25), Tranquility for burst windows</td>
+      </tr>
+      <tr>
+        <td><strong style="color:#f48cba;">Dueche</strong></td>
+        <td>Holy Paladin</td>
+        <td>Avenging Wrath + Aura Mastery rotation, good phase coverage</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- Actionable Items -->
+<section>
+  <h2>Actionable Items</h2>
+
+  <div class="actionable critical">
+    <h4>1. Survival is the #1 priority -- 0/20 pulls survived</h4>
+    <p>
+      Brewtote died in every single Crown pull. Average survival time is 210 seconds (3:30), with most deaths occurring in P2. The throughput numbers are solid (156K HPS, 26.6% overheal) -- this is not a healing performance problem, it is a <strong>personal survival problem</strong>. Use Astral Shift more aggressively during Cosmic Barrier overlap and Grasp of Emptiness windows. In fight 25, Astral Shift was used 3 times in 6:11 -- the ~90s cooldown allows 4 uses. Pre-cast Astral Shift before known damage spikes rather than reactively.
+    </p>
+  </div>
+
+  <div class="actionable critical">
+    <h4>2. Cosmic Barrier kills (4 deaths) -- position and defensive before the wall</h4>
+    <p>
+      Cosmic Barrier was the single deadliest named ability, killing Brewtote 4 times in P2/P3. This is the barrier wall that appears during phase transitions. Brewtote needs to: (a) pre-position closer to the safe side of the barrier, (b) have Astral Shift available for the barrier window, and (c) top personal health before the barrier spawns. Consider using Gust of Wind to quickly reposition when the barrier appears.
+    </p>
+  </div>
+
+  <div class="actionable important">
+    <h4>3. Grasp of Emptiness awareness (3 deaths) -- save Gust of Wind</h4>
+    <p>
+      Grasp of Emptiness is a void grip/pull mechanic that killed Brewtote 3 times (2 in P3, 1 in P2). This is avoidable with positioning and movement cooldowns. Gust of Wind (3 uses in F25) should be held specifically for Grasp windows when possible. Ghost Wolf can also help break free. In P3 where Grasp overlaps with other mechanics, defensive + movement CDs are essential.
+    </p>
+  </div>
+
+  <div class="actionable important">
+    <h4>4. Consider holding Ascendance for P2 instead of P1 opener</h4>
+    <p>
+      Currently, Ascendance is used at ~7s in 18/20 pulls (P1 opener). P1 damage is relatively manageable -- the team has 4 healers alive and boss adds are dying. P2 is where 71% of Brewtote's deaths occur. Holding Ascendance for the start of P2 (~175s) would provide a major throughput CD during the deadliest phase and might improve survival by having stronger self-sustain when damage ramps up. The first Ascendance use could shift from 7s to ~45-60s (after Null Corona) or directly to P2 entry.
+    </p>
+  </div>
+
+  <div class="actionable positive">
+    <h4>5. CD discipline is excellent -- maintain this consistency</h4>
+    <p>
+      Spirit Link Totem at 26.6s average with 0.4s standard deviation across 20 pulls is outstanding. Ascendance timing is also very consistent. Both CDs are used in every pull (100% usage rate). This level of CD discipline shows Brewtote has internalized the fight timing well. Once survival improves and pulls consistently reach P3, a third Ascendance use should become possible.
+    </p>
+  </div>
+</section>
+
+<!-- Footer -->
+<div class="footer">
+  <p>
+    <strong>Data source:</strong> WCL report <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a>,
+    fights 5-25 (20 pulls, fight 24 excluded as reset) &mdash; Mythic Crown of the Cosmos (encounterID 3181, difficulty 5)
+  </p>
+  <p>
+    <strong>Reference players:</strong> Top 5 Mythic Crown Resto Shamans (kills, 198-213K HPS). Comparison de-emphasized due to prog vs kill context mismatch.
+  </p>
+  <p>
+    <strong>Analysis mode:</strong> PROG &mdash; aggregate across all 20 pulls with per-phase breakdown. Phase boundaries: P1 (0-2:14), Intermission (2:14-2:53), P2 (2:53-5:09), P3 (5:09+).
+  </p>
+  <p style="margin-top:8px;">
+    Generated by WCL Healer Analyzer &mdash; Restoration Shaman spec knowledge sourced from
+    <a href="https://www.icy-veins.com/wow/restoration-shaman-pve-healing-rotation-cooldowns-abilities" target="_blank">Icy Veins</a> and
+    <a href="https://www.wowhead.com/guide/classes/shaman/restoration/rotation-cooldowns-pve-healer" target="_blank">Wowhead</a> (12.0.7).
+  </p>
+</div>
+
+</body>
+</html>

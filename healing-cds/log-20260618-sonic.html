@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sonic - Demonology Warlock | Crown of the Cosmos Prog Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --warlock: #8788ee;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;line-height:1.6;padding:24px;max-width:1200px;margin:0 auto}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1{font-size:28px;font-weight:700;margin-bottom:4px}
+h2{font-size:20px;font-weight:600;margin:32px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+h3{font-size:16px;font-weight:600;margin:20px 0 12px}
+.back-link{display:inline-block;margin-bottom:16px;font-size:13px;color:var(--dim)}
+.tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.tag-prog{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3)}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:20px 0}
+.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.summary-card .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);margin-bottom:4px}
+.summary-card .value{font-size:28px;font-weight:700}
+.summary-card .detail{font-size:12px;color:var(--dim);margin-top:4px}
+.chart-container{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:16px 0;overflow-x:auto}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:220px;padding-top:24px;position:relative;min-width:650px}
+.bar-wrapper{display:flex;flex-direction:column;align-items:center;flex:1;min-width:22px}
+.bar{width:100%;min-width:18px;border-radius:3px 3px 0 0;position:relative;transition:opacity .2s;cursor:default}
+.bar:hover{opacity:.8}
+.bar-label{font-size:8px;color:var(--dim);margin-top:4px;text-align:center}
+.bar-value{font-size:8px;color:var(--dim);margin-bottom:2px;white-space:nowrap;text-align:center}
+.avg-line{position:absolute;width:100%;border-top:2px dashed var(--yellow);z-index:2;pointer-events:none}
+.avg-line-label{position:absolute;right:4px;top:-14px;font-size:10px;color:var(--yellow);font-weight:600}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{font-weight:600;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px;background:var(--surface)}
+td{background:var(--surface)}
+tr:hover td{background:#1c2128}
+.death-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin:12px 0}
+.death-card.warning{border-color:var(--red);background:rgba(248,81,73,.05)}
+.death-card .count{font-size:24px;font-weight:700;color:var(--red)}
+.death-card .detail{font-size:13px;color:var(--dim);margin-top:4px}
+.reach-rate{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600}
+.reach-high{background:rgba(63,185,80,.15);color:var(--green)}
+.reach-mid{background:rgba(210,153,34,.15);color:var(--yellow)}
+.reach-low{background:rgba(248,81,73,.15);color:var(--red)}
+.insight-box{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 16px;margin:12px 0;font-size:13px}
+.insight-box.warning{border-left-color:var(--red)}
+.insight-box.success{border-left-color:var(--green)}
+.insight-box.neutral{border-left-color:var(--dim)}
+.action-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin:12px 0}
+.action-item .number{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--bg);font-size:12px;font-weight:700;margin-right:8px}
+.action-item .atitle{font-weight:600;font-size:14px;display:inline}
+.action-item .body{margin-top:8px;font-size:13px;color:var(--dim);line-height:1.7}
+.action-item .impact{display:inline-block;margin-top:8px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(248,81,73,.15);color:var(--red)}
+.legend{display:flex;gap:16px;margin:8px 0;font-size:11px;color:var(--dim);flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:4px}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.phase-timeline{display:flex;margin:16px 0;border-radius:6px;overflow:hidden;height:32px;font-size:11px;font-weight:600}
+.phase-timeline .phase{display:flex;align-items:center;justify-content:center;color:#fff}
+.phase-p1{background:#1f6feb}
+.phase-inter{background:#484f58}
+.phase-p2{background:#8957e5}
+.phase-p3{background:#db6d28}
+.footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--dim)}
+@media(max-width:768px){.summary-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
+.color-dk{color:#c41e3a}.color-dh{color:#a330c9}.color-druid{color:#ff7c0a}.color-evoker{color:#33937f}
+.color-hunter{color:#aad372}.color-mage{color:#3fc7eb}.color-monk{color:#00ff98}.color-paladin{color:#f48cba}
+.color-priest{color:#fff}.color-rogue{color:#fff468}.color-shaman{color:#0070dd}.color-warlock{color:#8788ee}
+.color-warrior{color:#c69b6d}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1><span class="color-warlock">Sonic</span> &mdash; Demonology Warlock</h1>
+  <div class="subtitle">
+    <span class="tag tag-prog">Progression</span>
+    Mythic Crown of the Cosmos &middot; 27 pulls &middot; Best: 31.27% (Fight 27) &middot; June 18, 2026
+    &middot; <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">WCL Report</a>
+  </div>
+</div>
+
+<!-- ==================== SUMMARY CARDS ==================== -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color:var(--accent)">38.0K</div>
+    <div class="detail">Across 13 qualifying pulls</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="detail">5pc tier set</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--red)">0/27</div>
+    <div class="detail">Died in every pull</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Best Pull</div>
+    <div class="value" style="color:var(--green)">53.8K</div>
+    <div class="detail">Fight 20 &middot; 31.27% boss</div>
+  </div>
+</div>
+
+<!-- ==================== PERFORMANCE ACROSS ALL PULLS ==================== -->
+<h2>Performance Across All Pulls</h2>
+
+<div class="chart-container">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div>
+      <span style="font-weight:600">DPS Per Pull</span>
+      <span style="color:var(--dim);font-size:12px;margin-left:8px">Table DPS (includes pet damage) &middot; 13/27 pulls with data</span>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Died (all pulls)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--border)"></div> No table data</div>
+      <div class="legend-item"><div style="width:20px;border-top:2px dashed var(--yellow);margin-right:4px"></div> Average (38.0K)</div>
+    </div>
+  </div>
+
+  <div class="bar-chart" id="dps-chart">
+    <!-- Bars generated inline. Max DPS = 53792, chart height = 200px -->
+    <!-- Fight data: F1:n/a F2:n/a F3:n/a F4:n/a F5:n/a F6(short) F7:n/a F8:21829 F9:n/a F10:n/a F11:37561 F12:n/a F13:n/a F14:37010 F15:18370 F16:40040 F17:n/a F18:43680 F19:n/a F20:53792 F21:33613 F22:26087 F23:39620 F24:47963 F25:n/a F27:47339 F28:46774 -->
+
+    <div style="position:absolute;width:100%;top:0;bottom:40px">
+      <div class="avg-line" style="bottom:calc(38000/53800 * 100%)">
+        <span class="avg-line-label">Avg 38.0K</span>
+      </div>
+    </div>
+
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F1: No table data (1:03, died 0:59)"></div><div class="bar-label">F1</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F2: No table data (1:07, died 1:01)"></div><div class="bar-label">F2</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F3: No table data (3:47, died 2:31)"></div><div class="bar-label">F3</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F4: No table data (1:08, died 1:07)"></div><div class="bar-label">F4</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F5: No table data (2:17, died 2:06)"></div><div class="bar-label">F5</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:6px;background:var(--border);opacity:0.3" title="F6: Short pull (0:47)"></div><div class="bar-label">F6</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F7: No table data (2:34, died 1:33)"></div><div class="bar-label">F7</div></div>
+    <div class="bar-wrapper"><div class="bar-value">21.8K</div><div class="bar death" style="height:calc(21829/53800 * 180px)" title="F8: 21,829 DPS (3:59, died 3:53 to Void Expulsion)"></div><div class="bar-label">F8</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F9: No table data (2:59, died 2:31)"></div><div class="bar-label">F9</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F10: No table data (2:18, died 2:17)"></div><div class="bar-label">F10</div></div>
+    <div class="bar-wrapper"><div class="bar-value">37.6K</div><div class="bar death" style="height:calc(37561/53800 * 180px)" title="F11: 37,561 DPS (4:05, died 3:40 to Cosmic Barrier)"></div><div class="bar-label">F11</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F12: No table data (1:03, died 0:55)"></div><div class="bar-label">F12</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F13: No table data (1:04, died 0:38)"></div><div class="bar-label">F13</div></div>
+    <div class="bar-wrapper"><div class="bar-value">37.0K</div><div class="bar death" style="height:calc(37010/53800 * 180px)" title="F14: 37,010 DPS (4:02, died 3:58 to Simulacrum Backlash)"></div><div class="bar-label">F14</div></div>
+    <div class="bar-wrapper"><div class="bar-value">18.4K</div><div class="bar death" style="height:calc(18370/53800 * 180px)" title="F15: 18,370 DPS (4:52, died 4:01 to Bursting Emptiness)"></div><div class="bar-label">F15</div></div>
+    <div class="bar-wrapper"><div class="bar-value">40.0K</div><div class="bar death" style="height:calc(40040/53800 * 180px)" title="F16: 40,040 DPS (5:03, died 4:44 to Silverstrike Ricochet)"></div><div class="bar-label">F16</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F17: No table data (1:01, died 0:11)"></div><div class="bar-label">F17</div></div>
+    <div class="bar-wrapper"><div class="bar-value">43.7K</div><div class="bar death" style="height:calc(43680/53800 * 180px)" title="F18: 43,680 DPS (5:56, died 5:41 to Voidstalker Sting)"></div><div class="bar-label">F18</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F19: No table data (5:16, died 2:42)"></div><div class="bar-label">F19</div></div>
+    <div class="bar-wrapper"><div class="bar-value" style="color:var(--green)">53.8K</div><div class="bar" style="height:180px;background:var(--green)" title="F20: 53,792 DPS - BEST PULL (5:23, died 5:00 to Simulacrum Backlash)"></div><div class="bar-label" style="color:var(--green)">F20</div></div>
+    <div class="bar-wrapper"><div class="bar-value">33.6K</div><div class="bar death" style="height:calc(33613/53800 * 180px)" title="F21: 33,613 DPS (4:49, died 4:08 to Void Remnants)"></div><div class="bar-label">F21</div></div>
+    <div class="bar-wrapper"><div class="bar-value">26.1K</div><div class="bar death" style="height:calc(26087/53800 * 180px)" title="F22: 26,087 DPS (4:13, died 4:01 to Grasp of Emptiness)"></div><div class="bar-label">F22</div></div>
+    <div class="bar-wrapper"><div class="bar-value">39.6K</div><div class="bar death" style="height:calc(39620/53800 * 180px)" title="F23: 39,620 DPS (6:05, died 5:13) - LONGEST PULL"></div><div class="bar-label">F23</div></div>
+    <div class="bar-wrapper"><div class="bar-value">48.0K</div><div class="bar death" style="height:calc(47963/53800 * 180px)" title="F24: 47,963 DPS (4:44, died 4:41 to Void Barrage)"></div><div class="bar-label">F24</div></div>
+    <div class="bar-wrapper"><div class="bar-value"></div><div class="bar" style="height:10px;background:var(--border);opacity:0.4" title="F25: No table data (1:01, died 0:54)"></div><div class="bar-label">F25</div></div>
+    <div class="bar-wrapper"><div class="bar-value">47.3K</div><div class="bar death" style="height:calc(47339/53800 * 180px)" title="F27: 47,339 DPS (6:01, died 5:47 to Voidstalker Sting) - BEST BOSS %"></div><div class="bar-label" style="color:var(--yellow)">F27</div></div>
+    <div class="bar-wrapper"><div class="bar-value">46.8K</div><div class="bar death" style="height:calc(46774/53800 * 180px)" title="F28: 46,774 DPS (5:43, died 4:54 to Bursting Emptiness)"></div><div class="bar-label">F28</div></div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="insight-box success">
+    <strong>Session Trend: Improving (+27%)</strong><br>
+    First half average: 33,082 DPS. Second half average: 42,170 DPS. Sonic showed clear improvement through the night, with the last 5 qualifying pulls all above 39K and the best pull (53.8K, F20) coming in the back half of the session.
+  </div>
+  <div class="insight-box neutral">
+    <strong>Volatility: High</strong><br>
+    DPS range spans from 18.4K (F15) to 53.8K (F20) &mdash; a 35.4K spread. Standard deviation: 10,232. The wide variance is driven primarily by death timing: early deaths tank the DPS number regardless of performance quality before death.
+  </div>
+</div>
+
+<!-- ==================== PHASE TIMELINE ==================== -->
+<h2>Boss Phase Structure</h2>
+
+<div class="phase-timeline">
+  <div class="phase phase-p1" style="flex:134">P1: Sentinels (0:00&ndash;2:14)</div>
+  <div class="phase phase-inter" style="flex:39">Inter (2:14&ndash;2:53)</div>
+  <div class="phase phase-p2" style="flex:136">P2: Rift (2:53&ndash;5:09)</div>
+  <div class="phase phase-p3" style="flex:56">P3: Cosmos (5:09+)</div>
+</div>
+
+<div style="font-size:12px;color:var(--dim);margin-bottom:16px">
+  P1 features Alleria + 3 Sentinels dying in sequence. Intermission is pure survival (Stellar Emission channel). P2 introduces Rift Simulacrum, Voidspawn adds, and new Alleria abilities. P3 stacks everything together with Cosmic Radiation.
+</div>
+
+<!-- ==================== PER-PHASE PERFORMANCE ==================== -->
+<h2>Per-Phase Performance Breakdown</h2>
+
+<h3>Phase Reach Rate</h3>
+<table>
+  <tr>
+    <th>Phase</th>
+    <th>Pulls Reached</th>
+    <th>Rate</th>
+    <th>Deaths in Phase</th>
+    <th>Top Death Cause</th>
+  </tr>
+  <tr>
+    <td><span style="color:#58a6ff;font-weight:600">P1: Sentinels</span></td>
+    <td>27/27</td>
+    <td><span class="reach-rate reach-high">100%</span></td>
+    <td style="color:var(--red)">10</td>
+    <td>Bursting Emptiness (4), Void Expulsion (2)</td>
+  </tr>
+  <tr>
+    <td><span style="color:var(--dim);font-weight:600">Intermission</span></td>
+    <td>19/27</td>
+    <td><span class="reach-rate reach-mid">70%</span></td>
+    <td style="color:var(--red)">4</td>
+    <td>Orbiting Matter (1), Silverstrike Barrage (1), Unknown (2)</td>
+  </tr>
+  <tr>
+    <td><span style="color:#8957e5;font-weight:600">P2: Rift</span></td>
+    <td>16/27</td>
+    <td><span class="reach-rate reach-mid">59%</span></td>
+    <td style="color:var(--red)">10</td>
+    <td>Simulacrum Backlash (2), Bursting Emptiness (2), assorted (6)</td>
+  </tr>
+  <tr>
+    <td><span style="color:var(--orange);font-weight:600">P3: Cosmos</span></td>
+    <td>6/27</td>
+    <td><span class="reach-rate reach-low">22%</span></td>
+    <td style="color:var(--red)">3</td>
+    <td>Voidstalker Sting (2), Unknown (1)</td>
+  </tr>
+</table>
+
+<h3>Per-Phase DPS (Raw Event Data)</h3>
+<div style="font-size:12px;color:var(--dim);margin-bottom:8px">
+  Note: Raw event DPS excludes some indirect pet damage (Wild Imps, Dreadstalkers, Tyrant). Table DPS is higher and more accurate for overall numbers. Use this for relative phase-to-phase comparison.
+</div>
+
+<table>
+  <tr>
+    <th>Phase</th>
+    <th>Pulls Seen</th>
+    <th>Avg DPS</th>
+    <th>Best DPS</th>
+    <th>Worst DPS</th>
+    <th>Trend</th>
+  </tr>
+  <tr>
+    <td><span style="color:#58a6ff;font-weight:600">P1: Sentinels</span></td>
+    <td>27</td>
+    <td style="font-weight:600">302,351</td>
+    <td>369,357 (F13)</td>
+    <td>87,071 (F17)</td>
+    <td style="color:var(--green)">Consistent (excl. outliers)</td>
+  </tr>
+  <tr>
+    <td><span style="color:var(--dim);font-weight:600">Intermission</span></td>
+    <td>4 (with dmg)</td>
+    <td style="font-weight:600">1,621</td>
+    <td>2,969</td>
+    <td>774</td>
+    <td style="color:var(--dim)">Expected &mdash; survival phase</td>
+  </tr>
+  <tr>
+    <td><span style="color:#8957e5;font-weight:600">P2: Rift</span></td>
+    <td>13</td>
+    <td style="font-weight:600">117,722</td>
+    <td>197,149 (F11)</td>
+    <td>39,482 (F15)</td>
+    <td style="color:var(--yellow)">High variance</td>
+  </tr>
+  <tr>
+    <td><span style="color:var(--orange);font-weight:600">P3: Cosmos</span></td>
+    <td>3</td>
+    <td style="font-weight:600">30,526</td>
+    <td>38,805 (F27)</td>
+    <td>20,973 (F23)</td>
+    <td style="color:var(--yellow)">Limited data</td>
+  </tr>
+</table>
+
+<div class="insight-box warning">
+  <strong>Critical: P1 Raw DPS drops 61% entering P2</strong><br>
+  P1 avg: 302K raw DPS vs P2 avg: 118K raw DPS. While some drop is expected (single target Alleria vs multi-phase chaos), this magnitude suggests significant downtime during P2 mechanics. Bursting Emptiness and Void Expulsion are the primary killers in P1, while P2 deaths are scattered across many abilities &mdash; indicating general mechanical overload rather than one specific failure.
+</div>
+
+<div class="insight-box">
+  <strong>Phase Gate: Intermission is the wall</strong><br>
+  30% of pulls (8/27) end before or during the Intermission. The Stellar Emission channel + Silverstrike Barrage overlap at 2:14&ndash;2:53 is where Sonic most needs to use defensive cooldowns (Unending Resolve, Dark Pact, Healthstone). Demonic Circle pre-placed before the fall can help with positioning.
+</div>
+
+<!-- ==================== DEATH PATTERN ANALYSIS ==================== -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="two-col">
+  <div class="death-card warning">
+    <div style="font-weight:600;margin-bottom:8px">Death Summary</div>
+    <div class="count">27/27 pulls</div>
+    <div class="detail">
+      Died in every single pull. Average survival time: <strong>3:03</strong> (median: 3:40).<br>
+      No pull survived to the wipe &mdash; Sonic was always the cause or a contributor.
+    </div>
+  </div>
+  <div class="death-card">
+    <div style="font-weight:600;margin-bottom:8px">#1 Killer: Bursting Emptiness</div>
+    <div class="count">6 deaths</div>
+    <div class="detail">
+      Fights: 1, 6, 7, 15, 17, 28. This is raid-wide AoE damage from the Sentinels / Alleria &mdash; hits everyone. Dying to it means being too low on health when it goes off. Use Dark Pact or Unending Resolve proactively.
+    </div>
+  </div>
+</div>
+
+<h3>Death Causes Ranked</h3>
+<table>
+  <tr>
+    <th>Killing Ability</th>
+    <th>Deaths</th>
+    <th>Phase</th>
+    <th>Avoidable?</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td style="color:var(--red);font-weight:600">Bursting Emptiness</td>
+    <td>6</td>
+    <td>P1 (4), P2 (2)</td>
+    <td><span style="color:var(--yellow)">Partially</span></td>
+    <td>Raid-wide AoE. Use personal defensives when low. Dark Pact / Unending Resolve.</td>
+  </tr>
+  <tr>
+    <td>Void Expulsion</td>
+    <td>3</td>
+    <td>P1 (2), P2 (1)</td>
+    <td><span style="color:var(--green)">Yes</span></td>
+    <td>Dodge the swirl/soak mechanic. Move out of impact zone.</td>
+  </tr>
+  <tr>
+    <td>Void Remnants</td>
+    <td>2</td>
+    <td>P1 (1), P2 (1)</td>
+    <td><span style="color:var(--green)">Yes</span></td>
+    <td>Avoidable ground effect. Improve positioning awareness.</td>
+  </tr>
+  <tr>
+    <td>Simulacrum Backlash</td>
+    <td>2</td>
+    <td>P2</td>
+    <td><span style="color:var(--yellow)">Partially</span></td>
+    <td>Damage from Rift Simulacrum. Defensive or positioning issue.</td>
+  </tr>
+  <tr>
+    <td>Voidstalker Sting</td>
+    <td>2</td>
+    <td>P3</td>
+    <td><span style="color:var(--yellow)">Partially</span></td>
+    <td>Alleria targeted ability. Use defensive when targeted.</td>
+  </tr>
+  <tr>
+    <td>Unknown</td>
+    <td>4</td>
+    <td>Various</td>
+    <td>&mdash;</td>
+    <td>Death cause not logged (possible environmental or multi-hit)</td>
+  </tr>
+  <tr>
+    <td>Orbiting Matter</td>
+    <td>1</td>
+    <td>Inter</td>
+    <td><span style="color:var(--green)">Yes</span></td>
+    <td>Dodgeable mechanic during intermission transition</td>
+  </tr>
+  <tr>
+    <td>Cosmic Barrier</td>
+    <td>1</td>
+    <td>P2</td>
+    <td><span style="color:var(--yellow)">Partially</span></td>
+    <td>Rift Simulacrum shield mechanic</td>
+  </tr>
+  <tr>
+    <td>Echoing Darkness</td>
+    <td>1</td>
+    <td>P1</td>
+    <td><span style="color:var(--green)">Yes</span></td>
+    <td>Vorelus ability &mdash; avoid standing in it</td>
+  </tr>
+  <tr>
+    <td>Silverstrike Arrow / Barrage / Ricochet</td>
+    <td>3</td>
+    <td>P1/Inter/P2</td>
+    <td><span style="color:var(--yellow)">Partially</span></td>
+    <td>Various Alleria silver attacks. Spread properly, use defensives.</td>
+  </tr>
+  <tr>
+    <td>Grasp of Emptiness</td>
+    <td>1</td>
+    <td>P2</td>
+    <td><span style="color:var(--green)">Yes</span></td>
+    <td>Move out of the grip. Demonic Circle can break it.</td>
+  </tr>
+  <tr>
+    <td>Void Barrage</td>
+    <td>1</td>
+    <td>P2</td>
+    <td><span style="color:var(--yellow)">Partially</span></td>
+    <td>Targeted attack &mdash; defensive cooldown needed</td>
+  </tr>
+</table>
+
+<div class="insight-box warning">
+  <strong>Pattern: Scattered death causes indicate general survivability issue, not one mechanic failure</strong><br>
+  Unlike players who die to the same mechanic repeatedly, Sonic's deaths are spread across 14 different abilities. This suggests a broader problem with health management and defensive cooldown usage rather than one specific mechanic blind spot. The fix is systematic: use Dark Pact and Unending Resolve on cooldown during high-damage windows, keep a Healthstone ready, and pre-place Demonic Circle before movement-heavy phases.
+</div>
+
+<!-- ==================== DEATH TIMING VISUALIZATION ==================== -->
+<h3>Death Timing Distribution</h3>
+<table>
+  <tr>
+    <th>Time Range</th>
+    <th>Deaths</th>
+    <th>Phase</th>
+    <th>Fights</th>
+  </tr>
+  <tr>
+    <td>0:00 &ndash; 0:59</td>
+    <td style="color:var(--red)">4</td>
+    <td>P1</td>
+    <td>F6 (0:38), F13 (0:38), F12 (0:55), F25 (0:54)</td>
+  </tr>
+  <tr>
+    <td>1:00 &ndash; 1:59</td>
+    <td style="color:var(--red)">4</td>
+    <td>P1</td>
+    <td>F1 (0:59), F2 (1:01), F4 (1:07), F7 (1:33)</td>
+  </tr>
+  <tr>
+    <td>2:00 &ndash; 2:59</td>
+    <td style="color:var(--red)">5</td>
+    <td>P1/Inter</td>
+    <td>F5 (2:06), F10 (2:17), F9 (2:31), F3 (2:31), F19 (2:42)</td>
+  </tr>
+  <tr>
+    <td>3:00 &ndash; 3:59</td>
+    <td style="color:var(--red)">4</td>
+    <td>P2</td>
+    <td>F11 (3:40), F8 (3:53), F14 (3:58), F17 (0:11 - outlier early)</td>
+  </tr>
+  <tr>
+    <td>4:00 &ndash; 4:59</td>
+    <td style="color:var(--red)">6</td>
+    <td>P2</td>
+    <td>F15 (4:01), F22 (4:01), F21 (4:08), F24 (4:41), F16 (4:44), F28 (4:54)</td>
+  </tr>
+  <tr>
+    <td>5:00+</td>
+    <td style="color:var(--red)">4</td>
+    <td>P2/P3</td>
+    <td>F20 (5:00), F23 (5:13), F18 (5:41), F27 (5:47)</td>
+  </tr>
+</table>
+
+<div class="insight-box">
+  <strong>Deaths are distributed across the entire fight</strong><br>
+  There is no single "death wall" &mdash; Sonic dies at all stages. However, the 4:00&ndash;4:59 window (mid P2) has the highest concentration with 6 deaths. This corresponds to the Rift phase where Call of the Void, Rift Slash, and continuing P1 mechanics overlap. This is the phase that needs the most defensive attention.
+</div>
+
+<!-- ==================== RAID CONTEXT ==================== -->
+<h2>Raid Ranking Context</h2>
+
+<div class="two-col">
+  <div>
+    <h3>Best Pull (Fight 20 &mdash; 53.8K DPS)</h3>
+    <table>
+      <tr><th>#</th><th>Player</th><th>DPS</th></tr>
+      <tr style="background:rgba(135,136,238,.1)"><td>1</td><td><span class="color-warlock">Sonic</span></td><td style="font-weight:600">53,799</td></tr>
+      <tr><td>2</td><td><span class="color-shaman">Invincibale</span></td><td>53,537</td></tr>
+      <tr><td>3</td><td><span class="color-mage">Baodabao</span></td><td>51,877</td></tr>
+      <tr><td>4</td><td><span class="color-evoker">Zinnks</span></td><td>47,957</td></tr>
+      <tr><td>5</td><td><span class="color-hunter">Smokinthisza</span></td><td>47,006</td></tr>
+      <tr><td>6</td><td><span class="color-paladin">Alitheria</span></td><td>45,698</td></tr>
+      <tr><td>7</td><td><span class="color-mage">Snackznchill</span></td><td>44,691</td></tr>
+      <tr><td>8</td><td><span class="color-dk">Unholyftw</span></td><td>42,626</td></tr>
+      <tr><td>9</td><td><span class="color-warrior">Starfighter</span></td><td>41,570</td></tr>
+      <tr><td>10</td><td><span class="color-warlock">Orichamaru</span></td><td>37,617</td></tr>
+      <tr><td>11</td><td><span class="color-dk">Bebeshakur</span></td><td>37,608</td></tr>
+      <tr><td>12</td><td><span class="color-druid">Moistbear</span></td><td>34,191</td></tr>
+    </table>
+  </div>
+  <div>
+    <h3>Best Boss % (Fight 27 &mdash; 31.27%)</h3>
+    <table>
+      <tr><th>#</th><th>Player</th><th>DPS</th></tr>
+      <tr><td>1</td><td><span class="color-hunter">Smokinthisza</span></td><td>61,138</td></tr>
+      <tr><td>2</td><td><span class="color-evoker">Zinnks</span></td><td>54,420</td></tr>
+      <tr><td>3</td><td><span class="color-mage">Baodabao</span></td><td>53,402</td></tr>
+      <tr><td>4</td><td><span class="color-shaman">Invincibale</span></td><td>52,575</td></tr>
+      <tr><td>5</td><td><span class="color-warlock">Orichamaru</span></td><td>48,929</td></tr>
+      <tr><td>6</td><td><span class="color-mage">Snackznchill</span></td><td>48,291</td></tr>
+      <tr style="background:rgba(135,136,238,.1)"><td>7</td><td><span class="color-warlock">Sonic</span></td><td style="font-weight:600">47,339</td></tr>
+      <tr><td>8</td><td><span class="color-priest">Nurnyx</span></td><td>44,954</td></tr>
+      <tr><td>9</td><td><span class="color-dk">Unholyftw</span></td><td>40,437</td></tr>
+      <tr><td>10</td><td><span class="color-dk">Bebeshakur</span></td><td>37,812</td></tr>
+      <tr><td>11</td><td><span class="color-paladin">Alitheria</span></td><td>33,337</td></tr>
+      <tr><td>12</td><td><span class="color-warrior">Starfighter</span></td><td>33,154</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="insight-box success">
+  <strong>When alive, Sonic performs at the top of the raid</strong><br>
+  On the best pull (F20), Sonic ranked #1 DPS in the raid at 53.8K. On the best boss % pull (F27), ranked #7 at 47.3K &mdash; still competitive but lower because death at 5:47 cost the final DPS window. The teammate comparison with Orichamaru (also Demo Lock) shows Sonic outperforming by 43% on F20 (53.8K vs 37.6K) and trailing by 3% on F27 (47.3K vs 48.9K, where Orichamaru survived longer).
+</div>
+
+<!-- ==================== REFERENCE COMPARISON ==================== -->
+<h2>Reference Comparison (Context Only)</h2>
+
+<div style="font-size:12px;color:var(--dim);margin-bottom:12px">
+  Top-ranked Mythic Crown of the Cosmos Demo Warlock kills. These are completed kills (8:30&ndash;8:50 duration) &mdash; Sonic's best pull reached 6:05. Use as a ceiling, not a direct comparison.
+</div>
+
+<table>
+  <tr>
+    <th>#</th>
+    <th>Player</th>
+    <th>Server</th>
+    <th>DPS</th>
+    <th>Kill Time</th>
+    <th>ilvl</th>
+    <th>Talent Diff</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td style="color:var(--purple)">Shoutfive</td>
+    <td>Twisting Nether-EU</td>
+    <td style="font-weight:600">112,169</td>
+    <td>8:50</td>
+    <td>291</td>
+    <td><span style="color:var(--red)">11 diffs</span></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td style="color:var(--purple)">Qywarlockaa</td>
+    <td>CN</td>
+    <td>106,104</td>
+    <td>8:35</td>
+    <td>288</td>
+    <td>&mdash;</td>
+  </tr>
+  <tr style="background:rgba(188,140,255,.08)">
+    <td>3</td>
+    <td style="color:var(--purple)">&#38654;&#38145;&#29756;&#27004;</td>
+    <td>CN</td>
+    <td>103,032</td>
+    <td>8:29</td>
+    <td>291</td>
+    <td><span style="color:var(--green)">4 diffs</span> (closest match)</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td style="color:var(--purple)">&#55121;&#49380;&#45768;</td>
+    <td>KR</td>
+    <td>98,942</td>
+    <td>7:20</td>
+    <td>274</td>
+    <td><span style="color:var(--yellow)">6 diffs</span></td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td style="color:var(--purple)">Shoutwl</td>
+    <td>Twisting Nether-EU</td>
+    <td>98,011</td>
+    <td>7:58</td>
+    <td>291</td>
+    <td><span style="color:var(--red)">11 diffs</span></td>
+  </tr>
+  <tr style="background:rgba(135,136,238,.1)">
+    <td>&mdash;</td>
+    <td><span class="color-warlock" style="font-weight:600">Sonic</span></td>
+    <td>Your raid</td>
+    <td style="font-weight:600">53,792 (best)</td>
+    <td>5:23 (best)</td>
+    <td>291</td>
+    <td>&mdash;</td>
+  </tr>
+</table>
+
+<div class="insight-box neutral">
+  <strong>Context: Reference kills go 8:30+ with full phase completion</strong><br>
+  Top Demo Locks do 98K&ndash;112K DPS across a full ~530s kill. Sonic's best pull of 53.8K over 323s is not directly comparable &mdash; the full fight includes additional Tyrant windows, execute phase, and P3 scaling. The closest talent match (4 diffs, same ilvl) does 103K on a kill. This is the ceiling to aim for once the raid consistently reaches and completes P3.
+</div>
+
+<!-- ==================== CONSISTENCY ANALYSIS ==================== -->
+<h2>Consistency Analysis</h2>
+
+<div class="two-col">
+  <div>
+    <h3>DPS Stats (13 qualifying pulls)</h3>
+    <table>
+      <tr><td>Average</td><td style="font-weight:600">37,975</td></tr>
+      <tr><td>Median</td><td style="font-weight:600">39,620</td></tr>
+      <tr><td>Best</td><td style="color:var(--green);font-weight:600">53,792 (F20)</td></tr>
+      <tr><td>Worst</td><td style="color:var(--red);font-weight:600">18,370 (F15)</td></tr>
+      <tr><td>Std Deviation</td><td>10,232</td></tr>
+      <tr><td>CoV (Consistency)</td><td style="color:var(--yellow)">26.9%</td></tr>
+    </table>
+  </div>
+  <div>
+    <h3>Session Progression</h3>
+    <table>
+      <tr><td>Early pulls (F8&ndash;F15)</td><td style="font-weight:600">33,082 avg</td></tr>
+      <tr><td>Late pulls (F16&ndash;F28)</td><td style="font-weight:600;color:var(--green)">42,170 avg</td></tr>
+      <tr><td>Improvement</td><td style="color:var(--green);font-weight:600">+27%</td></tr>
+      <tr><td>Best 5 pulls avg</td><td style="font-weight:600">47,910</td></tr>
+      <tr><td>Worst 5 pulls avg</td><td style="font-weight:600">27,198</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="insight-box success">
+  <strong>Clear learning curve</strong><br>
+  The 27% improvement from early to late pulls indicates Sonic was actively adapting to the fight. The last 4 pulls with data (F24, F27, F28, and the earlier F20) are all 46K+ DPS, showing the performance floor is rising. The worst pulls (F8: 21.8K, F15: 18.4K) correlate with early P2 deaths where Sonic was still learning the phase transition.
+</div>
+
+<!-- ==================== ABILITY BREAKDOWN ==================== -->
+<h2>Ability Damage Breakdown (Best Pull &mdash; F20)</h2>
+
+<table>
+  <tr>
+    <th>Ability</th>
+    <th>Source</th>
+    <th>Damage</th>
+    <th>% of Total</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td>Fel Firebolt</td>
+    <td>Wild Imps</td>
+    <td>3,432K</td>
+    <td style="font-weight:600">20%</td>
+    <td>Primary pet damage source &mdash; scales with imp count during Tyrant</td>
+  </tr>
+  <tr>
+    <td>Burning Cleave</td>
+    <td>Demonic Tyrant</td>
+    <td>2,433K</td>
+    <td style="font-weight:600">14%</td>
+    <td>Tyrant cleave &mdash; strong with multiple targets in P1/P2</td>
+  </tr>
+  <tr>
+    <td>Hand of Gul'dan</td>
+    <td>Player</td>
+    <td>1,545K</td>
+    <td>9%</td>
+    <td>Core shard spender &mdash; summons imps</td>
+  </tr>
+  <tr>
+    <td>Greater Felbolt</td>
+    <td>Imp Lord</td>
+    <td>1,157K</td>
+    <td>7%</td>
+    <td>Grimoire: Imp Lord summon</td>
+  </tr>
+  <tr>
+    <td>Shadow Nova</td>
+    <td>Lady Sacrolash</td>
+    <td>906K</td>
+    <td>5%</td>
+    <td>Diabolist ritual demon</td>
+  </tr>
+</table>
+
+<div style="font-size:12px;color:var(--dim);margin-top:8px">
+  Diabolist hero talent tree confirmed (Diabolic Ritual, ritual demons like Lady Sacrolash, Pit Lord, Mother of Chaos). This is the standard single-target/raid build for Demonology in the current patch.
+</div>
+
+<!-- ==================== GEAR & CONSUMABLES ==================== -->
+<h2>Gear & Preparation</h2>
+
+<div class="two-col">
+  <div>
+    <h3>Equipment</h3>
+    <table>
+      <tr><td>Average ilvl</td><td style="font-weight:600">291</td></tr>
+      <tr><td>Tier Set</td><td style="color:var(--green)">5/5 Abyssal Immolator</td></tr>
+      <tr><td>Weapon</td><td>Corespark Multitool (298)</td></tr>
+      <tr><td>Weapon Enchant</td><td style="color:var(--green)">Acuity of the Ren'dorei</td></tr>
+      <tr><td>Weapon Oil</td><td style="color:var(--green)">Thalassian Phoenix Oil</td></tr>
+      <tr><td>Trinkets</td><td>Emberwing Feather (298), Gaze of the Alnseer (298)</td></tr>
+    </table>
+  </div>
+  <div>
+    <h3>Stats</h3>
+    <table>
+      <tr><td>Intellect</td><td>2,737</td></tr>
+      <tr><td>Mastery</td><td style="font-weight:600;color:var(--green)">935</td></tr>
+      <tr><td>Crit</td><td>838</td></tr>
+      <tr><td>Haste</td><td>805</td></tr>
+      <tr><td>Versatility</td><td style="color:var(--red)">42</td></tr>
+    </table>
+    <h3>Consumables</h3>
+    <table>
+      <tr><td>Flask</td><td style="color:var(--green)">Flask of the Magisters</td></tr>
+      <tr><td>Food</td><td style="color:var(--green)">Hearty Well Fed</td></tr>
+      <tr><td>Vantus Rune</td><td style="color:var(--green)">Radiant + Rotmire</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="insight-box neutral">
+  <strong>Gear is competitive</strong><br>
+  291 ilvl matches the top-ranked reference players (291&ndash;292 bracket). 5/5 tier set is ideal. Very low Versatility (42) means Sonic takes more damage than most players &mdash; this compounds the survivability problem. The stat priority for Demo Lock is Mastery > Haste > Crit, which Sonic follows correctly, but picking up some Versatility through gear swaps could help survival during progression.
+</div>
+
+<!-- ==================== FULL PULL LOG ==================== -->
+<h2>Complete Pull Log</h2>
+
+<table style="font-size:12px">
+  <tr>
+    <th>Pull</th>
+    <th>Duration</th>
+    <th>Boss %</th>
+    <th>Table DPS</th>
+    <th>Death Time</th>
+    <th>Death Phase</th>
+    <th>Killing Ability</th>
+  </tr>
+  <tr><td>F1</td><td>1:03</td><td>87.12%</td><td style="color:var(--dim)">n/a</td><td>0:59</td><td>P1</td><td>Bursting Emptiness</td></tr>
+  <tr><td>F2</td><td>1:07</td><td>81.09%</td><td style="color:var(--dim)">n/a</td><td>1:01</td><td>P1</td><td>Void Expulsion</td></tr>
+  <tr><td>F3</td><td>3:47</td><td>57.83%</td><td style="color:var(--dim)">n/a</td><td>2:31</td><td>Inter</td><td>Orbiting Matter</td></tr>
+  <tr><td>F4</td><td>1:08</td><td>80.23%</td><td style="color:var(--dim)">n/a</td><td>1:07</td><td>P1</td><td>Void Expulsion</td></tr>
+  <tr><td>F5</td><td>2:17</td><td>62.00%</td><td style="color:var(--dim)">n/a</td><td>2:06</td><td>P1</td><td>Void Remnants</td></tr>
+  <tr style="opacity:0.5"><td>F6</td><td>0:47</td><td>85.57%</td><td style="color:var(--dim)">n/a</td><td>0:38</td><td>P1</td><td>Bursting Emptiness</td></tr>
+  <tr><td>F7</td><td>2:34</td><td>62.00%</td><td style="color:var(--dim)">n/a</td><td>1:33</td><td>P1</td><td>Bursting Emptiness</td></tr>
+  <tr><td>F8</td><td>3:59</td><td>54.68%</td><td>21,829</td><td>3:53</td><td>P2</td><td>Void Expulsion</td></tr>
+  <tr><td>F9</td><td>2:59</td><td>61.99%</td><td style="color:var(--dim)">n/a</td><td>2:31</td><td>Inter</td><td>Unknown</td></tr>
+  <tr><td>F10</td><td>2:18</td><td>62.00%</td><td style="color:var(--dim)">n/a</td><td>2:17</td><td>Inter</td><td>Unknown</td></tr>
+  <tr><td>F11</td><td>4:05</td><td>55.49%</td><td>37,561</td><td>3:40</td><td>P2</td><td>Cosmic Barrier</td></tr>
+  <tr><td>F12</td><td>1:03</td><td>86.75%</td><td style="color:var(--dim)">n/a</td><td>0:55</td><td>P1</td><td>Echoing Darkness</td></tr>
+  <tr><td>F13</td><td>1:04</td><td>86.76%</td><td style="color:var(--dim)">n/a</td><td>0:38</td><td>P1</td><td>Silverstrike Arrow</td></tr>
+  <tr><td>F14</td><td>4:02</td><td>56.70%</td><td>37,010</td><td>3:58</td><td>P2</td><td>Simulacrum Backlash</td></tr>
+  <tr><td>F15</td><td>4:52</td><td>45.69%</td><td style="color:var(--red)">18,370</td><td>4:01</td><td>P2</td><td>Bursting Emptiness</td></tr>
+  <tr><td>F16</td><td>5:03</td><td>43.43%</td><td>40,040</td><td>4:44</td><td>P2</td><td>Silverstrike Ricochet</td></tr>
+  <tr><td>F17</td><td>1:01</td><td>87.82%</td><td style="color:var(--dim)">n/a</td><td>0:11</td><td>P1</td><td>Bursting Emptiness</td></tr>
+  <tr><td>F18</td><td>5:56</td><td>38.52%</td><td style="color:var(--green)">43,680</td><td>5:41</td><td>P3</td><td>Voidstalker Sting</td></tr>
+  <tr><td>F19</td><td>5:16</td><td>43.50%</td><td style="color:var(--dim)">n/a</td><td>2:42</td><td>Inter</td><td>Silverstrike Barrage</td></tr>
+  <tr style="background:rgba(63,185,80,.05)"><td style="font-weight:600">F20</td><td>5:23</td><td>37.12%</td><td style="color:var(--green);font-weight:600">53,792</td><td>5:00</td><td>P2</td><td>Simulacrum Backlash</td></tr>
+  <tr><td>F21</td><td>4:49</td><td>43.12%</td><td>33,613</td><td>4:08</td><td>P2</td><td>Void Remnants</td></tr>
+  <tr><td>F22</td><td>4:13</td><td>50.46%</td><td style="color:var(--red)">26,087</td><td>4:01</td><td>P2</td><td>Grasp of Emptiness</td></tr>
+  <tr><td>F23</td><td>6:05</td><td>36.95%</td><td>39,620</td><td>5:13</td><td>P3</td><td>Unknown</td></tr>
+  <tr><td>F24</td><td>4:44</td><td>41.61%</td><td style="color:var(--green)">47,963</td><td>4:41</td><td>P2</td><td>Void Barrage</td></tr>
+  <tr><td>F25</td><td>1:01</td><td>86.33%</td><td style="color:var(--dim)">n/a</td><td>0:54</td><td>P1</td><td>Unknown</td></tr>
+  <tr style="background:rgba(210,153,34,.05)"><td style="font-weight:600">F27</td><td>6:01</td><td style="color:var(--yellow);font-weight:600">31.27%</td><td style="font-weight:600">47,339</td><td>5:47</td><td>P3</td><td>Voidstalker Sting</td></tr>
+  <tr><td>F28</td><td>5:43</td><td>36.59%</td><td>46,774</td><td>4:54</td><td>P2</td><td>Bursting Emptiness</td></tr>
+</table>
+
+<!-- ==================== ACTIONABLE IMPROVEMENTS ==================== -->
+<h2>Actionable Improvements</h2>
+
+<div class="action-item">
+  <span class="number">1</span>
+  <div class="atitle">Defensive Cooldown Discipline &mdash; Use Dark Pact and Unending Resolve Proactively</div>
+  <div class="body">
+    Sonic died in all 27 pulls to 14 different abilities. This is not a "learn one mechanic" problem &mdash; it is a health management problem. Demo Warlock has two strong defensives: <strong>Dark Pact</strong> (absorb shield, ~45s CD) and <strong>Unending Resolve</strong> (40% DR, 3min CD). These should be mapped to specific boss ability timings:<br><br>
+    &bull; <strong>Unending Resolve</strong> for: Intermission Stellar Emission, P2 Call of the Void, P3 Cosmic Radiation<br>
+    &bull; <strong>Dark Pact</strong> for: Bursting Emptiness windows (the #1 killer with 6 deaths), Void Expulsion soak<br>
+    &bull; <strong>Healthstone</strong>: Keep one ready at all times. Use at 40% HP, not 10%.
+  </div>
+  <div class="impact">Priority: Critical &mdash; dying in 27/27 pulls is the #1 issue</div>
+</div>
+
+<div class="action-item">
+  <span class="number">2</span>
+  <div class="atitle">Pre-place Demonic Circle Before Intermission (2:14)</div>
+  <div class="body">
+    4 deaths occurred during or near the Intermission (Orbiting Matter, Silverstrike Barrage, 2 Unknown). The platform change at 2:14 + Stellar Emission channel creates a positioning + survival checkpoint. Place <strong>Demonic Circle</strong> at the safe position before the transition starts. This gives an instant teleport to safety if caught in a bad position during the fall or the Silverstrike Barrage volley. 30% of pulls ended before or during this phase.
+  </div>
+  <div class="impact">Impact: Could save 4+ deaths per session</div>
+</div>
+
+<div class="action-item">
+  <span class="number">3</span>
+  <div class="atitle">P2 Survival Plan &mdash; Map Cooldowns to the Rift Phase</div>
+  <div class="body">
+    10 deaths occurred in P2 (2:53&ndash;5:09), the highest death phase tied with P1. Unlike P1 (where deaths are from individual mechanic failures), P2 deaths are scattered across 8 different abilities. This indicates being overwhelmed by overlapping mechanics (Rift Slash + Call of the Void + Grasp of Emptiness + continuing Void Expulsion).<br><br>
+    Create a personal cooldown map for P2:<br>
+    &bull; Rift Slash at ~3:05, ~3:17: sidestep, no CD needed<br>
+    &bull; Void Expulsion at ~3:20: Dark Pact<br>
+    &bull; Call of the Void at ~3:45: Unending Resolve<br>
+    &bull; Void Expulsion at ~4:20: Dark Pact (back off CD)<br>
+    &bull; Dark Rush at ~4:50: Demonic Circle teleport
+  </div>
+  <div class="impact">Impact: P2 is where 37% of all deaths occur</div>
+</div>
+
+<div class="action-item">
+  <span class="number">4</span>
+  <div class="atitle">Maintain P2 DPS During Movement &mdash; Use Instant Casts</div>
+  <div class="body">
+    Raw event DPS drops 61% from P1 (302K) to P2 (118K). While some drop is natural (less cleave, more movement), Demo Lock has strong tools to maintain DPS during movement: <strong>Demonbolt</strong> (instant with Demonic Core procs), <strong>Hand of Gul'dan</strong> (instant), and pet damage which continues automatically. Bank 2+ Demonic Core stacks before heavy movement windows (Rift Slash, Call of the Void) so you always have instant-cast options. Never let Demonic Core cap at 4 stacks.
+  </div>
+  <div class="impact">Impact: Even 10% improvement in P2 DPS adds ~4-5K overall</div>
+</div>
+
+<div class="action-item">
+  <span class="number">5</span>
+  <div class="atitle">Tyrant Windows &mdash; Optimize Summoning Sequence</div>
+  <div class="body">
+    Demonic Tyrant (Burning Cleave) was the #2 damage source on the best pull at 14% of total damage. Tyrant DPS scales with how many demons are active when summoned. On longer pulls where Sonic survived to 5:00+, ensure the sequence before Tyrant: Grimoire: Imp Lord &rarr; Hand of Gul'dan x2 (summon 6 imps) &rarr; Call Dreadstalkers &rarr; Summon Demonic Tyrant. Missing one Hand of Gul'dan before Tyrant loses significant scaling.
+  </div>
+  <div class="impact">Impact: Correct Tyrant sequencing is worth ~5-8% total DPS</div>
+</div>
+
+<!-- ==================== WHAT'S WORKING ==================== -->
+<h2>What's Working</h2>
+
+<div class="insight-box success">
+  <strong>Strong P1 execution</strong> &mdash; When not dying early to avoidable mechanics, Sonic's P1 DPS is excellent (avg 302K raw, up to 369K). P1 rotation and target priority (sentinels dying in sequence + cleave on Void Droplets) is being handled well.
+</div>
+
+<div class="insight-box success">
+  <strong>Best-pull ceiling is raid-leading</strong> &mdash; 53.8K on F20 was #1 DPS in the raid, outperforming every other player. This proves the rotation knowledge and gear are there. The gap is purely survival.
+</div>
+
+<div class="insight-box success">
+  <strong>Session learning curve is strong</strong> &mdash; 27% improvement from early to late pulls. The last 4 data-rich pulls averaged 47.5K DPS. Sonic is actively learning the fight, not plateauing.
+</div>
+
+<div class="insight-box success">
+  <strong>Consumables and preparation are complete</strong> &mdash; Flask, food, weapon oil, vantus rune, proper enchants. No preparation gaps.
+</div>
+
+<!-- ==================== CONTEXT FOOTER ==================== -->
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:24px">
+  <h3 style="margin-top:0">Bottom Line</h3>
+  <p style="font-size:14px;margin-top:8px">
+    Sonic's DPS output when alive is competitive to raid-leading (53.8K best, top of raid on F20). The 291 ilvl and 5/5 tier set match the world's top Demo Locks. The gap to reference (103K+ on kills) is <strong>entirely fight duration and survival</strong>, not rotation or gear. Dying in 27/27 pulls means Sonic never completed a full fight to see P3 Tyrant windows, execute phase, or final Bloodlust.
+  </p>
+  <p style="font-size:14px;margin-top:8px">
+    The single highest-impact improvement is <strong>proactive defensive usage</strong>. Mapping Dark Pact and Unending Resolve to specific boss ability timings (rather than reactive panic usage) would immediately convert several of those 27 deaths into survivals, unlocking longer pulls and significantly higher overall DPS.
+  </p>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="footer">
+  Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs report jqFfXprk4hcaWx3C</a><br>
+  Reference: Top 5 Demonology Warlock rankings on Mythic Crown of the Cosmos &middot; Closest talent match: #3 ranked (4 talent diffs, 291 ilvl, 103K DPS)<br>
+  Crown of the Cosmos encounter ID 3181 &middot; Difficulty 5 (Mythic) &middot; 27 pulls, no kill
+</div>
+
+</body>
+</html>

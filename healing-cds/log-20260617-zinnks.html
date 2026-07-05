@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zinnks — Augmentation Evoker — Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .support-metric { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .support-metric:last-child { border-bottom: none; }
+  .support-metric .label { width: 160px; font-weight: 600; font-size: 13px; }
+  .support-metric .value { font-size: 15px; font-weight: 700; }
+  .support-metric .ref-value { font-size: 13px; color: var(--purple); }
+  .uptime-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .uptime-fill { background: var(--green); }
+  .uptime-gap { background: var(--red); opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Zinnks <span class="dim">&mdash; Augmentation Evoker</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- ═══ SUMMARY ═══ -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">107.8K</div>
+    <div class="stat-label">DPS (Support)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">286.9</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">Died 6:40</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">37.2</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- ═══ VERDICT ═══ -->
+<div class="card" style="border-left: 3px solid var(--orange); margin-top: 16px;">
+  <div class="card-header orange">Bottom Line</div>
+  <p style="font-size: 15px;">Augmentation Evoker is a support spec &mdash; personal DPS is intentionally low. The comparison that matters is support ability execution. Zinnks' <strong class="red">Ebon Might uptime was 74.7%</strong> vs the reference's <strong class="green">95.9%</strong> &mdash; a <strong class="red">21.2 percentage point gap</strong> that directly reduces the damage of 4 buffed allies. <strong class="red">Eruption CPM was 13.1</strong> vs the reference's <strong class="green">18.9</strong>, a <strong class="red">30.7% deficit</strong> in the primary Ebon Might extender. Prescience usage (38 casts, 4.8 CPM) was close to reference (34 casts, 5.7 CPM) &mdash; the lower CPM reflects longer fight duration. Zinnks died at 6:40 to Fungal Bloom #3 + Rotting Pustules stacking damage, missing the final 77 seconds. Died in all 20 pulls. The DPS gap vs top Aug Evokers (108K vs 173K) is split between execution (Eruption CPM, Ebon Might uptime), fight length (477s vs 358s), and gear (286.9 vs 289.5 ilvl).</p>
+</div>
+
+<!-- ═══ SUPPORT METRICS ═══ -->
+<h2>Augmentation Support Metrics</h2>
+<p class="section-intro">The metrics that define Aug Evoker performance. Ebon Might uptime and Eruption CPM are the two highest-impact factors &mdash; they determine how much damage your buffed allies gain.</p>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">Ebon Might Uptime</div>
+    <div class="support-metric">
+      <div class="label">Zinnks</div>
+      <div class="value red">74.7%</div>
+    </div>
+    <div class="uptime-bar" style="width: 100%; margin: 8px 0;">
+      <div class="uptime-fill" style="width: 74.7%"></div>
+      <div class="uptime-gap" style="width: 25.3%"></div>
+    </div>
+    <div class="support-metric">
+      <div class="label purple">Reference</div>
+      <div class="value green">95.9%</div>
+    </div>
+    <div class="uptime-bar" style="width: 100%; margin: 8px 0;">
+      <div class="uptime-fill" style="width: 95.9%"></div>
+      <div class="uptime-gap" style="width: 4.1%"></div>
+    </div>
+    <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">Every second Ebon Might is down, 4 allies lose ~20% of their damage. The 21.2pp gap costs the raid roughly 5-8% total team DPS.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Eruption CPM</div>
+    <div class="support-metric">
+      <div class="label">Zinnks</div>
+      <div class="value red">13.1</div>
+      <div class="ref-value">(104 casts / 7:58)</div>
+    </div>
+    <div class="support-metric">
+      <div class="label purple">Reference</div>
+      <div class="value green">18.9</div>
+      <div class="ref-value">(113 casts / 5:58)</div>
+    </div>
+    <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">Eruption extends Ebon Might by 1s per cast and is the primary damage ability. At 13.1 CPM, Zinnks is casting Eruption roughly once every 4.6 seconds. Reference fires one every 3.2 seconds &mdash; 30.7% more frequent.</p>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top: 0;">
+  <div class="card">
+    <div class="card-header">Prescience Usage</div>
+    <div class="support-metric">
+      <div class="label">Zinnks</div>
+      <div class="value yellow">38 casts</div>
+      <div class="ref-value">(4.8 CPM)</div>
+    </div>
+    <div class="support-metric">
+      <div class="label purple">Reference</div>
+      <div class="value green">34 casts</div>
+      <div class="ref-value">(5.7 CPM)</div>
+    </div>
+    <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">Prescience cast count is comparable (38 vs 34) but CPM is lower because Zinnks' fight is 2 minutes longer. Slightly under-casting relative to fight length.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Ebon Might Recasts</div>
+    <div class="support-metric">
+      <div class="label">Zinnks</div>
+      <div class="value">13 casts</div>
+      <div class="ref-value">(1.6 CPM)</div>
+    </div>
+    <div class="support-metric">
+      <div class="label purple">Reference</div>
+      <div class="value">11 casts</div>
+      <div class="ref-value">(1.8 CPM)</div>
+    </div>
+    <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">13 Ebon Might casts over 7:58 means recasting approximately every 30s. The low uptime despite frequent recasts suggests Eruption CPM is too low to extend Ebon Might between recasts.</p>
+  </div>
+</div>
+
+<!-- ═══ REFERENCE COMPARISON ═══ -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Augmentation Evokers on Mythic Rotmire. Primary reference: <strong class="purple">&#25226;&#25171;&#28779;&#26426;&#36824;&#25105;</strong> (closest talent match at 4 diffs, 172,749 DPS, 5:58 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Eruption CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.06);">
+      <td><strong>Zinnks</strong> <span class="death-marker">died 6:40</span></td>
+      <td>107,752</td>
+      <td>7:58</td>
+      <td>286.9</td>
+      <td>&mdash;</td>
+      <td class="red">13.1</td>
+    </tr>
+    <tr>
+      <td>Fridiremix <span class="ref-badge">#1</span></td>
+      <td class="green">179,140</td>
+      <td>6:20</td>
+      <td>290.5</td>
+      <td><span class="tag tag-diff">12 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>As&acirc;p <span class="ref-badge">#2</span></td>
+      <td class="green">174,591</td>
+      <td>5:59</td>
+      <td>258.6</td>
+      <td><span class="tag tag-diff">10 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>&#25226;&#25171;&#28779;&#26426;&#36824;&#25105; <span class="ref-badge">#3 PRIMARY</span></td>
+      <td class="green">172,749</td>
+      <td>5:58</td>
+      <td>289.5</td>
+      <td><span class="tag tag-same">4 diff</span></td>
+      <td class="green">18.9</td>
+    </tr>
+    <tr>
+      <td>C&eacute;r&icirc;say <span class="ref-badge">#4</span></td>
+      <td class="green">169,756</td>
+      <td>6:49</td>
+      <td>290.0</td>
+      <td><span class="tag tag-diff">16 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Am&acirc;teraso <span class="ref-badge">#5</span></td>
+      <td class="green">169,553</td>
+      <td>6:35</td>
+      <td>291.1</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Note: Augmentation Evoker DPS is <em>support DPS</em> &mdash; it includes damage attributed through Ebon Might and Prescience on buffed allies. Higher Ebon Might uptime directly translates to higher DPS. The primary reference has only 4 talent differences and similar ilvl (289.5 vs 286.9), making this an execution comparison. As&acirc;p (#2) at ilvl 258.6 still outputs 174K DPS, demonstrating that Aug performance scales heavily with execution, not gear.</p>
+
+<!-- ═══ BOSS TIMELINE ═══ -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major events. Blooms fire on a fixed ~136s cycle. Zinnks experienced all 3 Blooms but died during Bloom #3 at 6:40.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Death marker -->
+  <div class="timeline-marker" style="left: 83.8%; border-color: var(--text); width: 2px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--red); font-weight: 700;">&#x2620; Zinnks (6:40)</span>
+  </div>
+  <!-- Alive zone -->
+  <div style="position: absolute; left: 0; top: 0; width: 83.8%; height: 100%; background: rgba(63,185,80,0.06); border-right: 2px dashed var(--red);"></div>
+  <div style="position: absolute; left: 83.8%; top: 0; width: 16.2%; height: 100%; background: rgba(248,81,73,0.04);">
+    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: var(--dim); font-size: 11px;">Dead (1:18)</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<!-- ═══ DEATH TIMELINE ═══ -->
+<h2>Kill Fight Death Timeline</h2>
+<p class="section-intro">8 deaths total on the kill. Zinnks died 5th at 6:40. The raid lost 3 DPS simultaneously at 6:07 to Festering Vines, dropping to 16/19 before Bloom #3.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Time</th><th>Player</th><th>Cause</th><th>Raid State</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>3:08</td>
+      <td>Tiareynna <span class="dim">(Disc Priest)</span></td>
+      <td>Writhing Vines</td>
+      <td>18/19</td>
+    </tr>
+    <tr>
+      <td>6:07</td>
+      <td>Nurnyx <span class="dim">(Shadow Priest)</span></td>
+      <td>Festering Vines</td>
+      <td>17/19</td>
+    </tr>
+    <tr>
+      <td>6:07</td>
+      <td>Snackznchill <span class="dim">(Frost Mage)</span></td>
+      <td>Festering Vines</td>
+      <td>16/19</td>
+    </tr>
+    <tr>
+      <td>6:07</td>
+      <td>Son&igrave;c <span class="dim">(Demo Warlock)</span></td>
+      <td>Festering Vines</td>
+      <td>15/19</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>6:40</strong></td>
+      <td><strong>Zinnks</strong> <span class="dim">(Aug Evoker)</span></td>
+      <td>Fungal Bloom + Rotting Pustules</td>
+      <td>14/19</td>
+    </tr>
+    <tr>
+      <td>7:38</td>
+      <td>Invincibale <span class="dim">(Ele Shaman)</span></td>
+      <td>Festering Vines</td>
+      <td>13/19</td>
+    </tr>
+    <tr>
+      <td>7:39</td>
+      <td>Unholyftw <span class="dim">(Unholy DK)</span></td>
+      <td>Festering Vines</td>
+      <td>12/19</td>
+    </tr>
+    <tr>
+      <td>7:40</td>
+      <td>Nucke <span class="dim">(Vengeance DH)</span></td>
+      <td>Melee</td>
+      <td>11/19</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 8px;">
+  <div class="card-header">Zinnks Death Analysis (6:40)</div>
+  <p style="font-size: 14px;">Zinnks died during Bloom #3 (6:32). In the 15 seconds before death, they took <strong class="red">266,654 from the initial Fungal Bloom hit</strong> plus 8 subsequent Bloom ticks (averaging 57K each) stacked on top of <strong>Rotting Pustules</strong> ticking for 39-49K/s. The combined damage of ~100-110K per second exceeded incoming healing. Zephyr was on cooldown (last used at 6:09). Obsidian Scales could have been used as a personal defensive but was not active during Bloom #3.</p>
+</div>
+
+<!-- ═══ CAST PROFILE COMPARISON ═══ -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Zinnks (6:40 alive, 400s) vs reference (5:58 full fight, 358s). Abilities sorted by importance to Augmentation Evoker performance.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Zinnks CPM</th>
+      <th>Zinnks Casts</th>
+      <th>Ref CPM</th>
+      <th>Ref Casts</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Eruption</strong></td>
+      <td class="red"><strong>13.1</strong></td>
+      <td>104</td>
+      <td class="purple">18.9</td>
+      <td>113</td>
+      <td class="red">&minus;31%</td>
+      <td><span class="tag tag-crit">LOW</span></td>
+    </tr>
+    <tr>
+      <td><strong>Living Flame</strong></td>
+      <td>7.5</td>
+      <td>60</td>
+      <td class="purple">9.9</td>
+      <td>59</td>
+      <td class="yellow">&minus;24%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>4.8</td>
+      <td>38</td>
+      <td class="purple">5.7</td>
+      <td>34</td>
+      <td class="yellow">&minus;16%</td>
+      <td><span class="tag tag-warn">Slightly Low</span></td>
+    </tr>
+    <tr>
+      <td>Fire Breath</td>
+      <td>1.9</td>
+      <td>15</td>
+      <td class="purple">2.3</td>
+      <td>14</td>
+      <td class="dim">&minus;17%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Upheaval</td>
+      <td>1.6</td>
+      <td>13</td>
+      <td class="purple">2.3</td>
+      <td>14</td>
+      <td class="yellow">&minus;30%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Ebon Might</td>
+      <td>1.6</td>
+      <td>13</td>
+      <td class="purple">1.8</td>
+      <td>11</td>
+      <td class="dim">&minus;11%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Hover</td>
+      <td>1.9</td>
+      <td>15</td>
+      <td class="purple">3.0</td>
+      <td>18</td>
+      <td class="dim">&minus;37%</td>
+      <td><span class="tag tag-info">Movement</span></td>
+    </tr>
+    <tr>
+      <td>Breath of Eons</td>
+      <td>0.6</td>
+      <td>5</td>
+      <td class="purple">1.0</td>
+      <td>6</td>
+      <td class="dim">&minus;40%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Tip the Scales</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td class="purple">0.5</td>
+      <td>3</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Obsidian Scales</td>
+      <td>0.6</td>
+      <td>5</td>
+      <td class="purple">0.3</td>
+      <td>2</td>
+      <td class="green">+100%</td>
+      <td><span class="tag tag-info">Defensive</span></td>
+    </tr>
+    <tr>
+      <td>Emberwing Heatwave</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td class="dim">N/A</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Talent diff</span></td>
+    </tr>
+    <tr>
+      <td>Quell</td>
+      <td>0.5</td>
+      <td>4</td>
+      <td class="dim">N/A</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Utility</span></td>
+    </tr>
+    <tr>
+      <td>Zephyr</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td class="dim">N/A</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Raid CD</span></td>
+    </tr>
+    <tr>
+      <td>Time Spiral</td>
+      <td>0.3</td>
+      <td>2</td>
+      <td class="dim">N/A</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Utility</span></td>
+    </tr>
+    <tr>
+      <td>Azure Strike</td>
+      <td>0.4</td>
+      <td>3</td>
+      <td class="dim">N/A</td>
+      <td>0</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Filler</span></td>
+    </tr>
+    <tr>
+      <td>Spatial Paradox</td>
+      <td class="dim">N/A</td>
+      <td>0</td>
+      <td class="purple">0.2</td>
+      <td>1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Talent diff</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Total CPM: Zinnks <strong class="yellow">37.2</strong> vs reference <strong class="green">46.6</strong> &mdash; a <strong>20.2% deficit</strong>. The gap is not from any one missing ability. Zinnks has the correct rotation buttons, but presses them all more slowly. Every ability except Obsidian Scales, Tip the Scales, and the utility/defensive buttons is below reference CPM.</p>
+
+<!-- ═══ CPM GAP ANALYSIS ═══ -->
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Eruption CPM Gap (Primary Issue)</div>
+    <p style="font-size: 14px;">Eruption is the engine of Aug Evoker &mdash; it deals damage, extends Ebon Might by 1 second per cast, and procs Essence Burst. At <strong>13.1 CPM vs 18.9 CPM</strong>, Zinnks is losing ~46 Eruption casts across the fight (extrapolated to reference CPM over 400s alive). Each lost Eruption is both a damage loss and 1 second of lost Ebon Might extension. This single gap explains the majority of the 21pp Ebon Might uptime difference.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Living Flame Filler Gap</div>
+    <p style="font-size: 14px;">Living Flame is the filler between Eruption casts &mdash; used when Essence Burst is not available. At <strong>7.5 CPM vs 9.9 CPM</strong>, Zinnks is losing ~16 filler casts over the fight. Combined with the Eruption gap, this points to frequent idle time or delayed GCD usage &mdash; pressing buttons less often overall, not just pressing the wrong buttons.</p>
+  </div>
+</div>
+
+<!-- ═══ DAMAGE BREAKDOWN ═══ -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Total damage by source. Augmentation damage is split between personal casts (Eruption, Fire Breath, Upheaval) and support attribution (Ebon Might, Prescience, Shifting Sands &mdash; damage done BY buffed allies that is credited to the Aug).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Zinnks</th><th>% Total</th><th>Reference</th><th>% Total</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Eruption</strong></td>
+      <td>12.77M</td>
+      <td>24.7%</td>
+      <td class="purple">19.68M</td>
+      <td>31.3%</td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong> <span class="dim">(attributed)</span></td>
+      <td>11.34M</td>
+      <td>21.9%</td>
+      <td class="purple">13.94M</td>
+      <td>22.2%</td>
+    </tr>
+    <tr>
+      <td>Bombardments</td>
+      <td>3.56M</td>
+      <td>6.9%</td>
+      <td class="purple">5.01M</td>
+      <td>8.0%</td>
+    </tr>
+    <tr>
+      <td>Prescience <span class="dim">(attributed)</span></td>
+      <td>3.36M</td>
+      <td>6.5%</td>
+      <td class="purple">2.98M</td>
+      <td>4.7%</td>
+    </tr>
+    <tr>
+      <td>Pyre</td>
+      <td>3.00M</td>
+      <td>5.8%</td>
+      <td class="purple">1.00M</td>
+      <td>1.6%</td>
+    </tr>
+    <tr>
+      <td>Upheaval</td>
+      <td>2.78M</td>
+      <td>5.4%</td>
+      <td class="purple">3.57M</td>
+      <td>5.7%</td>
+    </tr>
+    <tr>
+      <td>Inferno's Blessing</td>
+      <td>2.73M</td>
+      <td>5.3%</td>
+      <td class="purple">2.69M</td>
+      <td>4.3%</td>
+    </tr>
+    <tr>
+      <td>Breath of Eons</td>
+      <td>2.57M</td>
+      <td>5.0%</td>
+      <td class="purple">4.26M</td>
+      <td>6.8%</td>
+    </tr>
+    <tr>
+      <td>Living Flame</td>
+      <td>1.93M</td>
+      <td>3.7%</td>
+      <td class="purple">2.07M</td>
+      <td>3.3%</td>
+    </tr>
+    <tr>
+      <td>Shifting Sands <span class="dim">(attributed)</span></td>
+      <td>1.73M</td>
+      <td>3.4%</td>
+      <td class="purple">1.96M</td>
+      <td>3.1%</td>
+    </tr>
+    <tr>
+      <td>Fate Mirror</td>
+      <td>1.69M</td>
+      <td>3.3%</td>
+      <td class="purple">1.67M</td>
+      <td>2.7%</td>
+    </tr>
+    <tr>
+      <td>Fire Breath</td>
+      <td>1.63M</td>
+      <td>3.2%</td>
+      <td class="purple">1.92M</td>
+      <td>3.1%</td>
+    </tr>
+    <tr>
+      <td>Melt Armor</td>
+      <td>1.43M</td>
+      <td>2.8%</td>
+      <td class="purple">0.53M</td>
+      <td>0.8%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Zinnks total: <strong>51.7M</strong> (108K DPS). Reference total: <strong>62.8M</strong> (175K DPS). The reference fight was 119 seconds shorter, yet dealt 21.5% more total damage. Eruption accounts for the largest absolute gap (6.91M), followed by Ebon Might attribution (2.60M) and Breath of Eons (1.69M).</p>
+
+<!-- ═══ DAMAGE TAKEN ═══ -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by source. Rotting Pustules is unavoidable stacking damage. Zinnks took 2 Writhing Vines hits and 1 Festering Vines hit, suggesting positioning issues with root mechanics.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total</th><th>Hits</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td>9,824.7K</td>
+      <td>390</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>2,973.8K</td>
+      <td>43</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2,294.9K</td>
+      <td>36</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Stretch Time</td>
+      <td>780.0K</td>
+      <td>51</td>
+      <td><span class="tag tag-info">Self-damage</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>425.5K</td>
+      <td>17</td>
+      <td><span class="tag tag-warn">Partially</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Writhing Vines</td>
+      <td>174.2K</td>
+      <td>2</td>
+      <td><span class="tag tag-warn">Avoidable</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Festering Vines</td>
+      <td>155.7K</td>
+      <td>1</td>
+      <td><span class="tag tag-warn">Avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>175.2K</td>
+      <td>1</td>
+      <td><span class="tag tag-warn">Partially</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═══ DEFENSIVE USAGE ═══ -->
+<h2>Defensive &amp; Utility Usage</h2>
+<p class="section-intro">Augmentation Evoker brings Zephyr (raid-wide movement speed + DR), Obsidian Scales (personal), and utility through Time Spiral and Quell interrupts.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Uses</th><th>Timings</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Obsidian Scales</strong></td>
+      <td>5</td>
+      <td>various</td>
+      <td><span class="tag tag-same">Good usage</span> &mdash; used more than reference (2)</td>
+    </tr>
+    <tr>
+      <td><strong>Zephyr</strong></td>
+      <td>2</td>
+      <td>4:04, 6:09</td>
+      <td><span class="tag tag-same">Good</span> &mdash; pre-positioned for Bloom #2 and Bloom #3</td>
+    </tr>
+    <tr>
+      <td><strong>Quell</strong></td>
+      <td>4</td>
+      <td>1:36, 3:42, 5:57, 6:23</td>
+      <td><span class="tag tag-same">Good</span> &mdash; interrupting Sporecap Poison Bursts</td>
+    </tr>
+    <tr>
+      <td><strong>Time Spiral</strong></td>
+      <td>2</td>
+      <td>0:30, 2:36</td>
+      <td><span class="tag tag-same">Good</span> &mdash; raid cooldown reset utility</td>
+    </tr>
+    <tr>
+      <td><strong>Emerald Blossom</strong></td>
+      <td>2</td>
+      <td>various</td>
+      <td><span class="tag tag-info">Self-heal</span></td>
+    </tr>
+    <tr>
+      <td><strong>Verdant Embrace</strong></td>
+      <td>2</td>
+      <td>various</td>
+      <td><span class="tag tag-info">Self-heal</span></td>
+    </tr>
+    <tr>
+      <td><strong>Healthstone</strong></td>
+      <td>1</td>
+      <td>various</td>
+      <td><span class="tag tag-same">Used</span></td>
+    </tr>
+    <tr>
+      <td><strong>Health Potion</strong></td>
+      <td>1</td>
+      <td>various</td>
+      <td><span class="tag tag-same">Used</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Defensive usage is solid. 5 Obsidian Scales uses shows awareness of incoming damage. Zephyr placed before Blooms #2 and #3 is correct timing. 4 Quell interrupts on Sporecap adds is strong utility contribution. Healthstone and Health Potion both used &mdash; consumables are covered.</p>
+
+<!-- ═══ WIPE PROGRESSION ═══ -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">DPS across all 20 pulls (19 wipes + kill). Zinnks died in every single pull. Short wipes (&lt;90s) inflate DPS due to burst phase bias.</p>
+
+<div class="card">
+<div class="progression-chart">
+  <div class="prog-bar" style="height: 76.1%; background: var(--red);" data-tooltip="Pull 2: 72s wipe, 153.9K DPS"></div>
+  <div class="prog-bar" style="height: 76.5%; background: var(--red);" data-tooltip="Pull 3: 71s wipe, 154.8K DPS"></div>
+  <div class="prog-bar" style="height: 95.9%; background: var(--red);" data-tooltip="Pull 4: 51s wipe, 194.1K DPS"></div>
+  <div class="prog-bar" style="height: 62.5%; background: var(--orange);" data-tooltip="Pull 5: 162s wipe, 126.4K DPS"></div>
+  <div class="prog-bar" style="height: 66.1%; background: var(--orange);" data-tooltip="Pull 7: 138s wipe, 133.7K DPS"></div>
+  <div class="prog-bar" style="height: 64.1%; background: var(--orange);" data-tooltip="Pull 8: 137s wipe, 129.7K DPS"></div>
+  <div class="prog-bar" style="height: 69.1%; background: var(--yellow);" data-tooltip="Pull 9: 194s wipe, 139.9K DPS"></div>
+  <div class="prog-bar" style="height: 58.8%; background: var(--yellow);" data-tooltip="Pull 10: 337s wipe, 119.0K DPS"></div>
+  <div class="prog-bar" style="height: 60.2%; background: var(--yellow);" data-tooltip="Pull 11: 288s wipe, 121.9K DPS"></div>
+  <div class="prog-bar" style="height: 58.0%; background: var(--yellow);" data-tooltip="Pull 12: 342s wipe, 117.4K DPS"></div>
+  <div class="prog-bar" style="height: 56.3%; background: var(--orange);" data-tooltip="Pull 13: 171s wipe, 114.0K DPS"></div>
+  <div class="prog-bar" style="height: 63.5%; background: var(--red);" data-tooltip="Pull 14: 75s wipe, 128.6K DPS"></div>
+  <div class="prog-bar" style="height: 54.5%; background: var(--yellow);" data-tooltip="Pull 15: 305s wipe, 110.3K DPS"></div>
+  <div class="prog-bar" style="height: 100.0%; background: var(--red);" data-tooltip="Pull 16: 53s wipe, 202.3K DPS"></div>
+  <div class="prog-bar" style="height: 54.8%; background: var(--yellow);" data-tooltip="Pull 17: 345s wipe, 110.8K DPS"></div>
+  <div class="prog-bar" style="height: 55.9%; background: var(--yellow);" data-tooltip="Pull 18: 412s wipe, 113.2K DPS"></div>
+  <div class="prog-bar" style="height: 65.5%; background: var(--yellow);" data-tooltip="Pull 19: 301s wipe, 132.5K DPS"></div>
+  <div class="prog-bar" style="height: 90.2%; background: var(--red);" data-tooltip="Pull 20: 54s wipe, 182.4K DPS"></div>
+  <div class="prog-bar" style="height: 44.7%; background: var(--yellow);" data-tooltip="Pull 21: 435s wipe, 90.4K DPS"></div>
+  <div class="prog-bar" style="height: 53.3%; background: var(--green);" data-tooltip="Kill: 478s, 107.8K DPS"></div>
+</div>
+<div style="display: flex; gap: 16px; font-size: 12px; color: var(--dim); margin-top: 8px;">
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--red); border-radius: 2px; vertical-align: middle;"></span> &lt;90s wipe</span>
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--orange); border-radius: 2px; vertical-align: middle;"></span> 90&ndash;180s wipe</span>
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--yellow); border-radius: 2px; vertical-align: middle;"></span> &gt;180s wipe</span>
+  <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--green); border-radius: 2px; vertical-align: middle;"></span> Kill</span>
+</div>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header">Progression Notes</div>
+  <p style="font-size: 14px;">Excluding short wipes (&lt;90s), DPS on longer pulls ranged from <strong>90.4K</strong> (pull 21, 7:15 wipe) to <strong>139.9K</strong> (pull 9, 3:14 wipe). The kill fight at <strong>107.8K</strong> is mid-range. Pull 21 stands out as the lowest at 90.4K on a 435s fight, suggesting fatigue or mechanic issues late in that pull. The kill fight DPS is consistent with other 5+ minute attempts, showing no significant improvement trend across long pulls. <strong>Dying in all 20 pulls</strong> is a survivability concern &mdash; mostly to unavoidable late-fight damage (Rotting Pustules + Bloom stacking), but also to Vines mechanics in some wipes.</p>
+</div>
+
+<!-- ═══ EBON MIGHT TIMING ═══ -->
+<h2>Ebon Might Timing Analysis</h2>
+<p class="section-intro">Ebon Might should be recast every 25-30 seconds to maintain near-100% uptime. The self-buff uptime is 74.7% over 400 seconds alive. Below are the 13 recast timestamps and the gaps between them.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cast #</th><th>Time</th><th>Gap from Previous</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>0:02</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Opener</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>0:33</td>
+      <td>30.6s</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>1:08</td>
+      <td>35.0s</td>
+      <td><span class="tag tag-warn">Slightly Late</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>1:37</td>
+      <td>29.4s</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>2:08</td>
+      <td>31.2s</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>2:38</td>
+      <td>30.0s</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>3:10</td>
+      <td>31.8s</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>3:38</td>
+      <td>28.3s</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>4:07</td>
+      <td>28.2s</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>4:35</td>
+      <td>28.7s</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>5:03</td>
+      <td>27.9s</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>5:43</td>
+      <td>39.3s</td>
+      <td><span class="tag tag-diff">Late</span></td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>6:14</td>
+      <td>31.1s</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Most recast gaps are 28-31 seconds, which is acceptable. The problematic gaps are Cast #3 (35.0s) and Cast #12 (39.3s). Cast #12 at 5:43 with a 39.3s gap means Ebon Might likely dropped for ~9 seconds mid-fight. Combined with the low Eruption CPM (which is supposed to extend Ebon Might between recasts), the 74.7% uptime results from Ebon Might expiring between recasts due to insufficient Eruption extension.</p>
+
+<!-- ═══ BREATH OF EONS USAGE ═══ -->
+<h2>Breath of Eons Usage</h2>
+<p class="section-intro">Breath of Eons is Aug Evoker's major cooldown &mdash; fly forward, apply Ebon Might, and store damage for a burst window. 5 uses in 6:40 vs reference's 6 uses in 5:58.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cast #</th><th>Zinnks</th><th>Reference</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>0:16</td>
+      <td class="purple">opener</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>2:02</td>
+      <td class="purple">~1:15</td>
+      <td><span class="tag tag-warn">Delayed</span> &mdash; 106s gap vs reference ~75s</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>3:31</td>
+      <td class="purple">~2:30</td>
+      <td><span class="tag tag-warn">Delayed</span> &mdash; 89s gap</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>4:57</td>
+      <td class="purple">~3:45</td>
+      <td><span class="tag tag-warn">Delayed</span> &mdash; 86s gap</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>6:34</td>
+      <td class="purple">~5:00</td>
+      <td><span class="tag tag-warn">Late</span> &mdash; 97s gap (used during Bloom #3)</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td class="dim">died</td>
+      <td class="purple">~5:55</td>
+      <td><span class="tag tag-info">N/A</span> &mdash; Zinnks was dead</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Breath of Eons has an approximate 75-second cooldown. Zinnks' gaps range from 86-106 seconds &mdash; consistently holding the ability 10-30 seconds beyond its cooldown. Over 400 seconds alive, this results in 1 fewer usage. Each missed Breath of Eons is roughly 2.5M lost damage based on per-cast averages.</p>
+
+<!-- ═══ ACTIONABLE IMPROVEMENTS ═══ -->
+<h2>Actionable Improvements</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Eruption CPM from 13.1 to 18+ by using it on every Essence Burst proc.</strong> This is the single biggest lever. Eruption at 13.1 CPM means roughly one every 4.6 seconds &mdash; reference fires one every 3.2 seconds. Each additional Eruption extends Ebon Might by 1 second AND deals ~123K damage. Fixing this alone would raise Ebon Might uptime from 74.7% toward 90%+ and add approximately 5-8M total damage across the fight. Practice tracking Essence Burst procs and spending them immediately on Eruption rather than letting them sit.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Close casting gaps to raise total CPM from 37.2 toward 45+.</strong> The 20% total CPM deficit means Zinnks is spending roughly 1 out of every 5 GCDs doing nothing. Over 400 seconds, that is approximately 80 lost GCDs. Focus on always having a button queued &mdash; if Eruption is not available, cast Living Flame. If moving, use Hover to cast while moving (reference uses Hover 18 times vs Zinnks' 15). The ABC rule: Always Be Casting.
+</div>
+
+<div class="action-item">
+  <strong>3. Use Breath of Eons on cooldown &mdash; reduce gaps from 86-106s to ~75s.</strong> Each delayed Breath of Eons pushes the next one later, cascading through the fight. Over a 400s fight, pressing Breath of Eons every 75s yields 6 uses instead of 5. That is approximately 2.5M additional damage plus better Ebon Might alignment with burst windows. Set a weak aura or timer to track the cooldown.
+</div>
+
+<div class="action-item">
+  <strong>4. Pre-use Obsidian Scales or a defensive before Bloom #3 to survive.</strong> Zinnks died at 6:40 during Bloom #3. Zephyr was last used at 6:09 (on cooldown). Obsidian Scales was available but not active during the kill hit. Pre-casting Obsidian Scales 2-3 seconds before Bloom (which fires at a fixed time) would provide 40% damage reduction through the burst. Surviving 77 more seconds could add ~8-10M damage.
+</div>
+
+<div class="action-item">
+  <strong>5. Improve Fire Breath and Upheaval usage to match reference CPM.</strong> Fire Breath at 1.9 CPM vs 2.3, Upheaval at 1.6 vs 2.3. These empowered casts are on short cooldowns and deal significant damage. Each missed Fire Breath is ~110K damage lost; each missed Upheaval is ~214K. Together, getting these to reference CPM would add approximately 2M total damage across the fight.
+</div>
+
+<!-- ═══ WHAT'S GOING WELL ═══ -->
+<h2>What&rsquo;s Going Well</h2>
+
+<div class="grid-2">
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Correct Rotation Buttons</div>
+    <p style="font-size: 14px;">Zinnks is pressing all the right abilities in the right priority. Eruption > Living Flame > Fire Breath > Upheaval. No wrong spells being cast, no wasted GCDs on irrelevant abilities. The rotation is correct &mdash; the issue is speed, not selection.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Strong Defensive &amp; Utility Play</div>
+    <p style="font-size: 14px;">5 Obsidian Scales uses, 2 well-timed Zephyrs for Blooms, 4 Quell interrupts on Sporecap adds, 2 Time Spirals, Healthstone + Health Potion both consumed. This is above-average utility contribution. The defensive awareness is there &mdash; the death was due to insufficient healing during massive stacking damage, not mechanical failure.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Prescience Tracking</div>
+    <p style="font-size: 14px;">38 Prescience casts is close to the reference's 34 (accounting for fight length difference). Prescience is being maintained on allies throughout the fight. The cast count is not a problem area.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header green">Close Talent Build</div>
+    <p style="font-size: 14px;">Only 4 talent differences from the #3 ranked Aug Evoker. The build is fundamentally correct. Performance gaps are execution-based, not build-based. Minor talent adjustments (like picking up Spatial Paradox) could help with movement, but will not close the CPM gap.</p>
+  </div>
+</div>
+
+<!-- ═══ CONTEXT ═══ -->
+<h2>Context &amp; Caveats</h2>
+<div class="card">
+  <p style="font-size: 14px; margin-bottom: 8px;"><strong>Fight length matters:</strong> Zinnks' kill was 477.5 seconds (7:58). The reference kill was 358.2 seconds (5:58). Longer fights mean more Rotting Pustules stacks, more Bloom cycles, more pressure on healers and defensives. DPS naturally decreases in longer fights due to CDs becoming a smaller % of total time.</p>
+  <p style="font-size: 14px; margin-bottom: 8px;"><strong>Raid state:</strong> By the time Zinnks died at 6:40, the raid was already at 15/19 (4 dead). In the reference kill, the raid likely had fewer deaths earlier. Lower raid DPS extends the fight, which cascades into more damage taken, more healing pressure, and more deaths.</p>
+  <p style="font-size: 14px; margin-bottom: 8px;"><strong>Aug DPS is support DPS:</strong> The 108K DPS number should NOT be compared to pure DPS specs. Aug Evoker's contribution is buffing 4 allies via Ebon Might (~20% damage increase each). The true raid impact is 108K personal + the buffed damage on allies, which makes Aug one of the highest total-contribution specs when played well.</p>
+  <p style="font-size: 14px;"><strong>Gear differential:</strong> 286.9 ilvl vs reference 289.5. Small gap (2.6 ilvl) &mdash; accounts for maybe 1-2% DPS difference, not the 38% gap. As&acirc;p (#2 ranked) achieved 174.6K DPS at just 258.6 ilvl, confirming execution matters far more than gear for Aug.</p>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/1Mch2jqLWmAZ8r9a#fight=22" style="color: var(--accent);">Warcraft Logs Report 1Mch2jqLWmAZ8r9a</a></p>
+  <p>Primary reference: &#25226;&#25171;&#28779;&#26426;&#36824;&#25105; (<a href="https://www.warcraftlogs.com/reports/qLHMWF28XQfzvJgV#fight=5" style="color: var(--purple);">report</a>) &mdash; #3 ranked Augmentation Evoker, 4 talent diffs, 289.5 ilvl</p>
+  <p>Analysis date: June 17, 2026 &middot; Mythic Rotmire (Encounter 3159, Difficulty 5)</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invincibale (Ele Shaman) - Crown of the Cosmos Prog - June 18, 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --shaman: #0070dd;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--shaman); }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.prog-tag { display: inline-block; background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; letter-spacing: 0.5px; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .detail { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+.section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88, 166, 255, 0.04); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.chart-container { position: relative; margin: 16px 0; }
+.bar-chart { display: flex; align-items: flex-end; gap: 3px; height: 200px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; min-width: 8px; border-radius: 3px 3px 0 0; position: relative; cursor: pointer; transition: opacity 0.2s; }
+.bar:hover { opacity: 0.8; }
+.bar.survived { background: var(--green); }
+.bar.died { background: var(--red); }
+.bar.short { background: var(--border); }
+.bar.no-data { background: var(--border); opacity: 0.4; }
+.bar-label { font-size: 9px; color: var(--dim); position: absolute; bottom: -20px; white-space: nowrap; transform: rotate(-45deg); transform-origin: top left; }
+.avg-line { position: absolute; width: 100%; border-top: 2px dashed var(--yellow); z-index: 1; }
+.avg-label { position: absolute; right: 0; font-size: 10px; color: var(--yellow); transform: translateY(-14px); }
+
+.tooltip { display: none; position: absolute; background: #1c2128; border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 12px; z-index: 10; white-space: nowrap; pointer-events: none; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); }
+.bar-wrapper:hover .tooltip { display: block; }
+
+.callout { background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.3); border-radius: 8px; padding: 16px; margin: 16px 0; }
+.callout.warning { background: rgba(210, 153, 34, 0.1); border-color: rgba(210, 153, 34, 0.3); }
+.callout.info { background: rgba(88, 166, 255, 0.1); border-color: rgba(88, 166, 255, 0.3); }
+.callout.success { background: rgba(63, 185, 80, 0.1); border-color: rgba(63, 185, 80, 0.3); }
+.callout h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.callout p { font-size: 13px; color: var(--dim); }
+
+.death-cause-bar { display: flex; align-items: center; margin: 4px 0; }
+.death-cause-bar .name { width: 180px; font-size: 13px; }
+.death-cause-bar .bar-fill { height: 20px; border-radius: 4px; background: var(--red); display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 600; min-width: 24px; }
+
+.phase-timeline { display: flex; margin: 16px 0; border-radius: 6px; overflow: hidden; height: 32px; }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+.phase-segment.p1 { background: #2ea043; }
+.phase-segment.inter { background: #6e7681; }
+.phase-segment.p2 { background: #1f6feb; }
+.phase-segment.p3 { background: #8b5cf6; }
+
+.phase-rate { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.phase-rate.high { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.phase-rate.mid { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.phase-rate.low { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+
+.badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge.green { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.badge.red { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.badge.yellow { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.badge.purple { background: rgba(188, 140, 255, 0.2); color: var(--purple); }
+
+.cpm-bar { display: flex; gap: 4px; align-items: center; }
+.cpm-bar .fill { height: 14px; border-radius: 3px; }
+.cpm-bar .fill.player { background: var(--shaman); }
+.cpm-bar .fill.ref { background: var(--purple); opacity: 0.7; }
+
+.footer { text-align: center; color: var(--dim); font-size: 12px; margin-top: 48px; padding: 24px 0; border-top: 1px solid var(--border); }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+}
+
+.trend-arrow { font-size: 18px; }
+.trend-arrow.up { color: var(--green); }
+.trend-arrow.down { color: var(--red); }
+.trend-arrow.flat { color: var(--dim); }
+
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 3px solid var(--accent); }
+.action-item .number { font-size: 12px; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+.action-item .title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.action-item .desc { font-size: 13px; color: var(--dim); line-height: 1.5; }
+.action-item.critical { border-left-color: var(--red); }
+.action-item.critical .number { color: var(--red); }
+.action-item.warning { border-left-color: var(--yellow); }
+.action-item.warning .number { color: var(--yellow); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18 Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Invincibale</span> &mdash; Elemental Shaman <span class="prog-tag">PROGRESSION</span></h1>
+  <div class="subtitle">
+    Crown of the Cosmos (Mythic) &bull; June 18, 2026 &bull; 27 pulls &bull; Best: 0.31% (Fight 27) &bull;
+    <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">WCL Report</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">Avg DPS</div>
+    <div class="value">39.8K</div>
+    <div class="detail">Median: 43.0K &bull; StdDev: 11.8K</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">292</div>
+    <div class="detail">Ref avg: 291 &bull; Comparable</div>
+  </div>
+  <div class="card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color: var(--red);">0 / 27</div>
+    <div class="detail">Died every pull. Avg 1st death: 2:33</div>
+  </div>
+  <div class="card">
+    <div class="label">Best Pull</div>
+    <div class="value">53.5K</div>
+    <div class="detail">Fight 20 &bull; 5:23 &bull; 0.37% boss</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+  <div class="chart-container">
+    <div class="bar-chart" id="dps-chart">
+      <div class="avg-line" style="bottom: calc(24px + (39815 / 55000) * 176px);">
+        <span class="avg-label">Avg 39.8K</span>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: var(--dim);">
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--red);border-radius:2px;vertical-align:middle;margin-right:4px;"></span> Died before wipe</span>
+    <span><span style="display:inline-block;width:12px;height:12px;background:var(--border);border-radius:2px;vertical-align:middle;margin-right:4px;opacity:0.4;"></span> No data (sub-60s or API limit)</span>
+    <span style="color: var(--yellow);">--- Avg DPS line</span>
+  </div>
+
+  <div class="grid-2" style="margin-top: 16px;">
+    <div>
+      <h3>Session Trend</h3>
+      <p style="font-size: 13px; color: var(--dim);">
+        First half average (pulls 1-14): <strong style="color: var(--text);">28.8K DPS</strong> (4 qualifying pulls)<br>
+        Second half average (pulls 15-28): <strong style="color: var(--text);">44.2K DPS</strong> (10 qualifying pulls)<br>
+        <span class="trend-arrow up">&uarr;</span> <strong style="color: var(--green);">+53% improvement</strong> through the session
+      </p>
+    </div>
+    <div>
+      <h3>Consistency</h3>
+      <p style="font-size: 13px; color: var(--dim);">
+        DPS Range: 16.5K &ndash; 53.5K (3.2x spread)<br>
+        Standard Deviation: 11.8K (30% of average)<br>
+        <span class="badge yellow">High variance</span> &mdash; largely driven by death timing
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout">
+    <h4 style="color: var(--red);">Died in 27/27 pulls &mdash; 0% survival rate</h4>
+    <p>Average first death at <strong>2:33</strong> into the fight. The player did not survive a single pull to the wipe call. This is the single biggest issue to address.</p>
+  </div>
+
+  <h3>Death Causes (First Death Per Pull)</h3>
+  <div style="margin: 12px 0;">
+    <div class="death-cause-bar"><span class="name">Void Remnants</span><div class="bar-fill" style="width: calc(6/27 * 100%);">6</div></div>
+    <div class="death-cause-bar"><span class="name">Unknown / Environmental</span><div class="bar-fill" style="width: calc(6/27 * 100%); background: var(--dim);">6</div></div>
+    <div class="death-cause-bar"><span class="name">Bursting Emptiness</span><div class="bar-fill" style="width: calc(4/27 * 100%);">4</div></div>
+    <div class="death-cause-bar"><span class="name">Voidstalker Sting</span><div class="bar-fill" style="width: calc(3/27 * 100%);">3</div></div>
+    <div class="death-cause-bar"><span class="name">Silverstrike Barrage</span><div class="bar-fill" style="width: calc(2/27 * 100%);">2</div></div>
+    <div class="death-cause-bar"><span class="name">Interrupting Tremor</span><div class="bar-fill" style="width: calc(1/27 * 100%);">1</div></div>
+    <div class="death-cause-bar"><span class="name">Cosmic Barrier</span><div class="bar-fill" style="width: calc(1/27 * 100%);">1</div></div>
+    <div class="death-cause-bar"><span class="name">Dimensional Slash</span><div class="bar-fill" style="width: calc(1/27 * 100%);">1</div></div>
+    <div class="death-cause-bar"><span class="name">Void Expulsion</span><div class="bar-fill" style="width: calc(1/27 * 100%);">1</div></div>
+    <div class="death-cause-bar"><span class="name">Void Barrage</span><div class="bar-fill" style="width: calc(1/27 * 100%);">1</div></div>
+    <div class="death-cause-bar"><span class="name">Grasp of Emptiness</span><div class="bar-fill" style="width: calc(1/27 * 100%);">1</div></div>
+  </div>
+
+  <h3>Deaths By Phase</h3>
+  <table>
+    <thead><tr><th>Phase</th><th>Deaths</th><th>Top Killer</th><th class="num">Avg Death Time</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="badge green">P1: Sentinels</span></td>
+        <td><strong>14</strong></td>
+        <td>Unknown (6), Bursting Emptiness (4), Void Remnants (3)</td>
+        <td class="num">~0:55 &ndash; 2:10</td>
+        <td>Majority of first deaths happen here</td>
+      </tr>
+      <tr>
+        <td><span class="badge" style="background:rgba(110,118,129,0.2);color:#8b949e;">Intermission</span></td>
+        <td><strong>2</strong></td>
+        <td>Silverstrike Barrage (2)</td>
+        <td class="num">~2:30 &ndash; 2:36</td>
+        <td>Barrage dodging issue</td>
+      </tr>
+      <tr>
+        <td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2: Rift</span></td>
+        <td><strong>12</strong></td>
+        <td>Voidstalker Sting (5), Void Remnants (3)</td>
+        <td class="num">~3:10 &ndash; 5:00</td>
+        <td>Voidstalker Sting is the P2 wall</td>
+      </tr>
+      <tr>
+        <td><span class="badge purple">P3: Devouring Cosmos</span></td>
+        <td><strong>4</strong></td>
+        <td>Mixed (Dimensional Slash, Voidstalker Sting, Void Expulsion)</td>
+        <td class="num">~5:12 &ndash; 5:56</td>
+        <td>Limited data (only reached P3 6 times)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning" style="margin-top: 16px;">
+    <h4 style="color: var(--yellow);">Repeated Mechanic Failure: Void Remnants + Bursting Emptiness</h4>
+    <p>
+      <strong>Void Remnants</strong> killed the player 6 times (as first death cause) &mdash; this is an environmental soak/dodge mechanic in P1 and P2. Consistently dying to this suggests positioning issues near void zones.<br>
+      <strong>Bursting Emptiness</strong> killed the player 4 times, always at exactly 1:05 into the fight. This is a timed raid-wide burst at the end of P1 Sentinel waves &mdash; a personal defensive (Astral Shift) should be planned here every pull.
+    </p>
+  </div>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+
+  <div class="phase-timeline">
+    <div class="phase-segment p1" style="flex: 134;">P1 (0:00 &ndash; 2:14)</div>
+    <div class="phase-segment inter" style="flex: 39;">Inter</div>
+    <div class="phase-segment p2" style="flex: 136;">P2 (2:53 &ndash; 5:09)</div>
+    <div class="phase-segment p3" style="flex: 56;">P3 (5:09+)</div>
+  </div>
+
+  <h3>Phase Reach Rate</h3>
+  <table>
+    <thead><tr><th>Phase</th><th>Reached</th><th>Rate</th><th>Deaths In Phase</th><th class="num">Avg DPS</th><th>Insight</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>P1: Sentinels</td>
+        <td>27 / 27</td>
+        <td><span class="phase-rate high">100%</span></td>
+        <td>14</td>
+        <td class="num">&mdash;</td>
+        <td>Active all pulls. High death rate in P1 (~52% of first deaths)</td>
+      </tr>
+      <tr>
+        <td>Intermission</td>
+        <td>19 / 27</td>
+        <td><span class="phase-rate mid">70%</span></td>
+        <td>2</td>
+        <td class="num">&mdash;</td>
+        <td>8 pulls ended before intermission (P1 deaths)</td>
+      </tr>
+      <tr>
+        <td>P2: Rift</td>
+        <td>16 / 27</td>
+        <td><span class="phase-rate mid">59%</span></td>
+        <td>12</td>
+        <td class="num">109.3K</td>
+        <td>Strong DPS when alive. Voidstalker Sting is the wall.</td>
+      </tr>
+      <tr>
+        <td>P3: Devouring Cosmos</td>
+        <td>6 / 27</td>
+        <td><span class="phase-rate low">22%</span></td>
+        <td>4</td>
+        <td class="num">26.8K&ndash;62.6K</td>
+        <td>Limited exposure. Best P3 (F27): 62.6K DPS for 52s</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2" style="margin-top: 16px;">
+    <div class="callout info">
+      <h4 style="color: var(--accent);">P2 DPS is strong when alive</h4>
+      <p>Average P2 DPS of 109.3K across 14 qualifying pulls is solid. The issue is not DPS output &mdash; it is surviving long enough to contribute. On the best pull (F27), the player did 115.5K DPS in P2 and 62.6K in P3 before dying at 5:56 to Voidstalker Sting.</p>
+    </div>
+    <div class="callout info">
+      <h4 style="color: var(--accent);">P1 is the biggest survival bottleneck</h4>
+      <p>14 of 27 first deaths (52%) happen in P1. Surviving P1 cleanly is the single highest-leverage improvement. When the player reaches P2 alive, their DPS contribution is meaningful and consistent.</p>
+    </div>
+  </div>
+
+  <h3>Per-Pull Phase Breakdown</h3>
+  <div style="overflow-x: auto;">
+  <table>
+    <thead><tr><th>Pull</th><th class="num">Duration</th><th class="num">Full DPS</th><th class="num">Boss %</th><th>First Death</th><th>Death Cause</th><th>Phase</th></tr></thead>
+    <tbody>
+      <tr><td>F1</td><td class="num">1:03</td><td class="num">&mdash;</td><td class="num">0.87%</td><td>0:53</td><td>Unknown</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F2</td><td class="num">1:07</td><td class="num">&mdash;</td><td class="num">0.81%</td><td>0:59</td><td>Unknown</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F3</td><td class="num">3:47</td><td class="num">25.7K</td><td class="num">0.58%</td><td>3:34</td><td>Void Remnants</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+      <tr><td>F4</td><td class="num">1:08</td><td class="num">&mdash;</td><td class="num">0.80%</td><td>0:52</td><td>Unknown</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F5</td><td class="num">2:17</td><td class="num">&mdash;</td><td class="num">0.62%</td><td>2:06</td><td>Void Remnants</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F6</td><td class="num">0:47</td><td class="num">&mdash;</td><td class="num">0.86%</td><td>0:43</td><td>Unknown</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F7</td><td class="num">2:34</td><td class="num">&mdash;</td><td class="num">0.62%</td><td>2:10</td><td>Unknown</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F8</td><td class="num">3:59</td><td class="num">38.7K</td><td class="num">0.55%</td><td>3:55</td><td>Void Remnants</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+      <tr><td>F9</td><td class="num">2:59</td><td class="num">&mdash;</td><td class="num">0.62%</td><td>2:36</td><td>Silverstrike Barrage</td><td><span class="badge" style="background:rgba(110,118,129,0.2);color:#8b949e;">Inter</span></td></tr>
+      <tr><td>F10</td><td class="num">2:18</td><td class="num">&mdash;</td><td class="num">0.62%</td><td>1:55</td><td>Bursting Emptiness</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F11</td><td class="num">4:05</td><td class="num">32.4K</td><td class="num">0.55%</td><td>1:05</td><td>Bursting Emptiness</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F12</td><td class="num">1:03</td><td class="num">&mdash;</td><td class="num">0.87%</td><td>0:54</td><td>Unknown</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F13</td><td class="num">1:04</td><td class="num">&mdash;</td><td class="num">0.87%</td><td>0:51</td><td>Interrupting Tremor</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F14</td><td class="num">4:02</td><td class="num">18.7K</td><td class="num">0.57%</td><td>3:17</td><td>Cosmic Barrier</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+      <tr style="background: rgba(63, 185, 80, 0.05);"><td>F15</td><td class="num">4:52</td><td class="num">49.8K</td><td class="num">0.46%</td><td>1:05</td><td>Bursting Emptiness</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F16</td><td class="num">5:03</td><td class="num">&mdash;</td><td class="num">0.43%</td><td>1:05</td><td>Bursting Emptiness</td><td><span class="badge green">P1</span></td></tr>
+      <tr><td>F17</td><td class="num">1:01</td><td class="num">&mdash;</td><td class="num">0.88%</td><td>0:51</td><td>Void Remnants</td><td><span class="badge green">P1</span></td></tr>
+      <tr style="background: rgba(63, 185, 80, 0.05);"><td>F18</td><td class="num">5:56</td><td class="num">43.0K</td><td class="num">0.39%</td><td>5:18</td><td>Dimensional Slash</td><td><span class="badge purple">P3</span></td></tr>
+      <tr><td>F19</td><td class="num">5:16</td><td class="num">42.0K</td><td class="num">0.43%</td><td>4:45</td><td>Voidstalker Sting</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+      <tr style="background: rgba(63, 185, 80, 0.05);"><td>F20</td><td class="num">5:23</td><td class="num" style="color:var(--green);">53.5K</td><td class="num">0.37%</td><td>4:54</td><td>Grasp of Emptiness</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+      <tr style="background: rgba(63, 185, 80, 0.05);"><td>F21</td><td class="num">4:49</td><td class="num">51.4K</td><td class="num">0.43%</td><td>4:33</td><td>Void Barrage</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+      <tr><td>F22</td><td class="num">4:13</td><td class="num">40.6K</td><td class="num">0.50%</td><td>3:35</td><td>Void Remnants</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+      <tr><td>F23</td><td class="num">6:05</td><td class="num">48.3K</td><td class="num">0.37%</td><td>2:30</td><td>Silverstrike Barrage</td><td><span class="badge" style="background:rgba(110,118,129,0.2);color:#8b949e;">Inter</span></td></tr>
+      <tr><td>F24</td><td class="num">4:44</td><td class="num">44.4K</td><td class="num">0.42%</td><td>4:20</td><td>Void Expulsion</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+      <tr><td>F25</td><td class="num">1:01</td><td class="num">&mdash;</td><td class="num">0.86%</td><td>0:55</td><td>Void Remnants</td><td><span class="badge green">P1</span></td></tr>
+      <tr style="background: rgba(63, 185, 80, 0.08);"><td><strong>F27</strong></td><td class="num"><strong>6:01</strong></td><td class="num" style="color:var(--green);"><strong>52.6K</strong></td><td class="num"><strong>0.31%</strong></td><td><strong>5:56</strong></td><td>Voidstalker Sting</td><td><span class="badge purple">P3</span></td></tr>
+      <tr><td>F28</td><td class="num">5:43</td><td class="num" style="color:var(--red);">16.5K</td><td class="num">0.37%</td><td>3:06</td><td>Voidstalker Sting</td><td><span class="badge" style="background:rgba(31,111,235,0.2);color:#58a6ff;">P2</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Cast Profile Comparison -->
+<div class="section">
+  <h2>Cast Profile &mdash; Best Pull (F27) vs Reference Kill</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Reference: <span style="color: var(--purple);">&#45765;&#44543;&#54620;&#53216;&#53412;-&#50500;&#51592;&#49380;&#46972;</span> (99,910 DPS, 495s kill, 6 talent differences, ilvl 291).
+    Invincibale's F27: 52,570 DPS over 361s (died at 5:56).
+    <span class="badge yellow">53% of reference DPS</span> &mdash; but fight was 26% shorter and player was dead for some of it.
+  </p>
+
+  <table>
+    <thead><tr><th>Ability</th><th class="num">Player CPM</th><th class="num">Ref CPM</th><th class="num">Delta</th><th>Visual</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Lightning Bolt</td>
+        <td class="num">16.3</td>
+        <td class="num" style="color: var(--purple);">17.7</td>
+        <td class="num" style="color: var(--red);">-1.4</td>
+        <td>
+          <div class="cpm-bar">
+            <div class="fill player" style="width: calc(16.3/18 * 120px);"></div>
+            <div class="fill ref" style="width: calc(17.7/18 * 120px);"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Lava Burst</td>
+        <td class="num">9.5</td>
+        <td class="num" style="color: var(--purple);">9.1</td>
+        <td class="num" style="color: var(--green);">+0.4</td>
+        <td>
+          <div class="cpm-bar">
+            <div class="fill player" style="width: calc(9.5/18 * 120px);"></div>
+            <div class="fill ref" style="width: calc(9.1/18 * 120px);"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Flame Shock</td>
+        <td class="num">7.3</td>
+        <td class="num" style="color: var(--purple);">6.1</td>
+        <td class="num" style="color: var(--green);">+1.2</td>
+        <td>
+          <div class="cpm-bar">
+            <div class="fill player" style="width: calc(7.3/18 * 120px);"></div>
+            <div class="fill ref" style="width: calc(6.1/18 * 120px);"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Elemental Blast</td>
+        <td class="num">4.3</td>
+        <td class="num" style="color: var(--purple);">4.6</td>
+        <td class="num" style="color: var(--red);">-0.3</td>
+        <td>
+          <div class="cpm-bar">
+            <div class="fill player" style="width: calc(4.3/18 * 120px);"></div>
+            <div class="fill ref" style="width: calc(4.6/18 * 120px);"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Tempest</td>
+        <td class="num">2.8</td>
+        <td class="num" style="color: var(--purple);">3.0</td>
+        <td class="num" style="color: var(--red);">-0.2</td>
+        <td>
+          <div class="cpm-bar">
+            <div class="fill player" style="width: calc(2.8/18 * 120px);"></div>
+            <div class="fill ref" style="width: calc(3.0/18 * 120px);"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Chain Lightning</td>
+        <td class="num">0.0</td>
+        <td class="num" style="color: var(--purple);">1.3</td>
+        <td class="num" style="color: var(--red);">-1.3</td>
+        <td>
+          <div class="cpm-bar">
+            <div class="fill player" style="width: 0;"></div>
+            <div class="fill ref" style="width: calc(1.3/18 * 120px);"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Stormkeeper</td>
+        <td class="num">1.2</td>
+        <td class="num" style="color: var(--purple);">1.1</td>
+        <td class="num" style="color: var(--green);">+0.1</td>
+        <td>
+          <div class="cpm-bar">
+            <div class="fill player" style="width: calc(1.2/18 * 120px);"></div>
+            <div class="fill ref" style="width: calc(1.1/18 * 120px);"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Ascendance</td>
+        <td class="num">0.5</td>
+        <td class="num" style="color: var(--purple);">0.5</td>
+        <td class="num" style="color: var(--dim);">0.0</td>
+        <td>
+          <div class="cpm-bar">
+            <div class="fill player" style="width: calc(0.5/18 * 120px);"></div>
+            <div class="fill ref" style="width: calc(0.5/18 * 120px);"></div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    <span style="display:inline-block;width:12px;height:12px;background:var(--shaman);border-radius:2px;vertical-align:middle;margin-right:4px;"></span> Invincibale
+    <span style="display:inline-block;width:12px;height:12px;background:var(--purple);opacity:0.7;border-radius:2px;vertical-align:middle;margin-left:12px;margin-right:4px;"></span> Reference
+  </p>
+
+  <div class="callout info" style="margin-top: 16px;">
+    <h4 style="color: var(--accent);">Rotation quality is reasonable on best pull</h4>
+    <p>
+      Total rotational CPM: 41.9 vs reference 43.4 (97%). The main gap is <strong>Chain Lightning</strong> &mdash; the reference uses it at 1.3 CPM (likely during add phases and cleave windows with Stormkeeper), while Invincibale uses 0 Chain Lightning casts. On a fight with regular add spawns (Sentinels in P1, Rift Simulacrum + Undying Voidspawn in P2), Chain Lightning should replace Lightning Bolt when 2+ targets are stacked. Flame Shock is slightly over-applied (+1.2 CPM) which may indicate unnecessary re-applications.
+    </p>
+  </div>
+</div>
+
+<!-- Damage Taken Analysis (F27) -->
+<div class="section">
+  <h2>Damage Taken &mdash; Best Pull (F27)</h2>
+  <table>
+    <thead><tr><th>Ability</th><th class="num">Total Damage</th><th class="num">Hits</th><th>Category</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td class="num">2,867K</td>
+        <td class="num">117</td>
+        <td><span class="badge yellow">Partially Avoidable</span> &mdash; DoT from targeted mechanic, can mitigate with defensives</td>
+      </tr>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td class="num">2,563K</td>
+        <td class="num">125</td>
+        <td><span class="badge red">Unavoidable</span> &mdash; Passive raid-wide ticking damage</td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td class="num">2,220K</td>
+        <td class="num">83</td>
+        <td><span class="badge red">Unavoidable</span> &mdash; Raid-wide on Simulacrum death</td>
+      </tr>
+      <tr>
+        <td>Void Expulsion</td>
+        <td class="num">1,177K</td>
+        <td class="num">32</td>
+        <td><span class="badge yellow">Partially Avoidable</span> &mdash; Spread check, damage varies by positioning</td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td class="num">1,019K</td>
+        <td class="num">46</td>
+        <td><span class="badge red">Unavoidable</span> &mdash; P2 phase transition damage</td>
+      </tr>
+      <tr>
+        <td>Silverstrike Arrow</td>
+        <td class="num">495K</td>
+        <td class="num">2</td>
+        <td><span class="badge yellow">Avoidable</span> &mdash; Targeted, can dodge</td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td class="num">471K</td>
+        <td class="num">7</td>
+        <td><span class="badge yellow">Partially Avoidable</span> &mdash; Spread/movement check</td>
+      </tr>
+      <tr>
+        <td>Falling</td>
+        <td class="num">392K</td>
+        <td class="num">2</td>
+        <td><span class="badge" style="background:rgba(110,118,129,0.2);color:#8b949e;">Environmental</span> &mdash; Platform transition</td>
+      </tr>
+      <tr>
+        <td>Cosmic Radiation</td>
+        <td class="num">334K</td>
+        <td class="num">15</td>
+        <td><span class="badge red">Unavoidable</span> &mdash; P3 persistent AoE</td>
+      </tr>
+      <tr>
+        <td>Stellar Emission</td>
+        <td class="num">321K</td>
+        <td class="num">14</td>
+        <td><span class="badge red">Unavoidable</span> &mdash; Intermission AoE channel</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- External Buffs -->
+<div class="section">
+  <h2>External Buffs &mdash; Best Pull (F27)</h2>
+  <div class="grid-2">
+    <div>
+      <h3>Bloodlust / Time Warp</h3>
+      <p style="font-size: 13px; color: var(--dim);">Time Warp at <strong>2:55</strong> (start of P2) &mdash; aligned with Ascendance + Light's Potential potion at 2:57. Good alignment for P2 opener burst.</p>
+      <h3>Power Infusion</h3>
+      <p style="font-size: 13px; color: var(--dim);">Received PI 3 times: at <strong>0:18</strong> (P1 opener), <strong>2:55</strong> (P2 opener with lust), <strong>4:59</strong> (P3 entry). Good PI timing across all phases.</p>
+    </div>
+    <div>
+      <h3>Augmentation Evoker</h3>
+      <p style="font-size: 13px; color: var(--dim);">Ebon Might applied 7 times throughout the fight. Regular coverage suggesting the Aug Evoker was prioritizing this player.</p>
+      <h3>Consumables</h3>
+      <p style="font-size: 13px; color: var(--dim);">Light's Potential potion at <strong>2:57</strong> (P2 opener). Pre-pot: not detected in buff events. Litany of Lightblind Wrath trinket proc observed at 0:27, 3:12, 3:17.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Reference Context -->
+<div class="section">
+  <h2>Reference Context</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Top 5 Elemental Shamans on Mythic Crown of the Cosmos. This is a ceiling to aim for &mdash; these are full kills with no deaths, not progression attempts.
+  </p>
+  <table>
+    <thead><tr><th>#</th><th>Player</th><th class="num">DPS</th><th class="num">Kill Time</th><th class="num">ilvl</th><th>Talent Match</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td style="color: var(--purple);">&#1052;&#1072;&#1088;&#1074;&#1077;&#1083;&#1086;&#1082;</td>
+        <td class="num">102,192</td>
+        <td class="num">8:25</td>
+        <td class="num">290</td>
+        <td><span class="badge yellow">13 diffs</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td style="color: var(--purple);">Azaghal</td>
+        <td class="num">101,954</td>
+        <td class="num">8:17</td>
+        <td class="num">291</td>
+        <td><span class="badge red">56 diffs</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td style="color: var(--purple);">&#20170;&#26202;&#21507;&#20160;&#20040;&#21602;</td>
+        <td class="num">100,959</td>
+        <td class="num">7:47</td>
+        <td class="num">291</td>
+        <td><span class="badge yellow">8 diffs</span></td>
+      </tr>
+      <tr style="background: rgba(188, 140, 255, 0.05);">
+        <td>4</td>
+        <td style="color: var(--purple);">&#45765;&#44543;&#54620;&#53216;&#53412; <span class="badge purple">Primary Ref</span></td>
+        <td class="num">99,910</td>
+        <td class="num">8:15</td>
+        <td class="num">291</td>
+        <td><span class="badge green">6 diffs</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td style="color: var(--purple);">Robotsevente</td>
+        <td class="num">98,924</td>
+        <td class="num">8:24</td>
+        <td class="num">291</td>
+        <td><span class="badge yellow">11 diffs</span></td>
+      </tr>
+      <tr style="border-top: 2px solid var(--border);">
+        <td>&mdash;</td>
+        <td style="color: var(--shaman);"><strong>Invincibale</strong></td>
+        <td class="num"><strong>52,570</strong></td>
+        <td class="num">6:01 (prog)</td>
+        <td class="num">292</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Reference kills are 8+ minute fights. The player has only seen ~6 minutes maximum. Direct DPS comparison is misleading at this stage &mdash; focus on survival and phase execution.
+  </p>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="action-item critical">
+    <div class="number">PRIORITY 1 &mdash; SURVIVAL</div>
+    <div class="title">Eliminate P1 deaths from Void Remnants and Bursting Emptiness</div>
+    <div class="desc">
+      <strong>14 of 27 first deaths happen in P1.</strong> The two biggest killers are Void Remnants (6 deaths, scattered 0:43&ndash;2:10) and Bursting Emptiness (4 deaths, always at exactly 1:05).
+      <br><br>
+      <strong>Void Remnants:</strong> These are void zones on the ground during Sentinel waves. Dying to them 6 times across the night suggests a positioning habit &mdash; likely standing too close to void pools or not moving fast enough when they expand. Use Gust of Wind and Spiritwalker's Grace proactively for repositioning.
+      <br><br>
+      <strong>Bursting Emptiness:</strong> This fires at a fixed timer (~1:05). Plan Astral Shift for this every single pull. The fact that it kills at the exact same timestamp means this is a predictable, plannable event. If Astral Shift is not enough, coordinate with healers for an external.
+    </div>
+  </div>
+
+  <div class="action-item critical">
+    <div class="number">PRIORITY 2 &mdash; SURVIVAL</div>
+    <div class="title">Handle Voidstalker Sting in P2/P3</div>
+    <div class="desc">
+      <strong>Voidstalker Sting caused 5 P2 deaths and 1 P3 death</strong> (plus 3 total as first death cause). This is the P2 wall. Voidstalker Sting is a targeted DoT &mdash; when targeted, the player needs to use a defensive (Astral Shift) or a health-pot/Healthstone, and ensure they are topped by healers before the next tick sequence. On pulls where the player survived past Voidstalker Sting windows (F20, F21), DPS was 51K+. Surviving this mechanic is the difference between a strong pull and an early death.
+    </div>
+  </div>
+
+  <div class="action-item warning">
+    <div class="number">PRIORITY 3 &mdash; MECHANIC</div>
+    <div class="title">Plan defensive cooldowns on a per-phase timer</div>
+    <div class="desc">
+      Astral Shift (90s CD) can be used at least 3&ndash;4 times in a 6-minute fight. Suggested plan:
+      <br>
+      <strong>Use 1:</strong> Bursting Emptiness at ~1:05 (P1)<br>
+      <strong>Use 2:</strong> Silverstrike Barrage during Intermission (~2:20&ndash;2:50) or first Void Expulsion in P2<br>
+      <strong>Use 3:</strong> Voidstalker Sting at ~4:20&ndash;4:45 (mid P2)<br>
+      <strong>Use 4:</strong> Any P3 damage overlap<br>
+      Earth Elemental can also be used as an emergency defensive. The player used it 0 times in the best pull (F27).
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="number">PRIORITY 4 &mdash; ROTATION</div>
+    <div class="title">Use Chain Lightning during add/cleave windows</div>
+    <div class="desc">
+      The reference player casts Chain Lightning at 1.3 CPM. Invincibale cast 0 Chain Lightning in the best pull. Crown of the Cosmos has frequent add spawns (Void Droplets in P1, Undying Voidspawn + Rift Simulacrum in P2). When 2+ targets are stacked, Chain Lightning should replace Lightning Bolt as the filler &mdash; it generates more Maelstrom and procs Tempest faster via Stormbringer. This is a free DPS gain that does not require any additional mechanical skill.
+    </div>
+  </div>
+
+  <div class="action-item">
+    <div class="number">PRIORITY 5 &mdash; POSITIVE TREND</div>
+    <div class="title">DPS improved 53% through the session &mdash; keep building on this</div>
+    <div class="desc">
+      First half average: 28.8K DPS. Second half average: 44.2K DPS. The best 4 pulls (F20: 53.5K, F27: 52.6K, F21: 51.4K, F15: 49.8K) all happened in the second half of the night. The player is clearly learning the fight and improving pull over pull. The next step is converting that learning into survival: the DPS is there when the player is alive &mdash; the problem is staying alive long enough to use it.
+    </div>
+  </div>
+</div>
+
+<!-- Context Footer -->
+<div class="section">
+  <h2>Summary</h2>
+  <div class="callout success">
+    <h4 style="color: var(--green);">What is going well</h4>
+    <p>
+      <strong>Rotational execution is solid.</strong> On the best pull (F27), total CPM is 97% of the reference player. Lava Burst, Stormkeeper, Ascendance, and Elemental Blast usage all match reference rates closely. Cooldown alignment with PI and Time Warp is correct. DPS improved dramatically through the session (+53%). The player hit 0.31% boss health on the best pull &mdash; a kill is mechanically within reach.
+    </p>
+  </div>
+  <div class="callout">
+    <h4 style="color: var(--red);">What needs work</h4>
+    <p>
+      <strong>Survival is the entire gap.</strong> The player died in 27/27 pulls. The DPS numbers are artificially low because every pull ends early (for this player). When alive, P2 DPS averages 109K which is competitive. The two highest-leverage fixes are: (1) plan Astral Shift for Bursting Emptiness at 1:05 every pull, and (2) position away from Void Remnants in P1. Fixing those two mechanics alone would eliminate ~10 of 27 first deaths and dramatically increase time alive &mdash; which directly translates to higher DPS and better progression.
+    </p>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &bull; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs</a></p>
+  <p>Reference player: &#45765;&#44543;&#54620;&#53216;&#53412;-&#50500;&#51592;&#49380;&#46972; (99,910 DPS, 6 talent differences, ilvl 291)</p>
+  <p style="margin-top: 8px;">Analysis mode: Progression (27 pulls, no kill) &bull; Crown of the Cosmos Mythic</p>
+</div>
+
+<script>
+// Build the DPS bar chart
+const chartData = [
+  {id:1,dur:63,dps:0,pct:"0.87%",death:53,cause:"Unknown",short:false,noData:true},
+  {id:2,dur:67,dps:0,pct:"0.81%",death:59,cause:"Unknown",short:false,noData:true},
+  {id:3,dur:227,dps:25651,pct:"0.58%",death:214,cause:"Void Remnants",short:false,noData:false},
+  {id:4,dur:68,dps:0,pct:"0.80%",death:52,cause:"Unknown",short:false,noData:true},
+  {id:5,dur:137,dps:0,pct:"0.62%",death:126,cause:"Void Remnants",short:false,noData:true},
+  {id:6,dur:47,dps:0,pct:"0.86%",death:43,cause:"Unknown",short:true,noData:true},
+  {id:7,dur:154,dps:0,pct:"0.62%",death:130,cause:"Unknown",short:false,noData:true},
+  {id:8,dur:239,dps:38674,pct:"0.55%",death:235,cause:"Void Remnants",short:false,noData:false},
+  {id:9,dur:179,dps:0,pct:"0.62%",death:156,cause:"Silverstrike Barrage",short:false,noData:true},
+  {id:10,dur:138,dps:0,pct:"0.62%",death:115,cause:"Bursting Emptiness",short:false,noData:true},
+  {id:11,dur:245,dps:32358,pct:"0.55%",death:65,cause:"Bursting Emptiness",short:false,noData:false},
+  {id:12,dur:63,dps:0,pct:"0.87%",death:54,cause:"Unknown",short:false,noData:true},
+  {id:13,dur:64,dps:0,pct:"0.87%",death:51,cause:"Interrupting Tremor",short:false,noData:true},
+  {id:14,dur:242,dps:18672,pct:"0.57%",death:197,cause:"Cosmic Barrier",short:false,noData:false},
+  {id:15,dur:292,dps:49808,pct:"0.46%",death:65,cause:"Bursting Emptiness",short:false,noData:false},
+  {id:16,dur:303,dps:0,pct:"0.43%",death:65,cause:"Bursting Emptiness",short:false,noData:true},
+  {id:17,dur:61,dps:0,pct:"0.88%",death:51,cause:"Void Remnants",short:false,noData:true},
+  {id:18,dur:356,dps:42950,pct:"0.39%",death:318,cause:"Dimensional Slash",short:false,noData:false},
+  {id:19,dur:316,dps:42016,pct:"0.43%",death:285,cause:"Voidstalker Sting",short:false,noData:false},
+  {id:20,dur:323,dps:53530,pct:"0.37%",death:294,cause:"Grasp of Emptiness",short:false,noData:false},
+  {id:21,dur:289,dps:51424,pct:"0.43%",death:273,cause:"Void Barrage",short:false,noData:false},
+  {id:22,dur:253,dps:40576,pct:"0.50%",death:215,cause:"Void Remnants",short:false,noData:false},
+  {id:23,dur:365,dps:48257,pct:"0.37%",death:150,cause:"Silverstrike Barrage",short:false,noData:false},
+  {id:24,dur:284,dps:44415,pct:"0.42%",death:260,cause:"Void Expulsion",short:false,noData:false},
+  {id:25,dur:61,dps:0,pct:"0.86%",death:55,cause:"Void Remnants",short:false,noData:true},
+  {id:27,dur:361,dps:52570,pct:"0.31%",death:356,cause:"Voidstalker Sting",short:false,noData:false},
+  {id:28,dur:343,dps:16512,pct:"0.37%",death:186,cause:"Voidstalker Sting",short:false,noData:false}
+];
+
+const maxDPS = 55000;
+const avgDPS = 39815;
+const chart = document.getElementById('dps-chart');
+
+chartData.forEach(d => {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'bar-wrapper';
+
+  const bar = document.createElement('div');
+  const heightPct = d.noData ? 5 : Math.max(5, (d.dps / maxDPS) * 100);
+  bar.style.height = heightPct + '%';
+
+  if (d.noData) {
+    bar.className = 'bar no-data';
+  } else {
+    bar.className = 'bar died'; // all pulls = died
+  }
+
+  const label = document.createElement('div');
+  label.className = 'bar-label';
+  label.textContent = 'F' + d.id;
+
+  const tooltip = document.createElement('div');
+  tooltip.className = 'tooltip';
+  const mins = Math.floor(d.dur / 60);
+  const secs = Math.floor(d.dur % 60);
+  const deathMins = Math.floor(d.death / 60);
+  const deathSecs = Math.floor(d.death % 60);
+  tooltip.innerHTML = '<strong>Fight ' + d.id + '</strong><br>' +
+    (d.noData ? 'No DPS data' : d.dps.toLocaleString() + ' DPS') + '<br>' +
+    'Duration: ' + mins + ':' + String(secs).padStart(2, '0') + '<br>' +
+    'Boss: ' + d.pct + '<br>' +
+    'Died at ' + deathMins + ':' + String(deathSecs).padStart(2, '0') + ' (' + d.cause + ')';
+
+  wrapper.appendChild(tooltip);
+  wrapper.appendChild(bar);
+  wrapper.appendChild(label);
+  chart.appendChild(wrapper);
+});
+</script>
+
+</body>
+</html>

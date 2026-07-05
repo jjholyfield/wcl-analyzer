@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nurnyx (Shadow Priest) — Mythic Rotmire Kill Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --priest: #ffffff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--priest); }
+.header h1 .spec-tag { color: var(--dim); font-weight: 400; font-size: 20px; }
+.header .meta { color: var(--dim); font-size: 14px; margin-top: 4px; }
+.header .meta span { margin-right: 16px; }
+.kill-badge { display: inline-block; background: var(--green); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+section { margin-bottom: 32px; }
+section h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88, 166, 255, 0.04); }
+.highlight-row { background: rgba(88, 166, 255, 0.08); }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge-purple { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+.badge-dim { background: rgba(139, 148, 158, 0.15); color: var(--dim); }
+
+.bar-container { display: flex; align-items: center; gap: 8px; }
+.bar { height: 8px; border-radius: 4px; min-width: 4px; }
+.bar-player { background: var(--accent); }
+.bar-ref { background: var(--purple); }
+
+.callout { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.callout-warn { border-left: 3px solid var(--yellow); }
+.callout-good { border-left: 3px solid var(--green); }
+.callout-bad { border-left: 3px solid var(--red); }
+.callout-info { border-left: 3px solid var(--accent); }
+.callout h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.callout p { font-size: 13px; color: var(--dim); }
+
+.timeline-container { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; margin-bottom: 16px; }
+.timeline-row { display: flex; align-items: center; height: 28px; margin-bottom: 4px; position: relative; }
+.timeline-label { width: 140px; flex-shrink: 0; font-size: 12px; color: var(--dim); white-space: nowrap; }
+.timeline-track { flex: 1; position: relative; height: 20px; background: rgba(48, 54, 61, 0.3); border-radius: 4px; }
+.timeline-marker { position: absolute; width: 8px; height: 20px; border-radius: 2px; top: 0; }
+.timeline-marker.bloom { background: var(--red); }
+.timeline-marker.vines { background: var(--yellow); }
+.timeline-marker.adds { background: var(--cyan); }
+.timeline-marker.pustules { background: var(--orange); }
+.timeline-marker.death { background: var(--red); }
+.timeline-time-labels { display: flex; justify-content: space-between; padding-left: 140px; font-size: 10px; color: var(--dim); margin-top: 4px; }
+
+.chart-bar-container { display: flex; align-items: flex-end; gap: 4px; height: 120px; margin-top: 8px; }
+.chart-bar { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.chart-bar-fill { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; }
+.chart-bar-label { font-size: 10px; color: var(--dim); margin-top: 4px; text-align: center; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 800px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+
+.cycle-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.cycle-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+.cycle-card .cycle-name { font-size: 12px; color: var(--dim); margin-bottom: 4px; }
+.cycle-card .cycle-dps { font-size: 20px; font-weight: 700; }
+.cycle-card .cycle-ref { font-size: 12px; color: var(--purple); margin-top: 2px; }
+.cycle-card .cycle-delta { font-size: 12px; margin-top: 2px; }
+
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.action-item .action-num { display: inline-block; background: var(--accent); color: #000; font-weight: 700; font-size: 12px; width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; margin-right: 8px; }
+.action-item h4 { display: inline; font-size: 15px; }
+.action-item p { font-size: 13px; color: var(--dim); margin-top: 8px; line-height: 1.6; }
+.action-item .impact { font-size: 12px; color: var(--yellow); margin-top: 6px; font-weight: 500; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+.ref-tag { color: var(--purple); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23 Rotmire Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Nurnyx</span>
+    <span class="spec-tag">Shadow Priest</span>
+  </h1>
+  <div class="meta">
+    <span>Mythic Rotmire</span>
+    <span><span class="kill-badge">Kill</span> 8:09</span>
+    <span>June 23, 2026</span>
+    <span><a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC</a></span>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">DPS</div>
+    <div class="value">116.9K</div>
+    <div class="sub">Ref: 205.8K (#5 ranked)</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="sub">Ref: 290 (+1 ilvl)</div>
+  </div>
+  <div class="card">
+    <div class="label">Kill Status</div>
+    <div class="value" style="color: var(--green);">Survived</div>
+    <div class="sub">0 deaths on kill fight</div>
+  </div>
+  <div class="card">
+    <div class="label">Rotational CPM</div>
+    <div class="value">39.9</div>
+    <div class="sub">Ref: 44.2 (-10%)</div>
+  </div>
+</div>
+
+<!-- Reference Comparison Table -->
+<section>
+  <h2>Reference Comparison</h2>
+  <table>
+    <tr>
+      <th>Player</th>
+      <th>DPS</th>
+      <th>Kill Time</th>
+      <th>ilvl</th>
+      <th>Talent Delta</th>
+      <th>Notes</th>
+    </tr>
+    <tr class="highlight-row">
+      <td><strong style="color: var(--priest);">Nurnyx</strong></td>
+      <td>116,934</td>
+      <td>8:09</td>
+      <td>291</td>
+      <td>--</td>
+      <td>Analyzed player</td>
+    </tr>
+    <tr>
+      <td><span class="ref-tag">Sambridgesxz-Silvermoon</span></td>
+      <td>215,264</td>
+      <td>8:10</td>
+      <td>291</td>
+      <td><span class="badge badge-yellow">7 diffs</span></td>
+      <td>#1 ranked</td>
+    </tr>
+    <tr>
+      <td><span class="ref-tag">Sambridges-Tarren Mill</span></td>
+      <td>213,363</td>
+      <td>8:24</td>
+      <td>292</td>
+      <td><span class="badge badge-yellow">7 diffs</span></td>
+      <td>#2 ranked</td>
+    </tr>
+    <tr>
+      <td><span class="ref-tag">&#1058;&#1072;&#1090;&#1090;&#1086;&#1086;&#1080;&#1085;-&#1043;&#1086;&#1088;&#1076;&#1091;&#1085;&#1085;&#1080;</span></td>
+      <td>206,903</td>
+      <td>8:23</td>
+      <td>292</td>
+      <td><span class="badge badge-yellow">5 diffs</span></td>
+      <td>#3 ranked</td>
+    </tr>
+    <tr>
+      <td><span class="ref-tag">Malaghe-Arathor</span></td>
+      <td>205,768</td>
+      <td>7:53</td>
+      <td>293</td>
+      <td><span class="badge badge-yellow">6 diffs</span></td>
+      <td>#4 ranked</td>
+    </tr>
+    <tr style="background: rgba(188, 140, 255, 0.08);">
+      <td><span class="ref-tag">Dlpsibm-Kirin Tor</span> &#9733;</td>
+      <td>205,765</td>
+      <td>8:38</td>
+      <td>290</td>
+      <td><span class="badge badge-green">0 diffs</span></td>
+      <td>Primary reference (identical build)</td>
+    </tr>
+  </table>
+  <div class="callout callout-info" style="margin-top: 12px;">
+    <h4>Identical talents, comparable gear</h4>
+    <p>Dlpsibm runs the exact same talent build at ilvl 290 (Nurnyx: 291). The 43% DPS gap between 116.9K and 205.8K is <strong>entirely execution-based</strong>. Same spec, same talents, same gear tier.</p>
+  </div>
+</section>
+
+<!-- Boss Mechanic Timeline -->
+<section>
+  <h2>Boss Mechanic Timeline</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Rotmire is a single-phase boss with repeating 136s energy cycles. Fungal Bloom fires at 100 energy, triggering Bursting Shroom explosions and soft enrage via Rotting Pustules stacks.</p>
+  <div class="timeline-container">
+    <div class="timeline-row">
+      <div class="timeline-label" style="color: var(--red);">Fungal Bloom</div>
+      <div class="timeline-track">
+        <div class="timeline-marker bloom" style="left: calc(120 / 489 * 100%); width: 12px;" title="Bloom #1 — 2:00"></div>
+        <div class="timeline-marker bloom" style="left: calc(256 / 489 * 100%); width: 12px;" title="Bloom #2 — 4:16"></div>
+        <div class="timeline-marker bloom" style="left: calc(392 / 489 * 100%); width: 12px;" title="Bloom #3 — 6:32"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color: var(--yellow);">Festering Vines</div>
+      <div class="timeline-track">
+        <div class="timeline-marker vines" style="left: calc(43 / 489 * 100%); width: 6px;" title="Vines #1 — 0:43"></div>
+        <div class="timeline-marker vines" style="left: calc(92 / 489 * 100%); width: 6px;" title="Vines #2 — 1:32"></div>
+        <div class="timeline-marker vines" style="left: calc(179 / 489 * 100%); width: 6px;" title="Vines #3 — 2:59"></div>
+        <div class="timeline-marker vines" style="left: calc(228 / 489 * 100%); width: 6px;" title="Vines #4 — 3:48"></div>
+        <div class="timeline-marker vines" style="left: calc(315 / 489 * 100%); width: 6px;" title="Vines #5 — 5:15"></div>
+        <div class="timeline-marker vines" style="left: calc(364 / 489 * 100%); width: 6px;" title="Vines #6 — 6:04"></div>
+        <div class="timeline-marker vines" style="left: calc(451 / 489 * 100%); width: 6px;" title="Vines #7 — 7:31"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color: var(--cyan);">Awaken Fungi</div>
+      <div class="timeline-track">
+        <div class="timeline-marker adds" style="left: calc(15 / 489 * 100%); width: 6px;" title="Adds #1 — 0:15"></div>
+        <div class="timeline-marker adds" style="left: calc(64 / 489 * 100%); width: 6px;" title="Adds #2 — 1:04"></div>
+        <div class="timeline-marker adds" style="left: calc(151 / 489 * 100%); width: 6px;" title="Adds #3 — 2:31"></div>
+        <div class="timeline-marker adds" style="left: calc(200 / 489 * 100%); width: 6px;" title="Adds #4 — 3:20"></div>
+        <div class="timeline-marker adds" style="left: calc(287 / 489 * 100%); width: 6px;" title="Adds #5 — 4:47"></div>
+        <div class="timeline-marker adds" style="left: calc(336 / 489 * 100%); width: 6px;" title="Adds #6 — 5:36"></div>
+        <div class="timeline-marker adds" style="left: calc(423 / 489 * 100%); width: 6px;" title="Adds #7 — 7:03"></div>
+        <div class="timeline-marker adds" style="left: calc(472 / 489 * 100%); width: 6px;" title="Adds #8 — 7:52"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color: var(--orange);">Bursting Pustules</div>
+      <div class="timeline-track">
+        <div class="timeline-marker pustules" style="left: calc(10 / 489 * 100%); width: 4px;" title="0:10"></div>
+        <div class="timeline-marker pustules" style="left: calc(31 / 489 * 100%); width: 4px;" title="0:31"></div>
+        <div class="timeline-marker pustules" style="left: calc(80 / 489 * 100%); width: 4px;" title="1:20"></div>
+        <div class="timeline-marker pustules" style="left: calc(146 / 489 * 100%); width: 4px;" title="2:26"></div>
+        <div class="timeline-marker pustules" style="left: calc(167 / 489 * 100%); width: 4px;" title="2:47"></div>
+        <div class="timeline-marker pustules" style="left: calc(216 / 489 * 100%); width: 4px;" title="3:36"></div>
+        <div class="timeline-marker pustules" style="left: calc(282 / 489 * 100%); width: 4px;" title="4:42"></div>
+        <div class="timeline-marker pustules" style="left: calc(303 / 489 * 100%); width: 4px;" title="5:03"></div>
+        <div class="timeline-marker pustules" style="left: calc(352 / 489 * 100%); width: 4px;" title="5:52"></div>
+        <div class="timeline-marker pustules" style="left: calc(418 / 489 * 100%); width: 4px;" title="6:58"></div>
+        <div class="timeline-marker pustules" style="left: calc(439 / 489 * 100%); width: 4px;" title="7:19"></div>
+        <div class="timeline-marker pustules" style="left: calc(488 / 489 * 100%); width: 4px;" title="8:08"></div>
+      </div>
+    </div>
+  </div>
+  <div class="timeline-time-labels">
+    <span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span><span>5:00</span><span>6:00</span><span>7:00</span><span>8:09</span>
+  </div>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    <strong>Raid State:</strong> 0:00-8:09 = 22/22 alive (clean kill, zero deaths)
+  </div>
+</section>
+
+<!-- Per-Cycle Performance -->
+<section>
+  <h2>Per-Cycle Performance Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Rotmire cycles on a ~136s loop (Awaken Fungi x2 &rarr; Festering Vines x2 &rarr; Fungal Bloom). Each cycle adds Rotting Pustules stacks, increasing raid-wide pressure.</p>
+  <div class="cycle-grid">
+    <div class="cycle-card">
+      <div class="cycle-name">Cycle 1 (0:00 - 2:00)</div>
+      <div class="cycle-dps">113.3K</div>
+      <div class="cycle-ref">Ref: 146.3K</div>
+      <div class="cycle-delta" style="color: var(--red);">-23%</div>
+    </div>
+    <div class="cycle-card">
+      <div class="cycle-name">Cycle 2 (2:00 - 4:16)</div>
+      <div class="cycle-dps">103.9K</div>
+      <div class="cycle-ref">Ref: 134.0K</div>
+      <div class="cycle-delta" style="color: var(--red);">-22%</div>
+    </div>
+    <div class="cycle-card">
+      <div class="cycle-name">Cycle 3 (4:16 - 6:32)</div>
+      <div class="cycle-dps">124.5K</div>
+      <div class="cycle-ref">Ref: 159.4K</div>
+      <div class="cycle-delta" style="color: var(--red);">-22%</div>
+    </div>
+    <div class="cycle-card">
+      <div class="cycle-name">Post-Bloom 3 (6:32+)</div>
+      <div class="cycle-dps">148.7K</div>
+      <div class="cycle-ref">Ref: 185.7K</div>
+      <div class="cycle-delta" style="color: var(--red);">-20%</div>
+    </div>
+  </div>
+  <div class="callout callout-info">
+    <h4>Consistent gap across all cycles</h4>
+    <p>The deficit is remarkably flat: -23%, -22%, -22%, -20%. Nurnyx does not fall apart in any particular cycle. The gap is a baseline execution issue, not a phase-specific problem. The slight improvement in the final segment suggests effective late-fight execution under pressure.</p>
+  </div>
+</section>
+
+<!-- Per-Mechanic Window Analysis -->
+<section>
+  <h2>Per-Mechanic Window Analysis</h2>
+  <h3>Festering Vines (Movement Windows)</h3>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Vines root players and force movement. CPS drops are expected, but the magnitude matters.</p>
+  <table>
+    <tr>
+      <th>Window</th>
+      <th>Time</th>
+      <th>Player CPS</th>
+      <th>Ref CPS</th>
+      <th>Delta</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td>Vines #1</td><td>0:43</td><td>1.08</td><td>1.08</td><td>0%</td>
+      <td><span class="badge badge-green">Match</span></td>
+    </tr>
+    <tr>
+      <td>Vines #2</td><td>1:32</td><td>1.00</td><td>1.08</td><td>-7%</td>
+      <td><span class="badge badge-green">OK</span></td>
+    </tr>
+    <tr>
+      <td>Vines #3</td><td>2:59</td><td>1.17</td><td>1.42</td><td>-18%</td>
+      <td><span class="badge badge-red">Low</span></td>
+    </tr>
+    <tr>
+      <td>Vines #4</td><td>3:48</td><td>1.00</td><td>1.08</td><td>-7%</td>
+      <td><span class="badge badge-green">OK</span></td>
+    </tr>
+    <tr>
+      <td>Vines #5</td><td>5:15</td><td>1.08</td><td>1.42</td><td>-24%</td>
+      <td><span class="badge badge-red">Low</span></td>
+    </tr>
+    <tr>
+      <td>Vines #6</td><td>6:04</td><td>0.92</td><td>0.75</td><td>+23%</td>
+      <td><span class="badge badge-green">Good</span></td>
+    </tr>
+    <tr>
+      <td>Vines #7</td><td>7:31</td><td>1.25</td><td>1.67</td><td>-25%</td>
+      <td><span class="badge badge-red">Low</span></td>
+    </tr>
+  </table>
+  <div class="callout callout-warn" style="margin-top: 12px;">
+    <h4>3 of 7 Vines windows flagged</h4>
+    <p>Vines #3, #5, and #7 each show 18-25% CPS deficit vs reference. This pattern suggests Nurnyx loses more casts than necessary during movement mechanics. Pre-positioning before Vines or using instant-cast abilities (Shadow Word: Death, Shadow Word: Pain refreshes) during forced movement would close this gap.</p>
+  </div>
+
+  <h3 style="margin-top: 24px;">Fungal Bloom (Raid-Wide Damage Windows)</h3>
+  <table>
+    <tr>
+      <th>Window</th>
+      <th>Time</th>
+      <th>Player CPS</th>
+      <th>Ref CPS</th>
+      <th>Delta</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td>Bloom #1</td><td>2:00</td><td>1.69</td><td>1.81</td><td>-7%</td>
+      <td><span class="badge badge-green">OK</span></td>
+    </tr>
+    <tr>
+      <td>Bloom #2</td><td>4:16</td><td>2.06</td><td>2.38</td><td>-13%</td>
+      <td><span class="badge badge-yellow">Moderate</span></td>
+    </tr>
+    <tr>
+      <td>Bloom #3</td><td>6:32</td><td>1.69</td><td>1.75</td><td>-3%</td>
+      <td><span class="badge badge-green">Good</span></td>
+    </tr>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">Bloom handling is solid. Bloom #2 at 4:16 aligns with Nurnyx's Voidform window (4:21), yet the reference gets more casts in, suggesting Dlpsibm chains cooldowns more aggressively into Bloom windows.</p>
+
+  <h3 style="margin-top: 24px;">Awaken Fungi (Add Spawn Windows)</h3>
+  <table>
+    <tr>
+      <th>Window</th>
+      <th>Time</th>
+      <th>Player CPS</th>
+      <th>Ref CPS</th>
+      <th>Delta</th>
+      <th>Status</th>
+    </tr>
+    <tr><td>Adds #1</td><td>0:15</td><td>1.50</td><td>1.65</td><td>-9%</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #2</td><td>1:04</td><td>1.15</td><td>1.30</td><td>-12%</td><td><span class="badge badge-yellow">Moderate</span></td></tr>
+    <tr><td>Adds #3</td><td>2:31</td><td>1.30</td><td>1.25</td><td>+4%</td><td><span class="badge badge-green">Good</span></td></tr>
+    <tr><td>Adds #4</td><td>3:20</td><td>1.35</td><td>1.15</td><td>+17%</td><td><span class="badge badge-green">Good</span></td></tr>
+    <tr><td>Adds #5</td><td>4:47</td><td>1.35</td><td>1.30</td><td>+4%</td><td><span class="badge badge-green">Good</span></td></tr>
+    <tr><td>Adds #6</td><td>5:36</td><td>1.25</td><td>1.20</td><td>+4%</td><td><span class="badge badge-green">Good</span></td></tr>
+    <tr><td>Adds #7</td><td>7:03</td><td>1.45</td><td>1.50</td><td>-3%</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Adds #8</td><td>7:52</td><td>0.88</td><td>1.35</td><td>-35%</td><td><span class="badge badge-red">Low</span></td></tr>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">Add windows are generally well-handled (Adds #3-#6 match or beat reference). The final add spawn at 7:52 shows a significant drop, but the kill was 17 seconds away and the fight was won. The early add windows (#1-#2) show small deficits during opener burst.</p>
+</section>
+
+<!-- Quiet Window Analysis -->
+<section>
+  <h2>Quiet Window Uptime</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">Gaps between mechanics where full uptime is expected. These are the windows where the DPS gap compounds.</p>
+  <table>
+    <tr>
+      <th>Window</th>
+      <th>Duration</th>
+      <th>Player CPS</th>
+      <th>Ref CPS</th>
+      <th>Delta</th>
+      <th>Status</th>
+    </tr>
+    <tr><td>Opener (0:00-0:15)</td><td>15s</td><td>2.13</td><td>2.47</td><td>-14%</td><td><span class="badge badge-yellow">Moderate</span></td></tr>
+    <tr><td>Pre-Vines #1 (0:35-0:43)</td><td>8s</td><td>0.88</td><td>1.25</td><td>-30%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Pre-Bloom #1 (1:44-2:00)</td><td>16s</td><td>0.94</td><td>1.19</td><td>-21%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Post-Bloom #1 (2:16-2:31)</td><td>15s</td><td>1.27</td><td>1.93</td><td>-34%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Pre-Vines #3 (2:51-2:59)</td><td>8s</td><td>0.88</td><td>1.13</td><td>-22%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Pre-Vines #4 (3:40-3:48)</td><td>8s</td><td>1.00</td><td>1.25</td><td>-20%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Pre-Bloom #2 (4:00-4:16)</td><td>16s</td><td>0.94</td><td>1.13</td><td>-17%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Pre-Vines #5 (5:07-5:15)</td><td>8s</td><td>1.13</td><td>1.75</td><td>-35%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Pre-Adds #6 (5:27-5:36)</td><td>9s</td><td>1.22</td><td>1.56</td><td>-22%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Pre-Bloom #3 (6:16-6:32)</td><td>16s</td><td>1.19</td><td>2.00</td><td>-41%</td><td><span class="badge badge-red">Low</span></td></tr>
+    <tr><td>Pre-Vines #7 (7:23-7:31)</td><td>8s</td><td>1.25</td><td>1.50</td><td>-17%</td><td><span class="badge badge-red">Low</span></td></tr>
+  </table>
+  <div class="callout callout-bad" style="margin-top: 12px;">
+    <h4>Quiet windows are the primary DPS loss vector</h4>
+    <p>11 of 18 quiet windows are flagged. The worst offenders are pre-Bloom #3 (-41%), post-Bloom #1 (-34%), and pre-Vines #5 (-35%). These are the stretches between mechanics where Nurnyx should be casting freely but is losing significant uptime. The reference maintains 1.0-2.0 CPS consistently in these windows while Nurnyx frequently drops below 1.0 CPS.</p>
+  </div>
+</section>
+
+<!-- Cast Gap Analysis -->
+<section>
+  <h2>Cast Gap Analysis</h2>
+  <div class="two-col">
+    <div>
+      <h3>Gap Summary</h3>
+      <table>
+        <tr><td>Gaps &gt; 2.5s</td><td><strong>20</strong> (ref: 14)</td></tr>
+        <tr><td>Total dead time</td><td><strong>57.8s</strong> (ref: 41.5s)</td></tr>
+        <tr><td>Extra dead time</td><td><strong>16.3s</strong></td></tr>
+        <tr><td>Est. lost casts</td><td><strong>~22 casts</strong> (at 1.35 CPS avg)</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Gap Pattern</h3>
+      <table>
+        <tr><td>After Shadowy Apparition</td><td><strong>9</strong> gaps (45%)</td></tr>
+        <tr><td>After Mind Flay</td><td><strong>7</strong> gaps (35%)</td></tr>
+        <tr><td>After Mind Blast</td><td><strong>2</strong> gaps</td></tr>
+        <tr><td>After other</td><td><strong>2</strong> gaps</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="callout callout-warn" style="margin-top: 12px;">
+    <h4>Gaps cluster after Shadowy Apparition and Mind Flay</h4>
+    <p>9 of 20 gaps (45%) occur immediately after a Shadowy Apparition resolves, and 7 (35%) after Mind Flay channel completes. This suggests hesitation at GCD boundaries &mdash; waiting for procs or deciding what to cast next rather than immediately queueing the next ability. The reference player has 6 fewer gaps despite a 29-second longer fight. Improving GCD discipline (always having the next button pre-queued) would recover an estimated 16 seconds of active casting time.</p>
+  </div>
+</section>
+
+<!-- Ability Usage Comparison -->
+<section>
+  <h2>Ability Usage Comparison</h2>
+  <table>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Impact</th>
+    </tr>
+    <tr>
+      <td>Mind Blast</td>
+      <td>73</td>
+      <td>9.0</td>
+      <td style="color: var(--purple);">9.9</td>
+      <td style="color: var(--red);">-9%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: calc(9.0 / 9.9 * 100px);"></div>
+          <div class="bar bar-ref" style="width: 100px;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Madness</td>
+      <td>63</td>
+      <td>7.7</td>
+      <td style="color: var(--purple);">9.3</td>
+      <td style="color: var(--red);">-17%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: calc(7.7 / 9.3 * 100px);"></div>
+          <div class="bar bar-ref" style="width: 100px;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Mind Flay</td>
+      <td>49</td>
+      <td>6.0</td>
+      <td style="color: var(--purple);">8.5</td>
+      <td style="color: var(--red);">-29%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: calc(6.0 / 8.5 * 100px);"></div>
+          <div class="bar bar-ref" style="width: 100px;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Mind Flay: Insanity</td>
+      <td>32</td>
+      <td>3.9</td>
+      <td style="color: var(--purple);">4.1</td>
+      <td>-5%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: calc(3.9 / 4.1 * 100px);"></div>
+          <div class="bar bar-ref" style="width: 100px;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Tentacle Slam</td>
+      <td>30</td>
+      <td>3.7</td>
+      <td style="color: var(--purple);">3.5</td>
+      <td style="color: var(--green);">+6%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: 100px;"></div>
+          <div class="bar bar-ref" style="width: calc(3.5 / 3.7 * 100px);"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Vampiric Touch</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td style="color: var(--purple);">1.4</td>
+      <td style="color: var(--red);">-93%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: calc(0.1 / 1.4 * 100px); min-width: 4px;"></div>
+          <div class="bar bar-ref" style="width: 100px;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Pain</td>
+      <td>29</td>
+      <td>3.6</td>
+      <td style="color: var(--purple);">2.8</td>
+      <td style="color: var(--green);">+29%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: 100px;"></div>
+          <div class="bar bar-ref" style="width: calc(2.8 / 3.6 * 100px);"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Death</td>
+      <td>26</td>
+      <td>3.2</td>
+      <td style="color: var(--purple);">1.6</td>
+      <td style="color: var(--yellow);">+100%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: 100px;"></div>
+          <div class="bar bar-ref" style="width: calc(1.6 / 3.2 * 100px);"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Void Volley</td>
+      <td>14</td>
+      <td>1.7</td>
+      <td style="color: var(--purple);">2.2</td>
+      <td style="color: var(--red);">-23%</td>
+      <td>
+        <div class="bar-container">
+          <div class="bar bar-player" style="width: calc(1.7 / 2.2 * 100px);"></div>
+          <div class="bar bar-ref" style="width: 100px;"></div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Halo</td>
+      <td>8</td>
+      <td>1.0</td>
+      <td style="color: var(--purple);">1.0</td>
+      <td>0%</td>
+      <td><span class="badge badge-green">Match</span></td>
+    </tr>
+    <tr>
+      <td>Voidform</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td style="color: var(--purple);">0.6</td>
+      <td>-17%</td>
+      <td><span class="badge badge-dim">1 fewer use</span></td>
+    </tr>
+    <tr>
+      <td>Vampiric Embrace</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td style="color: var(--purple);">0.6</td>
+      <td>-33%</td>
+      <td><span class="badge badge-dim">2 fewer uses</span></td>
+    </tr>
+  </table>
+  <div class="callout callout-bad" style="margin-top: 12px;">
+    <h4>Key ability gaps: Vampiric Touch (1 vs 12), Mind Flay (-29%), SW:Madness (-17%)</h4>
+    <p>The reference manually casts Vampiric Touch 12 times to maintain multi-DoT coverage on adds &mdash; Nurnyx only casts it once, relying entirely on Tentacle Slam to apply VT. This directly explains the massive Psychic Link damage gap (4.9M vs 12.0M): fewer active VT targets means less passive cleave. Mind Flay as the primary filler is also 29% lower CPM, confirming the GCD gap pattern.</p>
+  </div>
+</section>
+
+<!-- Boss vs Add Target Split -->
+<section>
+  <h2>Target Damage Split</h2>
+  <div class="two-col">
+    <div>
+      <h3>Nurnyx</h3>
+      <table>
+        <tr><td>Rotmire (Boss)</td><td>39.0M</td><td><strong>66.0%</strong></td></tr>
+        <tr><td>Sporecap</td><td>7.6M</td><td>12.9%</td></tr>
+        <tr><td>Bursting Shroom</td><td>6.6M</td><td>11.2%</td></tr>
+        <tr><td>Shroomling</td><td>3.4M</td><td>5.7%</td></tr>
+        <tr><td>Fungling</td><td>2.4M</td><td>4.1%</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3><span class="ref-tag">Dlpsibm (Reference)</span></h3>
+      <table>
+        <tr><td>Boss</td><td>46.1M</td><td><strong>56.8%</strong></td></tr>
+        <tr><td>Adds (all)</td><td>35.1M</td><td>43.2%</td></tr>
+      </table>
+      <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">Reference puts significantly more damage into adds (43% vs 34%), driven by better multi-DoT uptime via manual Vampiric Touch casts and higher Psychic Link cleave.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Cooldown Alignment -->
+<section>
+  <h2>Cooldown Alignment</h2>
+  <table>
+    <tr>
+      <th>Cooldown</th>
+      <th>Nurnyx Timings</th>
+      <th>Reference Timings</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>Voidform</td>
+      <td>0:05, 2:06, 4:21, 6:39</td>
+      <td>0:03, 2:08, 4:19, 6:22, 8:23</td>
+      <td><span class="badge badge-yellow">4 uses vs 5</span> &mdash; ref gets an extra use in the longer fight</td>
+    </tr>
+    <tr>
+      <td>Power Infusion</td>
+      <td>0:03, 2:03, 4:17, 6:37</td>
+      <td>0:03, 2:08, 4:19, 6:23, 8:23</td>
+      <td>4 uses vs 5 (ref fight is 29s longer)</td>
+    </tr>
+    <tr>
+      <td>Halo</td>
+      <td>0:01, 1:06, 2:09, 3:11, 4:12, 5:13, 6:15, 7:16</td>
+      <td>0:00, 1:05, 2:07, 3:08, 4:15, 5:17, 6:21, 7:24, 8:26</td>
+      <td>8 uses vs 9 &mdash; good parity within the shared fight length</td>
+    </tr>
+    <tr>
+      <td>Vampiric Embrace</td>
+      <td>2:16, 5:05, 7:53</td>
+      <td>0:04, 2:09, 4:19, 6:23, 8:24</td>
+      <td><span class="badge badge-red">3 uses vs 5</span> &mdash; VE has a 2-min CD but Nurnyx uses it every ~170s avg</td>
+    </tr>
+  </table>
+  <div class="callout callout-warn" style="margin-top: 12px;">
+    <h4>Vampiric Embrace: 2 missed uses</h4>
+    <p>Reference casts VE 5 times (every ~125s, under the 2-min cooldown). Nurnyx casts it 3 times with an average interval of ~170s. The first VE is at 2:16 instead of the opener &mdash; that is a full use lost. VE is also a raid CD for Shadow Priest, so missing uses affects the healing team as well as personal damage (VE heals based on damage done).</p>
+  </div>
+</section>
+
+<!-- External Buffs -->
+<section>
+  <h2>External Buffs Received</h2>
+  <div class="two-col">
+    <div>
+      <h3>Nurnyx</h3>
+      <table>
+        <tr><td>Bloodlust</td><td>Time Warp at 0:02</td><td><span class="badge badge-green">On pull</span></td></tr>
+        <tr><td>Power Infusion</td><td>4 applications (self-cast)</td><td>Synced with Voidform</td></tr>
+        <tr><td>Ebon Might</td><td>12 applications</td><td>Aug Evoker present (Zinnks)</td></tr>
+        <tr><td>Prescience</td><td>1 application (7:15)</td><td>Late fight only</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3><span class="ref-tag">Dlpsibm (Reference)</span></h3>
+      <table>
+        <tr><td>Bloodlust</td><td>Time Warp at 0:00</td><td><span class="badge badge-green">On pull</span></td></tr>
+        <tr><td>Power Infusion</td><td>5 applications (self-cast)</td><td>Synced with Voidform</td></tr>
+        <tr><td>Ebon Might</td><td>None</td><td>No Aug Evoker</td></tr>
+        <tr><td>Prescience</td><td>None</td><td>No Aug Evoker</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="callout callout-info" style="margin-top: 12px;">
+    <h4>Nurnyx had Aug Evoker buffs; reference did not</h4>
+    <p>Nurnyx received 12 Ebon Might applications from Zinnks (Aug Evoker), which typically adds 5-8% damage. The reference had no Aug support. This means the raw DPS gap is actually <strong>wider</strong> than 43% when normalized for external buffs &mdash; Nurnyx's 116.9K with Aug buffs vs Dlpsibm's 205.8K without them.</p>
+  </div>
+</section>
+
+<!-- Damage Taken -->
+<section>
+  <h2>Damage Taken</h2>
+  <table>
+    <tr>
+      <th>Ability</th>
+      <th>Total</th>
+      <th>Hits</th>
+      <th>Avoidable?</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td>12,697K</td>
+      <td>478</td>
+      <td><span class="badge badge-dim">Unavoidable</span></td>
+      <td>Stacking raid DoT (soft enrage)</td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>3,266K</td>
+      <td>51</td>
+      <td><span class="badge badge-dim">Unavoidable</span></td>
+      <td>Raid-wide at 100 energy</td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>3,125K</td>
+      <td>46</td>
+      <td><span class="badge badge-dim">Unavoidable</span></td>
+      <td>Energy burst damage</td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>990K</td>
+      <td>39</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+      <td>Add melee hits from fixating mobs</td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>724K</td>
+      <td>3</td>
+      <td><span class="badge badge-dim">Unavoidable</span></td>
+      <td>Post-Bloom shroom explosions</td>
+    </tr>
+    <tr>
+      <td>Poison Burst</td>
+      <td>344K</td>
+      <td>3</td>
+      <td><span class="badge badge-yellow">Interrupt</span></td>
+      <td>Sporecap cast &mdash; should be interrupted</td>
+    </tr>
+    <tr>
+      <td>Blightshot</td>
+      <td>340K</td>
+      <td>6</td>
+      <td><span class="badge badge-dim">Unavoidable</span></td>
+      <td>Boss ranged ability</td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Death</td>
+      <td>246K</td>
+      <td>25</td>
+      <td><span class="badge badge-yellow">Self-inflicted</span></td>
+      <td>26 SWD casts (ref: 14). Excessive SWD usage causes unnecessary self-damage</td>
+    </tr>
+    <tr>
+      <td>Writhing Vines</td>
+      <td>155K</td>
+      <td>1</td>
+      <td><span class="badge badge-red">Avoidable</span></td>
+      <td>Ground hazard from Festering Vines &mdash; walked into it once</td>
+    </tr>
+  </table>
+  <p style="font-size: 13px; color: var(--dim); margin-top: 8px;">Damage taken profile is clean overall. One Writhing Vines hit (avoidable) and slightly excessive SWD self-damage, but no major mechanic failures.</p>
+</section>
+
+<!-- Defensive Usage -->
+<section>
+  <h2>Defensive &amp; Utility Usage</h2>
+  <table>
+    <tr>
+      <th>Ability</th>
+      <th>Player Uses</th>
+      <th>Ref Uses</th>
+      <th>Notes</th>
+    </tr>
+    <tr><td>Fade</td><td>6</td><td>10</td><td>Reference uses Fade more aggressively for threat during add phases</td></tr>
+    <tr><td>Power Word: Shield</td><td>5</td><td>9</td><td>Self-shield &mdash; ref uses nearly twice as often for survival</td></tr>
+    <tr><td>Desperate Prayer</td><td>3</td><td>4</td><td>Emergency self-heal &mdash; comparable usage</td></tr>
+    <tr><td>Angelic Feather</td><td>3</td><td>1</td><td>Movement speed boost</td></tr>
+    <tr><td>Dispersion</td><td>1</td><td>0</td><td>Major defensive &mdash; used once for survival (costs DPS uptime)</td></tr>
+    <tr><td>Silence</td><td>3</td><td>3</td><td>Interrupt &mdash; matching usage</td></tr>
+  </table>
+</section>
+
+<!-- Wipe Progression -->
+<section>
+  <h2>Wipe Progression</h2>
+  <div style="display: flex; align-items: flex-end; gap: 16px; height: 160px; margin-bottom: 16px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">117.7K</div>
+      <div style="width: 100%; background: var(--red); border-radius: 4px 4px 0 0; height: calc(117.7 / 148.7 * 100px);"></div>
+      <div style="font-size: 11px; color: var(--dim); margin-top: 4px;">Fight 1</div>
+      <div style="font-size: 10px; color: var(--red);">Wipe 22%</div>
+      <div style="font-size: 10px; color: var(--dim);">6:54</div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">100.1K</div>
+      <div style="width: 100%; background: var(--orange); border-radius: 4px 4px 0 0; height: calc(100.1 / 148.7 * 100px);"></div>
+      <div style="font-size: 11px; color: var(--dim); margin-top: 4px;">Fight 2</div>
+      <div style="font-size: 10px; color: var(--red);">Wipe 12%</div>
+      <div style="font-size: 10px; color: var(--dim);">8:25</div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+      <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">116.9K</div>
+      <div style="width: 100%; background: var(--green); border-radius: 4px 4px 0 0; height: calc(116.9 / 148.7 * 100px);"></div>
+      <div style="font-size: 11px; color: var(--dim); margin-top: 4px;">Fight 3</div>
+      <div style="font-size: 10px; color: var(--green);">KILL</div>
+      <div style="font-size: 10px; color: var(--dim);">8:09</div>
+    </div>
+  </div>
+  <table>
+    <tr>
+      <th>Fight</th>
+      <th>DPS</th>
+      <th>Duration</th>
+      <th>Result</th>
+      <th>Death</th>
+      <th>Notes</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>117,670</td>
+      <td>6:54</td>
+      <td><span class="badge badge-red">Wipe 22%</span></td>
+      <td>6:48 &mdash; Bursting Shroom</td>
+      <td>Raid wiped to Bursting Shroom cascade at Bloom #3. Nurnyx died in the raid-wide wipe, not to a personal mistake.</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>100,082</td>
+      <td>8:25</td>
+      <td><span class="badge badge-red">Wipe 12%</span></td>
+      <td>7:20 &mdash; Rotting Pustules</td>
+      <td>Nurnyx died to Rotting Pustules DoT ticks at 7:20. Raid persisted 65s after but wiped to soft enrage.</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>116,934</td>
+      <td>8:09</td>
+      <td><span class="badge badge-green">KILL</span></td>
+      <td>Survived</td>
+      <td>Clean kill, full raid alive. DPS recovered from fight 2 dip.</td>
+    </tr>
+  </table>
+  <div class="callout callout-info" style="margin-top: 12px;">
+    <h4>Progression pattern: mechanics learned, DPS consistent</h4>
+    <p>Fight 1 was a short wipe (6:54) with inflated DPS from being alive during burst phases. Fight 2 was the longest pull but Nurnyx died at 7:20 to Rotting Pustules &mdash; the soft enrage mechanic &mdash; pulling DPS down to 100K. Fight 3 (kill) was clean: no deaths, 116.9K DPS, mechanics handled correctly. The learning was primarily raid-level (add placement for Cross Fertilization), not individual.</p>
+  </div>
+</section>
+
+<!-- Psychic Link Deep Dive -->
+<section>
+  <h2>Psychic Link &mdash; The Biggest Single-Ability Gap</h2>
+  <div class="callout callout-bad">
+    <h4>4.89M vs 11.97M &mdash; 7.08M damage gap from one passive ability</h4>
+    <p>Psychic Link is Shadow Priest's multi-target cleave engine. It replicates a percentage of single-target damage to all other targets with Vampiric Touch active. The reference generates <strong>145% more Psychic Link damage</strong> because:</p>
+    <ul style="margin-top: 8px; margin-left: 20px; color: var(--dim); font-size: 13px; line-height: 1.8;">
+      <li><strong>12 manual Vampiric Touch casts vs 1.</strong> The reference actively maintains VT on multiple add targets beyond what Tentacle Slam covers. Nurnyx relies almost entirely on Tentacle Slam (30 casts, equal to reference) but does not manually apply VT to additional targets.</li>
+      <li><strong>Higher overall cast volume.</strong> More casts on the primary target = more damage replicated via Psychic Link to all VT'd targets.</li>
+      <li><strong>Better add target split.</strong> Reference puts 43% of damage into adds vs Nurnyx's 34%. More active add targeting means more VT applications and more Psychic Link replication.</li>
+    </ul>
+    <p style="margin-top: 8px;">This single ability gap (7.08M) accounts for <strong>32% of the total damage deficit</strong> (22.15M total gap). Fixing VT multi-dotting alone would close roughly a third of the DPS gap.</p>
+  </div>
+</section>
+
+<!-- Actionable Improvements -->
+<section>
+  <h2>Actionable Improvements</h2>
+
+  <div class="action-item">
+    <span class="action-num">1</span>
+    <h4>Multi-DoT with manual Vampiric Touch on adds</h4>
+    <p>The single largest damage loss. Reference casts VT 12 times manually (in addition to 30 Tentacle Slams) to maintain coverage on Sporecaps, Shroomlings, and Funglings. Nurnyx casts VT once the entire fight. Each additional VT target multiplies Psychic Link damage on every single-target cast. On Rotmire with constant add spawns, this is a massive multiplier.</p>
+    <div class="impact">Impact: ~7M damage (32% of the total gap). This is the #1 priority.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">2</span>
+    <h4>Eliminate GCD gaps &mdash; always have the next cast queued</h4>
+    <p>20 gaps &gt;2.5s (vs ref's 14) add up to 57.8s of dead time (ref: 41.5s). 16.3s of extra downtime at 1.35 CPS = ~22 lost casts. The pattern shows 45% of gaps follow Shadowy Apparition resolving and 35% follow Mind Flay completing. Pre-queue the next ability before the current GCD finishes. Shadow Priest has a clear priority: check Mind Blast charges &rarr; Shadow Word: Madness if target needs it &rarr; Mind Flay: Insanity if Madness is active &rarr; Mind Flay filler. Knowing this priority cold eliminates decision-time gaps.</p>
+    <div class="impact">Impact: ~22 recovered casts, ~5-8% DPS increase from uptime alone.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">3</span>
+    <h4>Cast Vampiric Embrace on cooldown (5 uses, not 3)</h4>
+    <p>VE is a 2-minute cooldown. Nurnyx used it 3 times (first at 2:16) with ~170s average interval. Reference used it 5 times starting at 0:04 with ~125s average interval. The first VE should go out in the opener alongside Voidform. Beyond personal damage, VE is a raid utility CD that heals the group &mdash; missed uses also hurt the healing team.</p>
+    <div class="impact">Impact: 2 additional VE windows of damage-to-healing throughput, plus better CD alignment with Voidform.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">4</span>
+    <h4>Improve quiet window uptime (pre-mechanic positioning)</h4>
+    <p>11 of 18 quiet windows are flagged, with the worst being pre-Bloom #3 (-41% vs ref). These are free-casting windows where no mechanics are happening. The pattern suggests Nurnyx is moving or hesitating before mechanics arrive rather than casting until the mechanic forces a response. Pre-position early, but keep casting until the last possible moment. Shadow Word: Death and Shadow Word: Pain refreshes are instant casts usable during any forced movement.</p>
+    <div class="impact">Impact: Recovering half the quiet window deficit would add ~15-20 casts across the fight.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">5</span>
+    <h4>Reduce Shadow Word: Death usage (26 casts vs 14)</h4>
+    <p>Nurnyx casts SWD almost twice as often as the reference. SWD does less damage per GCD than Mind Blast or Mind Flay: Insanity and inflicts self-damage (246K total). SWD is best used during movement (instant cast) or in execute phase (sub-20%). Outside those situations, it is a DPS loss compared to channeling Mind Flay or casting Mind Blast. The extra 12 SWD casts are GCDs that could have been higher-value abilities.</p>
+    <div class="impact">Impact: 12 GCDs redirected to higher-value abilities, plus 246K less self-damage to heal through.</div>
+  </div>
+</section>
+
+<!-- Context Footer -->
+<section>
+  <h2>Verdict</h2>
+  <div class="callout callout-info">
+    <h4>The 43% DPS gap is execution-based, not gear or spec</h4>
+    <p>Nurnyx and the reference (Dlpsibm) run identical talents at virtually identical item level (291 vs 290). Nurnyx also had Augmentation Evoker buffs (Ebon Might) that the reference did not, making the normalized gap even wider. The three root causes are:</p>
+    <ol style="margin-top: 8px; margin-left: 20px; color: var(--dim); font-size: 13px; line-height: 1.8;">
+      <li><strong>Multi-DoT discipline</strong> &mdash; 1 manual VT cast vs 12. This single habit change would close ~32% of the gap through Psychic Link cleave alone.</li>
+      <li><strong>GCD uptime</strong> &mdash; 57.8s dead time vs 41.5s. Faster ability queuing and fewer hesitation gaps across all fight phases.</li>
+      <li><strong>Cooldown efficiency</strong> &mdash; 3 VE uses vs 5, plus one fewer Voidform (partially explained by shorter fight).</li>
+    </ol>
+  </div>
+  <div class="callout callout-good" style="margin-top: 12px;">
+    <h4>What Nurnyx does well</h4>
+    <ul style="margin-left: 20px; color: var(--dim); font-size: 13px; line-height: 1.8;">
+      <li><strong>Survival.</strong> Zero deaths on the kill. Clean damage-taken profile with only one avoidable hit (Writhing Vines).</li>
+      <li><strong>Mechanic handling during add phases.</strong> CPS during Awaken Fungi windows matches or beats the reference in 5 of 8 spawns (Adds #3-#6 all positive).</li>
+      <li><strong>Halo usage.</strong> 8 casts matching the reference's rate perfectly. Tentacle Slam usage also identical at 30 casts each.</li>
+      <li><strong>Bloom windows.</strong> Fungal Bloom CPS is within 7% of reference on 2 of 3 Blooms. No panic during raid-wide damage.</li>
+      <li><strong>Consistent performance.</strong> Per-cycle DPS deficit is flat (-20% to -23%) with no catastrophic drop-offs in any particular cycle. The improvement from fight 2 death to fight 3 clean kill shows good adaptation.</li>
+      <li><strong>Interrupt discipline.</strong> 3 Silence casts matching the reference exactly.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a></p>
+  <p>Primary reference: <span class="ref-tag">Dlpsibm-Kirin Tor</span> (205,765 DPS, 8:38 kill, ilvl 290, 0 talent differences)</p>
+  <p>Analysis mode: Kill (Fight 3) &mdash; Rotmire Mythic (encounterID 3159, difficulty 5)</p>
+  <p>Shadow Priest rotation reference: <a href="https://www.icy-veins.com/wow/shadow-priest-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins 12.0.7 Guide</a></p>
+</div>
+
+</body>
+</html>

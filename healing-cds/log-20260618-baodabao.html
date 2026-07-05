@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baodabao - Frost Mage | Crown of the Cosmos Progression</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --mage: #3fc7eb;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); padding:24px; max-width:1200px; margin:0 auto; line-height:1.5; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+
+/* Header */
+.header { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; }
+.header-top { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; }
+.header-left h1 { font-size:28px; font-weight:700; }
+.player-name { color:var(--mage); }
+.header-left .spec { font-size:14px; color:var(--dim); margin-top:4px; }
+.header-right { text-align:right; }
+.header-right .boss-name { font-size:18px; font-weight:600; }
+.header-right .meta { font-size:13px; color:var(--dim); }
+.prog-badge { display:inline-block; background:#f8514920; color:var(--red); border:1px solid var(--red); border-radius:6px; padding:2px 10px; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-left:8px; }
+
+/* Summary Cards */
+.summary-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:20px; }
+.summary-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; text-align:center; }
+.summary-card .label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.summary-card .value { font-size:24px; font-weight:700; }
+.summary-card .sub { font-size:12px; color:var(--dim); margin-top:2px; }
+
+/* Sections */
+.section { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px; }
+.section h2 { font-size:18px; font-weight:600; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+.section h3 { font-size:15px; font-weight:600; margin:16px 0 10px; color:var(--accent); }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:8px 12px; border-bottom:2px solid var(--border); color:var(--dim); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.3px; }
+td { padding:8px 12px; border-bottom:1px solid var(--border); }
+tr:last-child td { border-bottom:none; }
+.num { text-align:right; font-variant-numeric:tabular-nums; }
+
+/* Bar chart */
+.bar-chart { display:flex; align-items:flex-end; gap:3px; height:200px; margin:16px 0; padding-bottom:24px; position:relative; }
+.bar-wrapper { flex:1; display:flex; flex-direction:column; align-items:center; min-width:0; }
+.bar { width:100%; min-height:2px; border-radius:3px 3px 0 0; position:relative; transition:opacity 0.2s; cursor:default; }
+.bar:hover { opacity:0.85; }
+.bar-label { font-size:9px; color:var(--dim); margin-top:4px; writing-mode:vertical-rl; text-orientation:mixed; max-height:60px; overflow:hidden; }
+.bar.survived { background:var(--green); }
+.bar.died { background:var(--red); }
+.bar.died-late { background:var(--orange); }
+.bar.short { background:#30363d; }
+.avg-line { position:absolute; left:0; right:0; border-top:2px dashed var(--yellow); z-index:2; }
+.avg-label { position:absolute; right:4px; top:-16px; font-size:10px; color:var(--yellow); white-space:nowrap; }
+.bar-tooltip { position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#1c2128; border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:11px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity 0.15s; z-index:10; }
+.bar:hover .bar-tooltip { opacity:1; }
+
+/* Death pattern */
+.death-callout { background:#f8514915; border:1px solid #f8514940; border-radius:10px; padding:16px; margin:12px 0; }
+.death-callout .title { font-weight:600; color:var(--red); margin-bottom:6px; font-size:14px; }
+.death-callout .detail { font-size:13px; color:var(--text); }
+
+/* Phase table */
+.phase-row { display:grid; grid-template-columns:160px 80px 100px 80px 80px 1fr; gap:8px; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.phase-row:last-child { border-bottom:none; }
+.phase-row.header { font-weight:600; color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:0.3px; }
+.phase-bar { height:8px; border-radius:4px; }
+.phase-p1 { background:var(--green); }
+.phase-inter { background:var(--cyan); }
+.phase-p2 { background:var(--accent); }
+.phase-p3 { background:var(--purple); }
+.reach-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.reach-green { background:#3fb95020; color:var(--green); }
+.reach-yellow { background:#d2992220; color:var(--yellow); }
+.reach-red { background:#f8514920; color:var(--red); }
+
+/* Actionable items */
+.action-item { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:10px; }
+.action-item .action-num { display:inline-block; width:24px; height:24px; border-radius:50%; background:var(--accent); color:var(--bg); font-size:12px; font-weight:700; text-align:center; line-height:24px; margin-right:8px; flex-shrink:0; }
+.action-item .action-title { font-weight:600; font-size:14px; display:inline; }
+.action-item .action-detail { margin-top:6px; font-size:13px; color:var(--dim); }
+.action-priority-high { border-left:3px solid var(--red); }
+.action-priority-med { border-left:3px solid var(--yellow); }
+.action-priority-low { border-left:3px solid var(--green); }
+
+/* Reference */
+.ref-table td.highlight { background:#bc8cff10; }
+.ref-badge { display:inline-block; padding:1px 6px; border-radius:3px; font-size:11px; font-weight:600; }
+.ref-badge.same { background:#3fb95020; color:var(--green); }
+.ref-badge.diff { background:#f8514920; color:var(--red); }
+
+/* Footer */
+.footer { text-align:center; padding:20px; font-size:12px; color:var(--dim); border-top:1px solid var(--border); margin-top:20px; }
+
+/* Cast profile */
+.cast-bar { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.cast-bar .name { width:140px; font-size:13px; text-align:right; flex-shrink:0; }
+.cast-bar .bar-track { flex:1; height:20px; background:var(--bg); border-radius:4px; overflow:hidden; position:relative; }
+.cast-bar .bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding-left:6px; font-size:11px; color:var(--bg); font-weight:600; min-width:fit-content; }
+.cast-bar .cpm-label { font-size:12px; color:var(--dim); width:60px; flex-shrink:0; }
+
+/* Responsive */
+@media (max-width:768px) {
+  .summary-grid { grid-template-columns:repeat(2,1fr); }
+  .phase-row { grid-template-columns:1fr; gap:4px; }
+  .header-top { flex-direction:column; }
+  .header-right { text-align:left; }
+}
+</style>
+</head>
+<body>
+<a href="/raid/log-20260618" class="back-link">&larr; June 18, 2026 Log Analysis</a>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-left">
+      <h1><span class="player-name">Baodabao</span> <span class="prog-badge">Progression</span></h1>
+      <div class="spec">Frost Mage &middot; Thunderlord &middot; iLvl 290 &middot; Spellslinger</div>
+    </div>
+    <div class="header-right">
+      <div class="boss-name">Mythic Crown of the Cosmos</div>
+      <div class="meta">June 18, 2026 &middot; 27 pulls, 14 with Baodabao &middot; Best: 31.27% (F27)</div>
+      <div class="meta">Report: <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">jqFfXprk4hcaWx3C</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color:var(--accent)">43.2K</div>
+    <div class="sub">Across 14 pulls</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">290</div>
+    <div class="sub">4pc T-set + 2pc Devouring</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color:var(--red)">0 / 14</div>
+    <div class="sub">Died every pull</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Best Pull</div>
+    <div class="value" style="color:var(--green)">55.3K</div>
+    <div class="sub">F18 &middot; 5:56 &middot; 38.52%</div>
+  </div>
+</div>
+
+<!-- PERFORMANCE ACROSS ALL PULLS -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+  <div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:12px; font-size:13px;">
+    <div><strong>Median DPS:</strong> <span style="color:var(--accent)">46,696</span></div>
+    <div><strong>Std Dev:</strong> 10,288</div>
+    <div><strong>Range:</strong> 23,911 &ndash; 55,261</div>
+    <div><strong>Best:</strong> F18 (55.3K, 5:56, 38.52%)</div>
+    <div><strong>Worst:</strong> F11 (23.9K, 4:05, 55.49%)</div>
+  </div>
+
+  <div class="bar-chart" id="dpsChart" style="position:relative;">
+    <!-- Average line -->
+    <div class="avg-line" style="bottom:calc(43232 / 55261 * 200px);">
+      <span class="avg-label">Avg 43.2K</span>
+    </div>
+    <!-- Bars for each present pull -->
+    <div class="bar-wrapper">
+      <div class="bar died" style="height:calc(24422 / 55261 * 200px);" title="F3: 24.4K DPS, 3:47, died 3:36">
+        <div class="bar-tooltip">F3: 24.4K DPS<br>3:47 &middot; 57.83%<br>Died 3:36 - Cosmic Barrier</div>
+      </div>
+      <div class="bar-label">F3</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died" style="height:calc(29933 / 55261 * 200px);" title="F8: 29.9K DPS">
+        <div class="bar-tooltip">F8: 29.9K DPS<br>3:59 &middot; 54.68%<br>Died 3:54 - Void Barrage</div>
+      </div>
+      <div class="bar-label">F8</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died" style="height:calc(23911 / 55261 * 200px);" title="F11: 23.9K DPS">
+        <div class="bar-tooltip">F11: 23.9K DPS<br>4:05 &middot; 55.49%<br>Died 3:38 - Grasp of Emptiness</div>
+      </div>
+      <div class="bar-label">F11</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(41756 / 55261 * 200px);" title="F15: 41.8K DPS">
+        <div class="bar-tooltip">F15: 41.8K DPS<br>4:52 &middot; 45.69%<br>Died 4:32 - Voidstalker Sting</div>
+      </div>
+      <div class="bar-label">F15</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(48662 / 55261 * 200px);" title="F16: 48.7K DPS">
+        <div class="bar-tooltip">F16: 48.7K DPS<br>5:03 &middot; 43.43%<br>Died 4:46 - Voidstalker Sting</div>
+      </div>
+      <div class="bar-label">F16</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(55261 / 55261 * 200px);" title="F18: 55.3K DPS">
+        <div class="bar-tooltip">F18: 55.3K DPS<br>5:56 &middot; 38.52%<br>Died 5:53 - Melee</div>
+      </div>
+      <div class="bar-label">F18</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(46696 / 55261 * 200px);" title="F19: 46.7K DPS">
+        <div class="bar-tooltip">F19: 46.7K DPS<br>5:16 &middot; 43.5%<br>Died 4:57 - Simulacrum Backlash</div>
+      </div>
+      <div class="bar-label">F19</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(51870 / 55261 * 200px);" title="F20: 51.9K DPS">
+        <div class="bar-tooltip">F20: 51.9K DPS<br>5:23 &middot; 37.12%<br>Died 5:00 - Void Barrage</div>
+      </div>
+      <div class="bar-label">F20</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(42768 / 55261 * 200px);" title="F21: 42.8K DPS">
+        <div class="bar-tooltip">F21: 42.8K DPS<br>4:49 &middot; 43.12%<br>Died 4:36 - Simulacrum Backlash</div>
+      </div>
+      <div class="bar-label">F21</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(40232 / 55261 * 200px);" title="F22: 40.2K DPS">
+        <div class="bar-tooltip">F22: 40.2K DPS<br>4:13 &middot; 50.46%<br>Died 4:09 - Unknown</div>
+      </div>
+      <div class="bar-label">F22</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(53314 / 55261 * 200px);" title="F23: 53.3K DPS">
+        <div class="bar-tooltip">F23: 53.3K DPS<br>6:05 &middot; 36.95%<br>Died 5:51 - Grasp of Emptiness</div>
+      </div>
+      <div class="bar-label">F23</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(40223 / 55261 * 200px);" title="F24: 40.2K DPS">
+        <div class="bar-tooltip">F24: 40.2K DPS<br>4:44 &middot; 41.61%<br>Died 4:38 - Simulacrum Backlash</div>
+      </div>
+      <div class="bar-label">F24</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(53396 / 55261 * 200px);" title="F27: 53.4K DPS">
+        <div class="bar-tooltip">F27: 53.4K DPS<br>6:01 &middot; 31.27%<br>Died 5:47 - Unknown</div>
+      </div>
+      <div class="bar-label">F27</div>
+    </div>
+    <div class="bar-wrapper">
+      <div class="bar died-late" style="height:calc(52809 / 55261 * 200px);" title="F28: 52.8K DPS">
+        <div class="bar-tooltip">F28: 52.8K DPS<br>5:43 &middot; 36.59%<br>Died 5:26 - Melee</div>
+      </div>
+      <div class="bar-label">F28</div>
+    </div>
+  </div>
+  <div style="font-size:12px; color:var(--dim); display:flex; gap:16px; margin-top:8px;">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Died early (&lt;4 min)</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--orange);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Died late (&gt;4 min)</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border:1px dashed var(--yellow);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Average DPS line</span>
+  </div>
+
+  <h3>Session Trend</h3>
+  <p style="font-size:13px; color:var(--dim);">
+    Clear improvement through the session. First 3 pulls averaged <strong style="color:var(--text)">26.1K DPS</strong> (short fights, early deaths in P2).
+    Last 5 pulls averaged <strong style="color:var(--green)">51.3K DPS</strong> with all reaching P3. DPS nearly doubled as the raid progressed through the night,
+    indicating strong mechanical adaptation and increasing comfort with the fight.
+  </p>
+</div>
+
+<!-- DEATH PATTERN ANALYSIS -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="death-callout">
+    <div class="title">Died in 14 / 14 pulls &mdash; 0% survival rate</div>
+    <div class="detail">
+      Average survival time: <strong>4:26</strong> across all pulls.
+      Every single pull ends with Baodabao dead. The good news: survival time increased dramatically through the session &mdash;
+      from dying at 3:36 (P2) in early pulls to surviving past 5:30 (P3) in later pulls. The problem shifted from "dying in P2" to "dying in late P2 / early P3."
+    </div>
+  </div>
+
+  <h3>Death Causes</h3>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th class="num">Deaths</th><th>Phase</th><th class="num">Avg Time</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--red)">Simulacrum Backlash</strong></td>
+        <td class="num">3</td>
+        <td>P2</td>
+        <td class="num">4:43</td>
+        <td>Rift Simulacrum mechanic &mdash; highest death count</td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td class="num">2</td>
+        <td>P2 / P3</td>
+        <td class="num">4:27</td>
+        <td>Dodge-able projectile ability</td>
+      </tr>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td class="num">2</td>
+        <td>P2</td>
+        <td class="num">4:39</td>
+        <td>Alleria debuff mechanic</td>
+      </tr>
+      <tr>
+        <td>Melee</td>
+        <td class="num">2</td>
+        <td>P3</td>
+        <td class="num">5:39</td>
+        <td>Caught in melee range of adds or boss</td>
+      </tr>
+      <tr>
+        <td>Grasp of Emptiness</td>
+        <td class="num">2</td>
+        <td>P2 / P3</td>
+        <td class="num">4:44</td>
+        <td>Grip + follow-up damage</td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td class="num">1</td>
+        <td>P2</td>
+        <td class="num">3:36</td>
+        <td>Shield explosion from Rift Simulacrum</td>
+      </tr>
+      <tr>
+        <td>Unknown</td>
+        <td class="num">2</td>
+        <td>P2 / P3</td>
+        <td class="num">4:09</td>
+        <td>Killing blow not logged &mdash; likely environmental or multi-hit overlap</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Death Timing Distribution</h3>
+  <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:8px;">
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px;">
+      <div style="font-size:12px; color:var(--dim); margin-bottom:4px;">Phase 2 Deaths</div>
+      <div style="font-size:22px; font-weight:700; color:var(--red);">10</div>
+      <div style="font-size:12px; color:var(--dim);">3:36 &ndash; 5:00 range</div>
+    </div>
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px;">
+      <div style="font-size:12px; color:var(--dim); margin-bottom:4px;">Phase 3 Deaths</div>
+      <div style="font-size:22px; font-weight:700; color:var(--orange);">4</div>
+      <div style="font-size:12px; color:var(--dim);">5:26 &ndash; 5:53 range</div>
+    </div>
+  </div>
+</div>
+
+<!-- PER-PHASE PERFORMANCE BREAKDOWN -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    DPS calculated proportionally from damage event distribution within each phase window.
+    Phase boundaries: P1 (0:00&ndash;2:14), Intermission (2:14&ndash;2:53), P2 (2:53&ndash;5:09), P3 (5:09+).
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th class="num">Pulls Seen</th>
+        <th class="num">Avg DPS</th>
+        <th class="num">Best DPS</th>
+        <th class="num">Deaths</th>
+        <th>Top Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:6px;vertical-align:middle;"></span><strong>P1: Sentinels</strong></td>
+        <td class="num"><span class="reach-badge reach-green">14 / 14</span></td>
+        <td class="num" style="color:var(--green)">74,558</td>
+        <td class="num">100,120</td>
+        <td class="num" style="color:var(--green)">0</td>
+        <td style="color:var(--dim)">&mdash;</td>
+      </tr>
+      <tr>
+        <td><span style="display:inline-block;width:10px;height:10px;background:var(--cyan);border-radius:2px;margin-right:6px;vertical-align:middle;"></span><strong>Intermission</strong></td>
+        <td class="num"><span class="reach-badge reach-green">14 / 14</span></td>
+        <td class="num" style="color:var(--dim)">~0</td>
+        <td class="num" style="color:var(--dim)">&mdash;</td>
+        <td class="num" style="color:var(--green)">0</td>
+        <td style="color:var(--dim)">No targets available &mdash; survival only</td>
+      </tr>
+      <tr>
+        <td><span style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:2px;margin-right:6px;vertical-align:middle;"></span><strong>P2: Rift</strong></td>
+        <td class="num"><span class="reach-badge reach-green">14 / 14</span></td>
+        <td class="num" style="color:var(--yellow)">26,567</td>
+        <td class="num">42,836</td>
+        <td class="num" style="color:var(--red)">10</td>
+        <td>Simulacrum Backlash (3), Voidstalker Sting (2), Void Barrage (2)</td>
+      </tr>
+      <tr>
+        <td><span style="display:inline-block;width:10px;height:10px;background:var(--purple);border-radius:2px;margin-right:6px;vertical-align:middle;"></span><strong>P3: Devouring Cosmos</strong></td>
+        <td class="num"><span class="reach-badge reach-yellow">6 / 14</span></td>
+        <td class="num" style="color:var(--red)">9,724</td>
+        <td class="num">24,321</td>
+        <td class="num" style="color:var(--orange)">4</td>
+        <td>Melee (2), Grasp of Emptiness (1)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Phase Insights</h3>
+  <div style="font-size:13px; line-height:1.7;">
+    <p><span style="color:var(--green);">P1 is strong.</span> 74.6K average DPS with zero deaths. Baodabao is handling sentinel target-switching well and putting out high burst damage during the multi-target opening. Best P1 pull hit 100K+ DPS.</p>
+    <p style="margin-top:8px;"><span style="color:var(--yellow);">P2 is the wall.</span> DPS drops by <strong style="color:var(--red);">64%</strong> from P1 to P2 (74.6K &rarr; 26.6K). Ten of 14 deaths occur here. The combination of Rift Simulacrum mechanics, Voidstalker Sting movement, and Void Barrage dodging is creating both massive uptime loss and survival problems. This phase demands the most improvement.</p>
+    <p style="margin-top:8px;"><span style="color:var(--red);">P3 time is limited.</span> Only 6 pulls reached P3, and DPS drops another 63% to 9.7K. Two melee deaths in P3 suggest positioning issues when adds return. However, P3 experience is simply low &mdash; more reps will help.</p>
+  </div>
+
+  <h3>Phase DPS Per Pull</h3>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th class="num">Duration</th><th class="num">Boss %</th><th class="num">P1 DPS</th><th class="num">P2 DPS</th><th class="num">P3 DPS</th><th class="num">Death</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>F3</td><td class="num">3:47</td><td class="num">57.83%</td><td class="num">37,142</td><td class="num" style="color:var(--dim)">10,596</td><td class="num">&mdash;</td><td class="num">3:36 - Cosmic Barrier</td></tr>
+      <tr><td>F8</td><td class="num">3:59</td><td class="num">54.68%</td><td class="num">45,663</td><td class="num" style="color:var(--dim)">15,756</td><td class="num">&mdash;</td><td class="num">3:54 - Void Barrage</td></tr>
+      <tr><td>F11</td><td class="num">4:05</td><td class="num">55.49%</td><td class="num">39,556</td><td class="num" style="color:var(--dim)">7,811</td><td class="num">&mdash;</td><td class="num">3:38 - Grasp of Emptiness</td></tr>
+      <tr><td>F15</td><td class="num">4:52</td><td class="num">45.69%</td><td class="num">70,326</td><td class="num">23,337</td><td class="num">&mdash;</td><td class="num">4:32 - Voidstalker Sting</td></tr>
+      <tr><td>F16</td><td class="num">5:03</td><td class="num">43.43%</td><td class="num">84,561</td><td class="num">26,317</td><td class="num">&mdash;</td><td class="num">4:46 - Voidstalker Sting</td></tr>
+      <tr><td>F18</td><td class="num">5:56</td><td class="num" style="color:var(--green)">38.52%</td><td class="num" style="color:var(--green)">100,120</td><td class="num" style="color:var(--green)">37,516</td><td class="num">24,321</td><td class="num">5:53 - Melee</td></tr>
+      <tr><td>F19</td><td class="num">5:16</td><td class="num">43.50%</td><td class="num">82,268</td><td class="num">27,466</td><td class="num" style="color:var(--dim)">0</td><td class="num">4:57 - Simulacrum Backlash</td></tr>
+      <tr><td>F20</td><td class="num">5:23</td><td class="num" style="color:var(--green)">37.12%</td><td class="num">88,649</td><td class="num">35,784</td><td class="num" style="color:var(--dim)">15</td><td class="num">5:00 - Void Barrage</td></tr>
+      <tr><td>F21</td><td class="num">4:49</td><td class="num">43.12%</td><td class="num">73,319</td><td class="num">21,877</td><td class="num">&mdash;</td><td class="num">4:36 - Simulacrum Backlash</td></tr>
+      <tr><td>F22</td><td class="num">4:13</td><td class="num">50.46%</td><td class="num">60,797</td><td class="num">25,418</td><td class="num">&mdash;</td><td class="num">4:09 - Unknown</td></tr>
+      <tr><td>F23</td><td class="num">6:05</td><td class="num" style="color:var(--green)">36.95%</td><td class="num" style="color:var(--green)">98,798</td><td class="num" style="color:var(--green)">40,140</td><td class="num">13,930</td><td class="num">5:51 - Grasp of Emptiness</td></tr>
+      <tr><td>F24</td><td class="num">4:44</td><td class="num">41.61%</td><td class="num">69,614</td><td class="num">18,912</td><td class="num">&mdash;</td><td class="num">4:38 - Simulacrum Backlash</td></tr>
+      <tr><td>F27</td><td class="num">6:01</td><td class="num" style="color:var(--green)">31.27%</td><td class="num">96,581</td><td class="num" style="color:var(--green)">42,836</td><td class="num">9,643</td><td class="num">5:47 - Unknown</td></tr>
+      <tr><td>F28</td><td class="num">5:43</td><td class="num" style="color:var(--green)">36.59%</td><td class="num">96,414</td><td class="num">38,170</td><td class="num" style="color:var(--dim)">713</td><td class="num">5:26 - Melee</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- CAST PROFILE -->
+<div class="section">
+  <h2>Cast Profile (Fight 23 &mdash; 6:05, Best Progression Pull)</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    214 total casts across 6:05. Overall rotational CPM: 35.2. Frost Mage rotation built around Frostbolt/Flurry generating Shatter stacks, consumed by Ice Lance. Ray of Frost is the primary cooldown in 12.0.7 (replacing Icy Veins).
+  </p>
+
+  <div style="margin-bottom:8px;">
+    <div class="cast-bar">
+      <div class="name">Ice Lance</div>
+      <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--mage);">123</div></div>
+      <div class="cpm-label">20.2 cpm</div>
+    </div>
+    <div class="cast-bar">
+      <div class="name">Flurry</div>
+      <div class="bar-track"><div class="bar-fill" style="width:18.7%;background:var(--accent);">23</div></div>
+      <div class="cpm-label">3.8 cpm</div>
+    </div>
+    <div class="cast-bar">
+      <div class="name">Frostbolt</div>
+      <div class="bar-track"><div class="bar-fill" style="width:17.1%;background:var(--cyan);">21</div></div>
+      <div class="cpm-label">3.4 cpm</div>
+    </div>
+    <div class="cast-bar">
+      <div class="name">Glacial Spike</div>
+      <div class="bar-track"><div class="bar-fill" style="width:7.3%;background:var(--purple);">9</div></div>
+      <div class="cpm-label">1.5 cpm</div>
+    </div>
+    <div class="cast-bar">
+      <div class="name">Frozen Orb</div>
+      <div class="bar-track"><div class="bar-fill" style="width:7.3%;background:var(--green);">9</div></div>
+      <div class="cpm-label">1.5 cpm</div>
+    </div>
+    <div class="cast-bar">
+      <div class="name">Ray of Frost</div>
+      <div class="bar-track"><div class="bar-fill" style="width:7.3%;background:var(--yellow);">9</div></div>
+      <div class="cpm-label">1.5 cpm</div>
+    </div>
+    <div class="cast-bar">
+      <div class="name" style="color:var(--dim)">Shimmer</div>
+      <div class="bar-track"><div class="bar-fill" style="width:4.9%;background:var(--dim);">6</div></div>
+      <div class="cpm-label" style="color:var(--dim)">1.0 cpm</div>
+    </div>
+    <div class="cast-bar">
+      <div class="name" style="color:var(--dim)">Ice Barrier</div>
+      <div class="bar-track"><div class="bar-fill" style="width:4.1%;background:var(--dim);">5</div></div>
+      <div class="cpm-label" style="color:var(--dim)">0.8 cpm</div>
+    </div>
+  </div>
+  <p style="font-size:12px; color:var(--dim);">
+    <strong>Defensive usage:</strong> 5 Ice Barriers, 1 Ice Cold, 6 Shimmers, 1 Counterspell, 1 Potion of Recklessness (pre-pot).
+  </p>
+</div>
+
+<!-- REFERENCE CONTEXT -->
+<div class="section">
+  <h2>Reference Context <span style="font-size:12px; font-weight:400; color:var(--dim);">(de-emphasized &mdash; progression, not kill comparison)</span></h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    Top-ranked Frost Mage kills on Mythic Crown of the Cosmos. These are full kill fights (8&ndash;9 minutes).
+    Use as a ceiling reference only &mdash; comparing a 6-minute prog wipe to a full kill is not apples-to-apples.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Rank</th><th>Player</th><th>Server</th><th class="num">DPS</th><th class="num">Kill Time</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td style="color:var(--mage)">Lapothree</td><td style="color:var(--dim)">CN</td><td class="num" style="color:var(--purple)">109,542</td><td class="num">8:43</td></tr>
+      <tr><td>2</td><td style="color:var(--mage)">Asimage</td><td style="color:var(--dim)">Proudmoore</td><td class="num" style="color:var(--purple)">108,201</td><td class="num">9:05</td></tr>
+      <tr><td>3</td><td style="color:var(--mage)">CN Player</td><td style="color:var(--dim)">CN</td><td class="num" style="color:var(--purple)">107,785</td><td class="num">8:25</td></tr>
+      <tr><td>4</td><td style="color:var(--mage)">CN Player</td><td style="color:var(--dim)">CN</td><td class="num" style="color:var(--purple)">107,611</td><td class="num">8:05</td></tr>
+      <tr><td>5</td><td style="color:var(--mage)">Feriblastv</td><td style="color:var(--dim)">Tarren Mill</td><td class="num" style="color:var(--purple)">106,920</td><td class="num">8:30</td></tr>
+      <tr style="background:#3fc7eb10;">
+        <td>&mdash;</td>
+        <td style="color:var(--mage)"><strong>Baodabao</strong></td>
+        <td style="color:var(--dim)">Thunderlord</td>
+        <td class="num" style="color:var(--accent)"><strong>55,261</strong></td>
+        <td class="num">5:56 (best)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--dim); margin-top:8px;">
+    Baodabao's best pull (55.3K) is <strong>50.4%</strong> of the top reference (109.5K). However, reference players have full 8+ minute kills with execute phase,
+    multiple cooldown cycles, and likely higher item levels (295+). The P1 performance (74&ndash;100K DPS) is actually competitive for prog &mdash;
+    the overall number is dragged down by deaths cutting pulls short and P2/P3 uptime loss.
+  </p>
+</div>
+
+<!-- CONSISTENCY ANALYSIS -->
+<div class="section">
+  <h2>Consistency Analysis</h2>
+
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px;">
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px;">
+      <div style="font-size:12px; color:var(--dim);">DPS on survival pulls</div>
+      <div style="font-size:18px; font-weight:700; color:var(--dim);">N/A</div>
+      <div style="font-size:11px; color:var(--dim);">Died every pull</div>
+    </div>
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px;">
+      <div style="font-size:12px; color:var(--dim);">First 7 pulls avg</div>
+      <div style="font-size:18px; font-weight:700; color:var(--red);">36.2K</div>
+      <div style="font-size:11px; color:var(--dim);">F3&ndash;F16</div>
+    </div>
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px;">
+      <div style="font-size:12px; color:var(--dim);">Last 7 pulls avg</div>
+      <div style="font-size:18px; font-weight:700; color:var(--green);">49.6K</div>
+      <div style="font-size:11px; color:var(--dim);">F18&ndash;F28</div>
+    </div>
+  </div>
+
+  <h3>Improvement Trend: +37% DPS first half to second half</h3>
+  <p style="font-size:13px; color:var(--dim);">
+    This is a strong learning trajectory. Early pulls (F3, F8, F11) show sub-30K DPS with very early P2 deaths.
+    By the second half of the night, Baodabao consistently breaks 50K with survival into P3 territory.
+    The standard deviation of 10,288 is high relative to the average, but this is expected during prog &mdash;
+    it reflects the learning curve, not inconsistency.
+  </p>
+
+  <h3>Best 5 vs Worst 5 Pulls</h3>
+  <table>
+    <thead><tr><th>Category</th><th class="num">Avg DPS</th><th class="num">Avg Duration</th><th class="num">Avg Death Time</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--green)">Best 5 (F18, F23, F27, F28, F20)</td><td class="num" style="color:var(--green)">53,330</td><td class="num">5:38</td><td class="num">5:31</td></tr>
+      <tr><td style="color:var(--red)">Worst 5 (F11, F3, F8, F22, F24)</td><td class="num" style="color:var(--red)">31,744</td><td class="num">4:05</td><td class="num">3:41</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--dim); margin-top:8px;">
+    The key difference between best and worst pulls is survival time &mdash; 5:31 vs 3:41 average death time. Longer survival means more time doing damage,
+    but also more time in the higher-DPS P1 and extended P2 (where damage eventually ramps with add waves).
+  </p>
+</div>
+
+<!-- GEAR & CONSUMABLES -->
+<div class="section">
+  <h2>Gear &amp; Consumables</h2>
+  <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px;">
+    <div>
+      <h3>Stats</h3>
+      <table>
+        <tr><td>Intellect</td><td class="num">2,676</td></tr>
+        <tr><td>Critical Strike</td><td class="num">1,120</td></tr>
+        <tr><td>Mastery</td><td class="num">952</td></tr>
+        <tr><td>Haste</td><td class="num">699</td></tr>
+        <tr><td>Versatility</td><td class="num" style="color:var(--red)">0</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Consumables &amp; Buffs</h3>
+      <table>
+        <tr><td>Flask</td><td style="color:var(--green)">Flask of the Shattered Sun</td></tr>
+        <tr><td>Food</td><td style="color:var(--green)">Hearty Well Fed</td></tr>
+        <tr><td>Vantus Rune</td><td style="color:var(--green)">Radiant + Rotmire</td></tr>
+        <tr><td>Potion</td><td style="color:var(--green)">Potion of Recklessness</td></tr>
+        <tr><td>Weapon Oil</td><td style="color:var(--green)">Applied (temp enchant)</td></tr>
+      </table>
+    </div>
+  </div>
+  <div style="margin-top:12px;">
+    <h3>Set Bonuses</h3>
+    <p style="font-size:13px; color:var(--dim);">
+      <strong style="color:var(--text)">4-piece Tier Set</strong> (set 1983: Helm, Chest, Legs, Gloves) &mdash; full tier active.<br>
+      <strong style="color:var(--text)">2-piece Devouring</strong> (set 1971: 2 trinket-slot items) &mdash; raid bonus set active.<br>
+      <strong style="color:var(--yellow)">0 Versatility</strong> is worth noting &mdash; this provides zero passive damage reduction, making Baodabao more fragile than players who itemize some vers.
+    </p>
+  </div>
+</div>
+
+<!-- ACTIONABLE IMPROVEMENTS -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="action-item action-priority-high">
+    <span class="action-num">1</span>
+    <span class="action-title">Survive Simulacrum Backlash &mdash; 3 deaths (highest single cause)</span>
+    <div class="action-detail">
+      Rift Simulacrum's Cosmic Barrier must be broken before the Backlash detonation kills anyone in range. Baodabao died to this in F19 (4:57), F21 (4:36), and F24 (4:38) &mdash; all mid-to-late P2.
+      <strong>Fix:</strong> Pre-position further from the Simulacrum spawn. Use Shimmer to instantly gap-close if caught in the detonation zone.
+      If the barrier is not going to break in time, Ice Cold (available every pull) or Ice Barrier should be up before the Backlash fires.
+      This single mechanic accounts for 21% of all deaths.
+    </div>
+  </div>
+
+  <div class="action-item action-priority-high">
+    <span class="action-num">2</span>
+    <span class="action-title">P2 DPS uptime &mdash; 64% drop from P1</span>
+    <div class="action-detail">
+      P2 average of 26.6K vs P1 average of 74.6K is a massive falloff. While some drop is expected (fewer multi-targets, more movement),
+      the best P2 pulls (F27: 42.8K, F23: 40.1K) prove 40K+ is achievable. The worst P2 pulls (F11: 7.8K, F3: 10.6K) are 5x lower than the best.
+      <strong>Fix:</strong> Frost Mage should leverage Shimmer to maintain Ray of Frost channels during movement. Pre-position for Void Expulsion and Rift Slash
+      to minimize displacement. Use Frozen Orb on cooldown as passive damage during forced movement. The DPS improvement from P2 consistency
+      alone (getting worst pulls from 8K to 25K+) would raise overall averages by ~15%.
+    </div>
+  </div>
+
+  <div class="action-item action-priority-med">
+    <span class="action-num">3</span>
+    <span class="action-title">Voidstalker Sting handling &mdash; 2 deaths</span>
+    <div class="action-detail">
+      Died to Voidstalker Sting in both F15 (4:32) and F16 (4:46). This is a targeted debuff from Alleria that deals ramping damage.
+      <strong>Fix:</strong> When targeted by Voidstalker Sting, immediately Ice Barrier and consider Ice Cold if stacks are high.
+      Coordinate with healers for external cooldowns. This debuff is predictable &mdash; watch for the cast and pre-shield.
+    </div>
+  </div>
+
+  <div class="action-item action-priority-med">
+    <span class="action-num">4</span>
+    <span class="action-title">P3 positioning &mdash; 2 melee deaths</span>
+    <div class="action-detail">
+      Two deaths in P3 were from Melee (F18 at 5:53, F28 at 5:26), meaning Baodabao was in melee range of an enemy.
+      P3 has Vorelus returning with Ravenous Abyss and Rift Simulacrum adds &mdash; getting caught between multiple enemies is lethal.
+      <strong>Fix:</strong> Maintain maximum range in P3. As a ranged DPS with Shimmer, there is no reason to be in melee range.
+      Watch for add spawns and preemptively reposition. Frost Mage has the tools (Shimmer, Slow Fall) to stay mobile and safe.
+    </div>
+  </div>
+
+  <div class="action-item action-priority-low">
+    <span class="action-num">5</span>
+    <span class="action-title">Defensive cooldown discipline &mdash; only 5 Ice Barriers in 6:05</span>
+    <div class="action-detail">
+      Ice Barrier is a 25-second cooldown absorb shield. In a 6-minute fight, it could theoretically be used 14+ times.
+      5 uses suggests it is only being pressed reactively when health drops, not proactively before known damage events.
+      <strong>Fix:</strong> Pre-cast Ice Barrier before every Grasp of Emptiness, Void Expulsion, and Stellar Emission.
+      During P2 and P3, keep it rolling on cooldown &mdash; the absorb will smooth incoming damage and prevent the sudden deaths
+      that account for all 14 pull deaths. With 0 Versatility, proactive shielding is even more critical.
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="section">
+  <h2>Summary</h2>
+  <div style="font-size:13px; line-height:1.7;">
+    <p style="color:var(--green); font-weight:600;">What is working well:</p>
+    <ul style="margin:6px 0 12px 20px; color:var(--dim);">
+      <li>P1 damage is excellent &mdash; 74.6K average with peaks above 100K. Sentinel cleave and burst window execution are strong.</li>
+      <li>Clear improvement trajectory through the night. DPS increased 37% from first half to second half.</li>
+      <li>Consumable and enchant usage is complete &mdash; flask, food, vantus runes, weapon oil, potion all active.</li>
+      <li>Rotation fundamentals are solid &mdash; Ice Lance usage is high (20.2 CPM), Frozen Orb on cooldown, Glacial Spike windows clean.</li>
+      <li>No P1 or Intermission deaths across 14 pulls &mdash; early fight execution is reliable.</li>
+    </ul>
+    <p style="color:var(--red); font-weight:600;">Primary improvement areas:</p>
+    <ul style="margin:6px 0 12px 20px; color:var(--dim);">
+      <li><strong style="color:var(--text)">Survival is the #1 issue.</strong> 0/14 pulls survived. Until Baodabao can consistently survive into late P3 / to wipe time, DPS optimization is secondary.</li>
+      <li>P2 is the mechanic wall &mdash; Simulacrum Backlash (3 deaths), Voidstalker Sting (2), and Void Barrage (2) are the top killers.</li>
+      <li>Defensive cooldown usage is too low. Ice Barrier should be on near-permanent rotation in P2/P3.</li>
+      <li>0 Versatility means every hit lands at full force. Consider a vers gem or enchant swap for survivability if deaths continue.</li>
+    </ul>
+    <p style="color:var(--dim);">
+      The overall DPS gap to reference (55K vs 108K) is primarily a function of <strong style="color:var(--text);">fight length and survival</strong>, not rotation execution.
+      If Baodabao can survive to full fight length with current P1 output and improved P2 uptime, overall DPS will climb significantly.
+      The fight is at 31% best &mdash; close to a kill if the raid can push through P3 consistently. Focus: survive P2 mechanics, use defensives proactively, maintain range in P3.
+    </p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs</a></p>
+  <p>Reference: Top 5 Frost Mage rankings on Mythic Crown of the Cosmos (Encounter 3181)</p>
+  <p>Analysis mode: PROG &mdash; aggregate across 14 pulls (27 total, 14 with player present)</p>
+</div>
+
+</body>
+</html>

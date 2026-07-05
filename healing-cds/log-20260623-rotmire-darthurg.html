@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darthurg (MM Hunter) — Mythic Rotmire Kill Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --hunter: #aad372;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+
+/* Header */
+.header { margin-bottom:32px; }
+.header h1 { font-size:28px; font-weight:700; margin-bottom:4px; }
+.header h1 .player-name { color:var(--hunter); }
+.header .subtitle { color:var(--dim); font-size:14px; }
+.header .tags { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.tag { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:600; }
+.tag-kill { background:rgba(63,185,80,0.15); color:var(--green); }
+.tag-mythic { background:rgba(188,140,255,0.15); color:var(--purple); }
+.tag-spec { background:rgba(170,211,114,0.15); color:var(--hunter); }
+
+/* Cards */
+.card-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+@media(max-width:800px) { .card-grid { grid-template-columns:repeat(2,1fr); } }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.card .label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.card .value { font-size:24px; font-weight:700; }
+.card .detail { font-size:12px; color:var(--dim); margin-top:2px; }
+
+/* Section */
+section { margin-bottom:32px; }
+section h2 { font-size:20px; font-weight:600; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+section h3 { font-size:16px; font-weight:600; margin:16px 0 8px; }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:16px; }
+th, td { padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+th { color:var(--dim); font-weight:500; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; background:var(--surface); position:sticky; top:0; }
+tr:hover { background:rgba(88,166,255,0.04); }
+.num { text-align:right; font-variant-numeric:tabular-nums; }
+.good { color:var(--green); }
+.bad { color:var(--red); }
+.warn { color:var(--yellow); }
+.ref-color { color:var(--purple); }
+.highlight-row { background:rgba(170,211,114,0.08) !important; }
+
+/* Bars */
+.bar-container { display:flex; align-items:center; gap:8px; }
+.bar { height:8px; border-radius:4px; min-width:2px; }
+.bar-player { background:var(--hunter); }
+.bar-ref { background:var(--purple); }
+
+/* Mechanic Timeline */
+.timeline { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px; overflow-x:auto; }
+.timeline-row { display:flex; align-items:center; margin-bottom:8px; min-height:28px; }
+.timeline-label { min-width:140px; font-size:12px; color:var(--dim); font-weight:500; flex-shrink:0; }
+.timeline-track { flex:1; position:relative; height:24px; background:rgba(48,54,61,0.5); border-radius:4px; }
+.timeline-marker { position:absolute; width:8px; height:20px; border-radius:2px; top:2px; transform:translateX(-50%); }
+.marker-bloom { background:var(--red); }
+.marker-vines { background:var(--yellow); }
+.marker-adds { background:var(--cyan); }
+.marker-pustules { background:var(--orange); }
+.marker-death { background:var(--red); width:12px; height:12px; border-radius:50%; top:6px; }
+.timeline-time-label { position:absolute; bottom:-16px; font-size:10px; color:var(--dim); transform:translateX(-50%); }
+
+/* Callout */
+.callout { background:var(--surface); border-left:3px solid var(--accent); border-radius:4px; padding:12px 16px; margin:12px 0; font-size:13px; }
+.callout-red { border-left-color:var(--red); background:rgba(248,81,73,0.06); }
+.callout-green { border-left-color:var(--green); background:rgba(63,185,80,0.06); }
+.callout-yellow { border-left-color:var(--yellow); background:rgba(210,153,34,0.06); }
+
+/* Wipe progression chart */
+.prog-bar-container { display:flex; align-items:flex-end; gap:4px; height:120px; margin:16px 0; }
+.prog-bar { display:flex; flex-direction:column; align-items:center; flex:1; }
+.prog-bar-fill { width:100%; border-radius:4px 4px 0 0; min-height:4px; }
+.prog-bar-label { font-size:10px; color:var(--dim); margin-top:4px; }
+.prog-bar-value { font-size:11px; font-weight:600; margin-bottom:2px; }
+
+/* Badge */
+.badge { display:inline-block; padding:1px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+.badge-green { background:rgba(63,185,80,0.15); color:var(--green); }
+.badge-red { background:rgba(248,81,73,0.15); color:var(--red); }
+.badge-yellow { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.badge-purple { background:rgba(188,140,255,0.15); color:var(--purple); }
+
+/* Footer */
+.footer { margin-top:48px; padding-top:16px; border-top:1px solid var(--border); color:var(--dim); font-size:12px; }
+
+/* Ability comparison bars */
+.ability-bar-wrap { display:flex; align-items:center; gap:8px; }
+.ability-bar-bg { flex:1; height:16px; background:rgba(48,54,61,0.5); border-radius:4px; position:relative; overflow:hidden; }
+.ability-bar-fill { height:100%; border-radius:4px; position:absolute; top:0; left:0; }
+.ability-bar-fill.player { background:var(--hunter); opacity:0.8; }
+.ability-bar-fill.ref { background:var(--purple); opacity:0.5; }
+
+/* Actionable items */
+.action-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+.action-item .action-num { display:inline-block; width:24px; height:24px; background:var(--accent); color:var(--bg); border-radius:50%; text-align:center; line-height:24px; font-size:12px; font-weight:700; margin-right:8px; }
+.action-item .action-title { font-weight:600; font-size:15px; }
+.action-item .action-body { margin-top:8px; font-size:13px; color:var(--dim); }
+.action-item .action-impact { margin-top:6px; font-size:12px; color:var(--yellow); font-weight:500; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23, 2026 Rotmire Log Analysis</a>
+
+<!-- HEADER -->
+<div class="header">
+  <h1><span class="player-name">Darthurg</span> &mdash; Mythic Rotmire Kill</h1>
+  <div class="subtitle">Marksmanship Hunter (Dark Ranger) &middot; June 23, 2026 &middot; Report <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC</a></div>
+  <div class="tags">
+    <span class="tag tag-kill">KILL 8:09</span>
+    <span class="tag tag-mythic">Mythic</span>
+    <span class="tag tag-spec">MM Hunter</span>
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="card-grid">
+  <div class="card">
+    <div class="label">DPS (Kill)</div>
+    <div class="value" style="color:var(--hunter)">85,483</div>
+    <div class="detail">41.8M total damage</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">287</div>
+    <div class="detail">Ref avg: 291</div>
+  </div>
+  <div class="card">
+    <div class="label">Kill Status</div>
+    <div class="value good">Survived</div>
+    <div class="detail">0 deaths on kill</div>
+  </div>
+  <div class="card">
+    <div class="label">Rotational CPM</div>
+    <div class="value">30.7</div>
+    <div class="detail">Ref: 36.3 CPM (<span class="bad">-15.4%</span>)</div>
+  </div>
+</div>
+
+<!-- REFERENCE COMPARISON TABLE -->
+<section>
+  <h2>Reference Comparison</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Top-ranked Marksmanship Hunters on Mythic Rotmire (difficulty 5, encounterID 3159). Primary reference: Taewoos (highlighted).</p>
+  <table>
+    <thead>
+      <tr><th>Player</th><th>Server</th><th class="num">DPS</th><th class="num">Kill Time</th><th class="num">ilvl</th><th>Talent Delta</th><th class="num">Rot. CPM</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td style="color:var(--hunter);font-weight:600;">Darthurg</td>
+        <td>Proudmoore</td>
+        <td class="num">85,483</td>
+        <td class="num">8:09</td>
+        <td class="num">287</td>
+        <td>&mdash;</td>
+        <td class="num">30.7</td>
+      </tr>
+      <tr style="background:rgba(188,140,255,0.06);">
+        <td style="color:var(--purple);font-weight:600;">Taewoos <span class="badge badge-purple">REF</span></td>
+        <td>Azshara (KR)</td>
+        <td class="num ref-color">191,809</td>
+        <td class="num">7:31</td>
+        <td class="num">291</td>
+        <td><span class="badge badge-yellow">17 diffs</span></td>
+        <td class="num ref-color">36.3</td>
+      </tr>
+      <tr>
+        <td>&#47196;&#51200;&#48652;&#46972;&#50868;</td>
+        <td>Azshara (KR)</td>
+        <td class="num">188,774</td>
+        <td class="num">6:58</td>
+        <td class="num">290</td>
+        <td><span class="badge badge-yellow">17 diffs</span></td>
+        <td class="num">&mdash;</td>
+      </tr>
+      <tr>
+        <td>&#28385;&#26376;&#27704;&#24658;</td>
+        <td>Ansu (CN)</td>
+        <td class="num">188,493</td>
+        <td class="num">6:50</td>
+        <td class="num">291</td>
+        <td><span class="badge badge-red">21 diffs</span></td>
+        <td class="num">&mdash;</td>
+      </tr>
+      <tr>
+        <td>Geethdwarf</td>
+        <td>Antonidas (EU)</td>
+        <td class="num">188,263</td>
+        <td class="num">6:51</td>
+        <td class="num">273</td>
+        <td><span class="badge badge-yellow">18 diffs</span></td>
+        <td class="num">&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    <strong>Context:</strong> Darthurg's 85.5K DPS is <strong>55% below</strong> the reference (191.8K). The 4-ilvl gap (287 vs 291) accounts for roughly 3-5% of the difference. The 17 talent differences suggest a different spec tree build though both use the Dark Ranger hero tree. The remaining gap (~50%) is a combination of rotational execution (CPM), ability prioritization (Aimed Shot usage), and kill time (longer fights penalize DPS via soft enrage).
+  </div>
+</section>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<section>
+  <h2>Boss Mechanic Timeline</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Rotmire is a single-phase boss with repeating mechanics on fixed energy-based timers. No phase transitions.</p>
+  <div class="timeline">
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--red);">Fungal Bloom</div>
+      <div class="timeline-track">
+        <div class="timeline-marker marker-bloom" style="left:24.5%;" title="Bloom #1 at 2:00"></div>
+        <div class="timeline-marker marker-bloom" style="left:52.4%;" title="Bloom #2 at 4:16"></div>
+        <div class="timeline-marker marker-bloom" style="left:80.2%;" title="Bloom #3 at 6:32"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--yellow);">Festering Vines</div>
+      <div class="timeline-track">
+        <div class="timeline-marker marker-vines" style="left:8.8%;" title="Vines #1 at 0:43"></div>
+        <div class="timeline-marker marker-vines" style="left:18.8%;" title="Vines #2 at 1:32"></div>
+        <div class="timeline-marker marker-vines" style="left:36.6%;" title="Vines #3 at 2:59"></div>
+        <div class="timeline-marker marker-vines" style="left:46.6%;" title="Vines #4 at 3:48"></div>
+        <div class="timeline-marker marker-vines" style="left:64.4%;" title="Vines #5 at 5:15"></div>
+        <div class="timeline-marker marker-vines" style="left:74.5%;" title="Vines #6 at 6:04"></div>
+        <div class="timeline-marker marker-vines" style="left:92.3%;" title="Vines #7 at 7:31"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--cyan);">Awaken Fungi</div>
+      <div class="timeline-track">
+        <div class="timeline-marker marker-adds" style="left:3.1%;" title="Adds #1 at 0:15"></div>
+        <div class="timeline-marker marker-adds" style="left:13.1%;" title="Adds #2 at 1:04"></div>
+        <div class="timeline-marker marker-adds" style="left:30.9%;" title="Adds #3 at 2:31"></div>
+        <div class="timeline-marker marker-adds" style="left:40.9%;" title="Adds #4 at 3:20"></div>
+        <div class="timeline-marker marker-adds" style="left:58.7%;" title="Adds #5 at 4:47"></div>
+        <div class="timeline-marker marker-adds" style="left:68.7%;" title="Adds #6 at 5:36"></div>
+        <div class="timeline-marker marker-adds" style="left:86.6%;" title="Adds #7 at 7:03"></div>
+        <div class="timeline-marker marker-adds" style="left:96.6%;" title="Adds #8 at 7:52"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label" style="color:var(--orange);">Bursting Pustules</div>
+      <div class="timeline-track">
+        <div class="timeline-marker marker-pustules" style="left:2.0%;" title="Pustules at 0:10"></div>
+        <div class="timeline-marker marker-pustules" style="left:6.3%;" title="0:31"></div>
+        <div class="timeline-marker marker-pustules" style="left:16.4%;" title="1:20"></div>
+        <div class="timeline-marker marker-pustules" style="left:29.9%;" title="2:26"></div>
+        <div class="timeline-marker marker-pustules" style="left:34.2%;" title="2:47"></div>
+        <div class="timeline-marker marker-pustules" style="left:44.2%;" title="3:36"></div>
+        <div class="timeline-marker marker-pustules" style="left:57.7%;" title="4:42"></div>
+        <div class="timeline-marker marker-pustules" style="left:62.0%;" title="5:03"></div>
+        <div class="timeline-marker marker-pustules" style="left:72.0%;" title="5:52"></div>
+        <div class="timeline-marker marker-pustules" style="left:85.5%;" title="6:58"></div>
+        <div class="timeline-marker marker-pustules" style="left:89.8%;" title="7:19"></div>
+        <div class="timeline-marker marker-pustules" style="left:99.8%;" title="8:08"></div>
+      </div>
+    </div>
+    <div class="timeline-row">
+      <div class="timeline-label">Time</div>
+      <div class="timeline-track" style="background:transparent;height:20px;">
+        <span style="position:absolute;left:0;font-size:10px;color:var(--dim);">0:00</span>
+        <span style="position:absolute;left:12.3%;font-size:10px;color:var(--dim);">1:00</span>
+        <span style="position:absolute;left:24.5%;font-size:10px;color:var(--dim);">2:00</span>
+        <span style="position:absolute;left:36.8%;font-size:10px;color:var(--dim);">3:00</span>
+        <span style="position:absolute;left:49.1%;font-size:10px;color:var(--dim);">4:00</span>
+        <span style="position:absolute;left:61.3%;font-size:10px;color:var(--dim);">5:00</span>
+        <span style="position:absolute;left:73.6%;font-size:10px;color:var(--dim);">6:00</span>
+        <span style="position:absolute;left:85.9%;font-size:10px;color:var(--dim);">7:00</span>
+        <span style="position:absolute;left:98.2%;font-size:10px;color:var(--dim);">8:00</span>
+      </div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--dim);">
+    <strong>Raid state:</strong> 21/21 alive for the entire kill &mdash; zero deaths. Clean execution from the full raid.
+  </div>
+</section>
+
+<!-- ABILITY USAGE COMPARISON -->
+<section>
+  <h2>Ability Usage Comparison</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Per-ability CPM comparison between Darthurg (8:09 kill) and Taewoos (7:31 kill). Both Dark Ranger builds.</p>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th class="num">Player Count</th><th class="num">Player CPM</th><th class="num">Ref Count</th><th class="num">Ref CPM</th><th class="num">Delta</th><th style="width:200px;">Visual</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">Aimed Shot</td>
+        <td class="num">52</td>
+        <td class="num">6.4</td>
+        <td class="num ref-color">72</td>
+        <td class="num ref-color">9.6</td>
+        <td class="num bad">-33%</td>
+        <td>
+          <div class="ability-bar-bg">
+            <div class="ability-bar-fill ref" style="width:100%;"></div>
+            <div class="ability-bar-fill player" style="width:67%;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Steady Shot</td>
+        <td class="num">15</td>
+        <td class="num">1.8</td>
+        <td class="num ref-color">72</td>
+        <td class="num ref-color">9.6</td>
+        <td class="num bad">-81%</td>
+        <td>
+          <div class="ability-bar-bg">
+            <div class="ability-bar-fill ref" style="width:100%;"></div>
+            <div class="ability-bar-fill player" style="width:19%;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Rapid Fire</td>
+        <td class="num">29</td>
+        <td class="num">3.6</td>
+        <td class="num ref-color">32</td>
+        <td class="num ref-color">4.3</td>
+        <td class="num warn">-16%</td>
+        <td>
+          <div class="ability-bar-bg">
+            <div class="ability-bar-fill ref" style="width:100%;"></div>
+            <div class="ability-bar-fill player" style="width:84%;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Black Arrow</td>
+        <td class="num">59</td>
+        <td class="num">7.2</td>
+        <td class="num ref-color">56</td>
+        <td class="num ref-color">7.5</td>
+        <td class="num good">-4%</td>
+        <td>
+          <div class="ability-bar-bg">
+            <div class="ability-bar-fill ref" style="width:100%;"></div>
+            <div class="ability-bar-fill player" style="width:96%;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Arcane Shot</td>
+        <td class="num">60</td>
+        <td class="num">7.4</td>
+        <td class="num ref-color">28</td>
+        <td class="num ref-color">3.7</td>
+        <td class="num warn">+100%</td>
+        <td>
+          <div class="ability-bar-bg">
+            <div class="ability-bar-fill player" style="width:100%;"></div>
+            <div class="ability-bar-fill ref" style="width:50%;opacity:0.7;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Volley</td>
+        <td class="num">0</td>
+        <td class="num">0.0</td>
+        <td class="num ref-color">9</td>
+        <td class="num ref-color">1.2</td>
+        <td class="num bad">-100%</td>
+        <td>
+          <div class="ability-bar-bg">
+            <div class="ability-bar-fill ref" style="width:100%;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Multi-Shot</td>
+        <td class="num">31</td>
+        <td class="num">3.8</td>
+        <td class="num ref-color">0</td>
+        <td class="num ref-color">0.0</td>
+        <td class="num">&mdash;</td>
+        <td>
+          <div class="ability-bar-bg">
+            <div class="ability-bar-fill player" style="width:100%;"></div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Wailing Arrow</td>
+        <td class="num">4</td>
+        <td class="num">0.5</td>
+        <td class="num ref-color">4</td>
+        <td class="num ref-color">0.5</td>
+        <td class="num good">0%</td>
+        <td>
+          <div class="ability-bar-bg">
+            <div class="ability-bar-fill ref" style="width:100%;"></div>
+            <div class="ability-bar-fill player" style="width:100%;"></div>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-red">
+    <strong>Critical gap: Aimed Shot usage.</strong> Darthurg cast Aimed Shot 52 times (6.4 CPM) vs the reference's 72 (9.6 CPM) &mdash; a 33% deficit. Aimed Shot is the #1 damage ability for Marksmanship Hunters at 36.3% of reference total damage vs only 16.8% for Darthurg. This single ability gap accounts for a significant portion of the overall DPS difference.
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>Filler priority mismatch.</strong> Darthurg uses Arcane Shot as primary filler (60 casts, 7.4 CPM) and barely uses Steady Shot (15 casts, 1.8 CPM). The reference does the opposite: Steady Shot is the primary filler (72 casts, 9.6 CPM) with Arcane Shot used sparingly (28 casts, 3.7 CPM) only to spend Precise Shots procs. Steady Shot generates Focus, enabling more Aimed Shots. Arcane Shot consumes Focus, starving Aimed Shot casts.
+  </div>
+
+  <div class="callout">
+    <strong>Volley is missing entirely.</strong> Darthurg never cast Volley (0 uses). The reference uses it 9 times (1.2 CPM). Volley provides the Double Tap proc which empowers the next Aimed Shot or Rapid Fire. Without Volley, Darthurg misses an entire layer of damage amplification every ~45 seconds. This may be a talent choice difference (Volley not taken), which should be re-evaluated.
+  </div>
+</section>
+
+<!-- DAMAGE BREAKDOWN BY ABILITY -->
+<section>
+  <h2>Damage Breakdown by Ability</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th class="num">Player Damage</th><th class="num">Player %</th><th class="num">Ref Damage</th><th class="num">Ref %</th><th class="num">% Diff</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Aimed Shot</td>
+        <td class="num">7,023,179</td>
+        <td class="num">16.8%</td>
+        <td class="num ref-color">32,333,582</td>
+        <td class="num ref-color">36.3%</td>
+        <td class="num bad">-78%</td>
+      </tr>
+      <tr>
+        <td>Black Arrow (all)</td>
+        <td class="num">14,832,727</td>
+        <td class="num">35.5%</td>
+        <td class="num ref-color">20,328,196</td>
+        <td class="num ref-color">22.8%</td>
+        <td class="num warn">-27%</td>
+      </tr>
+      <tr>
+        <td>Arcane Shot</td>
+        <td class="num">4,975,345</td>
+        <td class="num">11.9%</td>
+        <td class="num ref-color">3,571,238</td>
+        <td class="num ref-color">4.0%</td>
+        <td class="num">+39%</td>
+      </tr>
+      <tr>
+        <td>Volley</td>
+        <td class="num">0</td>
+        <td class="num">0.0%</td>
+        <td class="num ref-color">6,593,694</td>
+        <td class="num ref-color">7.4%</td>
+        <td class="num bad">-100%</td>
+      </tr>
+      <tr>
+        <td>Rapid Fire</td>
+        <td class="num">3,074,084</td>
+        <td class="num">7.4%</td>
+        <td class="num ref-color">4,645,562</td>
+        <td class="num ref-color">5.2%</td>
+        <td class="num warn">-34%</td>
+      </tr>
+      <tr>
+        <td>Multi-Shot</td>
+        <td class="num">1,944,868</td>
+        <td class="num">4.7%</td>
+        <td class="num ref-color">0</td>
+        <td class="num ref-color">0.0%</td>
+        <td class="num">&mdash;</td>
+      </tr>
+      <tr>
+        <td>Wailing Arrow</td>
+        <td class="num">1,433,765</td>
+        <td class="num">3.4%</td>
+        <td class="num ref-color">3,623,960</td>
+        <td class="num ref-color">4.1%</td>
+        <td class="num warn">-60%</td>
+      </tr>
+      <tr>
+        <td>Blighted Arrow</td>
+        <td class="num">2,422,270</td>
+        <td class="num">5.8%</td>
+        <td class="num ref-color">6,130,925</td>
+        <td class="num ref-color">6.9%</td>
+        <td class="num warn">-60%</td>
+      </tr>
+      <tr>
+        <td>Master Marksman</td>
+        <td class="num">2,467,194</td>
+        <td class="num">5.9%</td>
+        <td class="num ref-color">5,746,301</td>
+        <td class="num ref-color">6.5%</td>
+        <td class="num warn">-57%</td>
+      </tr>
+      <tr>
+        <td>Steady Shot</td>
+        <td class="num">326,607</td>
+        <td class="num">0.8%</td>
+        <td class="num ref-color">1,498,265</td>
+        <td class="num ref-color">1.7%</td>
+        <td class="num warn">-78%</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size:12px;color:var(--dim);">
+    Darthurg total: 41.8M | Reference total: 89.0M | Damage split &mdash; Player: 58.8% boss / 41.2% adds | Reference: 57.9% boss / 42.1% adds (similar split).
+  </div>
+</section>
+
+<!-- PER-MECHANIC WINDOW ANALYSIS -->
+<section>
+  <h2>Per-Mechanic Window CPS Analysis</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Casts per second of rotational abilities during each mechanic window. Windows where Darthurg drops below 85% of reference CPS are flagged.</p>
+
+  <h3 style="color:var(--red);">Fungal Bloom (Raid-Wide Damage)</h3>
+  <table>
+    <thead>
+      <tr><th>Window</th><th class="num">Time</th><th class="num">Player CPS</th><th class="num">Player Casts</th><th class="num">Ref CPS</th><th class="num">Ref Casts</th><th class="num">Delta</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Bloom #1</td>
+        <td class="num">2:00</td>
+        <td class="num">0.500</td>
+        <td class="num">8</td>
+        <td class="num ref-color">0.750</td>
+        <td class="num ref-color">12</td>
+        <td class="num bad">-33%</td>
+        <td><span class="badge badge-red">LOW</span></td>
+      </tr>
+      <tr>
+        <td>Bloom #2</td>
+        <td class="num">4:16</td>
+        <td class="num">0.438</td>
+        <td class="num">7</td>
+        <td class="num ref-color">0.563</td>
+        <td class="num ref-color">9</td>
+        <td class="num bad">-22%</td>
+        <td><span class="badge badge-yellow">WARN</span></td>
+      </tr>
+      <tr>
+        <td>Bloom #3</td>
+        <td class="num">6:32</td>
+        <td class="num">0.375</td>
+        <td class="num">6</td>
+        <td class="num ref-color">0.625</td>
+        <td class="num ref-color">10</td>
+        <td class="num bad">-40%</td>
+        <td><span class="badge badge-red">LOW</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-red">
+    Bloom windows consistently show 22-40% lower CPS than reference. Bloom is a full raid AoE + knockback &mdash; Darthurg likely loses uptime to repositioning. The reference maintains 0.6+ CPS through all three Blooms. This suggests a pre-positioning or recovery issue after the knockback.
+  </div>
+
+  <h3 style="color:var(--yellow);">Festering Vines (Movement)</h3>
+  <table>
+    <thead>
+      <tr><th>Window</th><th class="num">Time</th><th class="num">Player CPS</th><th class="num">Ref CPS</th><th class="num">Delta</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Vines #1</td><td class="num">0:43</td><td class="num">0.583</td><td class="num ref-color">0.583</td><td class="num good">0%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Vines #2</td><td class="num">1:32</td><td class="num">0.583</td><td class="num ref-color">0.583</td><td class="num good">0%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Vines #3</td><td class="num">2:59</td><td class="num">0.667</td><td class="num ref-color">0.500</td><td class="num good">+33%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Vines #4</td><td class="num">3:48</td><td class="num">0.750</td><td class="num ref-color">0.500</td><td class="num good">+50%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Vines #5</td><td class="num">5:15</td><td class="num">0.167</td><td class="num ref-color">0.500</td><td class="num bad">-67%</td><td><span class="badge badge-red">LOW</span></td></tr>
+      <tr><td>Vines #6</td><td class="num">6:04</td><td class="num">0.167</td><td class="num ref-color">0.667</td><td class="num bad">-75%</td><td><span class="badge badge-red">LOW</span></td></tr>
+      <tr><td>Vines #7</td><td class="num">7:31</td><td class="num">0.583</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td><span class="badge badge-green">OK</span></td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    Vines #1-4 are handled well (matching or exceeding reference). But Vines #5 and #6 (5:15 and 6:04) show severe CPS drops to 0.167 (only 2 casts in 12s). This coincides with heavy defensive usage (Survival of the Fittest, Exhilaration at 4:29, Healthstone at 4:46, potion at 5:05) suggesting Darthurg was in survival mode rather than DPSing during this stretch.
+  </div>
+
+  <h3 style="color:var(--cyan);">Awaken Fungi (Add Spawns)</h3>
+  <table>
+    <thead>
+      <tr><th>Window</th><th class="num">Time</th><th class="num">Player CPS</th><th class="num">Ref CPS</th><th class="num">Delta</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Adds #1</td><td class="num">0:15</td><td class="num">0.750</td><td class="num ref-color">0.700</td><td class="num good">+7%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Adds #2</td><td class="num">1:04</td><td class="num">0.450</td><td class="num ref-color">0.500</td><td class="num">-10%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Adds #3</td><td class="num">2:31</td><td class="num">0.450</td><td class="num ref-color">0.650</td><td class="num bad">-31%</td><td><span class="badge badge-red">LOW</span></td></tr>
+      <tr><td>Adds #4</td><td class="num">3:20</td><td class="num">0.400</td><td class="num ref-color">0.550</td><td class="num bad">-27%</td><td><span class="badge badge-yellow">WARN</span></td></tr>
+      <tr><td>Adds #5</td><td class="num">4:47</td><td class="num">0.600</td><td class="num ref-color">0.550</td><td class="num good">+9%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Adds #6</td><td class="num">5:36</td><td class="num">0.500</td><td class="num ref-color">0.600</td><td class="num warn">-17%</td><td><span class="badge badge-yellow">WARN</span></td></tr>
+      <tr><td>Adds #7</td><td class="num">7:03</td><td class="num">0.550</td><td class="num ref-color">0.550</td><td class="num good">0%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Adds #8</td><td class="num">7:52</td><td class="num">0.588</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td><span class="badge badge-green">OK</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- QUIET WINDOW UPTIME -->
+<section>
+  <h2>Quiet Window Uptime</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">CPS during gaps between mechanic events where full uptime is expected.</p>
+  <table>
+    <thead>
+      <tr><th>Window</th><th class="num">Time Range</th><th class="num">Duration</th><th class="num">Player CPS</th><th class="num">Ref CPS</th><th class="num">Delta</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Opener</td><td class="num">0:00-0:15</td><td class="num">15s</td><td class="num">0.600</td><td class="num ref-color">0.867</td><td class="num bad">-31%</td><td><span class="badge badge-red">LOW</span></td></tr>
+      <tr><td>Quiet 1</td><td class="num">0:35-0:43</td><td class="num">8s</td><td class="num">0.375</td><td class="num ref-color">0.875</td><td class="num bad">-57%</td><td><span class="badge badge-red">LOW</span></td></tr>
+      <tr><td>Quiet 2</td><td class="num">0:55-1:04</td><td class="num">9s</td><td class="num">0.667</td><td class="num ref-color">0.667</td><td class="num good">0%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Quiet 3</td><td class="num">1:24-1:32</td><td class="num">8s</td><td class="num">0.500</td><td class="num ref-color">0.750</td><td class="num warn">-33%</td><td><span class="badge badge-yellow">WARN</span></td></tr>
+      <tr><td>Quiet 4</td><td class="num">1:44-2:00</td><td class="num">16s</td><td class="num">0.438</td><td class="num ref-color">0.500</td><td class="num">-12%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Quiet 5</td><td class="num">2:16-2:31</td><td class="num">15s</td><td class="num">0.467</td><td class="num ref-color">0.600</td><td class="num warn">-22%</td><td><span class="badge badge-yellow">WARN</span></td></tr>
+      <tr><td>Quiet 6</td><td class="num">2:51-2:59</td><td class="num">8s</td><td class="num">0.500</td><td class="num ref-color">0.625</td><td class="num warn">-20%</td><td><span class="badge badge-yellow">WARN</span></td></tr>
+      <tr><td>Quiet 7</td><td class="num">3:11-3:20</td><td class="num">9s</td><td class="num">0.444</td><td class="num ref-color">0.556</td><td class="num warn">-20%</td><td><span class="badge badge-yellow">WARN</span></td></tr>
+      <tr><td>Quiet 8</td><td class="num">3:40-3:48</td><td class="num">8s</td><td class="num">0.250</td><td class="num ref-color">0.625</td><td class="num bad">-60%</td><td><span class="badge badge-red">LOW</span></td></tr>
+      <tr><td>Quiet 9</td><td class="num">4:00-4:16</td><td class="num">16s</td><td class="num">0.563</td><td class="num ref-color">0.625</td><td class="num">-10%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Quiet 10</td><td class="num">4:32-4:47</td><td class="num">15s</td><td class="num">0.533</td><td class="num ref-color">0.600</td><td class="num">-11%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Quiet 11</td><td class="num">5:07-5:15</td><td class="num">8s</td><td class="num">0.375</td><td class="num ref-color">0.625</td><td class="num bad">-40%</td><td><span class="badge badge-red">LOW</span></td></tr>
+      <tr><td>Quiet 12</td><td class="num">5:27-5:36</td><td class="num">9s</td><td class="num">0.667</td><td class="num ref-color">0.556</td><td class="num good">+20%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Quiet 13</td><td class="num">5:56-6:04</td><td class="num">8s</td><td class="num">0.500</td><td class="num ref-color">0.500</td><td class="num good">0%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Quiet 14</td><td class="num">6:16-6:32</td><td class="num">16s</td><td class="num">0.500</td><td class="num ref-color">0.625</td><td class="num warn">-20%</td><td><span class="badge badge-yellow">WARN</span></td></tr>
+      <tr><td>Quiet 15</td><td class="num">6:48-7:03</td><td class="num">15s</td><td class="num">0.600</td><td class="num ref-color">0.600</td><td class="num good">0%</td><td><span class="badge badge-green">OK</span></td></tr>
+      <tr><td>Quiet 16</td><td class="num">7:23-7:31</td><td class="num">8s</td><td class="num">0.500</td><td class="num ref-color">0.500</td><td class="num good">0%</td><td><span class="badge badge-green">OK</span></td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-red">
+    <strong>Pattern: Opener and post-add quiet windows are weakest.</strong> The opener (0:00-0:15) shows only 0.600 CPS vs reference 0.867 &mdash; a 31% gap. Quiet 1 (0:35-0:43) drops to 0.375 CPS. Quiet 8 (3:40-3:48) is 0.250 CPS &mdash; only 2 casts in 8 seconds. These quiet windows are where the highest uptime is expected and easiest to improve.
+  </div>
+</section>
+
+<!-- CAST GAP ANALYSIS -->
+<section>
+  <h2>Cast Gap Analysis</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Periods &gt;2.5 seconds between rotational casts. 75 gaps detected totaling 282.0 seconds of reduced activity.</p>
+
+  <div class="card-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="card">
+      <div class="label">Total Gaps</div>
+      <div class="value bad">75</div>
+      <div class="detail">Periods &gt;2.5s between casts</div>
+    </div>
+    <div class="card">
+      <div class="label">Total Dead Time</div>
+      <div class="value bad">282s</div>
+      <div class="detail">57.7% of fight duration</div>
+    </div>
+    <div class="card">
+      <div class="label">Est. Lost Casts</div>
+      <div class="value warn">~144</div>
+      <div class="detail">At 0.511 avg CPS</div>
+    </div>
+  </div>
+
+  <h3>Gaps by Preceding Ability</h3>
+  <table>
+    <thead>
+      <tr><th>Ability Before Gap</th><th class="num">Gap Count</th><th class="num">% of Gaps</th><th>Pattern</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:600;">Black Arrow</td>
+        <td class="num">29</td>
+        <td class="num">38.7%</td>
+        <td><span class="badge badge-red">Systematic</span> &mdash; post-Black Arrow hesitation</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Arcane Shot</td>
+        <td class="num">26</td>
+        <td class="num">34.7%</td>
+        <td><span class="badge badge-yellow">Frequent</span> &mdash; Focus-starved after Arcane</td>
+      </tr>
+      <tr>
+        <td>Multi-Shot</td>
+        <td class="num">12</td>
+        <td class="num">16.0%</td>
+        <td>Add transition downtime</td>
+      </tr>
+      <tr>
+        <td>Rapid Fire</td>
+        <td class="num">5</td>
+        <td class="num">6.7%</td>
+        <td>Normal</td>
+      </tr>
+      <tr>
+        <td>Others</td>
+        <td class="num">3</td>
+        <td class="num">4.0%</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-red">
+    <strong>73.4% of all gaps follow Black Arrow or Arcane Shot.</strong> This is a clear rotation pattern issue: Black Arrow (instant) and Arcane Shot (instant, Focus spender) are both GCD-only abilities. Gaps after these suggest either Focus starvation (too many Arcane Shots depleting Focus, forcing a wait before the next cast) or decision-making hesitation (not knowing what to press next). The fix is systematic: replace Arcane Shot filler usage with Steady Shot to regenerate Focus, and always have the next ability queued.
+  </div>
+</section>
+
+<!-- DAMAGE TAKEN -->
+<section>
+  <h2>Damage Taken</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th class="num">Total Damage</th><th class="num">Hits</th><th>Category</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Rotting Pustules</td>
+        <td class="num">12,874,195</td>
+        <td class="num">478</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+        <td>Stacking raid DoT &mdash; increases over fight duration</td>
+      </tr>
+      <tr>
+        <td>Bursting Pustules</td>
+        <td class="num">2,973,547</td>
+        <td class="num">46</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+        <td>Raid-wide pulse when Pustules are applied</td>
+      </tr>
+      <tr>
+        <td>Fungal Bloom</td>
+        <td class="num">2,861,608</td>
+        <td class="num">51</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+        <td>100-energy raid AoE + knockback</td>
+      </tr>
+      <tr>
+        <td>Festering Vines</td>
+        <td class="num">1,181,889</td>
+        <td class="num">18</td>
+        <td><span class="badge badge-yellow">Partially Avoidable</span></td>
+        <td>Root mechanic &mdash; damage from Writhing Vines ground effect</td>
+      </tr>
+      <tr>
+        <td>Bursting Shroom</td>
+        <td class="num">690,456</td>
+        <td class="num">3</td>
+        <td><span class="badge badge-yellow">Partially Avoidable</span></td>
+        <td>Add death explosion &mdash; proximity damage, can range</td>
+      </tr>
+      <tr>
+        <td>Poison Burst</td>
+        <td class="num">365,407</td>
+        <td class="num">3</td>
+        <td><span class="badge badge-yellow">Partially Avoidable</span></td>
+        <td>Sporecap interruptible cast</td>
+      </tr>
+      <tr>
+        <td>Melee</td>
+        <td class="num">318,594</td>
+        <td class="num">12</td>
+        <td><span class="badge badge-red">Avoidable</span></td>
+        <td>Melee hits from adds &mdash; ranged should not be in melee</td>
+      </tr>
+      <tr>
+        <td>Blightshot</td>
+        <td class="num">58,270</td>
+        <td class="num">1</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+        <td>Boss ability, occasional hit</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-yellow">
+    <strong>12 melee hits taken.</strong> As a Marksmanship Hunter (ranged DPS), Darthurg should not be taking melee hits from adds. This indicates either poor positioning near Shroomlings/Funglings or adds reaching melee range during Festering Vines. Use Disengage and Aspect of the Cheetah to maintain distance.
+  </div>
+</section>
+
+<!-- COOLDOWN & BUFF TIMING -->
+<section>
+  <h2>Cooldown &amp; Buff Timing</h2>
+
+  <h3>Trueshot Windows</h3>
+  <table>
+    <thead>
+      <tr><th>Cast #</th><th class="num">Player Time</th><th class="num">Ref Time</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Trueshot #1</td>
+        <td class="num">0:07</td>
+        <td class="num ref-color">0:00</td>
+        <td>7s late opener &mdash; should be pre-pull or on-pull</td>
+      </tr>
+      <tr>
+        <td>Trueshot #2</td>
+        <td class="num">2:21</td>
+        <td class="num ref-color">2:01</td>
+        <td>20s delayed &mdash; used during Bloom #1 recovery</td>
+      </tr>
+      <tr>
+        <td>Trueshot #3</td>
+        <td class="num">4:22</td>
+        <td class="num ref-color">4:11</td>
+        <td>11s delayed</td>
+      </tr>
+      <tr>
+        <td>Trueshot #4</td>
+        <td class="num">6:23</td>
+        <td class="num ref-color">6:23</td>
+        <td><span class="badge badge-green">Aligned</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>External Buffs</h3>
+  <table>
+    <thead>
+      <tr><th>Buff</th><th class="num">Player Timing</th><th class="num">Ref Timing</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Bloodlust / Heroism / Time Warp</td>
+        <td class="num">0:02 (Time Warp)</td>
+        <td class="num ref-color">0:00 (Heroism)</td>
+        <td><span class="badge badge-green">Both on pull</span> &mdash; same strategy</td>
+      </tr>
+      <tr>
+        <td>Ebon Might (Aug Evoker)</td>
+        <td class="num">14 applications</td>
+        <td class="num">&mdash;</td>
+        <td>Darthurg had Aug support; need to verify ref</td>
+      </tr>
+      <tr>
+        <td>Prescience (Aug Evoker)</td>
+        <td class="num">2 applications</td>
+        <td class="num">&mdash;</td>
+        <td>At 2:22 and 6:34</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Defensive Usage</h3>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th class="num">Uses</th><th>Timings</th><th>Context</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Survival of the Fittest</td>
+        <td class="num">5</td>
+        <td>2:28, 2:50, 4:15, 6:39, 7:20</td>
+        <td>Used on cooldown &mdash; good defensive rotation</td>
+      </tr>
+      <tr>
+        <td>Exhilaration</td>
+        <td class="num">4</td>
+        <td>2:01, 4:29, 5:55, 7:00</td>
+        <td>Self-heal used frequently</td>
+      </tr>
+      <tr>
+        <td>Aspect of the Turtle</td>
+        <td class="num">1</td>
+        <td>5:22</td>
+        <td>Full immune &mdash; DPS pause for ~6s</td>
+      </tr>
+      <tr>
+        <td>Healthstone</td>
+        <td class="num">1</td>
+        <td>4:46</td>
+        <td>Emergency heal</td>
+      </tr>
+      <tr>
+        <td>Health Potion</td>
+        <td class="num">1</td>
+        <td>5:05</td>
+        <td>Silvermoon Health Potion &mdash; <span class="bad">used healing pot instead of DPS pot</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-yellow">
+    <strong>Health potion used instead of DPS potion.</strong> At 5:05, Darthurg used a Silvermoon Health Potion for survival rather than a DPS-increasing potion (Tempered Potion or similar). This indicates consistent health pressure in the 4:00-5:30 window, which also explains the CPS drops during Vines #5 and #6. While survival takes priority over damage, addressing the root cause (positioning, taking Bursting Shroom/melee hits) would remove the need for the healing pot.
+  </div>
+</section>
+
+<!-- WIPE PROGRESSION -->
+<section>
+  <h2>Wipe Progression</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Darthurg's DPS across all 3 Rotmire pulls.</p>
+
+  <div class="prog-bar-container">
+    <div class="prog-bar">
+      <div class="prog-bar-value" style="color:var(--red);">76.4K</div>
+      <div class="prog-bar-fill" style="height:68px;background:var(--red);"></div>
+      <div class="prog-bar-label">Pull 1<br>6:54 wipe<br>22.45%</div>
+    </div>
+    <div class="prog-bar">
+      <div class="prog-bar-value" style="color:var(--red);">45.4K</div>
+      <div class="prog-bar-fill" style="height:40px;background:var(--red);"></div>
+      <div class="prog-bar-label">Pull 2<br>8:25 wipe<br>11.61%</div>
+    </div>
+    <div class="prog-bar">
+      <div class="prog-bar-value" style="color:var(--green);">85.5K</div>
+      <div class="prog-bar-fill" style="height:76px;background:var(--green);"></div>
+      <div class="prog-bar-label">Pull 3<br>8:09 KILL</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Pull</th><th class="num">DPS</th><th class="num">Duration</th><th class="num">Boss %</th><th>Darthurg Deaths</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Fight 1</td>
+        <td class="num">76,446</td>
+        <td class="num">6:54</td>
+        <td class="num">22.45%</td>
+        <td class="bad">Died at 4:32 (Bursting Shroom), again at 6:48</td>
+        <td>Raid collapsed after Bloom #3, mass death</td>
+      </tr>
+      <tr>
+        <td>Fight 2</td>
+        <td class="num warn">45,354</td>
+        <td class="num">8:25</td>
+        <td class="num">11.61%</td>
+        <td class="bad">Died at 2:16 (Bursting Shroom), again at 7:20</td>
+        <td>Very early death at 2:16 tanked DPS significantly</td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">Fight 3 (Kill)</td>
+        <td class="num good">85,483</td>
+        <td class="num">8:09</td>
+        <td class="num">0.01% (Kill)</td>
+        <td class="good">Survived</td>
+        <td>Best pull &mdash; no deaths, full uptime</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-green">
+    <strong>Clear improvement trajectory.</strong> Fight 1: died at 4:32. Fight 2: died at 2:16 (worse, but fight went longer so raid improved). Fight 3: survived the entire fight. DPS reflects this &mdash; 76K (died), 45K (early death), 85K (survived). The kill was Darthurg's best personal performance of the night.
+  </div>
+
+  <div class="callout callout-yellow">
+    <strong>Bursting Shroom is the recurring death cause.</strong> Both wipe deaths were to Bursting Shroom (add corpse explosion). On the kill fight, no Bursting Shroom deaths occurred &mdash; the raid successfully separated Shroomling and Fungling corpses. This was a raid-wide execution improvement, not just Darthurg.
+  </div>
+</section>
+
+<!-- ACTIONABLE IMPROVEMENTS -->
+<section>
+  <h2>Actionable Improvements</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Ranked by estimated impact. The DPS gap is primarily execution and filler priority, not talent or gear.</p>
+
+  <div class="action-item">
+    <span class="action-num">1</span>
+    <span class="action-title">Increase Aimed Shot casts &mdash; Steady Shot as primary filler</span>
+    <div class="action-body">
+      Darthurg cast Aimed Shot 52 times (6.4 CPM). The reference cast it 72 times (9.6 CPM). Aimed Shot is the highest-damage ability in the Marksmanship kit, representing 36.3% of reference damage but only 16.8% of Darthurg's. The root cause is filler choice: Darthurg uses Arcane Shot (60 casts) as the primary filler, which <em>spends</em> Focus. The reference uses Steady Shot (72 casts) as filler, which <em>generates</em> Focus. This Focus starvation cycle means fewer Aimed Shots can be cast.
+    </div>
+    <div class="action-body" style="color:var(--text);margin-top:6px;">
+      <strong>Fix:</strong> Replace Arcane Shot filler usage with Steady Shot. Only use Arcane Shot to spend Precise Shots procs (immediately after Aimed Shot or Rapid Fire). Outside of Precise Shots, the default filler should always be Steady Shot.
+    </div>
+    <div class="action-impact">Impact: 20 additional Aimed Shots would add approximately 2.7M damage (+6.5% overall DPS).</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">2</span>
+    <span class="action-title">Add Volley to the rotation (talent or usage fix)</span>
+    <div class="action-body">
+      Darthurg never cast Volley (0 uses vs reference's 9). Volley provides a Double Tap proc that empowers the next Aimed Shot or Rapid Fire, and the ability itself did 6.6M damage (7.4%) for the reference. If Volley is not in Darthurg's talent build, it should be added. If it is talented but not used, it needs to be integrated into the rotation on cooldown (every 45 seconds or so).
+    </div>
+    <div class="action-impact">Impact: 9 Volley casts would contribute roughly 3-4M damage plus enhanced Aimed Shots from Double Tap procs.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">3</span>
+    <span class="action-title">Reduce casting gaps &mdash; always have the next button queued</span>
+    <div class="action-body">
+      75 gaps &gt;2.5 seconds were detected, totaling 282 seconds of reduced casting. 73.4% of these gaps follow Black Arrow or Arcane Shot &mdash; both instant GCD abilities. After pressing an instant ability, the next GCD should already be queued. The pattern suggests either decision-making hesitation (not knowing what to press next) or Focus starvation from too many Arcane Shots.
+    </div>
+    <div class="action-body" style="color:var(--text);margin-top:6px;">
+      <strong>Fix:</strong> Practice the priority list until it becomes automatic: Trueshot &gt; Rapid Fire &gt; Aimed Shot (2 charges) &gt; Arcane/Kill Shot (Precise Shots only) &gt; Steady Shot (default). The "what do I press next?" answer is almost always Steady Shot.
+    </div>
+    <div class="action-impact">Impact: Halving dead time would add approximately 70 casts, potentially 8-12% DPS increase.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">4</span>
+    <span class="action-title">Improve opener sequence &mdash; 31% CPS gap in first 15 seconds</span>
+    <div class="action-body">
+      The opener (0:00-0:15) shows 0.600 CPS vs reference 0.867 CPS. Trueshot was cast at 0:07 (reference: 0:00). With Time Warp on pull, the first 15 seconds are the highest-value DPS window of the entire fight. Every GCD missed here is amplified by lust + Trueshot.
+    </div>
+    <div class="action-body" style="color:var(--text);margin-top:6px;">
+      <strong>Fix:</strong> Pre-cast Aimed Shot at 2s on pull timer. Trueshot at 0:00. Rapid Fire immediately. Burn Aimed Shot charges during Trueshot + lust window. Practice the opener on a target dummy until it is consistent.
+    </div>
+    <div class="action-impact">Impact: 4 extra casts in the lust window are worth ~2x normal due to haste + Trueshot amplification.</div>
+  </div>
+
+  <div class="action-item">
+    <span class="action-num">5</span>
+    <span class="action-title">Address mid-fight survival pressure (4:00-5:30 window)</span>
+    <div class="action-body">
+      Between 4:00 and 5:30, Darthurg used: Survival of the Fittest (4:15), Exhilaration (4:29), Healthstone (4:46), Health Potion (5:05), Aspect of the Cheetah (5:20), Aspect of the Turtle (5:22). This is every defensive cooldown in 90 seconds, indicating severe health pressure. CPS during Vines #5 (5:15) and #6 (6:04) dropped to 0.167 &mdash; nearly zero output. The 12 melee hits taken suggest add proximity is the cause.
+    </div>
+    <div class="action-body" style="color:var(--text);margin-top:6px;">
+      <strong>Fix:</strong> Maintain 15+ yard distance from add spawn locations. Use Disengage proactively when adds approach rather than waiting until health is critical. Position further from Bursting Shroom detonation zones. This would eliminate the need for the healing potion, freeing it for a DPS potion instead.
+    </div>
+    <div class="action-impact">Impact: Recovering uptime in the 4:00-5:30 window and using a DPS pot instead of healing pot could add 3-5% DPS.</div>
+  </div>
+</section>
+
+<!-- CONTEXT FOOTER -->
+<section>
+  <h2>Summary</h2>
+  <div class="callout callout-yellow">
+    <strong>The 55% DPS gap is primarily execution-based, not gear or talent.</strong> The 4-ilvl difference (287 vs 291) is marginal. The 17 talent differences may contribute 5-10% but both builds use the same hero talent tree (Dark Ranger). The remaining gap breaks down as:
+    <ul style="margin:8px 0 0 20px;">
+      <li><strong>Filler priority (Arcane Shot vs Steady Shot):</strong> ~20-25% of the gap. This is the single most impactful fix.</li>
+      <li><strong>Aimed Shot volume (52 vs 72):</strong> ~15-20% of the gap. Directly caused by Focus starvation from wrong filler.</li>
+      <li><strong>Missing Volley:</strong> ~5-8% of the gap. Either talent or usage gap.</li>
+      <li><strong>Casting gaps / dead time:</strong> ~10-15% of the gap. Decision hesitation and Focus-starved waits.</li>
+      <li><strong>Kill time difference:</strong> Darthurg's raid killed in 8:09 vs reference's 7:31. Longer fights mean more soft enrage damage and proportionally less burst-phase DPS.</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-green">
+    <strong>What Darthurg does well:</strong>
+    <ul style="margin:8px 0 0 20px;">
+      <li>Black Arrow usage is near-reference (7.2 vs 7.5 CPM) &mdash; Dark Ranger proc management is solid</li>
+      <li>Wailing Arrow casts match reference exactly (4 each)</li>
+      <li>Survived the kill fight with zero deaths after dying in both wipes &mdash; clear learning</li>
+      <li>Vines handling in the first half (Vines #1-4) matches or exceeds reference CPS</li>
+      <li>Damage split (59% boss / 41% adds) matches reference (58% / 42%) &mdash; good target prioritization</li>
+      <li>Counter Shot usage (7 interrupts) shows active mechanic participation</li>
+      <li>Defensive cooldown rotation is well-managed (5 SotF uses, 4 Exhilaration)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Warcraft Logs report Hz1Lm672dZnBw9YC</a></p>
+  <p>Primary reference: Taewoos (Azshara-KR) &mdash; 191,809 DPS, 7:31 kill, ilvl 291, 17 talent diffs &middot; <a href="https://www.warcraftlogs.com/reports/PcVp9dhYtRXF7WLa#fight=29" target="_blank">Reference log</a></p>
+  <p>Boss: Mythic Rotmire (Sporefall) &middot; Encounter ID 3159 &middot; Difficulty 5</p>
+  <p style="margin-top:8px;">Analysis date: June 25, 2026</p>
+</div>
+
+</body>
+</html>

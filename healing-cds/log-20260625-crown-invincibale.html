@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invincibale — Elemental Shaman — Crown of the Cosmos Prog Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --shaman: #0070dd;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; line-height:1.6; padding:24px; max-width:1200px; margin:0 auto; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+
+.back-link { display:inline-block; margin-bottom:16px; font-size:13px; color:var(--dim); }
+.back-link:hover { color:var(--text); }
+
+.header { margin-bottom:32px; }
+.header h1 { font-size:28px; font-weight:700; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.header h1 .player-name { color:var(--shaman); }
+.header .subtitle { color:var(--dim); font-size:14px; margin-top:4px; }
+.prog-tag { background:var(--orange); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:4px; letter-spacing:0.5px; text-transform:uppercase; }
+.night-tag { background:var(--purple); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:4px; letter-spacing:0.5px; }
+
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; }
+.card .label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.card .value { font-size:28px; font-weight:700; }
+.card .detail { font-size:12px; color:var(--dim); margin-top:4px; }
+.card.warning .value { color:var(--red); }
+.card.good .value { color:var(--green); }
+.card.neutral .value { color:var(--accent); }
+
+section { margin-bottom:32px; }
+section h2 { font-size:18px; font-weight:600; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+section h3 { font-size:15px; font-weight:600; margin:16px 0 8px; color:var(--accent); }
+
+table { width:100%; border-collapse:collapse; margin-bottom:16px; }
+th, td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:13px; }
+th { color:var(--dim); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; background:var(--surface); position:sticky; top:0; }
+td { background:var(--surface); }
+tr:hover td { background:#1c2333; }
+
+.bar-chart { display:flex; align-items:flex-end; gap:4px; height:220px; margin:16px 0; padding:0 4px; }
+.bar-container { display:flex; flex-direction:column; align-items:center; flex:1; min-width:0; }
+.bar { width:100%; border-radius:3px 3px 0 0; min-height:2px; position:relative; transition:height 0.3s; }
+.bar.survived { background:var(--green); }
+.bar.died { background:var(--red); }
+.bar.died-late { background:var(--orange); }
+.bar.zero { background:var(--border); }
+.bar-label { font-size:9px; color:var(--dim); margin-top:4px; text-align:center; white-space:nowrap; }
+.bar-value { font-size:9px; color:var(--dim); margin-bottom:2px; text-align:center; white-space:nowrap; }
+.bar-wrapper { display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end; width:100%; }
+
+.callout { background:var(--surface); border-left:3px solid var(--red); padding:16px; border-radius:0 8px 8px 0; margin:16px 0; }
+.callout.warning { border-left-color:var(--orange); }
+.callout.info { border-left-color:var(--accent); }
+.callout.good { border-left-color:var(--green); }
+.callout .callout-title { font-weight:600; font-size:14px; margin-bottom:4px; }
+.callout .callout-body { font-size:13px; color:var(--dim); line-height:1.5; }
+
+.phase-legend { display:flex; gap:16px; font-size:11px; color:var(--dim); margin-bottom:8px; flex-wrap:wrap; }
+.phase-legend span { display:flex; align-items:center; gap:4px; }
+.phase-legend .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.badge.green { background:rgba(63,185,80,0.15); color:var(--green); }
+.badge.red { background:rgba(248,81,73,0.15); color:var(--red); }
+.badge.yellow { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.badge.orange { background:rgba(219,109,40,0.15); color:var(--orange); }
+.badge.purple { background:rgba(188,140,255,0.15); color:var(--purple); }
+
+.action-item { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:12px; }
+.action-item .action-num { font-size:12px; font-weight:700; color:var(--accent); margin-bottom:4px; }
+.action-item .action-title { font-size:15px; font-weight:600; margin-bottom:6px; }
+.action-item .action-detail { font-size:13px; color:var(--dim); line-height:1.5; }
+.action-item .action-impact { font-size:12px; color:var(--yellow); margin-top:6px; }
+
+.footer { margin-top:48px; padding-top:24px; border-top:1px solid var(--border); font-size:12px; color:var(--dim); }
+
+.consistency-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:16px 0; }
+.consistency-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.consistency-card .cc-label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; }
+.consistency-card .cc-value { font-size:22px; font-weight:700; margin:4px 0; }
+.consistency-card .cc-detail { font-size:12px; color:var(--dim); }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+@media (max-width:900px) {
+  .cards { grid-template-columns:repeat(2,1fr); }
+  .consistency-grid { grid-template-columns:repeat(2,1fr); }
+  .two-col { grid-template-columns:1fr; }
+  body { padding:12px; }
+}
+@media (max-width:600px) {
+  .cards { grid-template-columns:1fr; }
+  .consistency-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Invincibale</span>
+    <span style="color:var(--dim);font-weight:400;font-size:18px;">Elemental Shaman</span>
+    <span class="prog-tag">Progression</span>
+    <span class="night-tag">Night 4</span>
+  </h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &mdash; 19 pulls &mdash; Deepest: 7:12 (Fight 14) &mdash; June 25, 2026
+    &mdash; <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank" rel="noopener">WCL Report</a>
+  </div>
+</div>
+
+<!-- ── Summary Cards ── -->
+<div class="cards">
+  <div class="card neutral">
+    <div class="label">Avg DPS</div>
+    <div class="value">56.0K</div>
+    <div class="detail">Across 11 qualifying pulls (8 early wipes excluded)</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value" style="color:var(--text)">292</div>
+    <div class="detail">285&ndash;298 range &bull; 4pc tier set</div>
+  </div>
+  <div class="card warning">
+    <div class="label">Survival Rate</div>
+    <div class="value">0 / 19</div>
+    <div class="detail">Died every pull &mdash; 2 actionable, 23 cascade</div>
+  </div>
+  <div class="card good">
+    <div class="label">Best Pull</div>
+    <div class="value">70.5K</div>
+    <div class="detail">Fight 28 &mdash; 6:59 deep P3</div>
+  </div>
+</div>
+
+<!-- ── Performance Across All Pulls ── -->
+<section>
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">
+    DPS per pull across 19 attempts. Orange bars = died late (near raid wipe). Red bars = died early (individual failure or early cascade).
+    Gray bars = P1 wipe with no recorded DPS data. Dashed line = session average (56.0K).
+  </p>
+
+  <div style="position:relative;">
+    <div class="bar-chart">
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">53.0K</div><div class="bar died-late" style="height:135px;"></div></div><div class="bar-label">F1 5:00</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">40.6K</div><div class="bar died" style="height:104px;"></div></div><div class="bar-label">F2 6:54</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">&mdash;</div><div class="bar zero" style="height:4px;"></div></div><div class="bar-label">F3 1:51</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">&mdash;</div><div class="bar zero" style="height:4px;"></div></div><div class="bar-label">F5 1:51</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">68.4K</div><div class="bar died-late" style="height:175px;"></div></div><div class="bar-label">F6 7:03</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">&mdash;</div><div class="bar zero" style="height:4px;"></div></div><div class="bar-label">F8 1:12</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">&mdash;</div><div class="bar zero" style="height:4px;"></div></div><div class="bar-label">F12 2:10</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">&mdash;</div><div class="bar zero" style="height:4px;"></div></div><div class="bar-label">F13 1:22</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">51.5K</div><div class="bar died" style="height:132px;"></div></div><div class="bar-label">F14 7:12</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">56.7K</div><div class="bar died-late" style="height:145px;"></div></div><div class="bar-label">F17 6:58</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">45.7K</div><div class="bar died" style="height:117px;"></div></div><div class="bar-label">F18 5:06</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">&mdash;</div><div class="bar zero" style="height:4px;"></div></div><div class="bar-label">F19 1:19</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">&mdash;</div><div class="bar zero" style="height:4px;"></div></div><div class="bar-label">F21 1:31</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">&mdash;</div><div class="bar zero" style="height:4px;"></div></div><div class="bar-label">F22 1:17</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">58.0K</div><div class="bar died-late" style="height:148px;"></div></div><div class="bar-label">F23 5:14</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">60.8K</div><div class="bar died-late" style="height:155px;"></div></div><div class="bar-label">F24 5:36</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">62.1K</div><div class="bar died-late" style="height:159px;"></div></div><div class="bar-label">F26 6:58</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value">48.8K</div><div class="bar died-late" style="height:125px;"></div></div><div class="bar-label">F27 5:36</div></div>
+      <div class="bar-container"><div class="bar-wrapper"><div class="bar-value" style="color:var(--green);font-weight:600;">70.5K</div><div class="bar died-late" style="height:180px;"></div></div><div class="bar-label">F28 6:59</div></div>
+    </div>
+
+    <div style="display:flex;gap:16px;font-size:11px;color:var(--dim);margin-top:8px;flex-wrap:wrap;">
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--orange);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Died late / near wipe</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Died early</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--border);border-radius:2px;vertical-align:middle;margin-right:4px;"></span>P1 wipe (no data)</span>
+    </div>
+  </div>
+
+  <div class="callout info" style="margin-top:16px;">
+    <div class="callout-title">Session Trend: Improving +6.6%</div>
+    <div class="callout-body">
+      First-half average: 54.1K DPS &rarr; Second-half average: 57.6K DPS.
+      Best pull (70.5K) came on the final attempt of the night (Fight 28), showing sustained learning and focus through the session.
+      Standard deviation of 8,801 across qualifying pulls indicates moderate consistency with room to tighten.
+    </div>
+  </div>
+</section>
+
+<!-- ── Per-Phase Performance Breakdown ── -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">
+    This is the core analysis for progression. Overall DPS blends a strong P1 opener with weaker later phases.
+    The phase breakdown shows exactly where performance falls off and why.
+  </p>
+
+  <div class="phase-legend">
+    <span><span class="dot" style="background:var(--green);"></span> P1: Sentinels (0:00&ndash;2:14)</span>
+    <span><span class="dot" style="background:var(--yellow);"></span> Intermission (2:14&ndash;2:53)</span>
+    <span><span class="dot" style="background:var(--accent);"></span> P2: Rift (2:53&ndash;5:09)</span>
+    <span><span class="dot" style="background:var(--red);"></span> P3: Devouring Cosmos (5:09+)</span>
+  </div>
+
+  <h3>Phase Reach Rate</h3>
+  <table>
+    <thead><tr><th>Phase</th><th>Pulls Reached</th><th>Rate</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>P1: Sentinels</td><td>19 / 19</td><td>100%</td><td><span class="badge green">All pulls</span></td></tr>
+      <tr><td>Intermission</td><td>11 / 19</td><td>58%</td><td><span class="badge yellow">8 P1 wipes</span></td></tr>
+      <tr><td>P2: Rift</td><td>11 / 19</td><td>58%</td><td><span class="badge yellow">Same 11 pulls</span></td></tr>
+      <tr><td>P3: Devouring Cosmos</td><td>8 / 19</td><td>42%</td><td><span class="badge red">Newest phase</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Per-Phase DPS</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Pulls</th><th>Avg DPS</th><th>Best DPS</th><th>Worst DPS</th><th>Deaths</th><th>Top Death Cause</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--green);font-weight:600;">P1: Sentinels</td>
+        <td>11</td>
+        <td style="font-weight:600;">116.8K</td>
+        <td>147.8K <span style="color:var(--dim);font-size:11px;">(F28)</span></td>
+        <td>87.8K <span style="color:var(--dim);font-size:11px;">(F18)</span></td>
+        <td>9 <span class="badge orange" style="font-size:10px;">1 actionable</span></td>
+        <td>Bursting Emptiness</td>
+      </tr>
+      <tr>
+        <td style="color:var(--yellow);font-weight:600;">Intermission</td>
+        <td>11</td>
+        <td style="color:var(--dim);">~0.8K</td>
+        <td>2.8K <span style="color:var(--dim);font-size:11px;">(F28)</span></td>
+        <td>0.1K <span style="color:var(--dim);font-size:11px;">(F17)</span></td>
+        <td>0</td>
+        <td style="color:var(--dim);">&mdash;</td>
+      </tr>
+      <tr>
+        <td style="color:var(--accent);font-weight:600;">P2: Rift</td>
+        <td>11</td>
+        <td style="font-weight:600;">30.9K</td>
+        <td>47.5K <span style="color:var(--dim);font-size:11px;">(F6)</span></td>
+        <td>16.2K <span style="color:var(--dim);font-size:11px;">(F18)</span></td>
+        <td>5 <span class="badge orange" style="font-size:10px;">1 actionable</span></td>
+        <td>Bursting Emptiness</td>
+      </tr>
+      <tr>
+        <td style="color:var(--red);font-weight:600;">P3: Cosmos</td>
+        <td>5 meaningful</td>
+        <td style="font-weight:600;">20.8K</td>
+        <td>34.1K <span style="color:var(--dim);font-size:11px;">(F28)</span></td>
+        <td>11.4K <span style="color:var(--dim);font-size:11px;">(F14)</span></td>
+        <td>10 <span class="badge green" style="font-size:10px;">0 actionable</span></td>
+        <td>Cosmic Barrier (3)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col">
+    <div class="callout warning">
+      <div class="callout-title">P1 &rarr; P2 DPS Drop: &minus;74%</div>
+      <div class="callout-body">
+        Invincibale averages 116.8K in P1 but drops to 30.9K in P2 &mdash; a 74% decline.
+        Partly expected: P1 includes opener cooldowns (Ascendance, Stormkeeper, Bloodlust, pre-pot).
+        But the P2 ceiling (47.5K on F6, 43.1K on F28) shows the gap to close.
+        P2 introduces Rift Simulacrum, Void Barrage, and constant movement from Undying Voidspawn that interrupts casting uptime.
+      </div>
+    </div>
+    <div class="callout info">
+      <div class="callout-title">P3 Learning Curve: Rapid Improvement</div>
+      <div class="callout-body">
+        P3 DPS improved through the session: F14 (11.4K) &rarr; F17 (15.5K) &rarr; F26 (18.0K) &rarr; F28 (34.1K).
+        With only 5 meaningful P3 attempts (&gt;30s alive), this is expected learning behavior.
+        The F2/F24/F27 P3 numbers (155/5/632 DPS) reflect immediate death upon P3 entry, not sustained performance.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout good">
+    <div class="callout-title">Intermission Survival: 11/11 Clean</div>
+    <div class="callout-body">
+      Zero deaths during 11 Intermission phases (Stellar Emission channel + Silverstrike Barrage). This is a pure survival check and Invincibale handled it cleanly every time. Near-zero DPS is expected and correct during this phase.
+    </div>
+  </div>
+</section>
+
+<!-- ── Death Pattern Analysis ── -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="cards" style="grid-template-columns:repeat(3,1fr);">
+    <div class="card warning">
+      <div class="label">Total Deaths</div>
+      <div class="value">25</div>
+      <div class="detail">Across 19 pulls (died every pull)</div>
+    </div>
+    <div class="card good">
+      <div class="label">Actionable Deaths</div>
+      <div class="value" style="color:var(--green);">2</div>
+      <div class="detail">Among first 2 raid deaths in pull</div>
+    </div>
+    <div class="card">
+      <div class="label">Cascade Deaths</div>
+      <div class="value" style="color:var(--dim);">23</div>
+      <div class="detail">After raid was already compromised</div>
+    </div>
+  </div>
+
+  <h3>2-Death Threshold Analysis</h3>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">
+    Once 2 players have died in a pull, the pull is compromised. Only deaths where Invincibale was among the first 2 raid deaths count as individual failures. Despite dying in all 19 pulls, only 2 deaths are directly attributable to Invincibale.
+  </p>
+
+  <table>
+    <thead><tr><th>Fight</th><th>Death Time</th><th>Phase</th><th>Killing Ability</th><th>Status</th><th>Context</th></tr></thead>
+    <tbody>
+      <tr style="background:rgba(248,81,73,0.08);">
+        <td><strong>Fight 18</strong></td>
+        <td>1:55</td>
+        <td><span class="badge green">P1</span></td>
+        <td style="color:var(--red);">Bursting Emptiness</td>
+        <td><span class="badge red">Actionable</span></td>
+        <td>1st raid death &mdash; clean pull, pure individual failure</td>
+      </tr>
+      <tr style="background:rgba(248,81,73,0.08);">
+        <td><strong>Fight 14</strong></td>
+        <td>3:17</td>
+        <td><span class="badge yellow">P2</span></td>
+        <td style="color:var(--red);">Bursting Emptiness</td>
+        <td><span class="badge red">Actionable</span></td>
+        <td>2nd raid death (tank Glazedwhole died at 2:36 first)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="margin-top:16px;">
+    <div class="callout-title">Bursting Emptiness Is the Only Individual Threat</div>
+    <div class="callout-body">
+      Both actionable deaths were to <strong>Bursting Emptiness</strong> &mdash; expanding void zones from Void Droplets/Voidspawn.
+      Fight 18 is the most concerning: Invincibale was the <strong>first person to die in the entire raid</strong> at 1:55 into a clean P1 pull. This indicates a positioning or awareness failure with void zone mechanics while no other chaos was happening.
+      The remaining 23 deaths all occurred after the raid was already collapsing and are not individual execution problems.
+    </div>
+  </div>
+
+  <h3>All Deaths by Phase</h3>
+  <div style="max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;">
+    <table style="margin:0;">
+      <thead><tr><th>Fight</th><th>Time</th><th>Phase</th><th>Killing Ability</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr style="background:rgba(248,81,73,0.08);"><td>F18</td><td>1:55</td><td><span class="badge green">P1</span></td><td>Bursting Emptiness</td><td><span class="badge red">Actionable</span></td></tr>
+        <tr><td>F3</td><td>1:43</td><td><span class="badge green">P1</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F5</td><td>1:38</td><td><span class="badge green">P1</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F8</td><td>1:11</td><td><span class="badge green">P1</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F12</td><td>2:03</td><td><span class="badge green">P1</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F13</td><td>1:12</td><td><span class="badge green">P1</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F19</td><td>1:12</td><td><span class="badge green">P1</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F21</td><td>1:22</td><td><span class="badge green">P1</span></td><td>Silverstrike Arrow</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F22</td><td>1:16</td><td><span class="badge green">P1</span></td><td>Void Remnants</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr style="background:rgba(248,81,73,0.08);"><td>F14</td><td>3:17</td><td><span class="badge yellow">P2</span></td><td>Bursting Emptiness</td><td><span class="badge red">Actionable</span></td></tr>
+        <tr><td>F1</td><td>4:50</td><td><span class="badge yellow">P2</span></td><td>Bursting Emptiness</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F2</td><td>3:17</td><td><span class="badge yellow">P2</span></td><td>Bursting Emptiness</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F18</td><td>4:43</td><td><span class="badge yellow">P2</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F23</td><td>5:07</td><td><span class="badge yellow">P2</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F2</td><td>5:37</td><td><span class="badge red">P3</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F6</td><td>6:40</td><td><span class="badge red">P3</span></td><td>Voidstalker Sting</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F6</td><td>6:54</td><td><span class="badge red">P3</span></td><td>Cosmic Barrier</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F14</td><td>6:38</td><td><span class="badge red">P3</span></td><td>Devouring Cosmos</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F17</td><td>6:37</td><td><span class="badge red">P3</span></td><td>Bursting Emptiness</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F24</td><td>5:14</td><td><span class="badge red">P3</span></td><td>Simulacrum Backlash</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F24</td><td>5:20</td><td><span class="badge red">P3</span></td><td>Bursting Emptiness</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F26</td><td>6:41</td><td><span class="badge red">P3</span></td><td>Cosmic Barrier</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F27</td><td>5:36</td><td><span class="badge red">P3</span></td><td>Unknown/Environment</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F28</td><td>6:44</td><td><span class="badge red">P3</span></td><td>Cosmic Barrier</td><td><span class="badge yellow">Cascade</span></td></tr>
+        <tr><td>F28</td><td>6:58</td><td><span class="badge red">P3</span></td><td>Melee</td><td><span class="badge yellow">Cascade</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Death Causes Summary</h3>
+  <table>
+    <thead><tr><th>Killing Ability</th><th>Total</th><th>Actionable</th><th>Phases</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Unknown/Environment</td><td>10</td><td>0</td><td>P1/P2/P3</td><td>Generic wipe damage &mdash; always cascade</td></tr>
+      <tr><td style="color:var(--red);font-weight:600;">Bursting Emptiness</td><td>6</td><td style="color:var(--red);font-weight:600;">2</td><td>P1/P2/P3</td><td>Expanding void zones &mdash; only individual threat</td></tr>
+      <tr><td>Cosmic Barrier</td><td>3</td><td>0</td><td>P3</td><td>Raid-wide P3 damage &mdash; always cascade</td></tr>
+      <tr><td>Voidstalker Sting</td><td>1</td><td>0</td><td>P3</td><td>Late P3 cascade</td></tr>
+      <tr><td>Devouring Cosmos</td><td>1</td><td>0</td><td>P3</td><td>Deep P3 cascade</td></tr>
+      <tr><td>Silverstrike Arrow</td><td>1</td><td>0</td><td>P1</td><td>P1 wipe cascade</td></tr>
+      <tr><td>Void Remnants</td><td>1</td><td>0</td><td>P1</td><td>P1 wipe cascade</td></tr>
+      <tr><td>Simulacrum Backlash</td><td>1</td><td>0</td><td>P3</td><td>P3 cascade</td></tr>
+      <tr><td>Melee</td><td>1</td><td>0</td><td>P3</td><td>Boss melee after raid collapse</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── Consistency Analysis ── -->
+<section>
+  <h2>Consistency Analysis</h2>
+
+  <div class="consistency-grid">
+    <div class="consistency-card">
+      <div class="cc-label">DPS Range</div>
+      <div class="cc-value" style="color:var(--accent);">40.6K&ndash;70.5K</div>
+      <div class="cc-detail">29.9K spread &bull; Std Dev: 8,801</div>
+    </div>
+    <div class="consistency-card">
+      <div class="cc-label">Median DPS</div>
+      <div class="cc-value" style="color:var(--accent);">56.7K</div>
+      <div class="cc-detail">Close to mean (56.0K) &mdash; no outlier skew</div>
+    </div>
+    <div class="consistency-card">
+      <div class="cc-label">Session Trend</div>
+      <div class="cc-value" style="color:var(--green);">+6.6%</div>
+      <div class="cc-detail">1st half: 54.1K &rarr; 2nd half: 57.6K</div>
+    </div>
+    <div class="consistency-card">
+      <div class="cc-label">Best 3 vs Worst 3</div>
+      <div class="cc-value" style="color:var(--yellow);">66.9K vs 44.8K</div>
+      <div class="cc-detail">Best: F28, F6, F26 &bull; Worst: F2, F18, F27</div>
+    </div>
+  </div>
+
+  <h3>DPS by Pull Duration</h3>
+  <table>
+    <thead><tr><th>Duration Bucket</th><th>Pulls</th><th>Avg DPS</th><th>Fights</th></tr></thead>
+    <tbody>
+      <tr><td>&lt; 2:30 (P1 wipes)</td><td>8</td><td style="color:var(--dim);">No recorded data</td><td>F3, F5, F8, F12, F13, F19, F21, F22</td></tr>
+      <tr><td>4:30&ndash;5:30</td><td>3</td><td>49.5K</td><td>F1 (5:00), F18 (5:06), F23 (5:14)</td></tr>
+      <tr><td>5:30&ndash;6:30</td><td>2</td><td>54.8K</td><td>F24 (5:36), F27 (5:36)</td></tr>
+      <tr><td>6:30+ (deep P3)</td><td>6</td><td>59.5K</td><td>F2, F6, F14, F17, F26, F28</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--dim);">
+    Longer pulls trend higher DPS because more cooldown cycles complete and P1 burst is amortized over more fight time. The 3 deepest pulls (F6 7:03, F14 7:12, F28 6:59) averaged 63.5K.
+  </p>
+</section>
+
+<!-- ── Reference Context ── -->
+<section>
+  <h2>Reference Context <span style="font-size:12px;color:var(--dim);font-weight:400;">(de-emphasized for prog)</span></h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:12px;">
+    Top Elemental Shaman kills on Mythic Crown of the Cosmos, filtered to 4-healer comps (matching our comp), US/EU only.
+    These players completed the full fight. This is a ceiling reference, not a direct comparison.
+  </p>
+
+  <table class="ref-table">
+    <thead><tr><th>Player</th><th>Server</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Diffs</th></tr></thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--shaman);font-weight:600;">Invincibale (best pull)</td>
+        <td>Sargeras (US)</td>
+        <td style="font-weight:600;">70,480</td>
+        <td>6:59 (wipe)</td>
+        <td>292</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td style="color:var(--shaman);">Invincibale (session avg)</td>
+        <td>Sargeras (US)</td>
+        <td>56,010</td>
+        <td>Prog avg</td>
+        <td>292</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr style="border-top:2px solid var(--border);">
+        <td style="color:var(--purple);">Synovino</td>
+        <td>Blackrock (EU)</td>
+        <td style="color:var(--purple);">99,272</td>
+        <td>8:18</td>
+        <td>291</td>
+        <td><span class="badge orange">45</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">Solarisam</td>
+        <td>Kazzak (EU)</td>
+        <td style="color:var(--purple);">98,623</td>
+        <td>8:03</td>
+        <td>291</td>
+        <td><span class="badge orange">14</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">Damastius</td>
+        <td>Frostmourne (US)</td>
+        <td style="color:var(--purple);">98,536</td>
+        <td>7:01</td>
+        <td>290</td>
+        <td><span class="badge yellow">11</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">Kaellach</td>
+        <td>Draenor (EU)</td>
+        <td style="color:var(--purple);">98,290</td>
+        <td>8:23</td>
+        <td>291</td>
+        <td><span class="badge red">49</span></td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple);">Ghostsham</td>
+        <td>Lothar (US)</td>
+        <td style="color:var(--purple);">97,945</td>
+        <td>6:50</td>
+        <td>291</td>
+        <td><span class="badge yellow">10</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="two-col" style="margin-top:16px;">
+    <div class="callout info">
+      <div class="callout-title">Best Pull = 71.5% of Reference Average</div>
+      <div class="callout-body">
+        Invincibale's best pull (70.5K on F28) reaches 71.5% of the 98.5K reference average. This comparison is inherently unfair &mdash; reference players completed full 7&ndash;8 minute fights with full P3 DPS windows and second CD cycles. Invincibale's best pull wiped at 6:59.
+        A fairer comparison is P1 DPS: Invincibale's 147.8K P1 peak is likely competitive with reference P1 output.
+      </div>
+    </div>
+    <div class="callout info">
+      <div class="callout-title">Talent Differences: 10&ndash;49 Nodes</div>
+      <div class="callout-body">
+        Closest talent match: Ghostsham (10 diffs), Damastius (11 diffs). These are the most relevant comparisons.
+        Synovino (45 diffs) and Kaellach (49 diffs) run fundamentally different builds and are less useful for direct comparison.
+        All talent comparisons derived from CombatantInfo data, not web guides.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Player Stats ── -->
+<section>
+  <h2>Player Stats &amp; Gear</h2>
+  <div class="cards" style="grid-template-columns:repeat(5,1fr);">
+    <div class="card"><div class="label">Intellect</div><div class="value" style="font-size:22px;color:var(--text);">2,908</div></div>
+    <div class="card"><div class="label">Crit</div><div class="value" style="font-size:22px;color:var(--text);">626</div></div>
+    <div class="card"><div class="label">Haste</div><div class="value" style="font-size:22px;color:var(--text);">717</div></div>
+    <div class="card"><div class="label">Mastery</div><div class="value" style="font-size:22px;color:var(--text);">1,222</div></div>
+    <div class="card"><div class="label">Versatility</div><div class="value" style="font-size:22px;color:var(--red);">16</div></div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-top:8px;">
+    SpecID 262 (Elemental) &bull; 4pc tier set (1988) &bull; 80 talent nodes &bull; Vantus Rune: Crown of the Cosmos &bull; Flask of the Magisters &bull; Hearty Well Fed
+  </p>
+  <p style="font-size:12px;color:var(--dim);">
+    Mastery-stacked build (1,222 Mastery &gg; 717 Haste &gt; 626 Crit). Mastery: Elemental Overload provides bonus Maelstrom generation and proc damage &mdash; the preferred raid stat.
+    <strong style="color:var(--red);">Versatility at 16 is critically low</strong> &mdash; effectively zero passive damage reduction. Reference players average 52&ndash;103 Vers. This contributes to fragility during P3 overlaps.
+  </p>
+</section>
+
+<!-- ── Actionable Improvements ── -->
+<section>
+  <h2>Actionable Improvements</h2>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">
+    Prog priorities: SURVIVAL &gt; MECHANICS &gt; DPS optimization. Invincibale's core story is not individual failure (only 2 actionable deaths out of 25) &mdash; it is surviving longer through cascade raid damage in P2/P3 and tightening P2 DPS consistency.
+  </p>
+
+  <div class="action-item">
+    <div class="action-num">#1 &mdash; SURVIVAL</div>
+    <div class="action-title">Bursting Emptiness Positioning</div>
+    <div class="action-detail">
+      Both actionable deaths were to Bursting Emptiness &mdash; expanding void zones that must be dodged. Fight 18 was the most concerning: Invincibale was the <strong>first player to die in the entire raid</strong> at 1:55 into a clean P1 pull. Zero chaos, zero pressure &mdash; a pure positioning failure on void zone mechanics.
+      <br><br>
+      <strong>Fix:</strong> Prioritize Void Droplet awareness during P1 and P2. Use Spiritwalker's Grace during Bursting Emptiness movement windows to maintain casting while repositioning. Pre-position away from void zones before they expand rather than reacting after the damage begins.
+    </div>
+    <div class="action-impact">Eliminating these 2 actionable deaths directly improves raid consistency entering P2/P3.</div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">#2 &mdash; SURVIVAL</div>
+    <div class="action-title">Personal Defensives in P3</div>
+    <div class="action-detail">
+      10 deaths in P3 across 8 attempts &mdash; all cascade, but surviving even 15&ndash;20 seconds longer extends learning time. Cosmic Barrier (3 deaths) is the top P3 killer. Very low Versatility (16 rating) means Invincibale takes significantly more damage than peers during raid-wide P3 pressure.
+      <br><br>
+      <strong>Fix:</strong> Use Astral Shift proactively during Cosmic Barrier casts in P3. Save Healthstone for P3 overlap windows. Earth Elemental can provide emergency damage reduction. Consider Nature's Guardian talent for passive survivability if not already taken.
+    </div>
+    <div class="action-impact">Surviving 15&ndash;20s longer in P3 adds meaningful DPS and learning reps for the newest phase.</div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">#3 &mdash; DPS</div>
+    <div class="action-title">P2 DPS Consistency (30.9K avg vs 47.5K ceiling)</div>
+    <div class="action-detail">
+      P2 DPS ranges from 16.2K to 47.5K &mdash; a 3x spread indicating highly variable execution. Best P2 pulls (F6: 47.5K, F28: 43.1K) show the potential when mechanics are handled cleanly. Worst P2 pulls (F18: 16.2K, F14: 22.2K) coincide with early deaths or heavy movement.
+      <br><br>
+      <strong>Fix:</strong> Maintain Flame Shock uptime during P2 movement (Rift Simulacrum transitions, Void Barrage dodging). Use Spiritwalker's Grace for Lava Burst casts during forced movement. Pre-position for Undying Voidspawn spawns. Save Stormkeeper for static P2 windows where full casts are possible.
+    </div>
+    <div class="action-impact">Consistently reaching the P2 ceiling (47.5K) would raise average fight DPS by 5&ndash;8K.</div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">#4 &mdash; DPS</div>
+    <div class="action-title">P3 CD Alignment</div>
+    <div class="action-detail">
+      P3 DPS improved from 155 (F2) to 34,097 (F28) through the session &mdash; natural learning curve. The jump from F26 (18K) to F28 (34K) shows rapid improvement.
+      <br><br>
+      <strong>Fix:</strong> Ascendance and Stormkeeper should be available for a second burst window at ~5:30 (entering P3). Aligning these CDs with a safe casting window in early P3 would front-load damage when the raid is still healthy. This will develop naturally with more P3 reps.
+    </div>
+    <div class="action-impact">Natural improvement expected &mdash; P3 DPS should stabilize around 30&ndash;40K with more experience.</div>
+  </div>
+
+  <div class="action-item">
+    <div class="action-num">#5 &mdash; GEAR</div>
+    <div class="action-title">Versatility Is Critically Low (16 Rating)</div>
+    <div class="action-detail">
+      At 16 Vers rating, Invincibale has effectively zero passive damage reduction. Reference players range 52&ndash;103 Vers. While Mastery is the primary Elemental DPS stat, even modest Vers provides meaningful survivability &mdash; especially during P3 Cosmic Radiation/Cosmic Barrier overlaps where the spec's already low HP pool gets tested.
+      <br><br>
+      <strong>Fix:</strong> Look for gear upgrades that include some Vers without losing total stat budget. This is a long-term gearing priority, not an immediate fix. Even reaching 50&ndash;70 Vers rating would noticeably improve P3 survival.
+    </div>
+    <div class="action-impact">Marginal per-instance but compounding across 7+ minute fights with constant damage intake.</div>
+  </div>
+</section>
+
+<!-- ── Summary Verdict ── -->
+<section>
+  <h2>Summary Verdict</h2>
+
+  <div class="callout good">
+    <div class="callout-title">What Is Going Well</div>
+    <div class="callout-body">
+      <ul style="margin:4px 0 0 16px;font-size:13px;list-style:none;padding:0;">
+        <li style="margin-bottom:6px;"><strong style="color:var(--green);">P1 execution is strong.</strong> 116.8K average DPS with a 147.8K peak shows excellent opener and cooldown alignment with Ascendance + Stormkeeper.</li>
+        <li style="margin-bottom:6px;"><strong style="color:var(--green);">Improving through the session.</strong> +6.6% DPS trend, best pull on the final attempt. No signs of tilt or fatigue.</li>
+        <li style="margin-bottom:6px;"><strong style="color:var(--green);">Clean intermission survival.</strong> 11/11 intermissions survived with zero deaths. Handles Stellar Emission + Silverstrike Barrage cleanly.</li>
+        <li style="margin-bottom:6px;"><strong style="color:var(--green);">Rapid P3 learning.</strong> P3 DPS tripled from early to late session (11.4K &rarr; 34.1K).</li>
+        <li style="margin-bottom:6px;"><strong style="color:var(--green);">Low individual death responsibility.</strong> Only 2 of 25 deaths were actionable &mdash; 92% of deaths were cascade.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-title">The Overall DPS Gap Is Phase-Weighted, Not Rotational</div>
+    <div class="callout-body">
+      The 56K avg vs 98.5K reference gap is misleading. Reference players completed 7&ndash;8 minute kills with full P3 DPS and second CD cycles. The gap comes from:
+      <ol style="margin:8px 0 0 16px;font-size:13px;">
+        <li><strong>P2 inconsistency</strong> &mdash; 16K to 47K range vs likely steady 50K+ from references</li>
+        <li><strong>P3 unfamiliarity</strong> &mdash; only 5 meaningful P3 attempts so far</li>
+        <li><strong>Cascade death rate</strong> &mdash; dying in every pull reduces effective fight time and overall DPS</li>
+      </ol>
+      <p style="margin-top:8px;font-size:13px;">This is an experience and execution gap that will naturally close with more P2/P3 reps. It is not a fundamental rotation or talent problem. P1 numbers are already competitive.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Raid Context ── -->
+<section>
+  <h2>Raid Context</h2>
+  <p style="font-size:13px;color:var(--dim);">
+    <strong>Comp:</strong> 2 tanks, 4 healers, 14 DPS (20-player Mythic)<br>
+    <strong>Healers:</strong> Senssay (MW Monk), Dueche (Holy Paladin), Silencio (Resto Druid), Voidheart (Disc Priest)<br>
+    <strong>Roster change from Night 3:</strong> Brewtote OUT, Voidheart moved from Shadow DPS to Disc healer. Alitheria back.<br>
+    <strong>Session:</strong> 28 total pulls, 19 usable, 9 resets. Deepest pulls: F14 (7:12), F6 (7:03), F28 (6:59) &mdash; all deep P3.<br>
+    <strong>Raid-wide note:</strong> 8 of 19 usable pulls wiped in P1 before Intermission. This indicates raid-wide consistency issues with Sentinel mechanics that are not specific to Invincibale.
+  </p>
+</section>
+
+<div class="footer">
+  <p>Generated by WCL DPS Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">Warcraft Logs report XYtJ3R1qjdFpM4cT</a></p>
+  <p>Reference players: Synovino (EU), Solarisam (EU), Damastius (US), Kaellach (EU), Ghostsham (US) &mdash; top 5 Elemental Shaman kills, 4-heal comp, US/EU only</p>
+  <p>Analysis mode: PROG &mdash; 2-death threshold applied &mdash; Phase-aware breakdown &mdash; Phase timings from Silversunder Catastrophe / Empowering Darkness / Cosmic Radiation cast events</p>
+</div>
+
+</body>
+</html>

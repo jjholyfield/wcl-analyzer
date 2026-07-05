@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darthurg — Marksmanship Hunter — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 160px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .boss-pct-label { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; white-space: nowrap; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Darthurg <span class="dim">&mdash; Marksmanship Hunter</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; Progression (No Kill &mdash; 26 Wipes) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value yellow">126.0K</div>
+    <div class="stat-label">DPS (Best Pull, Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">286</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">0.01%</div>
+    <div class="stat-label">Best Boss % (Fights 8, 17)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">27.2</div>
+    <div class="stat-label">Total CPM (Fight 23)</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">Darthurg dealt <strong class="yellow">126K DPS</strong> on the longest pull (Fight 23, 4:53) before dying at <strong>4:28</strong> &mdash; a <strong class="red">37.8% gap</strong> behind the #1 ranked MM Hunter kill reference (110.7K DPS in 9:03). However, this comparison must be heavily contextualized: the reference is from a <strong>full kill</strong> (505s) while Darthurg's pull was a <strong>293s wipe</strong> where the raid collapsed after 4:10 with mass deaths. The primary issues are <strong class="red">Aimed Shot CPM (6.6 vs 9.5)</strong> &mdash; a 31% deficit that accounts for the largest share of the damage gap &mdash; and <strong class="red">53.8s of dead time</strong> across 6 significant gaps where no GCDs were pressed, likely from movement mechanics in Crown's Rift Simulacrum phase. Trueshot was used only <strong class="red">2 times in 4:53</strong> vs the reference's 4 in 8:25 (CPM: <strong class="red">0.4 vs 0.5</strong>), and zero Kill Shots were fired despite the spec's Deathblow procs. The <strong>3 ilvl gap</strong> (286 vs 289) and <strong>6 talent differences</strong> contribute a small portion, but the majority of the gap is execution-based: uptime, Aimed Shot management, and cooldown frequency.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Marksmanship Hunters on Mythic Crown of the Cosmos (kills). Primary reference: <strong>&#1063;&#1077;&#1089;&#1077;&#1088;</strong> (closest talent match at 6 diffs, 103.5K DPS, 8:25 kill). Note: all references are from completed kills while Darthurg's data is from a 4:53 wipe &mdash; the reference had the full fight to sustain DPS including execute phase.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Darthurg</strong></td>
+      <td>126,045</td>
+      <td>4:53 <span class="tag tag-crit">WIPE</span></td>
+      <td>286.1</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Died at 4:28</span></td>
+    </tr>
+    <tr>
+      <td>&#23567;&#40657;&#22235;&#21495; <span class="ref-badge">#1</span></td>
+      <td class="green">110,660</td>
+      <td>9:03</td>
+      <td>290.1</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#23567;&#40657;&#20116;&#21495; <span class="ref-badge">#2</span></td>
+      <td class="green">107,792</td>
+      <td>8:24</td>
+      <td>289.4</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#19968;&#23545;&#23567;&#29482;&#20180; <span class="ref-badge">#3</span></td>
+      <td class="green">106,093</td>
+      <td>8:37</td>
+      <td>290.6</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>&#1063;&#1077;&#1089;&#1077;&#1088; <span class="ref-badge">#4 PRIMARY</span></td>
+      <td class="green">103,461</td>
+      <td>8:25</td>
+      <td>289.1</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#23567;&#40657;&#19971;&#21495; <span class="ref-badge">#5</span></td>
+      <td class="green">103,047</td>
+      <td>8:22</td>
+      <td>289.1</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td><span class="tag tag-same">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">All 5 references are kill data (8-9 min fights) vs Darthurg's 4:53 wipe. Darthurg's raw DPS number (126K) is <em>higher</em> than every reference kill because short/mid-length fights are burst-weighted. The real comparison is CPM efficiency and ability priority, not raw DPS. The reference's Aimed Shot CPM of 9.5 vs Darthurg's 6.6 on a per-minute basis reveals the execution gap independent of fight length.</p>
+
+<!-- FIGHT 23 DEATH TIMELINE -->
+<h2>Fight 23 &mdash; Raid State Timeline</h2>
+<p class="section-intro">Crown of the Cosmos is a 3-phase fight: Sentinels &rarr; Rift Simulacrum &rarr; Devouring Cosmos. Fight 23 reached 77.31% boss remaining before the raid wiped. Darthurg died at 4:28 to Simulacrum Backlash.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Phase markers -->
+  <div style="position:absolute;top:0;left:0;height:100%;width:34%;background:rgba(88,166,255,0.06);border-right:1px dashed var(--accent);">
+    <span class="timeline-label" style="top:2px;left:4px;color:var(--accent);font-size:9px;">Phase 1: Sentinels</span>
+  </div>
+  <div style="position:absolute;top:0;left:34%;height:100%;width:34%;background:rgba(188,140,255,0.06);border-right:1px dashed var(--purple);">
+    <span class="timeline-label" style="top:2px;left:4px;color:var(--purple);font-size:9px;">Phase 2: Rift Simulacrum</span>
+  </div>
+  <div style="position:absolute;top:0;left:68%;height:100%;width:32%;background:rgba(248,81,73,0.06);">
+    <span class="timeline-label" style="top:2px;left:4px;color:var(--red);font-size:9px;">Phase 3: Devouring Cosmos</span>
+  </div>
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left: 51.4%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 16px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 2 deaths (2:30)</span>
+  </div>
+  <div class="timeline-marker" style="left: 55.4%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 4px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Invincibale (2:42)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.1%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="bottom: 16px; left: 6px; color: var(--red); font-size: 9px;">&#x2620; Mass wipe (4:01+)</span>
+  </div>
+  <div class="timeline-marker" style="left: 91.6%; border-color: var(--red); width: 2px;">
+    <span class="timeline-label" style="bottom: 4px; left: 6px; color: var(--red); font-size: 9px;">&#x2620; Darthurg (4:28)</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">2:27</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">4:53</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State</div>
+  <p>0:00&ndash;2:30 = 20/20 alive &middot; 2:30 = 18/20 (Alitheria + Smokinthisza to Silverstrike Barrage) &middot; 2:42 = 17/20 (Invincibale) &middot; 3:45&ndash;4:01 = rapid collapse (Son&igrave;c, Invincibale, Orichamaru, Starfighter, Moistbear die) &middot; 4:05 = 12/20 &middot; 4:14 = 9/20 (Unholyftw, Nurnyx die) &middot; 4:24 = mass wipe (5 die simultaneously) &middot; <strong class="red">4:28 Darthurg dies to Simulacrum Backlash</strong></p>
+  <p style="margin-top: 4px; color: var(--yellow);">The raid collapsed in Phase 3. Only 3 players survived past 4:28. Darthurg's DPS data is most meaningful for the first ~3:45 before the wipe cascade began.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Darthurg (4:53 wipe, Fight 23) vs &#1063;&#1077;&#1089;&#1077;&#1088; (8:25 kill). Rotational abilities only &mdash; sorted by DPS impact. MM Hunter rotation revolves around Aimed Shot as the primary damage source, with Arcane Shot spending Precise Shots buffs between each Aimed Shot, Rapid Fire building Bulletstorm and reducing Aimed Shot cooldown, and Volley activating Double Tap.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Aimed Shot</strong></td>
+      <td>32</td>
+      <td class="red">6.6</td>
+      <td>80</td>
+      <td>9.5</td>
+      <td class="red">&minus;31%</td>
+      <td><span class="tag tag-crit">Critical</span></td>
+    </tr>
+    <tr>
+      <td><strong>Arcane Shot</strong></td>
+      <td>62</td>
+      <td class="green">12.7</td>
+      <td>69</td>
+      <td>8.2</td>
+      <td class="green">+55%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Rapid Fire</strong></td>
+      <td>14</td>
+      <td class="yellow">2.9</td>
+      <td>30</td>
+      <td>3.6</td>
+      <td class="red">&minus;20%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Steady Shot</strong></td>
+      <td>10</td>
+      <td class="yellow">2.0</td>
+      <td>40</td>
+      <td>4.8</td>
+      <td class="red">&minus;57%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Kill Shot</strong></td>
+      <td>0</td>
+      <td class="red">0.0</td>
+      <td>11</td>
+      <td>1.3</td>
+      <td class="red">&minus;100%</td>
+      <td><span class="tag tag-crit">Missing</span></td>
+    </tr>
+    <tr>
+      <td>Volley</td>
+      <td>6</td>
+      <td>1.2</td>
+      <td>8</td>
+      <td>1.0</td>
+      <td class="green">+28%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Explosive Shot</td>
+      <td>8</td>
+      <td>1.6</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td class="dim">&mdash;</td>
+      <td><span class="tag tag-info">Talent diff</span></td>
+    </tr>
+    <tr>
+      <td>Moonlight Chakram</td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="yellow">&minus;57%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Trueshot</td>
+      <td>2</td>
+      <td>0.4</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="yellow">&minus;15%</td>
+      <td><span class="tag tag-info">Short fight</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Critical: Aimed Shot CPM Deficit</div>
+    <p style="font-size: 14px;">Aimed Shot is the #1 damage ability for MM Hunter (40.9% of Darthurg's total damage, 42.6% of reference). At <strong>6.6 CPM vs 9.5 CPM</strong>, Darthurg is pressing Aimed Shot <strong>31% less often</strong> per minute. Over 4:53, that means roughly <strong>14 missed Aimed Shots</strong> compared to what the reference would fire in the same time. Each Aimed Shot generates Precise Shots buffs that empower the next Arcane Shot &mdash; fewer Aimed Shots means fewer Precise Shots consumed, which explains the Arcane Shot over-casting (unbuffed Arcane Shots filling dead time). The Take Aim talent means Rapid Fire reduces Aimed Shot cooldown &mdash; the Rapid Fire deficit compounds this problem.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Zero Kill Shots Fired</div>
+    <p style="font-size: 14px;">The reference fired <strong>11 Kill Shots</strong> across the fight via Deathblow procs (Aimed Shot has a 20% chance to reset Kill Shot cooldown). Darthurg fired <strong>zero</strong>. Kill Shot does significant damage and is essentially free when it procs &mdash; it should be used immediately after every Aimed Shot that triggers Deathblow. In a 4:53 fight with 32 Aimed Shots, roughly 6-7 Deathblow procs would be expected. Each missed Kill Shot is a high-damage ability that costs nothing to press. The reference's 11 Kill Shots accounted for <strong>4.25M damage (4.6% of total)</strong>.</p>
+  </div>
+</div>
+
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 12px;">
+  <div class="card-header yellow">Arcane Shot Over-Casting Without Precise Shots</div>
+  <p style="font-size: 14px;">Darthurg casts Arcane Shot at <strong>12.7 CPM vs the reference's 8.2 CPM</strong> &mdash; 55% more often. In the MM Hunter rotation, Arcane Shot should <em>only</em> be cast when Precise Shots is active (after an Aimed Shot). Casting Arcane Shot without Precise Shots deals reduced damage and wastes Focus that could be used on a Steady Shot to regenerate Focus for the next Aimed Shot. The high Arcane Shot count combined with low Aimed Shot count suggests a pattern of casting unbuffed Arcane Shots during downtime instead of using Steady Shot to regenerate Focus.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Total damage: Darthurg 40.7M (126K DPS, 4:53 wipe) vs &#1063;&#1077;&#1089;&#1077;&#1088; 91.8M (103.5K DPS, 8:25 kill). The reference had 73% more fight time. Percentages show damage distribution &mdash; the key comparison.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Dmg</th><th>Player %</th><th>Ref Dmg</th><th>Ref %</th><th>% Gap</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Aimed Shot</strong></td>
+      <td>16.63M</td>
+      <td>40.9%</td>
+      <td class="purple">39.13M</td>
+      <td>42.6%</td>
+      <td class="yellow">&minus;1.7%</td>
+    </tr>
+    <tr>
+      <td><strong>Arcane Shot</strong></td>
+      <td>9.10M</td>
+      <td class="yellow">22.4%</td>
+      <td class="purple">12.26M</td>
+      <td>13.4%</td>
+      <td class="yellow">+9.0%</td>
+    </tr>
+    <tr>
+      <td>Rapid Fire</td>
+      <td>3.52M</td>
+      <td>8.6%</td>
+      <td class="purple">7.57M</td>
+      <td>8.3%</td>
+      <td class="dim">+0.4%</td>
+    </tr>
+    <tr>
+      <td>Lunar Storm</td>
+      <td>3.33M</td>
+      <td>8.2%</td>
+      <td class="purple">9.09M</td>
+      <td>9.9%</td>
+      <td class="yellow">&minus;1.7%</td>
+    </tr>
+    <tr>
+      <td>Master Marksman</td>
+      <td>2.43M</td>
+      <td>6.0%</td>
+      <td class="purple">5.63M</td>
+      <td>6.1%</td>
+      <td class="dim">&minus;0.1%</td>
+    </tr>
+    <tr>
+      <td>Volley</td>
+      <td>1.82M</td>
+      <td>4.5%</td>
+      <td class="purple">3.61M</td>
+      <td>3.9%</td>
+      <td class="dim">+0.5%</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Kill Shot</strong></td>
+      <td>0</td>
+      <td class="red">0.0%</td>
+      <td class="purple">4.25M</td>
+      <td>4.6%</td>
+      <td class="red">&minus;4.6%</td>
+    </tr>
+    <tr>
+      <td>Moonlight Chakram</td>
+      <td>0.40M</td>
+      <td>1.0%</td>
+      <td class="purple">4.97M</td>
+      <td>5.4%</td>
+      <td class="red">&minus;4.4%</td>
+    </tr>
+    <tr>
+      <td>Explosive Shot</td>
+      <td>0.94M</td>
+      <td>2.3%</td>
+      <td class="dim">0</td>
+      <td>0.0%</td>
+      <td class="dim">+2.3%</td>
+    </tr>
+    <tr>
+      <td>Sanctified Armaments</td>
+      <td>0.72M</td>
+      <td>1.8%</td>
+      <td class="purple">1.54M</td>
+      <td>1.7%</td>
+      <td class="dim">+0.1%</td>
+    </tr>
+    <tr>
+      <td>Let Fly!</td>
+      <td>0.66M</td>
+      <td>1.6%</td>
+      <td class="purple">0.94M</td>
+      <td>1.0%</td>
+      <td class="dim">+0.6%</td>
+    </tr>
+    <tr>
+      <td>Steady Shot</td>
+      <td>0.46M</td>
+      <td>1.1%</td>
+      <td class="purple">1.15M</td>
+      <td>1.3%</td>
+      <td class="dim">&minus;0.1%</td>
+    </tr>
+    <tr>
+      <td>Auto Shot</td>
+      <td>0.40M</td>
+      <td>1.0%</td>
+      <td class="purple">0.67M</td>
+      <td>0.7%</td>
+      <td class="dim">+0.2%</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Damage Distribution Analysis</div>
+  <p style="font-size: 14px;">The most revealing comparison is damage <em>distribution</em> since fight length differs. Darthurg's Arcane Shot accounts for <strong>22.4% of total damage vs 13.4%</strong> in the reference &mdash; a massive 9% over-weight. Meanwhile Kill Shot (0% vs 4.6%) and Moonlight Chakram (1.0% vs 5.4%) are heavily underweight. The reference converts Trueshot windows into Moonlight Chakram damage (cast as a filler late in Trueshot with Sentinel hero talent), and Deathblow procs into Kill Shot damage. Darthurg is filling those same GCDs with lower-value unbuffed Arcane Shots. The Aimed Shot percentage is surprisingly close (40.9% vs 42.6%) because despite fewer casts, each of Darthurg's Aimed Shots hits comparably hard per-cast &mdash; the issue is cast frequency, not per-cast damage.</p>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown &amp; Trinket Usage</h2>
+<p class="section-intro">Major cooldown cast counts and timing. Trueshot is the primary offensive cooldown &mdash; ideally fired on cooldown with Aimed Shot immediately after. Sentinel hero talent converts Trueshot into Moonlight Chakram after activation.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Uses</th><th>Player Timing</th><th>Ref Uses</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trueshot</strong></td>
+      <td>2</td>
+      <td>0:11, 3:02</td>
+      <td>4</td>
+      <td><span class="tag tag-warn">Low (fight length limited)</span></td>
+    </tr>
+    <tr>
+      <td><strong>Volley</strong></td>
+      <td>6</td>
+      <td>0:03, 0:52, 1:38, 2:28, 3:27, 4:17</td>
+      <td>8</td>
+      <td><span class="tag tag-same">Good &mdash; on cooldown</span></td>
+    </tr>
+    <tr>
+      <td><strong>Algeth'ar Puzzle Box</strong></td>
+      <td>2</td>
+      <td>0:06, 3:05</td>
+      <td>4</td>
+      <td><span class="tag tag-same">Aligned with Trueshot</span></td>
+    </tr>
+    <tr>
+      <td><strong>Blood Fury</strong></td>
+      <td>2</td>
+      <td>0:11, 3:02</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Aligned with Trueshot</span></td>
+    </tr>
+    <tr>
+      <td><strong>Moonlight Chakram</strong></td>
+      <td>1</td>
+      <td>3:02</td>
+      <td>4</td>
+      <td><span class="tag tag-warn">Under-used (Sentinel talent)</span></td>
+    </tr>
+    <tr>
+      <td>Binding Shot</td>
+      <td>2</td>
+      <td>0:35, 1:38</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-info">Utility</span></td>
+    </tr>
+    <tr>
+      <td>Counter Shot</td>
+      <td>1</td>
+      <td>2:21</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-same">Interrupt duty</span></td>
+    </tr>
+    <tr>
+      <td>Exhilaration</td>
+      <td>2</td>
+      <td>1:25, 4:00</td>
+      <td>2</td>
+      <td><span class="tag tag-same">Defensive use</span></td>
+    </tr>
+    <tr>
+      <td>Survival of the Fittest</td>
+      <td>2</td>
+      <td>2:20, 4:18</td>
+      <td>2</td>
+      <td><span class="tag tag-same">Defensive use</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--cyan);">
+  <div class="card-header cyan">Trueshot Window Efficiency</div>
+  <p style="font-size: 14px;">Darthurg's two Trueshot windows are at <strong>0:11</strong> (opener) and <strong>3:02</strong> (mid-fight). The 2:51 gap between them suggests Trueshot is on a ~2min cooldown (standard without heavy Calling the Shots reduction). The reference uses Trueshot 4 times in 8:25 &mdash; averaging every ~2:30. Good news: Darthurg is aligning Trueshot with Blood Fury racial and Algeth'ar Puzzle Box trinket correctly (all three fire at the same second). The second Trueshot also correctly triggers Moonlight Chakram (1 cast at 3:02). For longer pulls, fitting a 3rd Trueshot around the 5:00 mark would be a significant DPS increase.</p>
+</div>
+
+<!-- DEAD TIME / UPTIME ANALYSIS -->
+<h2>Uptime &amp; Dead Time Analysis</h2>
+<p class="section-intro">Significant gaps (&gt;4 seconds) between GCD-consuming abilities. MM Hunter is a ranged DPS with no melee requirement &mdash; gaps of this length indicate movement without instant casts, Focus starvation, or mechanical confusion.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Time</th><th>Gap</th><th>Before</th><th>After</th><th>Likely Cause</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0:28</td>
+      <td class="yellow">4.0s</td>
+      <td>Arcane Shot</td>
+      <td>Aimed Shot</td>
+      <td><span class="tag tag-info">Focus regen wait</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>1:21</td>
+      <td class="red">6.8s</td>
+      <td>Aimed Shot</td>
+      <td>Arcane Shot</td>
+      <td><span class="tag tag-warn">Movement / transition?</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td>2:04</td>
+      <td class="red">15.1s</td>
+      <td>Arcane Shot</td>
+      <td>Arcane Shot</td>
+      <td><span class="tag tag-crit">Major dead zone &mdash; phase transition?</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>2:21</td>
+      <td class="red">7.2s</td>
+      <td>Rapid Fire</td>
+      <td>Volley</td>
+      <td><span class="tag tag-warn">Post-transition recovery</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>2:48</td>
+      <td class="red">10.8s</td>
+      <td>Arcane Shot</td>
+      <td>Arcane Shot</td>
+      <td><span class="tag tag-crit">Movement / mechanic handling</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>3:14</td>
+      <td class="red">9.8s</td>
+      <td>Arcane Shot</td>
+      <td>Arcane Shot</td>
+      <td><span class="tag tag-warn">Post-Trueshot drop</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header red">53.8 Seconds of Dead Time</div>
+  <p style="font-size: 14px;">Across the 293-second fight, Darthurg had <strong>53.8 seconds</strong> where no GCD was pressed (in gaps &gt;4s). That is <strong>18.4% of the fight</strong> spent not casting. The largest gap is <strong>15.1 seconds</strong> at the 2:04 mark, which coincides with what appears to be a phase transition in Crown of the Cosmos (likely the Rift Simulacrum phase beginning). As a ranged DPS, MM Hunter should be able to maintain near-full uptime through movement phases using instant-cast abilities: Arcane Shot (if Precise Shots active), Rapid Fire (channeled but mobile with certain talents), Volley (instant), and Explosive Shot (instant). The 53.8s of dead time translates to roughly <strong>8-10 missed GCDs</strong> at MM Hunter's GCD speed, which would account for approximately 3-4 additional Aimed Shots and their corresponding Precise Shot procs.</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Darthurg during Fight 23. Crown of the Cosmos deals heavy raid-wide damage through void-themed mechanics. Most sources are unavoidable for ranged DPS.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>3,213K</td>
+      <td>118</td>
+      <td>730K</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide periodic</span></td>
+    </tr>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>2,544K</td>
+      <td>94</td>
+      <td>210K</td>
+      <td><span class="tag tag-warn">Partially &mdash; phase mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>1,483K</td>
+      <td>55</td>
+      <td>150K</td>
+      <td><span class="tag tag-same">No &mdash; targeted DoT</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,277K</td>
+      <td>30</td>
+      <td>50K</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>641K</td>
+      <td>10</td>
+      <td>20K</td>
+      <td><span class="tag tag-warn">Partially &mdash; position-based</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>545K</td>
+      <td>8</td>
+      <td>60K</td>
+      <td><span class="tag tag-warn">Partially avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>521K</td>
+      <td>21</td>
+      <td>140K</td>
+      <td><span class="tag tag-same">No &mdash; shield mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>409K</td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-diff">Yes &mdash; environmental</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>349K</td>
+      <td>13</td>
+      <td>90K</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide</span></td>
+    </tr>
+    <tr>
+      <td>Interrupting Tremor</td>
+      <td>232K</td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td>
+      <td>198K</td>
+      <td>1</td>
+      <td>100K</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Barrage</td>
+      <td>193K</td>
+      <td>2</td>
+      <td>40K</td>
+      <td><span class="tag tag-warn">Dodge mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Corrupting Essence</td>
+      <td>159K</td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-same">No</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">The <strong class="yellow">Falling damage (409K, 2 hits)</strong> is the most notable avoidable source &mdash; falling off the platform in Crown costs health and likely caused the dead time gaps. Simulacrum Backlash (94 hits) is the Phase 2/3 ambient damage that ultimately killed Darthurg. The damage profile is otherwise reasonable for a prog pull where the raid is still learning positioning.</p>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during Fight 23. The raid used Heroism at 2:59 (just before the second Trueshot window).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Timing</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism</strong></td>
+      <td>2:59</td>
+      <td><span class="tag tag-same">Aligned with 2nd Trueshot at 3:02</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>6 applications</td>
+      <td><span class="tag tag-same">Aug Evoker support present</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td><span class="tag tag-info">Not received</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>None detected</td>
+      <td><span class="tag tag-info">Not received</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Heroism at 2:59 aligns well with the second Trueshot window (3:02). No Power Infusion received. External buff context should be considered when comparing to reference &mdash; kill pulls often have more optimized buff timing and distribution.</p>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. MM Hunter stat priority: Crit &asymp; Mastery &gt; Versatility &gt; Haste (Haste is the least valued secondary for Marksmanship).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Darthurg</th><th>&#1063;&#1077;&#1089;&#1077;&#1088;</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>286.1</td>
+      <td>289.1</td>
+      <td><span class="tag tag-warn">&minus;3.0 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Agility</td>
+      <td class="green">2,805</td>
+      <td>2,233</td>
+      <td>Player has +26% more Agility</td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="yellow">1,291</td>
+      <td>1,648</td>
+      <td>Player has &minus;22% Crit</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="yellow">316</td>
+      <td>381</td>
+      <td>Player has &minus;17% Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="green">791</td>
+      <td>696</td>
+      <td>Player has +14% more Mastery</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td class="green">266</td>
+      <td>165</td>
+      <td>Player has +61% more Vers</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Despite being 3 ilvl lower, Darthurg has significantly more Agility (+26%) and Versatility. The reference has substantially more Crit (+22%), which directly affects Aimed Shot damage and Trueshot effectiveness (Trueshot grants bonus crit). The Crit gap is meaningful for MM Hunter since Aimed Shot crits are the spec's primary damage driver. However, stat differences alone do not explain the Aimed Shot CPM gap (6.6 vs 9.5) &mdash; that is rotational execution.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Darthurg's DPS across all 26 pulls on Mythic Crown of the Cosmos. No kill achieved. Boss % shown on each bar (lower = better progression). Color: <span class="green">green</span> = &lt;10% boss HP, <span class="yellow">yellow</span> = 10-50%, <span class="orange">orange</span> = 50-90%, <span class="red">red</span> = &gt;90%.</p>
+
+<div class="card">
+  <div class="progression-chart" style="padding-bottom: 24px;">
+    <!-- Fight 1: 31K DPS, 28s, 99.45% boss -->
+    <div class="prog-bar" style="height: 14%; background: var(--red);" data-tooltip="F1: 31K DPS (0:28) 99.5% boss">
+      <span class="prog-label">1</span>
+    </div>
+    <!-- Fight 2: 188K DPS, 63s, 51.98% boss -->
+    <div class="prog-bar" style="height: 87%; background: var(--orange);" data-tooltip="F2: 188K DPS (1:03) 52.0% boss">
+      <span class="prog-label">2</span>
+    </div>
+    <!-- Fight 3: 163K DPS, 117s, 54.75% boss -->
+    <div class="prog-bar" style="height: 76%; background: var(--orange);" data-tooltip="F3: 163K DPS (1:57) 54.8% boss">
+      <span class="prog-label">3</span>
+    </div>
+    <!-- Fight 4: 154K DPS, 76s, 54.62% boss -->
+    <div class="prog-bar" style="height: 71%; background: var(--orange);" data-tooltip="F4: 154K DPS (1:16) 54.6% boss">
+      <span class="prog-label">4</span>
+    </div>
+    <!-- Fight 5: 6K DPS, 60s, 74.02% (early death?) -->
+    <div class="prog-bar" style="height: 3%; background: var(--orange);" data-tooltip="F5: 6K DPS (1:00) 74.0% boss - early death">
+      <span class="prog-label">5</span>
+    </div>
+    <!-- Fight 6: 113K DPS, 143s, 19.48% boss -->
+    <div class="prog-bar" style="height: 52%; background: var(--yellow);" data-tooltip="F6: 113K DPS (2:23) 19.5% boss">
+      <span class="prog-label">6</span>
+    </div>
+    <!-- Fight 7: 134K DPS, 89s, 41.72% boss -->
+    <div class="prog-bar" style="height: 62%; background: var(--yellow);" data-tooltip="F7: 134K DPS (1:29) 41.7% boss">
+      <span class="prog-label">7</span>
+    </div>
+    <!-- Fight 8: 139K DPS, 142s, 0.01% boss -->
+    <div class="prog-bar" style="height: 64%; background: var(--green);" data-tooltip="F8: 139K DPS (2:22) 0.01% boss">
+      <span class="prog-label" style="color:var(--green);">8</span>
+    </div>
+    <!-- Fight 9: 110K DPS, 152s, 7.27% boss -->
+    <div class="prog-bar" style="height: 51%; background: var(--green);" data-tooltip="F9: 110K DPS (2:32) 7.3% boss">
+      <span class="prog-label">9</span>
+    </div>
+    <!-- Fight 10: 144K DPS, 220s, 98.36% boss -->
+    <div class="prog-bar" style="height: 67%; background: var(--red);" data-tooltip="F10: 144K DPS (3:40) 98.4% boss">
+      <span class="prog-label">10</span>
+    </div>
+    <!-- Fight 11: 158K DPS, 122s, 30.29% boss -->
+    <div class="prog-bar" style="height: 73%; background: var(--yellow);" data-tooltip="F11: 158K DPS (2:02) 30.3% boss">
+      <span class="prog-label">11</span>
+    </div>
+    <!-- Fight 12: 159K DPS, 234s, 92.06% boss -->
+    <div class="prog-bar" style="height: 73%; background: var(--red);" data-tooltip="F12: 159K DPS (3:54) 92.1% boss">
+      <span class="prog-label">12</span>
+    </div>
+    <!-- Fight 13: 216K DPS, 75s, 60.77% boss -->
+    <div class="prog-bar" style="height: 100%; background: var(--orange);" data-tooltip="F13: 216K DPS (1:15) 60.8% boss">
+      <span class="prog-label">13</span>
+    </div>
+    <!-- Fight 14: 123K DPS, 231s, 95.25% boss -->
+    <div class="prog-bar" style="height: 57%; background: var(--red);" data-tooltip="F14: 123K DPS (3:51) 95.3% boss">
+      <span class="prog-label">14</span>
+    </div>
+    <!-- Fight 15: 58K DPS, 149s, 9.05% boss -->
+    <div class="prog-bar" style="height: 27%; background: var(--green);" data-tooltip="F15: 58K DPS (2:29) 9.1% boss">
+      <span class="prog-label">15</span>
+    </div>
+    <!-- Fight 16: 147K DPS, 130s, 21.23% boss -->
+    <div class="prog-bar" style="height: 68%; background: var(--yellow);" data-tooltip="F16: 147K DPS (2:10) 21.2% boss">
+      <span class="prog-label">16</span>
+    </div>
+    <!-- Fight 17: 100K DPS, 144s, 0.01% boss -->
+    <div class="prog-bar" style="height: 46%; background: var(--green);" data-tooltip="F17: 100K DPS (2:24) 0.01% boss">
+      <span class="prog-label" style="color:var(--green);">17</span>
+    </div>
+    <!-- Fight 18: 141K DPS, 236s, 95.72% boss -->
+    <div class="prog-bar" style="height: 65%; background: var(--red);" data-tooltip="F18: 141K DPS (3:56) 95.7% boss">
+      <span class="prog-label">18</span>
+    </div>
+    <!-- Fight 19: 175K DPS, 114s, 34.53% boss -->
+    <div class="prog-bar" style="height: 81%; background: var(--yellow);" data-tooltip="F19: 175K DPS (1:54) 34.5% boss">
+      <span class="prog-label">19</span>
+    </div>
+    <!-- Fight 20: 199K DPS, 120s, 35.43% boss -->
+    <div class="prog-bar" style="height: 92%; background: var(--yellow);" data-tooltip="F20: 199K DPS (2:00) 35.4% boss">
+      <span class="prog-label">20</span>
+    </div>
+    <!-- Fight 21: 174K DPS, 147s, 0.22% boss -->
+    <div class="prog-bar" style="height: 81%; background: var(--green);" data-tooltip="F21: 174K DPS (2:27) 0.22% boss">
+      <span class="prog-label" style="color:var(--green);">21</span>
+    </div>
+    <!-- Fight 22: 0 DPS, 25s, 99.7% boss (AFK/dead at start?) -->
+    <div class="prog-bar" style="height: 1%; background: var(--red);" data-tooltip="F22: 0 DPS (0:25) 99.7% boss - dead/afk">
+      <span class="prog-label">22</span>
+    </div>
+    <!-- Fight 23: 126K DPS, 293s, 77.31% boss (longest pull) -->
+    <div class="prog-bar" style="height: 58%; background: var(--orange);" data-tooltip="F23: 126K DPS (4:53) 77.3% boss - LONGEST PULL">
+      <span class="prog-label" style="color:var(--accent); font-weight:bold;">23</span>
+    </div>
+    <!-- Fight 24: 117K DPS, 229s, 92.92% boss -->
+    <div class="prog-bar" style="height: 54%; background: var(--red);" data-tooltip="F24: 117K DPS (3:49) 92.9% boss">
+      <span class="prog-label">24</span>
+    </div>
+    <!-- Fight 25: 137K DPS, 188s, 99.88% boss -->
+    <div class="prog-bar" style="height: 63%; background: var(--red);" data-tooltip="F25: 137K DPS (3:08) 99.9% boss">
+      <span class="prog-label">25</span>
+    </div>
+    <!-- Fight 26: 176K DPS, 220s, 96.91% boss -->
+    <div class="prog-bar" style="height: 82%; background: var(--red);" data-tooltip="F26: 176K DPS (3:40) 96.9% boss">
+      <span class="prog-label">26</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px; margin-top: 8px;">
+    <span>Fight 1</span>
+    <span style="color: var(--dim);"><span class="green">&FilledSmallSquare; &lt;10% boss</span> &bull; <span class="yellow">&FilledSmallSquare; 10-50%</span> &bull; <span class="orange">&FilledSmallSquare; 50-90%</span> &bull; <span class="red">&FilledSmallSquare; &gt;90%</span></span>
+    <span>Fight 26</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Darthurg's DPS varies significantly across pulls, which is expected on progression where fight length and death timing differ widely. Filtering to pulls longer than 2 minutes: F3 (163K, 1:57) &rarr; F6 (113K, 2:23) &rarr; F8 (139K, 2:22) &rarr; F9 (110K, 2:32) &rarr; F10 (144K, 3:40) &rarr; F12 (159K, 3:54) &rarr; F14 (123K, 3:51) &rarr; F18 (141K, 3:56) &rarr; F21 (174K, 2:27) &rarr; <strong class="accent">F23 (126K, 4:53)</strong> &rarr; F24 (117K, 3:49) &rarr; F26 (176K, 3:40). Notably, the highest DPS numbers come from shorter pulls (burst phase bias &mdash; F13 at 216K was only 1:15). The longest pulls (F23, F24) show lower DPS because sustained rotation efficiency matters more. <strong>Two near-kills at 0.01% boss</strong> (Fights 8 and 17) show the raid can get there &mdash; consistency is the remaining challenge.</p>
+  <p style="margin-top: 8px; font-size: 14px;"><strong class="yellow">Anomalies:</strong> Fight 5 (6K DPS) and Fight 22 (0 DPS) suggest early deaths or disconnects. Fight 15 (58K DPS over 2:29) also looks like a significant performance outlier, possibly an early death followed by a battle rez.</p>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Aimed Shot frequency &mdash; this is the single biggest DPS lever.</strong> At 6.6 CPM vs the reference's 9.5 CPM, Darthurg is missing roughly <strong>14 Aimed Shots</strong> per 4:53 of fight time. Aimed Shot is 40.9% of total damage. Each missed Aimed Shot also means one fewer Precise Shots proc, which cascades into lower-quality Arcane Shot casts and fewer Spotter's Mark buffs on subsequent Aimed Shots. The fix: prioritize Aimed Shot over everything else. If Aimed Shot has a charge available or will cap soon, press it immediately. Use Rapid Fire to reduce Aimed Shot cooldown (Take Aim talent). Do not cast Arcane Shot or Steady Shot while Aimed Shot has a charge ready. Estimated gain: <strong>+15-20% DPS</strong> if Aimed Shot CPM reaches 9.0+.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Use Kill Shot on every Deathblow proc &mdash; currently zero Kill Shots fired.</strong> The Deathblow talent gives Aimed Shot a 20% chance to reset Kill Shot cooldown. With 32 Aimed Shots in this fight, roughly 6 procs were expected &mdash; <strong>all were missed</strong>. The reference dealt <strong>4.25M damage (4.6%)</strong> from 11 Kill Shots. Kill Shot should be used immediately after any Aimed Shot that triggers the Deathblow proc &mdash; it is essentially a free high-damage ability. Check if Kill Shot is on the action bar and add a WeakAura or alert for Deathblow procs if not already tracking them. Estimated gain: <strong>+4-5% DPS</strong>.
+</div>
+
+<div class="action-item">
+  <strong>3. Reduce dead time during movement &mdash; 53.8s of gaps in a 293s fight.</strong> MM Hunter has multiple instant-cast options for movement: Arcane Shot (with Precise Shots), Rapid Fire (mobile channel), Volley, Explosive Shot. The <strong>15.1s gap at 2:04</strong> and <strong>10.8s gap at 2:48</strong> are the worst offenders. During Crown's phase transitions and movement-heavy mechanics, queue up instant abilities. Pre-position early to minimize forced movement during Aimed Shot hardcasts. Even casting a Steady Shot is better than casting nothing. Estimated gain: <strong>+5-8% DPS</strong> from recovering 8-10 lost GCDs.
+</div>
+
+<div class="action-item">
+  <strong>4. Stop casting Arcane Shot without Precise Shots active.</strong> Arcane Shot at 12.7 CPM vs 8.2 CPM reference means roughly 22 extra Arcane Shots in 4:53 &mdash; many of these are unbuffed casts. The rotation priority is: Aimed Shot &gt; Arcane Shot (with Precise Shots) &gt; Rapid Fire &gt; Steady Shot (Focus regen). When no Precise Shots buff is active and Aimed Shot is on cooldown, use Steady Shot to regenerate Focus for the next Aimed Shot instead of spamming unbuffed Arcane Shots. This improves Focus management and ensures every Arcane Shot hits harder.
+</div>
+
+<div class="action-item">
+  <strong>5. Cast Moonlight Chakram in every Trueshot window (Sentinel talent).</strong> Darthurg used Moonlight Chakram only <strong>1 time</strong> vs the reference's <strong>4 times</strong>. With the Sentinel hero talent, Moonlight Chakram becomes available after casting Trueshot and should be used as a filler late in the Trueshot window when Aimed Shot is on cooldown. The reference dealt <strong>5.0M damage (5.4%)</strong> from Moonlight Chakram. Use it in every Trueshot window to not waste the Sentinel-granted ability.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Cooldown alignment:</strong> Trueshot, Blood Fury, and Algeth'ar Puzzle Box are perfectly synchronized at 0:11 and 3:02. Heroism at 2:59 aligns with the second Trueshot window. This is textbook cooldown stacking.<br><br>
+    <strong>Volley usage:</strong> 6 casts at 1.2 CPM, slightly above the reference's 1.0 CPM. Volley is being used on cooldown to activate Double Tap and build Bulletstorm stacks. This is correct.<br><br>
+    <strong>Defensive awareness:</strong> Exhilaration and Survival of the Fittest both used twice each at appropriate moments (1:25 and 4:00 for Exhilaration, 2:20 and 4:18 for SotF). Healthstone and Health Potion used in the final 30 seconds. Shows active survival play under pressure.<br><br>
+    <strong>Interrupt contribution:</strong> Counter Shot used at 2:21. Contributing to the interrupt rotation.<br><br>
+    <strong>Rapid Fire consistency:</strong> 14 casts across 4:53 (2.9 CPM) shows Rapid Fire is being used regularly, though there is room to improve to the reference's 3.6 CPM. The gap is moderate, not critical.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary &mdash; Progression Context</div>
+  <p style="font-size: 14px;">This is progression data from 26 wipes on Mythic Crown of the Cosmos. The raid reached <strong>0.01% boss HP twice</strong> (Fights 8 and 17) but has not yet secured a kill. Darthurg's DPS on the longest pull (126K) is compared against reference <em>kills</em> (103-110K DPS over 8-9 minute fights). The raw DPS number is misleadingly high because shorter fights are burst-weighted. The real performance indicators are: <strong class="red">Aimed Shot CPM (6.6 vs 9.5)</strong>, <strong class="red">zero Kill Shots</strong>, <strong class="red">53.8s dead time</strong>, and <strong class="yellow">Arcane Shot over-casting</strong>. Fixing Aimed Shot frequency alone would close the majority of the efficiency gap. Adding Kill Shot usage and reducing dead time would bring Darthurg's sustained output in line with top-ranked kills. The 3 ilvl gap (286 vs 289) and 6 talent differences are secondary factors &mdash; the gap is primarily execution-based.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (4:53 wipe, 77.31% boss HP remaining). Primary reference: &#1063;&#1077;&#1089;&#1077;&#1088; (#4 ranked MM Hunter, report <code>9GtVZRzraXnhj324</code>, Fight 2, 8:25 kill, 103.5K DPS). All times relative to fight start. Spec guide knowledge sourced from Icy Veins and Maxroll (Patch 12.0.7).</p>
+  <p style="margin-top: 4px;">Talent delta: 6 differences (3 player-only nodes, 3 reference-only nodes). Item level difference: &minus;3.0 (286.1 vs 289.1). Both players use Sentinel hero talent. Darthurg received Heroism at 2:59; reference buff context unknown. This is progression wipe data compared against kill data &mdash; interpret all comparisons with that context.</p>
+</div>
+
+</body>
+</html>

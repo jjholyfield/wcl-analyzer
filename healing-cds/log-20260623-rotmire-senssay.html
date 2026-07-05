@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healer Analysis — Senssay (MW Monk) — Mythic Rotmire — June 23</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 32px; max-width: 1000px; margin: 0 auto; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 28px; }
+  h2 { font-size: 18px; font-weight: 600; color: var(--accent); margin-top: 40px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; color: #fff; margin-top: 24px; margin-bottom: 10px; }
+
+  /* Summary Cards */
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+  .summary-label { font-size: 11px; color: var(--dim); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .summary-value { font-size: 28px; font-weight: 700; }
+  .summary-sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+  /* Verdict */
+  .verdict { background: var(--surface); border-radius: 8px; padding: 20px 24px; margin-bottom: 24px; font-size: 14px; line-height: 1.8; }
+  .verdict-green { border-left: 4px solid var(--green); }
+  .verdict-yellow { border-left: 4px solid var(--yellow); }
+  .verdict-red { border-left: 4px solid var(--red); }
+  .verdict strong { color: #fff; }
+
+  /* Tables */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  .data-table th { text-align: left; padding: 8px 12px; background: var(--surface); color: var(--dim); font-weight: 600; border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .data-table td { padding: 7px 12px; border-bottom: 1px solid #1c2128; color: var(--dim); }
+  .data-table tr:hover { background: #1c2128; }
+  .data-table .highlight-row { background: rgba(0, 255, 152, 0.06); }
+  .data-table .highlight-row td { color: var(--text); }
+
+  /* Status tags */
+  .bad { color: var(--red); font-weight: 600; }
+  .warn { color: var(--yellow); font-weight: 600; }
+  .ok { color: var(--green); font-weight: 600; }
+  .neutral { color: var(--dim); }
+
+  /* Finding cards */
+  .finding { background: var(--surface); border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; font-size: 14px; color: var(--dim); line-height: 1.7; }
+  .finding-bad { border-left: 3px solid var(--red); }
+  .finding-warn { border-left: 3px solid var(--yellow); }
+  .finding-good { border-left: 3px solid var(--green); }
+  .finding-info { border-left: 3px solid var(--accent); }
+  .finding strong { color: var(--text); }
+
+  /* Action items */
+  .action { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 12px; }
+  .action-critical { border-left: 4px solid var(--red); }
+  .action-important { border-left: 4px solid var(--accent); }
+  .action-num { font-size: 28px; font-weight: 700; color: #30363d; float: left; margin-right: 16px; font-family: 'Courier New', monospace; line-height: 1; }
+  .action-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+  .action-body { font-size: 13px; color: var(--dim); line-height: 1.7; }
+  .action-body strong { color: #ccc; }
+
+  /* Timeline */
+  .timeline-bar { position: relative; background: #1c2128; border-radius: 6px; height: 48px; margin: 16px 0 24px 0; overflow: visible; }
+  .timeline-marker { position: absolute; top: 0; width: 3px; height: 100%; border-radius: 2px; }
+  .timeline-label { position: absolute; top: -18px; font-size: 10px; color: var(--dim); white-space: nowrap; transform: translateX(-50%); }
+  .timeline-time { position: absolute; bottom: -18px; font-size: 10px; color: #484f58; transform: translateX(-50%); }
+
+  /* CD Grid */
+  .cd-grid { display: grid; grid-template-columns: 160px repeat(3, 1fr); gap: 1px; background: var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; font-size: 12px; }
+  .cd-grid-header { background: #1c2128; padding: 10px 12px; font-weight: 600; color: var(--dim); text-align: center; }
+  .cd-grid-name { background: var(--surface); padding: 10px 12px; font-weight: 500; }
+  .cd-grid-cell { background: var(--surface); padding: 8px 10px; text-align: center; }
+  .cd-pill { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; margin: 2px; }
+
+  /* Monk color */
+  .monk-color { color: #00ff98; }
+  .monk-pill { background: rgba(0,255,152,0.12); color: #00ff98; }
+  .druid-pill { background: rgba(255,125,10,0.12); color: #ff7d0a; }
+  .shaman-pill { background: rgba(0,112,222,0.12); color: #0070de; }
+  .priest-pill { background: rgba(255,255,255,0.08); color: #e0e0e0; }
+  .paladin-pill { background: rgba(244,140,186,0.12); color: #f48cba; }
+  .dead-pill { background: rgba(248,81,73,0.12); color: var(--red); }
+  .none-pill { background: rgba(139,148,158,0.08); color: #484f58; }
+
+  /* Wipe chart */
+  .wipe-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin: 16px 0 24px 0; }
+  .wipe-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; }
+  .wipe-bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px; position: relative; cursor: default; }
+  .wipe-bar-label { font-size: 10px; color: var(--dim); margin-top: 6px; }
+  .wipe-bar-value { font-size: 11px; color: var(--text); margin-bottom: 4px; font-weight: 600; }
+
+  /* OH bar */
+  .oh-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; width: 80px; background: #1c2128; }
+  .oh-bar-fill { height: 100%; }
+
+  /* Two column grid */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+  /* Stats row */
+  .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: #484f58; text-align: center; }
+
+  @media (max-width: 700px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .cd-grid { grid-template-columns: 120px repeat(3, 1fr); font-size: 11px; }
+    .two-col { grid-template-columns: 1fr; }
+    .stat-cards { grid-template-columns: 1fr; }
+    body { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" style="display:inline-block;margin-bottom:16px;font-size:13px;color:var(--dim);text-decoration:none;">&larr; June 23 Rotmire Log Analysis</a>
+
+<h1>Healer Analysis &mdash; <span class="monk-color">Senssay</span></h1>
+<p class="subtitle">Mistweaver Monk &mdash; Mythic Rotmire (Sporefall) &mdash; June 23, 2026 &mdash; Kill (8:09) &mdash; Report Hz1Lm672dZnBw9YC</p>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SUMMARY CARDS -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-label">HPS</div>
+    <div class="summary-value" style="color:var(--green)">170K</div>
+    <div class="summary-sub">83.2M total healing</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Item Level</div>
+    <div class="summary-value" style="color:var(--text)">291</div>
+    <div class="summary-sub">Ref avg: 290</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Status</div>
+    <div class="summary-value" style="color:var(--green)">Survived</div>
+    <div class="summary-sub">Clean kill</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Overheal</div>
+    <div class="summary-value" style="color:var(--green)">27.7%</div>
+    <div class="summary-sub">Ref: 24.5%</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- BOTTOM LINE VERDICT -->
+<div class="verdict verdict-yellow">
+  <strong>Survived with strong throughput (170K HPS, #1 healer on the kill) and healthy overheal (27.7%).</strong>
+  Two areas need attention: <strong>Enveloping Mist usage is roughly half the reference rate</strong> (39 casts vs 83, -52% CPM), which directly reduces Invigorating Mists procs and overall throughput ceiling. <strong>Mana Tea usage is also significantly lower</strong> (16 vs 45 casts), meaning mana efficiency was left on the table. Celestial Conduit was used 3 times vs the reference's 6 &mdash; the reference treats it as a 90-second rotational cooldown rather than saving it for Blooms only. CD timing relative to Fungal Bloom was adequate but could be tighter.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+
+<table class="data-table">
+  <thead>
+    <tr><th>#</th><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>OH%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td style="color:var(--dim)">&#27809;&#36947;&#29702;&#30340;</td>
+      <td style="color:var(--green)">264,521</td>
+      <td>7:14</td>
+      <td>291</td>
+      <td>7</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td style="color:var(--dim)">&#32753;&#32558;&#23396;&#40511;&#24433;&#20024;</td>
+      <td style="color:var(--green)">259,937</td>
+      <td>7:55</td>
+      <td>289</td>
+      <td>25</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td style="color:var(--dim)">Fourteen</td>
+      <td style="color:var(--green)">257,141</td>
+      <td>6:24</td>
+      <td>290</td>
+      <td>5</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td style="color:var(--dim)">&#26178;&#27495;&#29378;&#19977;</td>
+      <td style="color:var(--green)">256,537</td>
+      <td>8:41</td>
+      <td>290</td>
+      <td>4</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr class="highlight-row" style="border-left:3px solid var(--cyan);">
+      <td>Ref</td>
+      <td style="color:var(--cyan)">&#25105;&#36523;&#21518;&#27809;&#23614;&#24052; (Primary)</td>
+      <td style="color:var(--green)">254,857</td>
+      <td>8:11</td>
+      <td>291</td>
+      <td style="color:var(--green)">3</td>
+      <td>24.5%</td>
+    </tr>
+    <tr class="highlight-row" style="border-left:3px solid #00ff98;">
+      <td>&mdash;</td>
+      <td class="monk-color" style="font-weight:600;">Senssay (You)</td>
+      <td style="color:var(--yellow)">170,195</td>
+      <td>8:09</td>
+      <td>291</td>
+      <td>&mdash;</td>
+      <td>27.7%</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="finding finding-info">
+  <strong>Primary reference selected:</strong> Player #5 with only <strong>3 talent differences</strong> and identical item level (291). Similar fight duration (8:11 vs 8:09). The HPS gap is 84K &mdash; most of the difference traces to Enveloping Mist volume, Celestial Conduit frequency, and Mana Tea discipline.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+
+<p style="font-size:13px;color:var(--dim);margin-bottom:12px;">Rotmire is a single-phase boss on a repeating energy cycle. Fungal Bloom fires at 100 energy (~every 136 seconds). Bursting Pustules apply stacking Rotting Pustules DoT (the soft enrage). Add waves spawn via Awaken Fungi twice per cycle.</p>
+
+<div class="timeline-bar" style="margin-top:32px;">
+  <!-- Time markers -->
+  <span class="timeline-time" style="left:0%;">0:00</span>
+  <span class="timeline-time" style="left:50%;">4:05</span>
+  <span class="timeline-time" style="left:100%;">8:09</span>
+
+  <!-- Bursting Pustules (dim markers) -->
+  <div class="timeline-marker" style="left:2.0%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 0:10"></div>
+  <div class="timeline-marker" style="left:6.3%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 0:31"></div>
+  <div class="timeline-marker" style="left:16.4%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 1:20"></div>
+  <div class="timeline-marker" style="left:29.9%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 2:26"></div>
+  <div class="timeline-marker" style="left:34.2%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 2:47"></div>
+  <div class="timeline-marker" style="left:44.2%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 3:36"></div>
+  <div class="timeline-marker" style="left:57.7%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 4:42"></div>
+  <div class="timeline-marker" style="left:62.0%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 5:03"></div>
+  <div class="timeline-marker" style="left:72.0%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 5:52"></div>
+  <div class="timeline-marker" style="left:85.5%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 6:58"></div>
+  <div class="timeline-marker" style="left:89.8%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 7:19"></div>
+  <div class="timeline-marker" style="left:99.8%;background:var(--yellow);opacity:0.4;" title="Bursting Pustules 8:08"></div>
+
+  <!-- Fungal Bloom (major red markers) -->
+  <div class="timeline-marker" style="left:24.5%;background:var(--red);width:5px;z-index:2;" title="Fungal Bloom #1 at 2:00"></div>
+  <span class="timeline-label" style="left:24.5%;color:var(--red);font-weight:600;">Bloom #1</span>
+
+  <div class="timeline-marker" style="left:52.4%;background:var(--red);width:5px;z-index:2;" title="Fungal Bloom #2 at 4:16"></div>
+  <span class="timeline-label" style="left:52.4%;color:var(--red);font-weight:600;">Bloom #2</span>
+
+  <div class="timeline-marker" style="left:80.2%;background:var(--red);width:5px;z-index:2;" title="Fungal Bloom #3 at 6:32"></div>
+  <span class="timeline-label" style="left:80.2%;color:var(--red);font-weight:600;">Bloom #3</span>
+</div>
+
+<table class="data-table" style="margin-top:28px;">
+  <thead>
+    <tr><th>Mechanic</th><th>Count</th><th>Timings</th><th>Healer Impact</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="color:var(--red);font-weight:600;">Fungal Bloom</td>
+      <td>3</td>
+      <td>2:00, 4:16, 6:32</td>
+      <td>Major raid-wide + 16s DoT. Primary CD target.</td>
+    </tr>
+    <tr>
+      <td style="color:var(--yellow);font-weight:600;">Bursting Pustules</td>
+      <td>12</td>
+      <td>Every ~25-50s</td>
+      <td>Stacking Rotting Pustules DoT. Soft enrage &mdash; healing increases over time.</td>
+    </tr>
+    <tr>
+      <td style="color:var(--orange);">Awaken Fungi</td>
+      <td>8</td>
+      <td>0:15, 1:04, 2:31, 3:20, 4:47, 5:36, 7:03, 7:52</td>
+      <td>Add waves. Sporecap Poison Burst must be interrupted.</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">Festering Vines</td>
+      <td>7</td>
+      <td>0:43, 1:32, 2:59, 3:48, 5:15, 6:04, 7:31</td>
+      <td>Movement check. Reduced casting window.</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">Bursting Shroom</td>
+      <td>3</td>
+      <td>2:16, 4:32, 6:48</td>
+      <td>Post-Bloom add corpse explosions. Spike damage if corpses not managed.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CD TIMING ANALYSIS -->
+<h2>Cooldown Timing vs Boss Events</h2>
+
+<h3>Senssay CD Deployment</h3>
+<table class="data-table">
+  <thead>
+    <tr><th>Cooldown</th><th>Uses</th><th>Timings</th><th>Nearest Event</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="monk-color" style="font-weight:600;">Invoke Yu'lon</td>
+      <td>4</td>
+      <td>0:09, 2:16, 5:05, 7:19</td>
+      <td>Pull, Bloom #1 +16s, Pustules 5:03, Pustules 7:19</td>
+      <td class="warn">Bloom #1 was 16s late. Ref uses Yu'lon AT Bloom.</td>
+    </tr>
+    <tr>
+      <td class="monk-color" style="font-weight:600;">Celestial Conduit</td>
+      <td>3</td>
+      <td>2:17, 4:31, 6:46</td>
+      <td>Bloom #1 +17s, Bloom #2 +15s, Bloom #3 +14s</td>
+      <td class="warn">All 3 used post-Bloom (14-17s late). Ref uses at Bloom time.</td>
+    </tr>
+    <tr>
+      <td class="monk-color" style="font-weight:600;">Revival</td>
+      <td>2</td>
+      <td>0:53, 5:53</td>
+      <td>Pustules 0:31 +22s, Pustules 5:52 +1s</td>
+      <td class="warn">Only 2 uses in 8:09. Ref uses 3. Could fit a 3rd.</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">Life Cocoon</td>
+      <td>3</td>
+      <td>2:55, 4:59, 7:35</td>
+      <td>Reactive (tank/spot heal)</td>
+      <td class="ok">Good usage count. Reactive CD used well.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Reference CD Deployment</h3>
+<table class="data-table">
+  <thead>
+    <tr><th>Cooldown</th><th>Uses</th><th>Timings</th><th>Key Difference</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="monk-color" style="font-weight:600;">Invoke Yu'lon</td>
+      <td>3</td>
+      <td>1:58, 4:05, 6:24</td>
+      <td>Yu'lon used <strong>at</strong> Bloom timing, not 16s after.</td>
+    </tr>
+    <tr>
+      <td class="monk-color" style="font-weight:600;">Celestial Conduit</td>
+      <td style="color:var(--green);font-weight:600;">6</td>
+      <td>0:11, 2:00, 3:37, 5:07, 6:38, 8:09</td>
+      <td>Treated as ~90s rotational CD. <strong>Double Senssay's usage.</strong></td>
+    </tr>
+    <tr>
+      <td class="monk-color" style="font-weight:600;">Revival</td>
+      <td>3</td>
+      <td>0:32, 3:40, 6:47</td>
+      <td>3 uses vs 2. Spaced evenly every ~3 min.</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">Life Cocoon</td>
+      <td>5</td>
+      <td>0:23, 2:37, 4:03, 5:33, 6:59</td>
+      <td>5 uses vs 3. More aggressive on-CD usage.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- TEAM CD COORDINATION -->
+<h2>Team CD Coordination</h2>
+
+<div class="cd-grid">
+  <div class="cd-grid-header" style="text-align:left;">Healer</div>
+  <div class="cd-grid-header">Bloom #1 (2:00)</div>
+  <div class="cd-grid-header">Bloom #2 (4:16)</div>
+  <div class="cd-grid-header">Bloom #3 (6:32)</div>
+
+  <!-- Senssay -->
+  <div class="cd-grid-name monk-color" style="font-weight:600;">Senssay (MW)</div>
+  <div class="cd-grid-cell"><span class="cd-pill monk-pill">Yu'lon 2:16</span><span class="cd-pill monk-pill">Conduit 2:17</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill monk-pill">Conduit 4:31</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill monk-pill">Conduit 6:46</span></div>
+
+  <!-- Voidheart -->
+  <div class="cd-grid-name" style="color:#e0e0e0;">Voidh&eacute;art (Disc)</div>
+  <div class="cd-grid-cell"><span class="cd-pill priest-pill">Evang 1:54</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill none-pill">No major CD</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill none-pill">No major CD</span></div>
+
+  <!-- Silencio -->
+  <div class="cd-grid-name" style="color:#ff7d0a;">S&igrave;lencio (RDruid)</div>
+  <div class="cd-grid-cell"><span class="cd-pill none-pill">No major CD</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill druid-pill">Tranq 4:18</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill druid-pill">Convoke 6:53</span><span class="cd-pill druid-pill">Tranq 7:19</span></div>
+
+  <!-- Dueche -->
+  <div class="cd-grid-name" style="color:#f48cba;">Dueche (HPal)</div>
+  <div class="cd-grid-cell"><span class="cd-pill paladin-pill">AM 2:00</span><span class="cd-pill paladin-pill">AW 2:01</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill paladin-pill">AW 4:18</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill paladin-pill">AM 6:45</span><span class="cd-pill paladin-pill">AW 6:34</span></div>
+
+  <!-- Brewtote -->
+  <div class="cd-grid-name" style="color:#0070de;">Brewtote (RSham)</div>
+  <div class="cd-grid-cell"><span class="cd-pill shaman-pill">Asc 1:58</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill shaman-pill">SLT 4:30</span></div>
+  <div class="cd-grid-cell"><span class="cd-pill shaman-pill">Asc 6:30</span></div>
+</div>
+
+<div class="finding finding-warn">
+  <strong>Bloom #1 coverage is heavy:</strong> 4 healers deployed CDs (Dueche AM+AW, Brewtote Asc, Voidh&eacute;art Evang, Senssay Yu'lon+Conduit). S&igrave;lencio had no major CD here. <strong>Bloom #2 is lighter:</strong> only Tranquility, AW, SLT, and a late Conduit from Senssay. <strong>Bloom #3</strong> has broad coverage again. The team coordination is functional but Senssay's CDs consistently land 14-17s after Bloom &mdash; they're healing the tail rather than the initial burst.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player CPM</th>
+      <th>Casts</th>
+      <th>Ref CPM</th>
+      <th>Ref Casts</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Vivify</td>
+      <td>14.6</td><td>119</td>
+      <td>13.8</td><td>113</td>
+      <td class="ok">+6%</td>
+      <td class="ok">Matched</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Rushing Wind Kick</td>
+      <td>9.6</td><td>78</td>
+      <td>10.0</td><td>82</td>
+      <td class="ok">-4%</td>
+      <td class="ok">Matched</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Renewing Mist</td>
+      <td>9.3</td><td>76</td>
+      <td>9.6</td><td>79</td>
+      <td class="ok">-3%</td>
+      <td class="ok">Matched</td>
+    </tr>
+    <tr style="background:rgba(248,81,73,0.06);">
+      <td style="color:var(--red);font-weight:600;">Enveloping Mist</td>
+      <td style="color:var(--red);">4.8</td><td>39</td>
+      <td>10.1</td><td>83</td>
+      <td class="bad">-52%</td>
+      <td class="bad">Critical gap</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Thunder Focus Tea</td>
+      <td>2.5</td><td>20</td>
+      <td>2.7</td><td>22</td>
+      <td class="ok">-7%</td>
+      <td class="ok">Matched</td>
+    </tr>
+    <tr style="background:rgba(248,81,73,0.06);">
+      <td style="color:var(--red);font-weight:600;">Mana Tea</td>
+      <td style="color:var(--red);">2.0</td><td>16</td>
+      <td>5.5</td><td>45</td>
+      <td class="bad">-64%</td>
+      <td class="bad">Major gap</td>
+    </tr>
+    <tr style="background:rgba(210,153,34,0.06);">
+      <td style="color:var(--yellow);font-weight:500;">Celestial Conduit</td>
+      <td style="color:var(--yellow);">0.4</td><td>3</td>
+      <td>0.7</td><td>6</td>
+      <td class="warn">-43%</td>
+      <td class="warn">Under-used</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Invoke Yu'lon</td>
+      <td>0.5</td><td>4</td>
+      <td>0.4</td><td>3</td>
+      <td class="ok">+25%</td>
+      <td class="ok">Good</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Revival</td>
+      <td>0.2</td><td>2</td>
+      <td>0.4</td><td>3</td>
+      <td class="warn">-50%</td>
+      <td class="warn">One fewer use</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Life Cocoon</td>
+      <td>0.4</td><td>3</td>
+      <td>0.6</td><td>5</td>
+      <td class="warn">-33%</td>
+      <td class="neutral">Reactive CD</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Soothing Mist</td>
+      <td>0.1</td><td>1</td>
+      <td>0.9</td><td>7</td>
+      <td class="warn">-89%</td>
+      <td class="neutral">Style difference</td>
+    </tr>
+    <tr>
+      <td style="color:var(--dim);">Fortifying Brew</td>
+      <td>0.2</td><td>2</td>
+      <td>0.5</td><td>4</td>
+      <td class="warn">-60%</td>
+      <td class="neutral">Defensive</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- CAST PROFILE ANALYSIS CARDS -->
+<div class="two-col">
+  <div class="finding finding-bad">
+    <strong>Enveloping Mist: Half the reference rate.</strong>
+    39 casts vs 83 casts (4.8 vs 10.1 CPM). Enveloping Mist is a core ability for Conduit of the Celestials builds &mdash; casting it procs Strength of the Black Ox and triggers Invigorating Mists. The reference player weaves Enveloping Mist constantly. Senssay's 15.7M Invigorating Mists healing vs the reference's 22.6M (30% less) is a direct consequence. This is the single largest throughput gap.
+  </div>
+  <div class="finding finding-bad">
+    <strong>Mana Tea: Critical resource waste.</strong>
+    16 casts vs 45 (2.0 vs 5.5 CPM, -64%). Mana Tea stacks are generated passively &mdash; every stack not consumed at 20 is wasted mana return. The reference player consumes Mana Tea nearly 3x more often, enabling them to sustain higher Enveloping Mist volume without going OOM. This and the Enveloping Mist gap are likely connected: lower Mana Tea usage may be forcing more conservative spell selection.
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="finding finding-warn">
+    <strong>Celestial Conduit: Treated as 3-min CD, should be 90s.</strong>
+    Senssay used Celestial Conduit 3 times (once per Bloom). The reference used it 6 times &mdash; every 90 seconds as a rotational throughput cooldown, not just a Bloom response. This alone accounts for ~3.5M in missed healing (ref Conduit healing: 6.0M vs Senssay's 2.5M).
+  </div>
+  <div class="finding finding-good">
+    <strong>Core rotation fundamentals are solid.</strong>
+    Vivify (14.6 CPM), Rushing Wind Kick (9.6 CPM), and Renewing Mist (9.3 CPM) all match the reference closely. Thunder Focus Tea usage is on track. The foundation is there &mdash; the gap is specifically in Enveloping Mist frequency and Mana Tea discipline.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- HEALING BREAKDOWN -->
+<h2>Healing Breakdown</h2>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Source</th>
+      <th>Player Eff.</th>
+      <th>Player OH%</th>
+      <th style="width:80px;">OH Bar</th>
+      <th>Ref Eff.</th>
+      <th>Ref OH%</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Renewing Mist</td>
+      <td>18.3M</td>
+      <td>28.7%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:28.7%;background:var(--green);"></div></div></td>
+      <td>30.6M</td>
+      <td>27.0%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Invigorating Mists</td>
+      <td>15.8M</td>
+      <td>25.4%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:25.4%;background:var(--green);"></div></div></td>
+      <td>22.6M</td>
+      <td>16.1%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Enveloping Mist</td>
+      <td style="color:var(--yellow);">9.4M</td>
+      <td>38.4%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:38.4%;background:var(--yellow);"></div></div></td>
+      <td style="color:var(--green);">18.4M</td>
+      <td>34.1%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Rushing Wind Kick</td>
+      <td>5.8M</td>
+      <td>27.9%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:27.9%;background:var(--green);"></div></div></td>
+      <td>7.1M</td>
+      <td>25.7%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Chi Cocoon</td>
+      <td>5.0M</td>
+      <td class="ok">0.0%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:0%;background:var(--green);"></div></div></td>
+      <td>4.9M</td>
+      <td>0.0%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Vivify</td>
+      <td>4.2M</td>
+      <td>39.7%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:39.7%;background:var(--yellow);"></div></div></td>
+      <td>5.8M</td>
+      <td>14.2%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Celestial Conduit</td>
+      <td style="color:var(--yellow);">2.5M</td>
+      <td>29.8%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:29.8%;background:var(--green);"></div></div></td>
+      <td style="color:var(--green);">6.0M</td>
+      <td>43.2%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Zen Pulse</td>
+      <td>2.5M</td>
+      <td>36.5%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:36.5%;background:var(--yellow);"></div></div></td>
+      <td>4.1M</td>
+      <td>35.8%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Litany of Lightblind Wrath</td>
+      <td>2.3M</td>
+      <td class="ok">0.0%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:0%;background:var(--green);"></div></div></td>
+      <td>4.7M</td>
+      <td>0.0%</td>
+    </tr>
+    <tr>
+      <td style="color:var(--text);font-weight:500;">Soothing Breath</td>
+      <td>2.3M</td>
+      <td>45.4%</td>
+      <td><div class="oh-bar"><div class="oh-bar-fill" style="width:45.4%;background:var(--orange);"></div></div></td>
+      <td>2.9M</td>
+      <td>40.3%</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="finding finding-info">
+  <strong>Total healing comparison:</strong> Senssay 82.5M effective (27.7% OH) vs reference 127.4M effective (24.5% OH). The 45M gap comes primarily from Enveloping Mist (-9M), Invigorating Mists (-6.8M, consequence of fewer Enveloping Mists), Celestial Conduit (-3.5M), Renewing Mist (-12.3M from shorter fight and lower volume). Vivify overheal at 39.7% vs the reference's 14.2% suggests some Vivify casts are landing on topped-off targets.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- DPS CONTRIBUTION -->
+<h2>DPS Contribution</h2>
+
+<div class="stat-cards">
+  <div class="stat-card">
+    <div class="summary-label">DPS</div>
+    <div class="summary-value" style="color:var(--dim);font-size:24px;">13,015</div>
+    <div class="summary-sub">Over full fight</div>
+  </div>
+  <div class="stat-card">
+    <div class="summary-label">Total Damage</div>
+    <div class="summary-value" style="color:var(--dim);font-size:24px;">6.4M</div>
+    <div class="summary-sub">All sources</div>
+  </div>
+  <div class="stat-card">
+    <div class="summary-label">Primary Filler</div>
+    <div class="summary-value" style="color:var(--dim);font-size:24px;">RWK</div>
+    <div class="summary-sub">3.6M (57%)</div>
+  </div>
+</div>
+
+<div class="finding finding-info">
+  <strong>DPS filler is Rushing Wind Kick</strong> at 3.6M damage (57% of total), which is expected for Mistweaver. Touch of Death contributed 439K across 2 uses. Celestial Conduit added 420K damage. MW Monk DPS contribution is primarily through healing-damage hybrid abilities (RWK heals via Ancient Teachings while dealing damage), so the 13K DPS is typical for the spec in a healing-intensive fight.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+
+<div class="wipe-chart">
+  <div class="wipe-bar-wrap">
+    <div class="wipe-bar-value">164K</div>
+    <div class="wipe-bar" style="height:82px;background:linear-gradient(to top, var(--red), var(--orange));" title="Fight 1: 164K HPS, 6:54, 22.45% wipe"></div>
+    <div class="wipe-bar-label">F1 Wipe<br>6:54 (22%)</div>
+  </div>
+  <div class="wipe-bar-wrap">
+    <div class="wipe-bar-value">169K</div>
+    <div class="wipe-bar" style="height:90px;background:linear-gradient(to top, var(--orange), var(--yellow));" title="Fight 2: 169K HPS, 8:25, 11.61% wipe"></div>
+    <div class="wipe-bar-label">F2 Wipe<br>8:25 (12%)</div>
+  </div>
+  <div class="wipe-bar-wrap">
+    <div class="wipe-bar-value" style="color:var(--green);">170K</div>
+    <div class="wipe-bar" style="height:96px;background:linear-gradient(to top, var(--green), #2ea043);" title="Fight 3: 170K HPS, 8:09, KILL"></div>
+    <div class="wipe-bar-label" style="color:var(--green);font-weight:600;">F3 KILL<br>8:09</div>
+  </div>
+</div>
+
+<div class="finding finding-good">
+  <strong>Steady improvement across all 3 pulls.</strong> HPS climbed from 164K to 169K to 170K. The first wipe at 22% boss HP (6:54) was likely an early-phase learning pull. The second wipe pushed to 12% and 8:25 duration, showing the team was getting through more damage cycles. The kill (8:09) was a clean execution with consistent throughput. No deaths on the kill fight.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- HEALER TEAM RANKING -->
+<h2>Healer Team Ranking (Kill Fight)</h2>
+
+<table class="data-table">
+  <thead>
+    <tr><th>#</th><th>Name</th><th>Spec</th><th>Total Healing</th><th>HPS</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr class="highlight-row">
+      <td style="color:var(--green);font-weight:700;">1</td>
+      <td class="monk-color" style="font-weight:600;">Senssay</td>
+      <td>Mistweaver Monk</td>
+      <td>83.2M</td>
+      <td style="color:var(--green);font-weight:600;">170,195</td>
+      <td><span style="color:var(--green);">Survived</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td style="color:#0070de;">Brewtote</td>
+      <td>Resto Shaman</td>
+      <td>78.7M</td>
+      <td>160,949</td>
+      <td><span style="color:var(--green);">Survived</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td style="color:#f48cba;">Dueche</td>
+      <td>Holy Paladin</td>
+      <td>78.3M</td>
+      <td>160,282</td>
+      <td><span style="color:var(--green);">Survived</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td style="color:#ff7d0a;">S&igrave;lencio</td>
+      <td>Resto Druid</td>
+      <td>77.8M</td>
+      <td>159,270</td>
+      <td><span style="color:var(--green);">Survived</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td style="color:#e0e0e0;">Voidh&eacute;art</td>
+      <td>Disc Priest</td>
+      <td>69.4M</td>
+      <td>141,980</td>
+      <td><span style="color:var(--green);">Survived</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="finding finding-good">
+  <strong>Senssay was #1 healer on the kill fight</strong> with 170K HPS, 10K ahead of Brewtote in second. All 5 healers survived &mdash; clean kill, no deaths. Note that Voidh&eacute;art (Disc Priest) was swapped in for the kill and put out 142K HPS, notably higher than their 20-25K on the wipe pulls &mdash; Disc Priest typically contributes far more when the fight goes well (Atonement healing requires successful damage windows). The 5-heal comp was effective for this boss's sustained damage profile.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action action-critical">
+  <div class="action-num">1</div>
+  <div>
+    <div class="action-title">Double Enveloping Mist Volume</div>
+    <div class="action-body">
+      Senssay cast Enveloping Mist <strong>39 times</strong> vs the reference's <strong>83 times</strong> (4.8 vs 10.1 CPM). For a Conduit of the Celestials build, Enveloping Mist is a core rotational spell, not just a spot heal &mdash; it triggers <strong>Strength of the Black Ox</strong> and procs <strong>Invigorating Mists</strong> (passive AoE healing). The reference's Invigorating Mists healing was 22.6M vs Senssay's 15.8M (+43%). <strong>Weave Enveloping Mist between every Rushing Wind Kick and Vivify cycle.</strong> This is the single biggest throughput gain available.
+    </div>
+  </div>
+  <div style="clear:both;"></div>
+</div>
+
+<div class="action action-critical">
+  <div class="action-num">2</div>
+  <div>
+    <div class="action-title">Use Mana Tea on Cooldown</div>
+    <div class="action-body">
+      16 Mana Tea casts vs the reference's 45 (-64%). Mana Tea stacks are generated passively from Renewing Mist and other abilities. Every time you hit 20 stacks without consuming, you waste mana return. <strong>Build a habit: consume Mana Tea every time it reaches 20 stacks.</strong> This directly enables the higher Enveloping Mist volume in item #1 without going OOM. The reference consumed Mana Tea roughly every 11 seconds on average.
+    </div>
+  </div>
+  <div style="clear:both;"></div>
+</div>
+
+<div class="action action-important">
+  <div class="action-num">3</div>
+  <div>
+    <div class="action-title">Use Celestial Conduit Every 90 Seconds</div>
+    <div class="action-body">
+      Senssay used Celestial Conduit 3 times (once per Bloom, 14-17s late). The reference used it <strong>6 times</strong> &mdash; every ~90 seconds as a rotational throughput CD. Reference Conduit healing: <strong>6.0M</strong> vs Senssay's <strong>2.5M</strong> (+140%). Celestial Conduit has a 90-second cooldown &mdash; in an 8-minute fight, that's 5-6 possible uses. <strong>Use it on cooldown</strong>, don't save it exclusively for Blooms. If it naturally lines up with a Bloom, great. If not, it still provides strong throughput.
+    </div>
+  </div>
+  <div style="clear:both;"></div>
+</div>
+
+<div class="action action-important">
+  <div class="action-num">4</div>
+  <div>
+    <div class="action-title">Time Yu'lon and Conduit AT Bloom, Not After</div>
+    <div class="action-body">
+      All 3 Celestial Conduit uses were 14-17 seconds <strong>after</strong> Fungal Bloom hit. Yu'lon was deployed 16 seconds after Bloom #1 at 2:16 instead of at 2:00. The reference deployed Yu'lon at 1:58 (2s before Bloom) and Celestial Conduit at 2:00 (AT Bloom). <strong>Bloom is predictable</strong> &mdash; it fires at Rotmire's 100 energy. Watch the energy bar and pre-position CDs to land at or slightly before the damage event, not 15 seconds into the recovery.
+    </div>
+  </div>
+  <div style="clear:both;"></div>
+</div>
+
+<div class="action action-important">
+  <div class="action-num">5</div>
+  <div>
+    <div class="action-title">Fit a Third Revival</div>
+    <div class="action-body">
+      Revival was used at <strong>0:53</strong> and <strong>5:53</strong> (2 uses). The reference used it 3 times at 0:32, 3:40, and 6:47. With a 3-minute cooldown and an 8:09 fight, <strong>3 Revivals are achievable</strong> (e.g., 0:53, 3:53, 6:53). The second Revival at 5:53 was held too long after the first &mdash; a 5-minute gap instead of the 3-minute cooldown. That's 2 minutes of wasted availability. Each Revival is 1.3M effective healing and a raid-wide dispel.
+    </div>
+  </div>
+  <div style="clear:both;"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- FOOTER -->
+<div class="footer">
+  <p>Data source: WCL report <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">Hz1Lm672dZnBw9YC</a>, fight 3 (kill)</p>
+  <p>Primary reference: &#25105;&#36523;&#21518;&#27809;&#23614;&#24052; &mdash; report <a href="https://www.warcraftlogs.com/reports/hCTt2FkgMqfpwAxm#fight=8" target="_blank">hCTt2FkgMqfpwAxm</a> fight 8 &mdash; 3 talent differences, 291 ilvl, 254,857 HPS</p>
+  <p style="margin-top:8px;">Generated by FRIDAY WCL Analyzer &mdash; June 25, 2026</p>
+</div>
+
+</body>
+</html>

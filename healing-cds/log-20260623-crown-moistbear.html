@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moistbear (Feral Druid) — Crown of the Cosmos Prog Night 3</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --druid: #ff7c0a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.6; padding: 24px;
+  max-width: 1200px; margin: 0 auto;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+
+/* Header */
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header h1 .player-name { color: var(--druid); }
+.header .subtitle { color: var(--dim); font-size: 14px; margin-top: 4px; }
+.tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-prog { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+.tag-night { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); margin-left: 8px; }
+.tag-spec { background: rgba(255,124,10,0.15); color: var(--druid); border: 1px solid rgba(255,124,10,0.3); margin-left: 8px; }
+
+/* Summary Cards */
+.summary-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;
+}
+.summary-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; text-align: center;
+}
+.summary-card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.summary-card .value { font-size: 28px; font-weight: 700; }
+.summary-card .sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+/* Sections */
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border: 1px solid var(--border); }
+tr:hover td { background: rgba(88,166,255,0.04); }
+
+/* Bar Chart */
+.bar-chart { display: flex; gap: 3px; align-items: flex-end; height: 180px; margin: 16px 0; padding: 0 4px; }
+.bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+.bar {
+  width: 100%; min-width: 20px; border-radius: 3px 3px 0 0;
+  position: relative; cursor: default; transition: opacity 0.2s;
+}
+.bar:hover { opacity: 0.8; }
+.bar .tooltip {
+  display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: #1c2128; border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 10px; font-size: 11px; white-space: nowrap; z-index: 10;
+  pointer-events: none;
+}
+.bar:hover .tooltip { display: block; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-lr; text-orientation: mixed; max-height: 40px; overflow: hidden; }
+.bar-survived { background: var(--green); }
+.bar-died { background: var(--red); }
+.bar-died-early { background: var(--orange); }
+.bar-no-data { background: var(--border); opacity: 0.5; }
+.avg-line { position: relative; margin: 8px 0; }
+.legend { display: flex; gap: 16px; font-size: 11px; color: var(--dim); margin-top: 8px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+/* Callout */
+.callout {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; margin: 16px 0;
+}
+.callout-danger {
+  border-color: rgba(248,81,73,0.4); background: rgba(248,81,73,0.06);
+}
+.callout-warning {
+  border-color: rgba(210,153,34,0.4); background: rgba(210,153,34,0.06);
+}
+.callout-info {
+  border-color: rgba(88,166,255,0.4); background: rgba(88,166,255,0.06);
+}
+.callout-title { font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+.callout-danger .callout-title { color: var(--red); }
+.callout-warning .callout-title { color: var(--yellow); }
+.callout-info .callout-title { color: var(--accent); }
+
+/* Phase Reach */
+.phase-reach { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.phase-badge {
+  padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+  border: 1px solid var(--border);
+}
+.phase-green { background: rgba(63,185,80,0.12); color: var(--green); border-color: rgba(63,185,80,0.3); }
+.phase-yellow { background: rgba(210,153,34,0.12); color: var(--yellow); border-color: rgba(210,153,34,0.3); }
+.phase-red { background: rgba(248,81,73,0.12); color: var(--red); border-color: rgba(248,81,73,0.3); }
+
+/* Ability bars */
+.ability-bar-container { display: flex; align-items: center; gap: 8px; }
+.ability-bar { height: 8px; border-radius: 4px; background: var(--accent); }
+.ability-bar-ref { background: var(--purple); opacity: 0.5; }
+
+/* Action items */
+.action-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; margin-bottom: 12px;
+}
+.action-item .number {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700;
+  margin-right: 8px;
+}
+.action-critical .number { background: rgba(248,81,73,0.2); color: var(--red); }
+.action-high .number { background: rgba(210,153,34,0.2); color: var(--yellow); }
+.action-medium .number { background: rgba(88,166,255,0.2); color: var(--accent); }
+.action-item h4 { display: inline; font-size: 14px; font-weight: 600; }
+.action-item p { margin-top: 6px; font-size: 13px; color: var(--dim); line-height: 1.5; }
+.action-item .impact { font-size: 12px; color: var(--yellow); margin-top: 6px; font-weight: 500; }
+
+/* Footer */
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 11px; color: var(--dim); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .bar-chart { height: 140px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-crown" class="back-link">&larr; June 23 Crown Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Moistbear</span>
+    <span class="tag tag-spec">Feral Druid</span>
+    <span class="tag tag-prog">Progression</span>
+    <span class="tag tag-night">Night 3</span>
+  </h1>
+  <div class="subtitle">
+    Mythic Crown of the Cosmos &mdash; 20 pulls, no kill &mdash; Best: 26.51% (Fight 25, 6:44) &mdash; June 23, 2026
+    &mdash; Report: <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Avg DPS</div>
+    <div class="value" style="color: var(--druid);">33.4K</div>
+    <div class="sub">Median: 34.4K &middot; StdDev: 5.5K</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">293</div>
+    <div class="sub">Ref: 292 ilvl (identical)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Survival Rate</div>
+    <div class="value" style="color: var(--red);">0 / 20</div>
+    <div class="sub">Died every pull. Avg survival: 3:20</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Best Pull</div>
+    <div class="value" style="color: var(--green);">40.7K</div>
+    <div class="sub">Fight 19, 369s, 36% boss</div>
+  </div>
+</div>
+
+<!-- CRITICAL: Death every pull callout -->
+<div class="callout callout-danger">
+  <div class="callout-title">Died in 20/20 pulls (0% survival)</div>
+  <p style="color: var(--text); font-size: 13px;">
+    Moistbear did not survive a single pull this session. Average survival time was <strong>3 minutes 20 seconds</strong>.
+    Deaths are spread across all phases with the majority in P2 (8 deaths) and P1 (6 deaths).
+    The #1 priority is reducing deaths — every early death costs the raid a DPS player for the remainder of the pull
+    and prevents Moistbear from getting experience with later phases.
+  </p>
+</div>
+
+<!-- Performance Across All Pulls -->
+<div class="section">
+  <h2>Performance Across All Pulls</h2>
+  <div class="bar-chart" id="dps-chart">
+    <!-- Fight 5: 228s, 33647 DPS, died P2 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 82.7%;">
+        <div class="tooltip">Fight 5 &mdash; 33.6K DPS<br>228s (3:48) &mdash; Died at 3:42<br>Void Barrage</div>
+      </div>
+      <div class="bar-label">5</div>
+    </div>
+    <!-- Fight 6: 233s, 23174 DPS, died INT -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died-early" style="height: 56.9%;">
+        <div class="tooltip">Fight 6 &mdash; 23.2K DPS<br>233s (3:53) &mdash; Died at 2:42 (INT)<br>Silverstrike Barrage, res'd, died again 3:44</div>
+      </div>
+      <div class="bar-label">6</div>
+    </div>
+    <!-- Fight 7: 77s, no DPS data, died P1 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-no-data" style="height: 15%;">
+        <div class="tooltip">Fight 7 &mdash; No DPS data<br>77s &mdash; Died at 0:57 (P1)<br>Echoing Darkness</div>
+      </div>
+      <div class="bar-label">7</div>
+    </div>
+    <!-- Fight 8: 81s, no DPS data, died P1 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-no-data" style="height: 15%;">
+        <div class="tooltip">Fight 8 &mdash; No DPS data<br>81s &mdash; Died at 1:12 (P1)<br>Unknown</div>
+      </div>
+      <div class="bar-label">8</div>
+    </div>
+    <!-- Fight 9: 315s, 39887 DPS, died P2 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 97.9%;">
+        <div class="tooltip">Fight 9 &mdash; 39.9K DPS<br>315s (5:15) &mdash; Died at 5:06<br>Void Barrage</div>
+      </div>
+      <div class="bar-label">9</div>
+    </div>
+    <!-- Fight 10: 120s, no data, died P1 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-no-data" style="height: 15%;">
+        <div class="tooltip">Fight 10 &mdash; No DPS data<br>120s &mdash; Died at 1:43 (P1)<br>Unknown</div>
+      </div>
+      <div class="bar-label">10</div>
+    </div>
+    <!-- Fight 11: 227s, 34397 DPS, died P2 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 84.5%;">
+        <div class="tooltip">Fight 11 &mdash; 34.4K DPS<br>227s (3:47) &mdash; Died at 3:36<br>Cosmic Barrier</div>
+      </div>
+      <div class="bar-label">11</div>
+    </div>
+    <!-- Fight 12: 287s, 39778 DPS, died P2 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 97.7%;">
+        <div class="tooltip">Fight 12 &mdash; 39.8K DPS<br>287s (4:47) &mdash; Died at 4:36<br>Simulacrum Backlash</div>
+      </div>
+      <div class="bar-label">12</div>
+    </div>
+    <!-- Fight 13: 361s, 36063 DPS, died late P2 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 88.6%;">
+        <div class="tooltip">Fight 13 &mdash; 36.1K DPS<br>361s (6:01) &mdash; Died at 5:13<br>Voidstalker Sting</div>
+      </div>
+      <div class="bar-label">13</div>
+    </div>
+    <!-- Fight 14: 86s, no data, died P1 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-no-data" style="height: 15%;">
+        <div class="tooltip">Fight 14 &mdash; No DPS data<br>86s &mdash; Died at 1:03 (P1)<br>Unknown</div>
+      </div>
+      <div class="bar-label">14</div>
+    </div>
+    <!-- Fight 15: 185s, no data, died INT -->
+    <div class="bar-wrapper">
+      <div class="bar bar-no-data" style="height: 15%;">
+        <div class="tooltip">Fight 15 &mdash; No DPS data<br>185s &mdash; Died at 2:34 (INT)<br>Falling</div>
+      </div>
+      <div class="bar-label">15</div>
+    </div>
+    <!-- Fight 16: 185s, 1507 DPS, died P2 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died-early" style="height: 5%;">
+        <div class="tooltip">Fight 16 &mdash; 1.5K DPS<br>185s (3:05) &mdash; Died at 3:01<br>Melee (likely already low)</div>
+      </div>
+      <div class="bar-label">16</div>
+    </div>
+    <!-- Fight 17: 235s, 26533 DPS, died P2 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 65.2%;">
+        <div class="tooltip">Fight 17 &mdash; 26.5K DPS<br>235s (3:55) &mdash; Died at 3:45<br>Cosmic Barrier</div>
+      </div>
+      <div class="bar-label">17</div>
+    </div>
+    <!-- Fight 18: 263s, no data, died INT -->
+    <div class="bar-wrapper">
+      <div class="bar bar-no-data" style="height: 15%;">
+        <div class="tooltip">Fight 18 &mdash; No DPS data<br>263s &mdash; Died at 2:43 (INT)<br>Silverstrike Barrage</div>
+      </div>
+      <div class="bar-label">18</div>
+    </div>
+    <!-- Fight 19: 369s, 40719 DPS, died P3 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 100%;">
+        <div class="tooltip">Fight 19 &mdash; 40.7K DPS (BEST)<br>369s (6:09) &mdash; Died at 5:48<br>Bursting Emptiness</div>
+      </div>
+      <div class="bar-label">19</div>
+    </div>
+    <!-- Fight 20: 315s, 34659 DPS, died P2 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 85.1%;">
+        <div class="tooltip">Fight 20 &mdash; 34.7K DPS<br>315s (5:15) &mdash; Died at 4:45<br>Void Expulsion</div>
+      </div>
+      <div class="bar-label">20</div>
+    </div>
+    <!-- Fight 21: 123s, no data, died P1 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-no-data" style="height: 15%;">
+        <div class="tooltip">Fight 21 &mdash; No DPS data<br>123s &mdash; Died at 1:53 (P1)<br>Unknown</div>
+      </div>
+      <div class="bar-label">21</div>
+    </div>
+    <!-- Fight 22: 92s, no data, died P1 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-no-data" style="height: 15%;">
+        <div class="tooltip">Fight 22 &mdash; No DPS data<br>92s &mdash; Died at 0:33 (P1)<br>Echoing Darkness</div>
+      </div>
+      <div class="bar-label">22</div>
+    </div>
+    <!-- Fight 23: 385s, 31328 DPS, died P3 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 77.0%;">
+        <div class="tooltip">Fight 23 &mdash; 31.3K DPS<br>385s (6:25) &mdash; Died at 5:41<br>Unknown</div>
+      </div>
+      <div class="bar-label">23</div>
+    </div>
+    <!-- Fight 25: 404s, 27747 DPS, died P3 -->
+    <div class="bar-wrapper">
+      <div class="bar bar-died" style="height: 68.1%;">
+        <div class="tooltip">Fight 25 &mdash; 27.7K DPS<br>404s (6:44) &mdash; Died at 5:58<br>Grasp of Emptiness</div>
+      </div>
+      <div class="bar-label">25</div>
+    </div>
+  </div>
+
+  <div style="display:flex; align-items:center; gap: 8px; margin: 4px 0 12px 0;">
+    <div style="flex:1; height:1px; border-top: 1px dashed var(--yellow);"></div>
+    <span style="font-size:11px; color:var(--yellow);">Avg: 33.4K</span>
+    <div style="flex:1; height:1px; border-top: 1px dashed var(--yellow);"></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div> Died (DPS recorded)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange);"></div> Died early / anomalous DPS</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--border);"></div> No DPS data (early death / sat out)</div>
+  </div>
+
+  <div class="callout callout-info" style="margin-top: 16px;">
+    <div class="callout-title">DPS Trend</div>
+    <p style="color:var(--text); font-size:13px;">
+      DPS is relatively consistent when Moistbear survives into P2 (33-40K range), with the best pull (40.7K) on fight 19.
+      The longer pulls (fights 23, 25) show lower overall DPS because P3 damage output drops significantly as the fight gets chaotic.
+      8 of 20 pulls had no recorded DPS data at all, indicating very early deaths or absences in those pulls.
+    </p>
+  </div>
+</div>
+
+<!-- Death Pattern Analysis -->
+<div class="section">
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="callout callout-danger">
+    <div class="callout-title">22 deaths in 20 pulls &mdash; died in EVERY pull</div>
+    <p style="color:var(--text); font-size:13px;">
+      Average survival time: <strong>3:20</strong>. Moistbear never survived to the end of any pull.
+      Two pulls had double deaths (fights 6 and 22 &mdash; died, battle-rezzed, died again).
+      Deaths are distributed across all phases, with the majority in P2 (8) and P1 (6).
+    </p>
+  </div>
+
+  <h3>Death Causes</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Killing Ability</th>
+        <th>Deaths</th>
+        <th>Phase</th>
+        <th>Avg Time</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Unknown / Cumulative</strong></td>
+        <td style="color:var(--red); font-weight:600;">6</td>
+        <td>P1 mostly</td>
+        <td>2:09</td>
+        <td>No single killing blow identified — likely died to accumulated damage without using defensives in time</td>
+      </tr>
+      <tr>
+        <td><strong>Cosmic Barrier</strong></td>
+        <td style="color:var(--red); font-weight:600;">3</td>
+        <td>P2</td>
+        <td>3:42</td>
+        <td>Rift Simulacrum shield explosion. Need to stop DPS on simulacrum before barrier detonates, or use a defensive</td>
+      </tr>
+      <tr>
+        <td><strong>Void Barrage</strong></td>
+        <td style="color:var(--orange); font-weight:600;">2</td>
+        <td>P2</td>
+        <td>4:24</td>
+        <td>Raid-wide AoE during P2. Requires defensive or healthstone</td>
+      </tr>
+      <tr>
+        <td><strong>Silverstrike Barrage</strong></td>
+        <td style="color:var(--orange); font-weight:600;">2</td>
+        <td>Intermission</td>
+        <td>2:42</td>
+        <td>Intermission damage. Must use Barkskin/Bear Form during channel</td>
+      </tr>
+      <tr>
+        <td><strong>Echoing Darkness</strong></td>
+        <td style="color:var(--orange); font-weight:600;">2</td>
+        <td>P1</td>
+        <td>0:45</td>
+        <td>Vorelus ability, very early in P1. Positioning or awareness issue</td>
+      </tr>
+      <tr>
+        <td><strong>Simulacrum Backlash</strong></td>
+        <td>1</td>
+        <td>P2</td>
+        <td>4:36</td>
+        <td>Splash damage from Rift Simulacrum mechanics</td>
+      </tr>
+      <tr>
+        <td><strong>Voidstalker Sting</strong></td>
+        <td>1</td>
+        <td>P2</td>
+        <td>5:13</td>
+        <td>Targeted debuff in late P2</td>
+      </tr>
+      <tr>
+        <td><strong>Falling</strong></td>
+        <td>1</td>
+        <td>Intermission</td>
+        <td>2:34</td>
+        <td>Knocked off platform during Intermission</td>
+      </tr>
+      <tr>
+        <td><strong>Void Expulsion</strong></td>
+        <td>1</td>
+        <td>P2</td>
+        <td>4:45</td>
+        <td>Regular raid-wide burst damage</td>
+      </tr>
+      <tr>
+        <td><strong>Melee</strong></td>
+        <td>1</td>
+        <td>P2</td>
+        <td>3:01</td>
+        <td>Killed by a mob auto-attack while low HP. Likely already weakened</td>
+      </tr>
+      <tr>
+        <td><strong>Bursting Emptiness</strong></td>
+        <td>1</td>
+        <td>P3</td>
+        <td>5:48</td>
+        <td>P3 mechanic. New content — expected learning curve</td>
+      </tr>
+      <tr>
+        <td><strong>Grasp of Emptiness</strong></td>
+        <td>1</td>
+        <td>P3</td>
+        <td>5:58</td>
+        <td>P3 persistent damage while taking other mechanics simultaneously</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Per-Phase Performance Breakdown -->
+<div class="section">
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    Phase reach rates reflect how often Moistbear was <strong>alive</strong> at the start of each phase, not just whether the raid reached that phase.
+  </p>
+
+  <h3>Phase Reach Rate</h3>
+  <div class="phase-reach">
+    <div class="phase-badge phase-green">P1: Sentinels &mdash; 20/20 (100%)</div>
+    <div class="phase-badge phase-red">Intermission &mdash; 14/20 (70%)</div>
+    <div class="phase-badge phase-red">P2: Rift &mdash; 11/20 (55%)</div>
+    <div class="phase-badge phase-red">P3: Cosmos &mdash; 3/20 (15%)</div>
+  </div>
+
+  <div class="callout callout-warning" style="margin: 16px 0;">
+    <div class="callout-title">30% of pulls end with Moistbear dead before Intermission finishes</div>
+    <p style="color:var(--text); font-size:13px;">
+      6 deaths happen in P1, and 3 more during Intermission. That means nearly half the session (9/20 pulls), Moistbear never contributes to P2.
+      The raid needs every DPS alive to push through P2 and reach P3 — P1/Intermission deaths are the single biggest issue.
+    </p>
+  </div>
+
+  <h3>Per-Phase DPS (Estimated from Qualifying Pulls)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Duration</th>
+        <th>Pulls Alive</th>
+        <th>Avg DPS</th>
+        <th>Best DPS</th>
+        <th>Deaths in Phase</th>
+        <th>Top Death Cause</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>P1: Sentinels</strong></td>
+        <td>0:00 &ndash; 2:14</td>
+        <td>20/20</td>
+        <td style="color:var(--green);">~64.7K</td>
+        <td>~79.4K (F19)</td>
+        <td style="color:var(--red);">6</td>
+        <td>Echoing Darkness (2), Unknown (4)</td>
+      </tr>
+      <tr>
+        <td><strong>Intermission</strong></td>
+        <td>2:14 &ndash; 2:53</td>
+        <td>14/20</td>
+        <td style="color:var(--dim);">~0 (no targets)</td>
+        <td>&mdash;</td>
+        <td style="color:var(--red);">3</td>
+        <td>Silverstrike Barrage (2), Falling (1)</td>
+      </tr>
+      <tr>
+        <td><strong>P2: Rift</strong></td>
+        <td>2:53 &ndash; 5:26</td>
+        <td>11/20</td>
+        <td style="color:var(--yellow);">~22.3K</td>
+        <td>~25.8K (F5/F12)</td>
+        <td style="color:var(--red);">8</td>
+        <td>Cosmic Barrier (3), Void Barrage (2)</td>
+      </tr>
+      <tr>
+        <td><strong>P3: Cosmos</strong></td>
+        <td>5:26+</td>
+        <td>3/20</td>
+        <td style="color:var(--red);">~7.5K</td>
+        <td>~11.2K (F19)</td>
+        <td>3</td>
+        <td>Bursting Emptiness, Grasp, Unknown</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info" style="margin-top: 16px;">
+    <div class="callout-title">Phase Analysis</div>
+    <p style="color:var(--text); font-size:13px;">
+      <strong>P1 (~64.7K avg)</strong> is Moistbear's strongest phase — heavy cleave on Sentinels + Void Droplets with Primal Wrath, Swipe, and multi-target bleeds. The 6 P1 deaths (mostly to Echoing Darkness and unknown cumulative damage) cut this short in 30% of pulls.
+      <br><br>
+      <strong>P2 (~22.3K avg)</strong> shows a significant DPS drop from P1. This is expected — P2 has fewer targets, more movement from Rift Slash, and heavy damage from Voidstalker Sting and Void Barrage. 8 deaths in this phase suggest P2 mechanics are the primary wall.
+      <br><br>
+      <strong>P3 (~7.5K avg)</strong> — only reached 3 times and died in all 3. Very limited experience with P3 mechanics. DPS is naturally lower as the fight becomes chaotic with overlapping mechanics.
+      <br><br>
+      <strong>Intermission</strong> — 3 deaths to Silverstrike Barrage (2) and Falling (1). The falling death suggests a positioning/knockback issue. Barkskin and Bear Form should be used proactively here.
+    </p>
+  </div>
+</div>
+
+<!-- Damage Profile -->
+<div class="section">
+  <h2>Damage Profile</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    Aggregated across 11 qualifying pulls (3,544s total fight time). Compared against the #1 ranked Feral Druid kill
+    (<span style="color:var(--purple);">reference</span>, identical talents, 292 ilvl).
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Moistbear %</th>
+        <th style="color:var(--purple);">Reference %</th>
+        <th>Delta</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Rip</td>
+        <td>15.7%</td>
+        <td style="color:var(--purple);">16.8%</td>
+        <td style="color:var(--dim);">-1.1%</td>
+      </tr>
+      <tr>
+        <td>Ferocious Bite</td>
+        <td>15.5%</td>
+        <td style="color:var(--purple);">13.8%</td>
+        <td style="color:var(--green);">+1.7%</td>
+      </tr>
+      <tr>
+        <td>Rake</td>
+        <td>10.2%</td>
+        <td style="color:var(--purple);">12.9%</td>
+        <td style="color:var(--yellow);">-2.7%</td>
+      </tr>
+      <tr>
+        <td>Unseen Predator</td>
+        <td>10.1%</td>
+        <td style="color:var(--purple);">9.2%</td>
+        <td style="color:var(--green);">+0.9%</td>
+      </tr>
+      <tr>
+        <td>Feral Frenzy</td>
+        <td>9.2%</td>
+        <td style="color:var(--purple);">11.3%</td>
+        <td style="color:var(--yellow);">-2.1%</td>
+      </tr>
+      <tr>
+        <td>Shred</td>
+        <td>9.1%</td>
+        <td style="color:var(--purple);">9.0%</td>
+        <td style="color:var(--dim);">+0.1%</td>
+      </tr>
+      <tr>
+        <td>Melee</td>
+        <td>7.6%</td>
+        <td style="color:var(--purple);">6.6%</td>
+        <td style="color:var(--dim);">+1.0%</td>
+      </tr>
+      <tr>
+        <td>Bloodseeker Vines</td>
+        <td>7.4%</td>
+        <td style="color:var(--purple);">8.2%</td>
+        <td style="color:var(--dim);">-0.8%</td>
+      </tr>
+      <tr>
+        <td>Bursting Growth</td>
+        <td>6.1%</td>
+        <td style="color:var(--purple);">5.2%</td>
+        <td style="color:var(--dim);">+0.9%</td>
+      </tr>
+      <tr>
+        <td>Moonfire</td>
+        <td>5.8%</td>
+        <td style="color:var(--purple);">6.5%</td>
+        <td style="color:var(--dim);">-0.7%</td>
+      </tr>
+      <tr>
+        <td>Swipe</td>
+        <td>2.1%</td>
+        <td style="color:var(--purple);">0.1%</td>
+        <td style="color:var(--green);">+2.0%</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--dim); margin-top:8px;">
+    Damage distribution is broadly similar to reference. Higher Swipe % reflects cleave-heavy P1 pulls and Feral AoE during Sentinel adds.
+    Slightly lower Rake and Feral Frenzy contribution suggests some DoT uptime or CD alignment opportunities,
+    but the overall rotation shape is correct for the spec.
+  </p>
+</div>
+
+<!-- Cast Profile -->
+<div class="section">
+  <h2>Cast Profile (Aggregate)</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    Across 11 qualifying pulls, 3,544 seconds of total fight time.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Ability</th>
+        <th>Total Casts</th>
+        <th>CPM</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td rowspan="5" style="font-weight:600;color:var(--druid);">Builders</td>
+        <td>Shred</td><td>495</td><td>8.4</td><td>Primary ST builder</td></tr>
+      <tr><td>Swipe</td><td>213</td><td>3.6</td><td>AoE builder (P1 cleave)</td></tr>
+      <tr><td>Rake</td><td>172</td><td>2.9</td><td>Bleed application/refresh</td></tr>
+      <tr><td>Moonfire</td><td>141</td><td>2.4</td><td>Lunar Inspiration DoT</td></tr>
+      <tr><td>Feral Frenzy</td><td>75</td><td>1.3</td><td>CD builder (sync with Tiger's Fury)</td></tr>
+      <tr><td rowspan="2" style="font-weight:600;color:var(--druid);">Finishers</td>
+        <td>Ferocious Bite</td><td>388</td><td>6.6</td><td>Primary spender</td></tr>
+      <tr><td>Rip</td><td>117</td><td>2.0</td><td>Bleed finisher / Primal Wrath</td></tr>
+      <tr><td rowspan="3" style="font-weight:600;color:var(--yellow);">Cooldowns</td>
+        <td>Tiger's Fury</td><td>85</td><td>1.4</td><td>30s CD, off-GCD</td></tr>
+      <tr><td>Berserk</td><td>27</td><td>0.46</td><td>2min CD</td></tr>
+      <tr><td>Convoke the Spirits</td><td>27</td><td>0.46</td><td>1min CD (Ashamane's Guidance)</td></tr>
+      <tr><td rowspan="6" style="font-weight:600;color:var(--green);">Defensives</td>
+        <td>Bear Form</td><td>54</td><td>0.9</td><td>HP buffer for heavy damage</td></tr>
+      <tr><td>Barkskin</td><td>32</td><td>0.5</td><td>1min CD, 20% DR</td></tr>
+      <tr><td>Frenzied Regeneration</td><td>23</td><td>0.4</td><td>Self-heal in Bear Form</td></tr>
+      <tr><td>Survival Instincts</td><td>6</td><td>0.1</td><td style="color:var(--red);">Only 6 uses across 11 pulls — very underused</td></tr>
+      <tr><td>Healthstone</td><td>3</td><td>&mdash;</td><td>Emergency heal</td></tr>
+      <tr><td>Silvermoon Health Potion</td><td>4</td><td>&mdash;</td><td>Healing pot</td></tr>
+      <tr><td rowspan="2" style="font-weight:600;color:var(--accent);">Utility</td>
+        <td>Skull Bash</td><td>16</td><td>0.27</td><td>Interrupt (good usage)</td></tr>
+      <tr><td>Stampeding Roar</td><td>15</td><td>0.25</td><td>Raid movement speed</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Defensive Usage Analysis -->
+<div class="section">
+  <h2>Defensive Usage Deep Dive</h2>
+
+  <div class="callout callout-danger">
+    <div class="callout-title">Survival Instincts: 6 uses in 11 qualifying pulls</div>
+    <p style="color:var(--text); font-size:13px;">
+      Survival Instincts is Feral's strongest defensive (50% damage reduction, 6s duration, 3-minute CD with 2 charges).
+      At 6 uses across 11 pulls, that is roughly 0.5 uses per pull. With 2 charges and pulls averaging ~4 minutes,
+      Moistbear should be getting <strong>2-3 uses per pull</strong>. This is the single biggest survivability gap.
+    </p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Defensive</th>
+        <th>Uses / Pull</th>
+        <th>Expected / Pull</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Survival Instincts</td>
+        <td style="color:var(--red);">0.5</td>
+        <td>2-3</td>
+        <td style="color:var(--red);">Severely underused. 2 charges, 3min CD. Should be mapped to known damage events.</td>
+      </tr>
+      <tr>
+        <td>Barkskin</td>
+        <td>2.9</td>
+        <td>3-4</td>
+        <td style="color:var(--yellow);">Decent but could be higher. 1min CD, use on every Void Expulsion + Intermission.</td>
+      </tr>
+      <tr>
+        <td>Bear Form</td>
+        <td>4.9</td>
+        <td>3-5</td>
+        <td style="color:var(--green);">Good usage. Shifting to Bear for heavy damage periods is correct.</td>
+      </tr>
+      <tr>
+        <td>Frenzied Regeneration</td>
+        <td>2.1</td>
+        <td>2-3</td>
+        <td style="color:var(--green);">Reasonable. Paired with Bear Form shifts.</td>
+      </tr>
+      <tr>
+        <td>Healthstone</td>
+        <td>0.3</td>
+        <td>1</td>
+        <td style="color:var(--yellow);">Should be used every pull when dropping below 40% HP.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: 20px;">Fight 25 Defensive Timeline</h3>
+  <p style="font-size:12px; color:var(--dim); margin-bottom:8px;">Defensive usage on the longest pull (6:44). Died at 5:58 to Grasp of Emptiness.</p>
+  <table>
+    <thead>
+      <tr><th>Time</th><th>Ability</th><th>Phase</th><th>Context</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0:05</td><td>Barkskin</td><td>P1</td><td>Opener — decent, covers early Null Corona</td></tr>
+      <tr><td>2:11</td><td>Bear Form</td><td>P1 end</td><td>Pre-Intermission shift — correct play</td></tr>
+      <tr><td>2:59</td><td>Barkskin</td><td>P2 start</td><td>Covers P2 entry — correct</td></tr>
+      <tr><td>3:34</td><td>Bear Form</td><td>P2</td><td>Mid P2 during Void Barrage — correct</td></tr>
+      <tr><td>3:34</td><td>Frenzied Regen</td><td>P2</td><td>Combined with Bear Form — correct</td></tr>
+      <tr><td>4:01</td><td>Bear Form</td><td>P2</td><td>Second Bear shift during damage — correct</td></tr>
+      <tr><td>4:02</td><td>Survival Instincts</td><td>P2</td><td style="color:var(--red);">First SI use at 4:02 — way too late. Should have been used by 2:30 at the latest.</td></tr>
+      <tr><td>4:02</td><td>Frenzied Regen</td><td>P2</td><td>Stacked with SI — good when used</td></tr>
+      <tr><td>4:07</td><td>Barkskin</td><td>P2</td><td>Triple-stacked defensives — effective but could be spread out more</td></tr>
+      <tr><td>4:57</td><td>Bear Form</td><td>P2</td><td>Late P2 shift</td></tr>
+      <tr><td>4:58</td><td>Frenzied Regen</td><td>P2</td><td>Paired correctly</td></tr>
+      <tr><td>5:05</td><td>Barkskin</td><td>P2/P3</td><td>Covers P3 entry — correct timing</td></tr>
+      <tr><td>5:10</td><td>Frenzied Regen</td><td>P3</td><td>P3 damage — correct</td></tr>
+      <tr><td>5:27</td><td>Berserk + Convoke</td><td>P3</td><td>Offensive CDs in P3 — but died 31s later</td></tr>
+      <tr><td>5:47</td><td>Tiger's Fury</td><td>P3</td><td>Last offensive action</td></tr>
+      <tr><td style="color:var(--red);">5:58</td><td style="color:var(--red);">DEATH</td><td>P3</td><td style="color:var(--red);">Grasp of Emptiness. No defensive available — SI on CD, Barkskin on CD.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Damage Taken Breakdown -->
+<div class="section">
+  <h2>Damage Taken (Fight 25)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Ability</th>
+        <th>Hits</th>
+        <th>Total Damage</th>
+        <th>Avoidable?</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td>143</td>
+        <td>3,453K</td>
+        <td style="color:var(--yellow);">Partially</td>
+        <td>DoT from P2. Can be mitigated with defensives when targeted.</td>
+      </tr>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td>117</td>
+        <td>2,935K</td>
+        <td style="color:var(--yellow);">Partially</td>
+        <td>Vorelus P1 ability. High tick count suggests standing in pools or failing to dodge.</td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td>82</td>
+        <td>2,339K</td>
+        <td>No</td>
+        <td>Unavoidable raid damage from Rift Simulacrum.</td>
+      </tr>
+      <tr>
+        <td>Void Expulsion</td>
+        <td>40</td>
+        <td>1,692K</td>
+        <td>No</td>
+        <td>Periodic raid-wide. Plan defensives around it.</td>
+      </tr>
+      <tr>
+        <td>Grasp of Emptiness</td>
+        <td>34</td>
+        <td>1,575K</td>
+        <td style="color:var(--yellow);">Partially</td>
+        <td>Persistent void zone damage. Caused the final death.</td>
+      </tr>
+      <tr>
+        <td>Void Remnants</td>
+        <td>6</td>
+        <td>683K</td>
+        <td style="color:var(--red);">Yes</td>
+        <td>Standing in void pools. Should be avoidable with proper positioning.</td>
+      </tr>
+      <tr>
+        <td>Stellar Emission</td>
+        <td>15</td>
+        <td>605K</td>
+        <td>No</td>
+        <td>Intermission channel damage — unavoidable.</td>
+      </tr>
+      <tr>
+        <td>Falling</td>
+        <td>2</td>
+        <td>295K</td>
+        <td style="color:var(--red);">Yes</td>
+        <td>Fell off platform. Likely knocked during Intermission.</td>
+      </tr>
+      <tr>
+        <td>Gravity Collapse</td>
+        <td>2</td>
+        <td>323K</td>
+        <td style="color:var(--yellow);">Partially</td>
+        <td>Knockback mechanic — use Wild Charge back or position closer to center.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Raid DPS Context -->
+<div class="section">
+  <h2>Raid DPS Context</h2>
+  <p style="font-size:13px; color:var(--dim); margin-bottom:16px;">
+    Moistbear's aggregate DPS ranking among all raid members across qualifying pulls.
+  </p>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Player</th><th>Avg DPS</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Bebeshakur</td><td>48.6K</td><td></td></tr>
+      <tr><td>2</td><td>Orichamaru</td><td>45.4K</td><td></td></tr>
+      <tr><td>3</td><td>Invincibale</td><td>44.1K</td><td></td></tr>
+      <tr><td>4</td><td>Unholyftw</td><td>43.1K</td><td></td></tr>
+      <tr><td>5</td><td>Smokinthisza</td><td>41.9K</td><td></td></tr>
+      <tr><td>6</td><td>Snackznchill</td><td>41.4K</td><td></td></tr>
+      <tr><td>7</td><td>Sonic</td><td>40.3K</td><td></td></tr>
+      <tr><td>8</td><td>Zinnks</td><td>37.1K</td><td></td></tr>
+      <tr style="background:rgba(255,124,10,0.08);">
+        <td style="color:var(--druid);font-weight:700;">9</td>
+        <td style="color:var(--druid);font-weight:700;">Moistbear</td>
+        <td style="color:var(--druid);font-weight:700;">32.1K</td>
+        <td style="color:var(--dim);">Heavily impacted by dying in every pull</td>
+      </tr>
+      <tr><td>10</td><td>Baodabao</td><td>30.8K</td><td></td></tr>
+      <tr><td>11</td><td>Starfighter</td><td>29.5K</td><td></td></tr>
+      <tr><td>12</td><td>Nurnyx</td><td>28.8K</td><td></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--dim); margin-top:8px;">
+    9th of 12 DPS. However, this ranking is misleading — Moistbear died in every pull, dragging the average down significantly.
+    On pulls where Moistbear survived deep into P2 (fights 9, 12, 19), DPS was 39-41K which would place closer to 7th-8th.
+  </p>
+</div>
+
+<!-- Reference Comparison -->
+<div class="section">
+  <h2>Reference Context (De-emphasized)</h2>
+  <div class="callout callout-info">
+    <div class="callout-title">Reference: Top-ranked Feral Druid kill (92.5K DPS, 7:52 kill)</div>
+    <p style="color:var(--text); font-size:13px;">
+      The #1 ranked Feral Druid on Mythic Crown does <strong>92.5K DPS</strong> over a full 7:52 kill at 292 ilvl
+      with <strong>identical talents</strong> (0 talent differences).
+      <br><br>
+      This comparison is not directly actionable during prog. The reference player:
+    </p>
+    <ul style="color:var(--dim); font-size:13px; margin-top:8px; padding-left:20px;">
+      <li>Survived the entire fight (no death-related DPS loss)</li>
+      <li>Had a full kill's worth of execute-phase damage</li>
+      <li>Had an optimized raid with proper healing CDs and damage mitigation</li>
+      <li>Likely had Bloodlust/Heroism timing optimized for DPS</li>
+    </ul>
+    <p style="color:var(--text); font-size:13px; margin-top:8px;">
+      <strong>Moistbear's best pull (40.7K)</strong> is 44% of reference — but this comparison is misleading during prog.
+      Focus on survival first. DPS will improve naturally as Moistbear survives longer and gains experience with each phase.
+    </p>
+  </div>
+</div>
+
+<!-- Consistency Analysis -->
+<div class="section">
+  <h2>Consistency Analysis</h2>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Value</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>DPS Range (meaningful pulls)</td>
+        <td>23.2K &ndash; 40.7K (17.5K spread)</td>
+        <td style="color:var(--yellow);">Moderate variance. Best pulls are when surviving deep into P2.</td>
+      </tr>
+      <tr>
+        <td>Standard Deviation</td>
+        <td>5,510</td>
+        <td style="color:var(--yellow);">16.5% of average. Somewhat volatile but expected during prog.</td>
+      </tr>
+      <tr>
+        <td>Best 3 pulls avg</td>
+        <td>40.1K (F9, F12, F19)</td>
+        <td style="color:var(--green);">Shows the ceiling when surviving to late P2+</td>
+      </tr>
+      <tr>
+        <td>Worst 3 pulls avg (excluding anomalies)</td>
+        <td>25.8K (F6, F17, F25)</td>
+        <td style="color:var(--red);">Pulls where early deaths or P2 struggles dropped DPS</td>
+      </tr>
+      <tr>
+        <td>Early session avg (F5-F13)</td>
+        <td>34.5K</td>
+        <td rowspan="2" style="color:var(--dim);">No clear improvement trend through the session. Death patterns stayed consistent.</td>
+      </tr>
+      <tr>
+        <td>Late session avg (F17-F25)</td>
+        <td>32.2K</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Actionable Improvements -->
+<div class="section">
+  <h2>Actionable Improvements</h2>
+
+  <div class="action-item action-critical">
+    <span class="number">1</span>
+    <h4>Map Survival Instincts to Known Damage Windows</h4>
+    <p>
+      Survival Instincts was used only <strong>6 times across 11 qualifying pulls</strong> (0.5 per pull). With 2 charges and a 3-minute CD,
+      Moistbear should use SI <strong>2-3 times per pull</strong>. Pre-plan usage:
+      <br><br>
+      <strong>Charge 1:</strong> Void Expulsion at ~0:53 or first heavy damage event in P1.<br>
+      <strong>Charge 2:</strong> Intermission Stellar Emission (2:22) — this is killing Moistbear in 15% of pulls.<br>
+      <strong>Charge 1 (back off CD):</strong> P2 Void Barrage or Call of the Void at ~3:00+.<br>
+      <strong>Charge 2 (back off CD):</strong> P3 entry if the pull gets that far.
+    </p>
+    <div class="impact">Impact: Could prevent 5-8 of the 22 deaths. This is the #1 change.</div>
+  </div>
+
+  <div class="action-item action-critical">
+    <span class="number">2</span>
+    <h4>Survive P1 Consistently — Echoing Darkness Awareness</h4>
+    <p>
+      6 deaths in P1 (30% of all deaths). <strong>Echoing Darkness from Vorelus</strong> killed Moistbear at 0:33 and 0:57.
+      This ability fires every ~3 seconds starting around 0:10 — it is a persistent ground effect or targeted ability.
+      As a melee on Vorelus, Moistbear needs to:
+      <br><br>
+      &bull; Use <strong>Barkskin</strong> proactively when Vorelus casts Echoing Darkness (not reactively after taking 3+ ticks)<br>
+      &bull; <strong>Bear Form shift</strong> if HP drops below 50% during P1 — the HP buffer is worth the GCD loss<br>
+      &bull; Watch for Echoing Darkness pools and move out immediately rather than finishing a cast
+    </p>
+    <div class="impact">Impact: Eliminating P1 deaths adds ~2:14 of DPS time per affected pull, increasing phase reach from 70% to 90%+.</div>
+  </div>
+
+  <div class="action-item action-high">
+    <span class="number">3</span>
+    <h4>Intermission Survival Plan</h4>
+    <p>
+      3 deaths during Intermission (2 to Silverstrike Barrage, 1 to Falling). The intermission is a 39-second survival check
+      with no targets to hit. Moistbear should:
+      <br><br>
+      &bull; <strong>Pre-shift to Bear Form</strong> at 2:10 (before Silversunder Catastrophe at 2:14)<br>
+      &bull; <strong>Barkskin + Frenzied Regeneration</strong> during Stellar Emission channel (2:22-2:52)<br>
+      &bull; <strong>Position center of platform</strong> to avoid being knocked off (addresses the Falling death)<br>
+      &bull; Use <strong>Survival Instincts</strong> if HP drops below 40% during the channel
+    </p>
+    <div class="impact">Impact: 3 fewer deaths. Intermission survival is free DPS time in P2 that Moistbear is currently losing.</div>
+  </div>
+
+  <div class="action-item action-high">
+    <span class="number">4</span>
+    <h4>P2 Cosmic Barrier Awareness</h4>
+    <p>
+      3 deaths to Cosmic Barrier (the Rift Simulacrum shield explosion). This is a learnable mechanic — when the
+      Rift Simulacrum casts Cosmic Barrier, it creates a shield that explodes for massive damage when it expires or is broken.
+      <br><br>
+      &bull; <strong>Stop DPS on the Simulacrum</strong> when Cosmic Barrier is cast — switch to Alleria or adds<br>
+      &bull; If the shield is about to pop, use <strong>Survival Instincts</strong> or <strong>Bear Form + Barkskin</strong><br>
+      &bull; This is a coordination mechanic — communicate with raid about when to stop hitting the Simulacrum
+    </p>
+    <div class="impact">Impact: 3 fewer deaths. Cosmic Barrier is the #1 named killer and it is entirely manageable.</div>
+  </div>
+
+  <div class="action-item action-medium">
+    <span class="number">5</span>
+    <h4>DPS Optimization is Secondary — But Watch Feral Frenzy Alignment</h4>
+    <p>
+      The damage profile shows Feral Frenzy contribution is 2.1% below reference (9.2% vs 11.3%).
+      Feral Frenzy should always be synced with Tiger's Fury for the damage buff snapshot.
+      During prog, ensure Feral Frenzy is used on cooldown and aligned with Tiger's Fury windows
+      rather than holding it for a "better" moment.
+      <br><br>
+      Additionally, Rake contribution is 2.7% below reference — ensure Rake is refreshed within
+      pandemic range (30% remaining, ~4.5s) and ideally during Tiger's Fury for the snapshot.
+      These are minor optimizations compared to the survival issues above.
+    </p>
+    <div class="impact">Impact: ~2-3% DPS improvement. Valuable but secondary to staying alive.</div>
+  </div>
+</div>
+
+<!-- What's Working -->
+<div class="section">
+  <h2>What's Working</h2>
+  <div class="callout callout-info">
+    <div class="callout-title">Positives</div>
+    <ul style="color:var(--text); font-size:13px; padding-left:20px; line-height:1.8;">
+      <li><strong>Rotation execution is solid</strong> — damage ability distribution closely matches the #1 ranked Feral with identical talents. The rotation is not the problem.</li>
+      <li><strong>Bear Form usage is good</strong> — 54 shifts across 11 pulls shows Moistbear is willing to go Bear for survival. Just need to add SI to the toolkit.</li>
+      <li><strong>Barkskin usage is decent</strong> — ~3 per pull is close to the expected rate. Could be slightly higher but not the main gap.</li>
+      <li><strong>Interrupts (Skull Bash)</strong> — 16 across the session is solid contribution to the raid's interrupt rotation.</li>
+      <li><strong>Stampeding Roar usage</strong> — 15 uses shows good raid awareness, using the group sprint for movement mechanics.</li>
+      <li><strong>Best pull DPS (40.7K)</strong> — when surviving into late P2/P3, Moistbear can produce competitive DPS for the raid.</li>
+      <li><strong>Identical talents to #1 parse</strong> — talent build is correct. No build changes needed.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Summary Verdict -->
+<div class="section">
+  <h2>Summary</h2>
+  <p style="font-size:14px; line-height:1.7;">
+    Moistbear's rotation and talent build are correct — the damage profile matches the top-ranked Feral almost exactly.
+    The <strong>entire performance gap is survivability</strong>. Dying in 20/20 pulls with an average survival of 3:20 means
+    Moistbear is losing 2-4 minutes of DPS time every pull and never getting meaningful P3 practice.
+  </p>
+  <p style="font-size:14px; line-height:1.7; margin-top:12px;">
+    The fix is straightforward: <strong>use Survival Instincts</strong> (currently at 15% of expected usage),
+    plan defensive cooldowns for known damage windows (Echoing Darkness in P1, Stellar Emission in Intermission,
+    Cosmic Barrier in P2), and prioritize staying alive over maximizing DPS. A living Feral doing 35K is worth
+    more than a dead Feral who did 40K for the first 3 minutes.
+  </p>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  Generated by WCL DPS Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a>
+  &mdash; Reference: <a href="https://www.warcraftlogs.com/reports/8AH9rLym6N2dQbfv#fight=9" target="_blank" style="color:var(--purple);">Top Feral Druid kill (92.5K, 7:52)</a>
+  &mdash; Spec guide: <a href="https://www.icy-veins.com/wow/feral-druid-pve-dps-rotation-cooldowns-abilities" target="_blank">Icy Veins Feral 12.0.7</a>
+  &mdash; Phase timings verified from boss cast data
+</div>
+
+</body>
+</html>

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Senssay &mdash; Windwalker Monk &mdash; Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .oh-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .oh-eff { background: var(--green); }
+  .oh-over { background: var(--red); opacity: 0.6; }
+  .death-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 1.6; }
+  .death-timeline .dmg { color: var(--red); }
+  .death-timeline .heal { color: var(--green); }
+  .death-timeline .absorb { color: var(--cyan); }
+  .death-timeline .ts { color: var(--dim); display: inline-block; width: 50px; }
+  .dmg-bar { display: flex; height: 20px; border-radius: 4px; overflow: hidden; font-size: 0; margin: 4px 0; }
+  .dmg-bar div { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Senssay <span class="dim">&mdash; Windwalker Monk</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">144.3K</div>
+    <div class="stat-label">DPS (Kill Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289.8</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">41.0</div>
+    <div class="stat-label">Rotational CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Senssay survived the kill and contributed <strong class="yellow">144.3K DPS</strong> across 7:58 &mdash; a <strong class="red">30% gap</strong> below the #2 ranked Windwalker Monk (Krylest, 197.3K DPS in 6:38). With only <strong class="green">2 talent differences</strong> and nearly identical item level (289.8 vs 272), the gap is almost entirely execution. The primary issues: <strong class="red">Spinning Crane Kick at 3.5 CPM vs 5.6 CPM</strong> (37% fewer casts of a major AoE ability), <strong class="yellow">Blackout Kick at 7.5 vs 8.4 CPM</strong> (11% lower), and <strong class="red">Fists of Fury damage 21.7% of total vs 30.3%</strong> in the reference despite similar cast counts. Total rotational CPM is 41.0 vs Krylest's 46.4 &mdash; roughly <strong class="red">5.4 CPM lost</strong>, amounting to ~43 missed casts over the fight. Defensive and movement GCDs (13 Rolls, 6 Flying Serpent Kicks) account for some but not all of this gap.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Windwalker Monks on Mythic Rotmire. Primary reference: <strong>Krylest</strong> (closest talent match at 2 diffs, 197.3K DPS, 6:38 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Rot. CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Senssay</strong> <span class="tag tag-same">Survived</span></td>
+      <td>144,342</td>
+      <td>7:58</td>
+      <td>289.8</td>
+      <td>&mdash;</td>
+      <td>41.0</td>
+    </tr>
+    <tr>
+      <td>&#x7130;&#x8BD7;&#x96BE;&#x6CE2;&#x788E; <span class="ref-badge">#1</span></td>
+      <td class="green">200,101</td>
+      <td>7:01</td>
+      <td>272.2</td>
+      <td><span class="tag tag-diff">12 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Krylest <span class="ref-badge">#2 PRIMARY</span></td>
+      <td class="green">197,258</td>
+      <td>6:38</td>
+      <td>272.2</td>
+      <td><span class="tag tag-same">2 diff</span></td>
+      <td>46.4</td>
+    </tr>
+    <tr>
+      <td>Miwee <span class="ref-badge">#3</span></td>
+      <td class="green">193,029</td>
+      <td>6:39</td>
+      <td>272.2</td>
+      <td><span class="tag tag-diff">11 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Lauupww <span class="ref-badge">#4</span></td>
+      <td class="green">191,511</td>
+      <td>5:38</td>
+      <td>256.5</td>
+      <td><span class="tag tag-same">2 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Wavewalker <span class="ref-badge">#5</span></td>
+      <td class="green">187,452</td>
+      <td>6:55</td>
+      <td>256.2</td>
+      <td><span class="tag tag-same">2 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Note: Senssay has the highest item level of all compared players (289.8 vs avg 265.9) but the lowest DPS. Three references (Krylest, Lauupww, Wavewalker) have only 2 talent differences &mdash; nearly identical builds. With Senssay at 17+ ilvl higher than references, the performance gap is execution-based, not gear or talent related.</p>
+
+<!-- BOSS TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major mechanics. Blooms fire on a fixed ~136s cycle (raid-wide damage). Festering Vines root players on a ~68s cycle. Awaken Fungi spawns adds on a ~65s cycle. Senssay survived the full 7:58 fight.</p>
+
+<div class="timeline" style="height: 100px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red); font-size: 9px;">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red); font-size: 9px;">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red); font-size: 9px;">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left: 39.3%; border-color: var(--dim); width: 1px; opacity: 0.4;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Tiareynna 3:08</span>
+  </div>
+  <div class="timeline-marker" style="left: 76.3%; border-color: var(--dim); width: 1px; opacity: 0.4;">
+    <span class="timeline-label" style="top: 35px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 3 deaths 6:07</span>
+  </div>
+  <div class="timeline-marker" style="left: 83.3%; border-color: var(--dim); width: 1px; opacity: 0.4;">
+    <span class="timeline-label" style="top: 55px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Zinnks 6:40</span>
+  </div>
+  <!-- Alive zone - full fight -->
+  <div style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(63,185,80,0.04);"></div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header">Raid State</div>
+  <p style="font-size: 13px; font-family: 'SF Mono', Consolas, monospace;">
+    0:00&ndash;3:08 = 19/19 alive &bull;
+    3:08&ndash;6:07 = 18/19 (lost Tiareynna, Disc Priest) &bull;
+    6:07&ndash;6:40 = 15/19 (3 DPS deaths) &bull;
+    6:40&ndash;7:38 = 14/19 &bull;
+    7:38&ndash;7:40 = 12/19 (2 more deaths) &bull;
+    7:40&ndash;7:58 = 11/19 (Nucke dies, boss dies)
+  </p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Senssay (7:58 full fight) vs Krylest (6:38 kill). Abilities sorted by damage impact on Windwalker performance.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Senssay Casts</th>
+      <th>Senssay CPM</th>
+      <th>Krylest Casts</th>
+      <th>Krylest CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Tiger Palm</strong></td>
+      <td>75</td>
+      <td>9.4</td>
+      <td>64</td>
+      <td>9.6</td>
+      <td class="dim">&minus;2%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Blackout Kick</strong></td>
+      <td>60</td>
+      <td class="yellow">7.5</td>
+      <td>56</td>
+      <td>8.4</td>
+      <td class="yellow">&minus;11%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rising Sun Kick</strong></td>
+      <td>58</td>
+      <td>7.3</td>
+      <td>50</td>
+      <td>7.5</td>
+      <td class="dim">&minus;3%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td><strong>Fists of Fury</strong></td>
+      <td>42</td>
+      <td>5.3</td>
+      <td>38</td>
+      <td>5.7</td>
+      <td class="yellow">&minus;8%</td>
+      <td><span class="tag tag-warn">Slightly Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Spinning Crane Kick</strong></td>
+      <td class="red">28</td>
+      <td class="red">3.5</td>
+      <td>37</td>
+      <td>5.6</td>
+      <td class="red">&minus;37%</td>
+      <td><span class="tag tag-crit">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Rushing Wind Kick</strong></td>
+      <td>16</td>
+      <td class="yellow">2.0</td>
+      <td>18</td>
+      <td>2.7</td>
+      <td class="yellow">&minus;26%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Whirling Dragon Punch</strong></td>
+      <td>15</td>
+      <td class="yellow">1.9</td>
+      <td>15</td>
+      <td>2.3</td>
+      <td class="yellow">&minus;17%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Zenith Stomp</strong></td>
+      <td>15</td>
+      <td class="yellow">1.9</td>
+      <td>16</td>
+      <td>2.4</td>
+      <td class="yellow">&minus;22%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Zenith</strong></td>
+      <td>9</td>
+      <td>1.1</td>
+      <td>8</td>
+      <td>1.2</td>
+      <td class="dim">&minus;6%</td>
+      <td><span class="tag tag-same">OK</span></td>
+    </tr>
+    <tr>
+      <td>Touch of Death</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td>3</td>
+      <td>0.5</td>
+      <td class="green">+11%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Algeth'ar Puzzle</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td>3</td>
+      <td>0.5</td>
+      <td class="green">+11%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Spear Hand Strike</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td>3</td>
+      <td>0.5</td>
+      <td class="red">&minus;72%</td>
+      <td><span class="tag tag-info">Interrupt</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Spinning Crane Kick Gap</div>
+    <p style="font-size: 14px;">The largest single-ability CPM gap. Senssay cast Spinning Crane Kick <strong>28 times (3.5 CPM)</strong> vs Krylest's <strong>37 times (5.6 CPM)</strong> &mdash; a 37% deficit. SCK deals significant AoE damage during add phases and on stacked targets. With 9 fewer casts relative to fight duration, this translates to roughly <strong>1.9M missed damage</strong> based on Krylest's SCK damage-per-cast average. This is the single largest execution gap.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Movement GCD Tax</div>
+    <p style="font-size: 14px;">Senssay used <strong>13 Rolls</strong> (vs Krylest's 7) and <strong>6 Flying Serpent Kicks</strong> (vs Krylest's 0). That is 12 extra movement GCDs &mdash; roughly 18 seconds of fight time spent on movement instead of damage. Additionally, <strong>3 Tiger's Lust</strong> casts (Krylest: 0) and <strong>2 Ring of Peace</strong> (Krylest: 0) add 5 more non-damage GCDs. Total: ~17 extra utility casts consuming GCDs that could have been Spinning Crane Kicks or Blackout Kicks.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Where Senssay's damage comes from vs Krylest. The proportional split reveals which abilities are under-contributing relative to the reference.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Senssay Damage</th><th>% of Total</th><th>Krylest Damage</th><th>% of Total</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Zenith Stomp</strong></td>
+      <td>17,153K</td>
+      <td>24.2%</td>
+      <td>17,247K</td>
+      <td>21.0%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Fists of Fury</strong></td>
+      <td class="yellow">15,352K</td>
+      <td class="yellow">21.7%</td>
+      <td>24,827K</td>
+      <td>30.3%</td>
+      <td><span class="tag tag-crit">&minus;38% total</span></td>
+    </tr>
+    <tr>
+      <td><strong>Flurry Strike</strong></td>
+      <td>9,624K</td>
+      <td>13.6%</td>
+      <td>7,963K</td>
+      <td>9.7%</td>
+      <td><span class="tag tag-same">Higher</span></td>
+    </tr>
+    <tr>
+      <td><strong>Rising Sun Kick</strong></td>
+      <td>5,684K</td>
+      <td>8.0%</td>
+      <td>5,909K</td>
+      <td>7.2%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Spinning Crane Kick</strong></td>
+      <td class="red">2,752K</td>
+      <td class="red">3.9%</td>
+      <td>4,675K</td>
+      <td>5.7%</td>
+      <td><span class="tag tag-diff">&minus;41% total</span></td>
+    </tr>
+    <tr>
+      <td><strong>Whirling Dragon Punch</strong></td>
+      <td>3,533K</td>
+      <td>5.0%</td>
+      <td>3,259K</td>
+      <td>4.0%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Rushing Wind Kick</strong></td>
+      <td class="yellow">2,552K</td>
+      <td>3.6%</td>
+      <td>3,861K</td>
+      <td>4.7%</td>
+      <td><span class="tag tag-warn">&minus;34% total</span></td>
+    </tr>
+    <tr>
+      <td>Blackout Kick</td>
+      <td>2,859K</td>
+      <td>4.0%</td>
+      <td>2,891K</td>
+      <td>3.5%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr>
+      <td>Dual Threat</td>
+      <td>3,135K</td>
+      <td>4.4%</td>
+      <td>2,499K</td>
+      <td>3.0%</td>
+      <td><span class="tag tag-same">Higher</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>2,071K</td>
+      <td>2.9%</td>
+      <td>2,091K</td>
+      <td>2.6%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Skyfire Heel</td>
+      <td class="yellow">835K</td>
+      <td>1.2%</td>
+      <td>1,635K</td>
+      <td>2.0%</td>
+      <td><span class="tag tag-warn">&minus;49% total</span></td>
+    </tr>
+    <tr>
+      <td>Touch of Death</td>
+      <td>1,274K</td>
+      <td>1.8%</td>
+      <td>1,028K</td>
+      <td>1.3%</td>
+      <td><span class="tag tag-same">Higher</span></td>
+    </tr>
+    <tr>
+      <td>Glory of the Dawn</td>
+      <td>1,122K</td>
+      <td>1.6%</td>
+      <td>1,222K</td>
+      <td>1.5%</td>
+      <td><span class="tag tag-same">Match</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 12px;">
+  <div class="card-header red">Fists of Fury Damage Gap</div>
+  <p style="font-size: 14px;">Despite similar cast counts (42 vs 38), Senssay's Fists of Fury dealt <strong>15.4M vs Krylest's 24.8M</strong> &mdash; a <strong>38% damage gap</strong> on the same number of casts. This is the single largest damage deficit at <strong>9.5M missing damage</strong>. FoF is WW's highest-damage ability. The likely cause: fewer targets hit per FoF channel (positioning during add phases), lower buff uptime during FoF windows, or the shorter reference fight means proportionally more FoF casts during lust/trinket windows. Krylest's FoF also hit 394 targets vs Senssay's 284 &mdash; <strong>39% more targets hit</strong>, confirming better target stacking.</p>
+</div>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Senssay took 20.7M total damage across the 7:58 fight. Breakdown by source:</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th><th>Type</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rotting Pustules</strong></td>
+      <td>12,897K</td>
+      <td>467</td>
+      <td>27.6K</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td><strong>Fungal Bloom</strong></td>
+      <td>3,016K</td>
+      <td>51</td>
+      <td>59.1K</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td><strong>Bursting Pustules</strong></td>
+      <td>2,764K</td>
+      <td>44</td>
+      <td>62.8K</td>
+      <td><span class="tag tag-info">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td><strong>Melee</strong></td>
+      <td>1,136K</td>
+      <td>52</td>
+      <td>21.8K</td>
+      <td><span class="tag tag-warn">Positioning</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Festering Vines</strong></td>
+      <td>649K</td>
+      <td>9</td>
+      <td>72.1K</td>
+      <td><span class="tag tag-warn">Partially Avoidable</span></td>
+    </tr>
+    <tr>
+      <td><strong>Bursting Shroom</strong></td>
+      <td>250K</td>
+      <td>1</td>
+      <td>250K</td>
+      <td><span class="tag tag-warn">Avoidable</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Damage profile looks reasonable. Festering Vines hits (9) are worth watching &mdash; each one is a root that forces the player to break free, costing uptime. The 1 Bursting Shroom hit (250K) suggests one instance of being too close to a dying add. Melee hits from the boss (52 hits) are normal for a melee DPS.</p>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs Received</h2>
+<p class="section-intro">Senssay's external buff timings on the kill fight. Lust on pull with PI &mdash; standard Windwalker opener.</p>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header">Throughput Buffs</div>
+    <table style="font-size: 13px;">
+      <tr><td><strong>Time Warp</strong></td><td>0:01</td><td><span class="tag tag-same">On Pull</span></td></tr>
+      <tr><td><strong>Power Infusion</strong> #1</td><td>0:01</td><td><span class="tag tag-same">On Pull</span></td></tr>
+      <tr><td><strong>Power Infusion</strong> #2</td><td>2:03</td><td><span class="tag tag-same">With Bloom</span></td></tr>
+      <tr><td><strong>Power Infusion</strong> #3</td><td>4:10</td><td><span class="tag tag-same">Post-Bloom</span></td></tr>
+      <tr><td><strong>Power Infusion</strong> #4</td><td>6:13</td><td><span class="tag tag-same">Pre-Bloom</span></td></tr>
+      <tr><td><strong>Potion</strong> #1</td><td>0:04</td><td><span class="tag tag-same">Pre-pot</span></td></tr>
+      <tr><td><strong>Potion</strong> #2</td><td>6:36</td><td><span class="tag tag-same">Execute</span></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-header">Aug Evoker Buffs</div>
+    <table style="font-size: 13px;">
+      <tr><td><strong>Ebon Might</strong></td><td>11 applications</td><td><span class="tag tag-same">Good uptime</span></td></tr>
+      <tr><td><strong>Prescience</strong></td><td>4 applications</td><td><span class="tag tag-same">Normal</span></td></tr>
+    </table>
+    <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">Note: Senssay received 4x Power Infusion and 11x Ebon Might applications. Reference player data did not include buff analysis, so direct comparison of external buff uptime is not available. With higher ilvl AND these external buffs, the DPS gap vs the reference is even more significant.</p>
+  </div>
+</div>
+
+<!-- DEFENSIVE USAGE -->
+<h2>Defensive & Utility Usage</h2>
+<p class="section-intro">Defensive and utility ability usage compared to reference. Higher counts suggest more reactive/panicked play.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Senssay</th><th>Krylest</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Touch of Karma</strong></td>
+      <td>4</td>
+      <td>4</td>
+      <td><span class="tag tag-same">Match</span> &mdash; used on CD as damage</td>
+    </tr>
+    <tr>
+      <td><strong>Fortifying Brew</strong></td>
+      <td>2</td>
+      <td>3</td>
+      <td><span class="tag tag-same">OK</span> &mdash; ref used one more</td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Roll</strong></td>
+      <td class="yellow">13</td>
+      <td>7</td>
+      <td><span class="tag tag-warn">+86%</span> &mdash; nearly double, wasted GCDs</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Flying Serpent Kick</strong></td>
+      <td class="red">6</td>
+      <td>0</td>
+      <td><span class="tag tag-diff">Excessive</span> &mdash; ref never used it</td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td><strong>Tiger's Lust</strong></td>
+      <td class="yellow">3</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Root breaks</span> &mdash; ref positioned to avoid vines</td>
+    </tr>
+    <tr>
+      <td><strong>Ring of Peace</strong></td>
+      <td>2</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Utility</span> &mdash; add management</td>
+    </tr>
+    <tr>
+      <td><strong>Leg Sweep</strong></td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Utility</span> &mdash; AoE stun</td>
+    </tr>
+    <tr>
+      <td><strong>Spear Hand Strike</strong></td>
+      <td>1</td>
+      <td>3</td>
+      <td><span class="tag tag-warn">Low</span> &mdash; interrupt fewer times</td>
+    </tr>
+    <tr>
+      <td><strong>Healthstone</strong></td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Survival</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<p class="section-intro" style="margin-top: 8px;">Total extra utility GCDs vs reference: 17 (6 extra Rolls, 6 FSK, 3 Tiger's Lust, 2 Ring of Peace). At ~1.5s per GCD, that's roughly 25.5 seconds of fight time on movement/utility instead of damage. This accounts for approximately half of the 5.4 CPM gap.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Senssay's DPS across all 20 pulls on Mythic Rotmire. Color: <span class="red">red</span> = short wipe (&lt;2 min), <span class="orange">orange</span> = medium wipe (2&ndash;5 min), <span class="yellow">yellow</span> = long wipe (5+ min), <span class="green">green</span> = kill.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 42%; background: var(--red);" data-tooltip="F2: 98.6K DPS (1:12)"></div>
+    <div class="prog-bar" style="height: 63%; background: var(--red);" data-tooltip="F3: 148.2K DPS (1:10)"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--red);" data-tooltip="F4: 233.4K DPS (0:51) burst"></div>
+    <div class="prog-bar" style="height: 58%; background: var(--orange);" data-tooltip="F5: 136.1K DPS (2:42)"></div>
+    <div class="prog-bar" style="height: 49%; background: var(--orange);" data-tooltip="F7: 114.5K DPS (2:18)"></div>
+    <div class="prog-bar" style="height: 52%; background: var(--orange);" data-tooltip="F8: 121.6K DPS (2:16)"></div>
+    <div class="prog-bar" style="height: 56%; background: var(--orange);" data-tooltip="F9: 131.4K DPS (3:14)"></div>
+    <div class="prog-bar" style="height: 56%; background: var(--yellow);" data-tooltip="F10: 131.0K DPS (5:37)"></div>
+    <div class="prog-bar" style="height: 61%; background: var(--orange);" data-tooltip="F11: 141.8K DPS (4:47)"></div>
+    <div class="prog-bar" style="height: 49%; background: var(--yellow);" data-tooltip="F12: 113.8K DPS (5:42)"></div>
+    <div class="prog-bar" style="height: 54%; background: var(--orange);" data-tooltip="F13: 126.2K DPS (2:51)"></div>
+    <div class="prog-bar" style="height: 47%; background: var(--red);" data-tooltip="F14: 108.8K DPS (1:15)"></div>
+    <div class="prog-bar" style="height: 56%; background: var(--yellow);" data-tooltip="F15: 130.6K DPS (5:04)"></div>
+    <div class="prog-bar" style="height: 74%; background: var(--red);" data-tooltip="F16: 171.8K DPS (0:53) burst"></div>
+    <div class="prog-bar" style="height: 59%; background: var(--yellow);" data-tooltip="F17: 138.2K DPS (5:45)"></div>
+    <div class="prog-bar" style="height: 50%; background: var(--yellow);" data-tooltip="F18: 117.4K DPS (6:51)"></div>
+    <div class="prog-bar" style="height: 59%; background: var(--yellow);" data-tooltip="F19: 136.9K DPS (5:01)"></div>
+    <div class="prog-bar" style="height: 57%; background: var(--red);" data-tooltip="F20: 133.0K DPS (0:54)"></div>
+    <div class="prog-bar" style="height: 56%; background: var(--yellow);" data-tooltip="F21: 130.0K DPS (7:14)"></div>
+    <div class="prog-bar" style="height: 62%; background: var(--green);" data-tooltip="F22 KILL: 144.3K DPS (7:58)"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card">
+    <div class="card-header">Progression Observations</div>
+    <p style="font-size: 14px;">
+      <strong>Short wipes inflate DPS</strong> &mdash; F4 (233K, 0:51) and F16 (172K, 0:53) show burst-phase bias. Only pulls longer than 3 minutes are meaningful for trend analysis.<br><br>
+      <strong>Long pull DPS range: 114K&ndash;142K</strong> &mdash; in pulls over 3 minutes, Senssay fluctuates between 114K (F12, 5:42) and 142K (F11, 4:47). The kill fight (144K) was the best long-pull performance.<br><br>
+      <strong>No clear improvement trend</strong> &mdash; long-pull DPS stays in the 115K&ndash;140K band all night. The kill (144K) is an incremental improvement, not a breakout. This suggests the execution issues are habitual, not fatigue or learning-related.
+    </p>
+  </div>
+  <div class="card">
+    <div class="card-header">Key Data Points</div>
+    <table style="font-size: 13px;">
+      <tr><td>Best Pull</td><td><strong class="green">F22 (Kill): 144.3K DPS</strong></td></tr>
+      <tr><td>Best Wipe (3min+)</td><td>F11 (4:47): 141.8K DPS</td></tr>
+      <tr><td>Worst Wipe (3min+)</td><td>F12 (5:42): 113.8K DPS</td></tr>
+      <tr><td>Average DPS (3min+)</td><td>130.1K DPS (11 pulls)</td></tr>
+      <tr><td>Kill vs Average</td><td class="green">+11% above 3min+ average</td></tr>
+      <tr><td>Kill vs Reference</td><td class="red">&minus;27% below Krylest</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Increase Spinning Crane Kick usage.</strong> SCK is 37% below the reference at 3.5 CPM vs 5.6 CPM. This is the single biggest cast gap and accounts for an estimated <strong>1.9M missing damage</strong>. SCK should be used any time there are 2+ targets stacked (add phases, boss + adds), and with enough Chi, as a high-damage GCD even on single target with Dance of Chi-Ji procs (which Senssay does proc &mdash; 18 applications logged). Every SCK miss during add windows is a significant DPS loss.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Reduce movement GCDs.</strong> 13 Rolls (vs 7), 6 Flying Serpent Kicks (vs 0), and 3 Tiger's Lusts (vs 0) total <strong>17 extra non-damage GCDs</strong> compared to the reference &mdash; approximately 25 seconds of lost damage. Krylest used zero FSK and half as many Rolls. This suggests Senssay is either repositioning too aggressively, not pre-positioning before mechanics, or using Roll reactively where the reference stays in melee. Practice minimizing movement by positioning tighter to the boss and trusting existing movement tools (Chi Torpedo if talented, or a single Roll).
+</div>
+
+<div class="action-item">
+  <strong>3. Improve Fists of Fury target coverage.</strong> Despite nearly identical cast counts (42 vs 38), FoF dealt <strong>9.5M less damage</strong> (15.4M vs 24.8M). Krylest's FoF hit 394 targets across all channels vs Senssay's 284 &mdash; 39% more target connections. This means Krylest is consistently channeling FoF while positioned to cleave adds/boss together. Before pressing FoF, confirm you are positioned to hit maximum targets. Even 1 extra target per FoF channel across 42 casts is massive.
+</div>
+
+<div class="action-item">
+  <strong>4. Use Rushing Wind Kick and Whirling Dragon Punch on cooldown.</strong> RWK is 26% below reference CPM (2.0 vs 2.7), WDP is 17% below (1.9 vs 2.3). Both are high-priority damage abilities that should be used on cooldown. Combined, these two abilities account for roughly <strong>1.0M missing damage</strong>. Set a WeakAura or track their cooldowns visually to minimize drift.
+</div>
+
+<div class="action-item">
+  <strong>5. Interrupt more (Spear Hand Strike).</strong> Senssay interrupted once (1 SHS) vs Krylest's 3 times. Poison Burst from Sporecaps is a high-priority interrupt on Mythic Rotmire &mdash; each missed interrupt forces healing throughput and can cascade into deaths. Assign interrupt rotations in the raid team and ensure Senssay covers their kicks reliably.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--accent);">
+  <div class="card-header accent">Context</div>
+  <p style="font-size: 14px;">The <strong>27% DPS gap</strong> vs the primary reference (Krylest, #2 ranked WW Monk) is <strong>execution-based</strong>, not gear or talent related. Senssay has the highest item level of all compared players (289.8 vs avg 265.9) and only 2 talent differences. The gap breaks down to: Fists of Fury target coverage (largest single contributor, ~9.5M), Spinning Crane Kick under-usage (~1.9M), movement GCD tax (~2.5M estimated), and minor CPM gaps on Rushing Wind Kick + WDP (~1.0M). What Senssay does well: Tiger Palm usage matches reference, RSK is strong, Touch of Death usage is slightly above reference, and defensive CD usage (Touch of Karma, Fortifying Brew) is appropriately timed. Senssay survived the kill while 8 raiders died.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: Krylest (#2 ranked Windwalker Monk, report <code>HhDycpJWk9xXgaQd</code>, Fight 9, 6:38 kill, 197.3K DPS). All times relative to fight start. Talent delta: 2 differences.</p>
+  <p style="margin-top: 4px;">Player data cached to <code>data/log-20260617/senssay/</code>. Reference data cached to <code>data/log-20260617/senssay/ref-krylest/</code>. All event data pulled via WCL v2 GraphQL API with full pagination.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baodabao &mdash; Frost Mage &mdash; Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17, 2026 Log Analysis</a>
+<h1>Baodabao <span class="dim">&mdash; Frost Mage</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value">133.7K</div>
+    <div class="stat-label">DPS (Kill Fight)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value green">Survived</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">42.6</div>
+    <div class="stat-label">Total CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--red); margin-top: 16px;">
+  <div class="card-header red">Bottom Line</div>
+  <p style="font-size: 15px;">Baodabao survived the kill and dealt <strong class="yellow">133.7K DPS</strong> across 7:58 &mdash; a <strong class="red">36.2% gap</strong> behind the #1 reference &Zcy;&ocy;&lcy;&tcy;&iecy;&ncy; (209.6K DPS in 5:51). The core issue is <strong class="red">casts per minute: 42.6 vs 60.8</strong> &mdash; Baodabao is pressing roughly <strong class="red">30% fewer buttons per minute</strong> than the reference. Every rotational ability shows a CPM deficit: Ice Lance at <strong class="red">19.7 vs 29.5 CPM (&minus;33%)</strong>, Frozen Orb at <strong class="red">1.5 vs 2.9 CPM (&minus;48%)</strong>, Frostbolt at <strong class="red">6.9 vs 9.9 CPM (&minus;30%)</strong>, and Flurry at <strong class="red">6.0 vs 8.0 CPM (&minus;25%)</strong>. Part of this gap is contextual &mdash; the ref's 5:51 kill is 27% shorter, meaning more burst-phase-weighted CPM &mdash; but the magnitude of the gap across every ability suggests significant dead GCD time. The Frozen Orb gap (<strong class="red">12 vs 17 casts</strong>) directly reduces Shatter damage, which accounts for the single largest damage gap (<strong class="red">&minus;4.3M</strong>). With similar ilvl (289.1 vs 290.3) and <strong class="yellow">5 talent differences</strong>, the gap is primarily execution &mdash; GCD efficiency and Frozen Orb usage on cooldown.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Frost Mages on Mythic Rotmire. Primary reference: <strong>&Zcy;&ocy;&lcy;&tcy;&iecy;&ncy;</strong> (closest talent match at 5 diffs, 209.6K DPS, 5:51 kill).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Total CPM</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Baodabao</strong></td>
+      <td>133,739</td>
+      <td>7:58</td>
+      <td>289.1</td>
+      <td>&mdash;</td>
+      <td class="red">42.6</td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>&Zcy;&ocy;&lcy;&tcy;&iecy;&ncy; <span class="ref-badge">#1 PRIMARY</span></td>
+      <td class="green">209,620</td>
+      <td>5:51</td>
+      <td>290.3</td>
+      <td><span class="tag tag-warn">5 diff</span></td>
+      <td>60.8</td>
+    </tr>
+    <tr>
+      <td>&Lcy;&acy;&rcy;&rcy;&ocy;&scy;&scy; <span class="ref-badge">#2</span></td>
+      <td class="green">193,273</td>
+      <td>5:51</td>
+      <td>290.3</td>
+      <td><span class="tag tag-warn">7 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>Ronm <span class="ref-badge">#3</span></td>
+      <td class="green">192,462</td>
+      <td>6:00</td>
+      <td>290.6</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#30690;&#22330;&#23621; <span class="ref-badge">#4</span></td>
+      <td class="green">190,955</td>
+      <td>6:45</td>
+      <td>290.3</td>
+      <td><span class="tag tag-diff">12 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>&#30333;&#22812;&#20979; <span class="ref-badge">#5</span></td>
+      <td class="green">186,278</td>
+      <td>6:50</td>
+      <td>291.9</td>
+      <td><span class="tag tag-diff">8 diff</span></td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Baodabao has nearly identical ilvl to the top references (289.1 vs 290.3) and 5 talent differences from the #1 ranked player. The 36.2% DPS gap is largely execution-based. <strong>Important context:</strong> Baodabao's kill was 7:58 while the reference's was 5:51 &mdash; a 2:07 difference. Longer fights naturally produce lower average DPS because burst-phase cooldowns are a smaller fraction of total fight time. Some of the CPM gap is also explained by this &mdash; shorter fights have more burst-phase concentration. However, the magnitude of the CPM deficit (30% across all abilities) exceeds what fight length alone would explain.</p>
+
+<!-- BOSS MECHANIC TIMELINE -->
+<h2>Boss Mechanic Timeline</h2>
+<p class="section-intro">Rotmire's major mechanics. Blooms fire on a ~136s cycle (raid-wide AoE). Festering Vines fire every ~68s (roots). Awaken Fungi spawns adds every ~65s. All timings are fixed regardless of raid DPS.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Bloom markers -->
+  <div class="timeline-marker" style="left: 25.1%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #1 (2:00)</span>
+  </div>
+  <div class="timeline-marker" style="left: 53.6%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #2 (4:16)</span>
+  </div>
+  <div class="timeline-marker" style="left: 82.0%; border-color: var(--red); width: 3px;">
+    <span class="timeline-label" style="top: 2px; left: 6px; color: var(--red);">Bloom #3 (6:32)</span>
+  </div>
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left: 39.3%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; Tiareynna (3:08)</span>
+  </div>
+  <div class="timeline-marker" style="left: 76.4%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: 6px; color: var(--dim); font-size: 9px;">&#x2620; 3 deaths (6:07)</span>
+  </div>
+  <div class="timeline-marker" style="left: 83.9%; border-color: var(--dim); width: 1px;">
+    <span class="timeline-label" style="bottom: 2px; left: -30px; color: var(--dim); font-size: 9px;">&#x2620; Zinnks (6:40)</span>
+  </div>
+  <!-- Time markers -->
+  <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--dim);">4:00</span>
+  <span class="timeline-label" style="bottom: 2px; right: 4px; color: var(--dim);">7:58</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State</div>
+  <p>0:00&ndash;3:08 = 19/19 alive &middot; 3:08&ndash;6:07 = 18/19 (lost Tiareynna, Disc healer) &middot; 6:07 = 15/19 (Nurnyx, Snackznchill, Son&igrave;c die to Festering Vines) &middot; 6:40 = 14/19 (Zinnks to Fungal Bloom) &middot; 7:38&ndash;7:40 = 11/19 (Invincibale, Unholyftw, Nucke)</p>
+  <p style="margin-top: 4px; color: var(--green);">Baodabao survived the entire fight. The raid lost 8 players, 5 in the final 2 minutes during soft enrage. Late-fight DPS context: fewer healers and more mechanic pressure on surviving players.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Baodabao (7:58 kill, 478s) vs &Zcy;&ocy;&lcy;&tcy;&iecy;&ncy; (5:51 kill, 351s). Total CPM: <strong class="red">42.6 vs 60.8</strong>. Note: shorter kills naturally inflate CPM because cooldown-heavy openers represent a larger fraction of the fight. The Frost Mage rotation in Patch 12.0.7 (Frostfire hero talent) revolves around building Freezing stacks through Frostbolt, Flurry, and Ray of Frost, then consuming them with Ice Lance and Glacial Spike to trigger Shatter explosions. Frozen Orb is the highest-priority cooldown, dealing sustained AoE damage and generating Fingers of Frost procs.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Ice Lance</strong></td>
+      <td>157</td>
+      <td class="red">19.7</td>
+      <td>173</td>
+      <td>29.5</td>
+      <td class="red">&minus;33%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Frostbolt</strong></td>
+      <td>55</td>
+      <td class="red">6.9</td>
+      <td>58</td>
+      <td>9.9</td>
+      <td class="red">&minus;30%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Flurry</strong></td>
+      <td>48</td>
+      <td class="yellow">6.0</td>
+      <td>47</td>
+      <td>8.0</td>
+      <td class="red">&minus;25%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Frozen Orb</strong></td>
+      <td>12</td>
+      <td class="red">1.5</td>
+      <td>17</td>
+      <td>2.9</td>
+      <td class="red">&minus;48%</td>
+      <td><span class="tag tag-crit">Critical</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Glacial Spike</strong></td>
+      <td>18</td>
+      <td class="yellow">2.3</td>
+      <td>16</td>
+      <td>2.7</td>
+      <td class="yellow">&minus;17%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Ray of Frost</strong></td>
+      <td>12</td>
+      <td class="yellow">1.5</td>
+      <td>12</td>
+      <td>2.0</td>
+      <td class="yellow">&minus;26%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr>
+      <td>Ice Barrier</td>
+      <td>14</td>
+      <td>1.8</td>
+      <td>13</td>
+      <td>2.2</td>
+      <td class="dim">&minus;20%</td>
+      <td><span class="tag tag-info">Defensive</span></td>
+    </tr>
+    <tr>
+      <td>Nullsight</td>
+      <td>5</td>
+      <td>0.6</td>
+      <td>6</td>
+      <td>1.0</td>
+      <td class="dim">&minus;39%</td>
+      <td><span class="tag tag-info">Trinket</span></td>
+    </tr>
+    <tr>
+      <td>Counterspell</td>
+      <td>3</td>
+      <td>0.4</td>
+      <td>1</td>
+      <td>0.2</td>
+      <td class="green">+122%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Blizzard</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td class="red">&minus;100%</td>
+      <td><span class="tag tag-info">Minor</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">GCD Efficiency: 30% Fewer Casts Per Minute</div>
+    <p style="font-size: 14px;">Baodabao's 42.6 total CPM vs the reference's 60.8 CPM is the <strong>dominant factor</strong> in the DPS gap. Every single rotational ability shows a 25-48% CPM deficit. In Frost Mage's current rotation (12.0.7 Frostfire), the gameplay loop is: cast Frostbolt/Flurry/Ray of Frost to stack the Freezing debuff on the target, then consume those stacks with Ice Lance or Glacial Spike to trigger Shatter explosions. Lower CPM across the board means fewer Freezing stacks built, fewer Shatter triggers, and less total damage from every source. The GCD should be rolling constantly &mdash; Frostbolt is the filler that should be cast whenever nothing higher-priority is available.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Frozen Orb: 48% CPM Deficit</div>
+    <p style="font-size: 14px;">Frozen Orb is the single most important cooldown for Frost Mages &mdash; it deals sustained AoE damage every 0.5s for 15 seconds and generates Fingers of Frost procs which enable bonus Ice Lance damage. Baodabao cast it <strong>12 times in 7:58</strong> while the reference cast it <strong>17 times in 5:51</strong>. That is a 48% CPM gap on the spec's highest-priority cooldown ability. The reference averaged a Frozen Orb every 21 seconds, Baodabao every 40 seconds. Every missed Frozen Orb is lost direct damage AND fewer Fingers of Frost procs feeding into Ice Lance and Shatter. This single ability accounts for <strong>&minus;3.06M</strong> of the damage gap.</p>
+  </div>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Total damage: Baodabao 65.6M (133.7K DPS) vs &Zcy;&ocy;&lcy;&tcy;&iecy;&ncy; 74.6M (209.6K DPS). Sorted by impact on the overall gap.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Gap</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Shatter</strong></td>
+      <td>24,777K</td>
+      <td>37.8%</td>
+      <td class="green">29,054K</td>
+      <td>38.9%</td>
+      <td class="red">&minus;4,277K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Frozen Orb</strong></td>
+      <td>5,998K</td>
+      <td>9.1%</td>
+      <td class="green">9,059K</td>
+      <td>12.1%</td>
+      <td class="red">&minus;3,061K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Splintering Ray</strong></td>
+      <td>0</td>
+      <td>0.0%</td>
+      <td class="green">1,573K</td>
+      <td>2.1%</td>
+      <td class="red">&minus;1,573K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Controlled Instincts</strong></td>
+      <td>2,422K</td>
+      <td>3.7%</td>
+      <td class="green">3,259K</td>
+      <td>4.4%</td>
+      <td class="red">&minus;837K</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td>Ice Lance</td>
+      <td>3,770K</td>
+      <td>5.7%</td>
+      <td class="green">4,424K</td>
+      <td>5.9%</td>
+      <td class="red">&minus;654K</td>
+    </tr>
+    <tr>
+      <td>Hand of Frost</td>
+      <td>2,470K</td>
+      <td>3.8%</td>
+      <td>2,858K</td>
+      <td>3.8%</td>
+      <td class="dim">&minus;388K</td>
+    </tr>
+    <tr>
+      <td>Frost Splinter</td>
+      <td>6,118K</td>
+      <td>9.3%</td>
+      <td>6,431K</td>
+      <td>8.6%</td>
+      <td class="dim">&minus;313K</td>
+    </tr>
+    <tr>
+      <td>Glacial Assault</td>
+      <td>1,099K</td>
+      <td>1.7%</td>
+      <td>1,330K</td>
+      <td>1.8%</td>
+      <td class="dim">&minus;231K</td>
+    </tr>
+    <tr>
+      <td>Frostbolt</td>
+      <td>1,772K</td>
+      <td>2.7%</td>
+      <td>1,492K</td>
+      <td>2.0%</td>
+      <td class="green">+280K</td>
+    </tr>
+    <tr>
+      <td>Flurry</td>
+      <td>5,262K</td>
+      <td>8.0%</td>
+      <td>4,980K</td>
+      <td>6.7%</td>
+      <td class="green">+282K</td>
+    </tr>
+    <tr>
+      <td>Glacial Spike</td>
+      <td>3,512K</td>
+      <td>5.4%</td>
+      <td>3,232K</td>
+      <td>4.3%</td>
+      <td class="green">+280K</td>
+    </tr>
+    <tr>
+      <td>Ray of Frost</td>
+      <td>7,048K</td>
+      <td>10.7%</td>
+      <td>6,066K</td>
+      <td>8.1%</td>
+      <td class="green">+982K</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Where the Damage Gap Comes From</div>
+  <p style="font-size: 14px;">Despite doing <strong>less total damage</strong>, Baodabao actually does <strong>more</strong> per-cast damage on several abilities (Flurry, Glacial Spike, Ray of Frost) &mdash; indicating that when abilities are cast, they hit hard. The problem is cast frequency, not cast quality. The three biggest damage gaps are: <strong class="red">Shatter (&minus;4.3M)</strong> because fewer Freezing stacks are being built and consumed per minute, <strong class="red">Frozen Orb (&minus;3.1M)</strong> from 5 fewer casts, and <strong class="red">Splintering Ray (&minus;1.6M)</strong> which appears in the reference's damage but not Baodabao's &mdash; this may be a talent difference (1 of the 5 talent diffs). The Shatter gap alone is the single largest factor: Shatter is 38-39% of both players' damage, and Baodabao's 4.3M deficit in Shatter closely correlates with the lower Ice Lance and Frozen Orb CPM reducing the number of Freezing stack consumption events.</p>
+</div>
+
+<!-- COOLDOWN USAGE -->
+<h2>Cooldown Usage: Frozen Orb</h2>
+<p class="section-intro">Frozen Orb is the highest-priority cooldown in the Frost Mage rotation. It should be cast on cooldown in single-target. Both players use the Frostfire hero talent tree.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="green">&Zcy;&ocy;&lcy;&tcy;&iecy;&ncy;</span> <span class="ref-badge">Reference</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:07</span> <span class="cast good">Frozen Orb #1</span></div>
+      <div><span class="dim">0:20</span> <span class="cast good">Frozen Orb #2 (13s gap)</span></div>
+      <div><span class="dim">0:38</span> <span class="cast good">Frozen Orb #3 (18s gap)</span></div>
+      <div><span class="dim">0:58</span> <span class="cast good">Frozen Orb #4 (20s gap)</span></div>
+      <div><span class="dim">1:17</span> <span class="cast good">Frozen Orb #5 (19s gap)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">Pattern:</span> <span class="cast good">Every 18-22s consistently through 5:40</span></div>
+      <div style="margin-top: 8px;"><strong class="green">17 Frozen Orbs in 5:51 &mdash; near-perfect uptime</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card bloom">
+    <div class="card-header"><span class="yellow">Baodabao</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:06</span> <span class="cast good">Frozen Orb #1</span></div>
+      <div><span class="dim">0:29</span> <span class="cast good">Frozen Orb #2 (23s gap)</span></div>
+      <div><span class="dim">1:21</span> <span class="cast bad">Frozen Orb #3 (52s gap)</span></div>
+      <div><span class="dim">2:06</span> <span class="cast bad">Frozen Orb #4 (45s gap)</span></div>
+      <div><span class="dim">2:57</span> <span class="cast bad">Frozen Orb #5 (51s gap)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">Pattern:</span> <span class="cast bad">Avg 40s between casts (should be ~20s)</span></div>
+      <div style="margin-top: 8px;"><strong class="yellow">12 Frozen Orbs in 7:58 &mdash; missed 5+ casts</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Why Frozen Orb Frequency Matters</div>
+  <p style="font-size: 14px;">In the Frostfire hero talent tree, Frozen Orb flies to the target and deals damage every 0.5s for 15 seconds, generating Fingers of Frost procs along the way. Each Frozen Orb window produces multiple free Ice Lance casts (via Fingers of Frost) that consume maximum Freezing stacks without needing to build them manually, triggering bonus Shatter damage. The reference casts Frozen Orb every ~20 seconds on average &mdash; meaning Frozen Orb is active for roughly <strong>75% of the fight</strong>. Baodabao averages one every ~40 seconds, leaving long stretches without Frozen Orb's passive damage and proc generation. The <strong>&minus;3.06M Frozen Orb damage gap</strong> is only the direct damage loss &mdash; the indirect loss from fewer Fingers of Frost procs (which feed Ice Lance and Shatter damage) compounds the problem significantly.</p>
+</div>
+
+<!-- RAY OF FROST ANALYSIS -->
+<h2>Ray of Frost Usage</h2>
+<p class="section-intro">Ray of Frost is a channeled ability on a ~45-60s cooldown that stacks Freezing on the target every tick. Both players cast it 12 times.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th></th><th>Baodabao</th><th>&Zcy;&ocy;&lcy;&tcy;&iecy;&ncy;</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Ray of Frost Casts</strong></td>
+      <td>12</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <td><strong>Ray of Frost CPM</strong></td>
+      <td class="yellow">1.5</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <td><strong>Ray of Frost Damage</strong></td>
+      <td class="green">7,048K</td>
+      <td>6,066K</td>
+    </tr>
+    <tr>
+      <td><strong>Avg Damage/Cast</strong></td>
+      <td class="green">587K</td>
+      <td>506K</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;"><strong class="green">Positive finding:</strong> Ray of Frost usage is solid. Same cast count as the reference, and actually <strong>higher damage per cast</strong> (587K vs 506K). This suggests Baodabao is channeling Ray of Frost to completion and not clipping it early. The CPM difference (1.5 vs 2.0) is purely a function of fight length, not missed casts.</p>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received during the kill fight.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Player</th><th>Reference</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Time Warp</strong></td>
+      <td>0:01</td>
+      <td>0:00</td>
+      <td><span class="tag tag-same">Same &mdash; on pull</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>11 applications</td>
+      <td>15 applications</td>
+      <td><span class="tag tag-warn">Ref had more</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>1 application</td>
+      <td>0 applications</td>
+      <td><span class="tag tag-same">Player had 1</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>None</td>
+      <td>None</td>
+      <td><span class="tag tag-same">Neither received PI</span></td>
+    </tr>
+    <tr>
+      <td><strong>Berserking (racial)</strong></td>
+      <td>N/A (Draenei)</td>
+      <td>2 uses</td>
+      <td><span class="tag tag-warn">Ref has Troll haste racial</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">The reference had slightly more Ebon Might applications (15 vs 11) and has the Troll racial Berserking (10% haste for 12s, 2 uses). Neither received Power Infusion. The Ebon Might gap provides a small buff advantage to the reference, but the difference is modest &mdash; Ebon Might alone would not explain a 36% DPS gap. Berserking's haste boost does help the reference squeeze in more casts during burst windows.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Baodabao during the kill. The vast majority is from unavoidable raid-wide mechanics.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rotting Pustules</strong></td>
+      <td>13,761K</td>
+      <td>467</td>
+      <td>3,226K</td>
+      <td><span class="tag tag-same">No &mdash; soft enrage ticks</span></td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>3,258K</td>
+      <td>51</td>
+      <td>610K</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide AoE</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>2,957K</td>
+      <td>44</td>
+      <td>737K</td>
+      <td><span class="tag tag-same">No &mdash; environmental</span></td>
+    </tr>
+    <tr>
+      <td>Festering Vines</td>
+      <td>704K</td>
+      <td>9</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">Partially &mdash; 9 hits</span></td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>513K</td>
+      <td>17</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Adds/cleave hits</span></td>
+    </tr>
+    <tr>
+      <td>Writhing Vines</td>
+      <td>149K</td>
+      <td>1</td>
+      <td>0</td>
+      <td><span class="tag tag-warn">1 hit</span></td>
+    </tr>
+    <tr>
+      <td>Blightshot</td>
+      <td>125K</td>
+      <td>2</td>
+      <td>17K</td>
+      <td><span class="tag tag-info">Boss ability</span></td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>83K</td>
+      <td>1</td>
+      <td>54K</td>
+      <td><span class="tag tag-warn">Proximity &mdash; 1 hit</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Baodabao took 9 Festering Vines hits &mdash; this mechanic roots players and can be fatal (it killed 5 raid members including Snackznchill, the other Frost Mage). Taking some Vines damage is normal, but 9 hits suggests occasional slow reactions to Vines placement. The single Bursting Shroom and Writhing Vines hit are minor. Overall damage profile is acceptable &mdash; Baodabao survived when 8 teammates did not.</p>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Baodabao</th><th>&Zcy;&ocy;&lcy;&tcy;&iecy;&ncy;</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>289.1</td>
+      <td>290.3</td>
+      <td><span class="tag tag-same">&minus;1.2 ilvl</span></td>
+    </tr>
+    <tr>
+      <td>Intellect</td>
+      <td>2,664</td>
+      <td>2,643</td>
+      <td><span class="tag tag-same">Nearly identical</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td class="yellow">1,115</td>
+      <td>1,268</td>
+      <td>Player has &minus;12% Crit</td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="green">696</td>
+      <td>384</td>
+      <td>Player has +81% more Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="yellow">952</td>
+      <td>1,030</td>
+      <td>Player has &minus;8% Mastery</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td>0</td>
+      <td>0</td>
+      <td><span class="dim">Both zero</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Baodabao actually has <strong>significantly more Haste</strong> than the reference (696 vs 384, +81%). Haste reduces cast times and GCD duration, which means Baodabao <strong>should</strong> be casting more per minute, not less. This makes the 30% CPM deficit even more notable &mdash; with 81% more Haste, Baodabao has faster GCDs available but is not using them. The Crit deficit (&minus;12%) reduces proc rates for Brain Freeze and Fingers of Frost slightly, but this alone would not explain a 30% CPM gap. The issue is GCD utilization (dead time between casts), not stats.</p>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Baodabao's DPS across all 20 pulls on Mythic Rotmire. The kill (Fight 22) was the best long-pull performance at 133.7K DPS. Short wipes (&lt;90s) show inflated DPS from burst phase bias.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 91%; background: var(--red);" data-tooltip="F2: 153K DPS (1:13)"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--red);" data-tooltip="F3: 114K DPS (1:11)"></div>
+    <div class="prog-bar" style="height: 87%; background: var(--red);" data-tooltip="F4: 145K DPS (0:51)"></div>
+    <div class="prog-bar" style="height: 65%; background: var(--orange);" data-tooltip="F5: 109K DPS (2:42)"></div>
+    <div class="prog-bar" style="height: 55%; background: var(--orange);" data-tooltip="F7: 91K DPS (2:18)"></div>
+    <div class="prog-bar" style="height: 74%; background: var(--orange);" data-tooltip="F8: 124K DPS (2:17)"></div>
+    <div class="prog-bar" style="height: 69%; background: var(--yellow);" data-tooltip="F9: 115K DPS (3:14)"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--yellow);" data-tooltip="F10: 114K DPS (5:37)"></div>
+    <div class="prog-bar" style="height: 74%; background: var(--yellow);" data-tooltip="F11: 123K DPS (4:48)"></div>
+    <div class="prog-bar" style="height: 72%; background: var(--yellow);" data-tooltip="F12: 121K DPS (5:42)"></div>
+    <div class="prog-bar" style="height: 66%; background: var(--orange);" data-tooltip="F13: 110K DPS (2:51)"></div>
+    <div class="prog-bar" style="height: 60%; background: var(--red);" data-tooltip="F14: 101K DPS (1:15)"></div>
+    <div class="prog-bar" style="height: 76%; background: var(--yellow);" data-tooltip="F15: 128K DPS (5:05)"></div>
+    <div class="prog-bar" style="height: 100%; background: var(--red);" data-tooltip="F16: 168K DPS (0:53)"></div>
+    <div class="prog-bar" style="height: 71%; background: var(--yellow);" data-tooltip="F17: 118K DPS (5:45)"></div>
+    <div class="prog-bar" style="height: 67%; background: var(--yellow);" data-tooltip="F18: 112K DPS (6:52)"></div>
+    <div class="prog-bar" style="height: 76%; background: var(--yellow);" data-tooltip="F19: 127K DPS (5:01)"></div>
+    <div class="prog-bar" style="height: 68%; background: var(--red);" data-tooltip="F20: 115K DPS (0:54)"></div>
+    <div class="prog-bar" style="height: 70%; background: var(--yellow);" data-tooltip="F21: 117K DPS (7:15)"></div>
+    <div class="prog-bar" style="height: 79%; background: var(--green);" data-tooltip="F22 KILL: 133K DPS (7:58)"></div>
+  </div>
+  <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span>Fight 2</span>
+    <span style="color: var(--dim);">Short wipe &bull; Medium &bull; Long pull &bull; <span class="green">Kill</span></span>
+    <span>Fight 22 (Kill)</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Filtering to pulls longer than 3 minutes (meaningful comparisons): F9 (115K) &rarr; F10 (114K) &rarr; F11 (123K) &rarr; F12 (121K) &rarr; F15 (128K) &rarr; F17 (118K) &rarr; F18 (112K) &rarr; F19 (127K) &rarr; F21 (117K) &rarr; <strong class="green">F22 Kill (133K)</strong>. DPS fluctuated between 112&ndash;128K for most longer pulls with a clear <strong>improvement on the kill</strong>. The kill pull was Baodabao's best sustained DPS across the entire night at 133.7K, showing focused execution when it counted. The short wipes (F2, F4, F16) show 145-168K DPS which is burst-phase inflated &mdash; those numbers are not directly comparable.</p>
+</div>
+
+<!-- COOLDOWN TIMELINE -->
+<h2>Cooldown Timeline</h2>
+<p class="section-intro">Major cooldown timing: Frozen Orb and Ray of Frost windows for both players.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Cooldown</th><th>Player Uses</th><th>Ref Uses</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Frozen Orb</strong></td>
+      <td>12</td>
+      <td>17</td>
+      <td><span class="tag tag-crit">&minus;5 casts</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ray of Frost</strong></td>
+      <td>12</td>
+      <td>12</td>
+      <td><span class="tag tag-same">Same count</span></td>
+    </tr>
+    <tr>
+      <td><strong>Glacial Spike</strong></td>
+      <td>18</td>
+      <td>16</td>
+      <td><span class="tag tag-same">Good &mdash; 2 more</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ice Barrier</strong></td>
+      <td>14</td>
+      <td>13</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ice Cold</strong></td>
+      <td>3</td>
+      <td>4</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td><strong>Nullsight</strong> (trinket)</td>
+      <td>5</td>
+      <td>6</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+    <tr>
+      <td><strong>Counterspell</strong></td>
+      <td>3</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Good &mdash; interrupts</span></td>
+    </tr>
+    <tr>
+      <td><strong>Potion of Recklessness</strong></td>
+      <td>2</td>
+      <td>2</td>
+      <td><span class="tag tag-same">Same</span></td>
+    </tr>
+    <tr>
+      <td><strong>Alter Time</strong></td>
+      <td>4</td>
+      <td>0</td>
+      <td><span class="tag tag-info">Defensive</span></td>
+    </tr>
+    <tr>
+      <td><strong>Shimmer</strong></td>
+      <td>2</td>
+      <td>1</td>
+      <td><span class="tag tag-same">Similar</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--cyan);">
+  <div class="card-header cyan">Alter Time Usage</div>
+  <p style="font-size: 14px;">Baodabao used Alter Time <strong>4 times</strong> while the reference used it <strong>0 times</strong>. Alter Time is a defensive utility that snapshots your position and health, then reverts you back after a few seconds. Using it 4 times suggests Baodabao was reactively handling mechanics that the reference avoided entirely (likely related to the 9 Festering Vines hits). While Alter Time is smart defensive play, each use costs GCD time and interrupts the rotation &mdash; and the situations requiring it may indicate suboptimal positioning that forces recovery instead of prevention.</p>
+</div>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Reduce dead GCD time &mdash; always be casting.</strong> This is the single biggest DPS improvement available. The 42.6 vs 60.8 CPM gap translates to roughly <strong>30% of available GCDs going unused</strong>. In Frost Mage's current rotation, the GCD should never be empty: Frostbolt is always available as a filler that builds Freezing stacks on the target. Any time Ice Lance, Flurry, Frozen Orb, Glacial Spike, and Ray of Frost are all on cooldown or unavailable, Frostbolt should be cast immediately. With 696 Haste (81% more than the reference), Baodabao has <strong>faster GCDs available</strong> &mdash; the cast speed is there, the button pressing needs to match it. Estimated gain: closing even half the CPM gap would add <strong>~25-30K DPS</strong>.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Cast Frozen Orb on cooldown &mdash; every 15-20 seconds.</strong> Frozen Orb is the highest-priority ability in the Frostfire Frost Mage rotation. It deals direct damage for 15 seconds AND generates Fingers of Frost procs that enable free Ice Lance casts with maximum Freezing consumption (Shatter damage). Baodabao averaged a Frozen Orb every <strong>40 seconds</strong> vs the reference's <strong>21 seconds</strong>. The Frozen Orb gap alone accounts for <strong>&minus;3.06M direct damage</strong> plus additional indirect losses from fewer Fingers of Frost procs. Monitor the Frozen Orb cooldown and cast it the instant it becomes available. Estimated gain: <strong>~15-20K DPS</strong> from direct damage and cascading proc generation.
+</div>
+
+<div class="action-item">
+  <strong>3. Increase Ice Lance casting rate.</strong> Ice Lance at 19.7 CPM vs 29.5 CPM is a <strong>33% deficit</strong>. Ice Lance is the primary Freezing stack consumer &mdash; every Ice Lance with 10+ Freezing stacks (Frostfire threshold) triggers a Shatter explosion. More Frozen Orbs (fix #2) will naturally increase Fingers of Frost procs, which feed more Ice Lances. Additionally, in the Frostfire priority, Ice Lance should be cast whenever Freezing stacks reach 10+ or whenever Fingers of Frost is active. Watching for the Fingers of Frost proc indicator and reacting immediately will increase Ice Lance frequency. This is partially downstream of fixes #1 and #2.
+</div>
+
+<div class="action-item">
+  <strong>4. Improve positioning to reduce Festering Vines hits.</strong> Baodabao took <strong>9 Festering Vines hits</strong> and used Alter Time 4 times (reference: 0). Festering Vines roots players and deals damage &mdash; it killed 5 raid members in this pull. As a ranged DPS, Frost Mages have the luxury of pre-positioning away from Vines spawn locations. Better awareness of Vines timing (every ~68 seconds) and proactive positioning would eliminate the need for defensive Alter Time usage, freeing those GCDs for damage and avoiding rotation interruptions during root recovery.
+</div>
+
+<div class="action-item">
+  <strong>5. Investigate the Splintering Ray talent difference.</strong> The reference dealt <strong>1.57M damage from Splintering Ray</strong> (2.1% of total) while Baodabao shows 0 damage from this source. This is likely one of the 5 talent differences &mdash; Splintering Ray appears to be a talent that adds bonus damage to Ray of Frost ticks. Since both players cast Ray of Frost the same number of times (12), having this talent would be a passive DPS gain with zero rotation changes required. Review the talent tree and consider picking up Splintering Ray if it does not require dropping a critical node.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Survivability:</strong> Baodabao survived the entire kill while 8 teammates died &mdash; including Snackznchill, the other Frost Mage, who died to Festering Vines at 6:07. Surviving an 8-minute Mythic kill with the soft enrage stacking is not trivial.<br><br>
+    <strong>Ray of Frost:</strong> Same cast count as the #1 ranked player (12 each) and actually higher damage per cast (587K vs 506K). Ray of Frost channels are being completed fully, not clipped.<br><br>
+    <strong>Glacial Spike:</strong> 18 casts vs 16 for the reference &mdash; Baodabao is generating and consuming Icicles efficiently to produce Glacial Spike windows. Glacial Spike damage is 3.51M vs 3.23M &mdash; higher total from more casts.<br><br>
+    <strong>Kill pull was best pull:</strong> 133.7K on the kill was Baodabao's highest sustained DPS all night across all pulls longer than 3 minutes. Consistent improvement through progression &mdash; F10 (114K) to F22 (133K).<br><br>
+    <strong>Interrupt contribution:</strong> 3 Counterspell casts vs the reference's 1. Contributing to add interrupts (Sporecap Poison Burst) is valuable raid utility.<br><br>
+    <strong>Potion usage:</strong> 2 Potion of Recklessness uses (pre-pot + combat pot), matching the reference perfectly.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary</div>
+  <p style="font-size: 14px;">The 36.2% DPS gap vs #1 ranked &Zcy;&ocy;&lcy;&tcy;&iecy;&ncy; breaks down approximately to: <strong>~55% GCD efficiency</strong> (dead time between casts, 30% fewer CPM despite having more Haste), <strong>~25% Frozen Orb usage</strong> (12 vs 17 casts, losing both direct damage and downstream Fingers of Frost procs), <strong>~10% fight length context</strong> (7:58 vs 5:51 naturally lowers average DPS due to burst-phase dilution), and <strong>~10% talent + external differences</strong> (Splintering Ray talent, Berserking racial, Ebon Might applications). The first two categories are entirely actionable: casting more frequently and using Frozen Orb on cooldown would close the majority of the gap. The good news: when Baodabao <strong>does</strong> press buttons, the damage per cast is competitive with or exceeds the reference on most abilities. The ceiling is there &mdash; it is about pressing buttons faster and maintaining Frozen Orb uptime.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>1Mch2jqLWmAZ8r9a</code>, Fight 22 (Kill). Reference: &Zcy;&ocy;&lcy;&tcy;&iecy;&ncy; (#1 ranked Frost Mage, report <code>zd72PqMtnGwKARY6</code>, Fight 21, 5:51 kill). All times relative to fight start. Frost Mage rotation knowledge sourced from Icy Veins and Wowhead guides for Patch 12.0.7 (Midnight).</p>
+  <p style="margin-top: 4px;">Talent delta: 5 differences between Baodabao and &Zcy;&ocy;&lcy;&tcy;&iecy;&ncy;. Item level difference: &minus;1.2 (289.1 vs 290.3). External buffs: both had Time Warp on pull; reference had more Ebon Might (15 vs 11) and Berserking racial. Neither received Power Infusion.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mythic Vorasius — Healing CD Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    padding: 32px;
+    max-width: 900px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c4a1ff;
+    margin-top: 36px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 6px;
+  }
+
+  .pattern {
+    background: #111;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: #999;
+  }
+
+  .pattern strong { color: #ccc; }
+
+  .mrt-section {
+    margin-top: 36px;
+  }
+
+  .mrt-block {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: #ccc;
+    position: relative;
+    margin-top: 8px;
+  }
+
+  .mrt-block .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+
+  .mrt-hint {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .cycle-header {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #666;
+    margin-top: 32px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .event {
+    background: #141414;
+    border: 1px solid #1e1e1e;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+  }
+
+  .event-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .event-time {
+    font-size: 13px;
+    font-weight: 700;
+    color: #888;
+    font-family: 'Courier New', monospace;
+    min-width: 42px;
+  }
+
+  .event-name {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .event-note {
+    font-size: 12px;
+    color: #666;
+    margin-left: auto;
+  }
+
+  .event-boss .event-name { color: #5b9bd5; }
+  .event-burst .event-name { color: #ffd966; }
+  .event-burst {
+    border-left: 3px solid #ffd966;
+    background: #1a1710;
+  }
+  .event-burst.hardest {
+    border-left: 3px solid #ff6b6b;
+    background: #1a1212;
+  }
+
+  .cd-list {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 2px 12px;
+    font-size: 13px;
+    padding-left: 52px;
+  }
+
+  .cd-role {
+    color: #888;
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .cd-role.hpal { color: #f48cba; }
+  .cd-role.rsham { color: #0070dd; }
+  .cd-role.mw { color: #00ff98; }
+  .cd-role.pevo { color: #33937f; }
+  .cd-role.raid { color: #a0a0a0; }
+
+  .cd-ability {
+    color: #ddd;
+  }
+
+  .reactive {
+    background: #111;
+    border: 1px dashed #333;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-top: 16px;
+  }
+
+  .reactive-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 8px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .tag-warn {
+    background: #3d2200;
+    color: #ffa940;
+  }
+
+  .tag-danger {
+    background: #3d0011;
+    color: #ff6b6b;
+  }
+
+  .tag-info {
+    background: #002a3d;
+    color: #5bc0de;
+  }
+
+  .copy-block {
+    background: #0d0d0d;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    color: #ccc;
+    position: relative;
+  }
+
+  .copy-block .label {
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: block;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #222;
+    border: 1px solid #333;
+    color: #aaa;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .copy-btn:hover {
+    background: #333;
+    color: #fff;
+  }
+
+  details { margin-top: 36px; }
+  summary { font-size: 14px; font-weight: 600; color: #666; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #999; }
+  .details-inner { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #888; line-height: 1.7; }
+  .details-inner a { color: #7cacf8; }
+
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Mythic Vorasius &mdash; Healing CD Plan</h1>
+<p class="subtitle">Four Dads One Pizza &mdash; HPal / RSham / MW / PEvo &mdash; 5 teams analyzed</p>
+
+<div class="pattern">
+  Repeating cycle fight. Each cycle: <strong>Primordial Roar</strong> (pull-in + stacking DoT) &rarr; <strong>Shadowclaw Slams</strong> (raid splash) &rarr; <strong>Parasite Expulsion</strong> (adds) &rarr; <strong>Blisterburst</strong> (add explosions, ~97K each + Dark Goo &mdash; #1 CD target) &rarr; <strong>Void Breath</strong> (beam sweep). Soft enrage via permanent stacking Primordial Power DoT.
+</div>
+
+<!-- CYCLE 1 -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Cycle 1 &mdash;&mdash;&mdash;</div>
+
+<div class="event event-burst hardest">
+  <div class="event-header">
+    <span class="event-time">1:18</span>
+    <span class="event-name">Blisterburst 1</span>
+    <span class="tag tag-danger">HARDEST</span>
+    <span class="event-note">add explosions &mdash; ~97K raid-wide each + Dark Goo</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Rewind</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Aura Mastery</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Revival</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Rallying Cry</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Darkness</span>
+  </div>
+</div>
+
+<!-- CYCLE 2 -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Cycle 2 &mdash;&mdash;&mdash;</div>
+
+<div class="event event-boss">
+  <div class="event-header">
+    <span class="event-time">2:17</span>
+    <span class="event-name">Boss Phase 2 + Shadowclaw Slams</span>
+    <span class="event-note">sustained throughput &mdash; 2min CDs back</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath (2nd)</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon (2nd)</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight (2nd)</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit (2nd)</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Vampiric Embrace</span>
+  </div>
+</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">3:22</span>
+    <span class="event-name">Blisterburst 2</span>
+    <span class="event-note">3min CDs still on CD &mdash; lighter coverage</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit (3rd)</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight (2nd)</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Vampiric Embrace (2nd)</span>
+  </div>
+</div>
+
+<!-- KILL PUSH -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Kill Push &mdash;&mdash;&mdash;</div>
+
+<div class="event event-burst">
+  <div class="event-header">
+    <span class="event-time">4:50</span>
+    <span class="event-name">Blisterburst 3 + Kill</span>
+    <span class="tag tag-warn">LAST PUSH</span>
+    <span class="event-note">all 3min CDs back &mdash; most teams kill 4:53&ndash;5:39</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance (2nd)</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem (2nd)</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Rewind (2nd)</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Aura Mastery (2nd)</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Revival (2nd)</span>
+  </div>
+</div>
+
+<!-- REACTIVE -->
+<div class="reactive">
+  <div class="reactive-title">Reactive &mdash; use on the fly, no pre-assignment</div>
+  <div class="cd-list" style="padding-left: 16px;">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Blessing of Sacrifice, Lay on Hands</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Life Cocoon</span>
+  </div>
+</div>
+
+<!-- DISCORD COPY BLOCK -->
+<h2>Discord Copy/Paste</h2>
+<div class="copy-block" id="discord-block">
+<span class="label">Click to copy</span>
+<button class="copy-btn" onclick="copyDiscord()">Copy</button>
+MYTHIC VORASIUS — HEALING CD PLAN
+HPal / RSham / MW / PEvo
+
+━━━ CYCLE 1 ━━━
+
+BLISTERBURST 1 (1:18) !! HARDEST !!
+  RSham  — Ascendance
+  RSham  — Spirit Link Totem
+  PEvo   — Rewind
+  HPal   — Aura Mastery
+  MW     — Revival
+  Raid   — Rallying Cry
+  Raid   — Darkness
+
+━━━ CYCLE 2 ━━━
+
+BOSS PHASE 2 + SHADOWCLAW SLAMS (2:17)
+  HPal   — Avenging Wrath (2nd)
+  MW     — Yu'lon (2nd)
+  PEvo   — Dream Flight (2nd)
+  MW     — Celestial Conduit (2nd)
+  Raid   — Vampiric Embrace
+
+BLISTERBURST 2 (3:22) — lighter window, 3min CDs on CD
+  MW     — Celestial Conduit (3rd)
+  PEvo   — Dream Flight (2nd)
+  Raid   — Vampiric Embrace (2nd)
+
+━━━ KILL PUSH ━━━
+
+BLISTERBURST 3 + KILL (4:50) — most kills 4:53-5:39
+  RSham  — Ascendance (2nd)
+  RSham  — Spirit Link Totem (2nd)
+  PEvo   — Rewind (2nd)
+  HPal   — Aura Mastery (2nd)
+  MW     — Revival (2nd)
+
+REACTIVE (on the fly):
+  HPal  — BoSac, Lay on Hands
+  MW    — Life Cocoon</div>
+
+<!-- MRT NOTE -->
+<div class="mrt-section">
+<h2>MRT Note</h2>
+<p class="mrt-hint">Paste into MRT addon &rarr; Note &rarr; Edit. Spell icons and class colors render in-game.</p>
+<div class="mrt-block" id="mrt-block">
+<button class="copy-btn" onclick="copyMRT()">Copy</button>
+|cffFFFFFFMYTHIC VORASIUS - HEALING CDs|r
+
+{time:1:18} |cffFF3333BLISTERBURST 1|r |cffFF0000!! HARDEST !!|r
+  |cff0070DDRSham|r Ascendance  |cff0070DDRSham|r Spirit Link Totem  |cff33937FPEvo|r Rewind  |cffF48CBAHPal|r Aura Mastery  |cff00FF98MW|r Revival  |cffAAAAAARaid|r Rallying Cry + Darkness
+
+{time:2:17} |cff5b9bd5BOSS PHASE 2 + SHADOWCLAW SLAMS|r
+  |cffF48CBAHPal|r Avenging Wrath  |cff00FF98MW|r Yu'lon  |cff33937FPEvo|r Dream Flight  |cff00FF98MW|r Celestial Conduit  |cffAAAAAARaid|r Vampiric Embrace
+
+{time:3:22} |cffFF9966BLISTERBURST 2|r
+  |cff00FF98MW|r Celestial Conduit  |cff33937FPEvo|r Dream Flight  |cffAAAAAARaid|r Vampiric Embrace
+
+{time:4:50} |cffFF3333BLISTERBURST 3 + KILL|r
+  |cff0070DDRSham|r Ascendance  |cff0070DDRSham|r Spirit Link Totem  |cff33937FPEvo|r Rewind  |cffF48CBAHPal|r Aura Mastery  |cff00FF98MW|r Revival
+
+|cff888888Reactive: Blessing of Sacrifice / Lay on Hands / Life Cocoon|r
+</div>
+
+<!-- DATA & METHODOLOGY -->
+<details>
+  <summary>Data &amp; methodology (click to expand)</summary>
+  <div class="details-inner">
+    <strong>Source:</strong> Pulled rankings from WCL API on Mythic Vorasius. Found teams running our exact comp (HPal / RSham / MW / PEvo). Analyzed top 5 by kill time (293s&ndash;339s). Per-player sourceID queries for every healer's complete cast timeline. CDs discovered from data (any ability cast &le;8 times = potential CD). All timers verified against actual cooldown durations.
+    <br><br>
+    <strong>Logs:</strong><br>
+    <a href="https://www.warcraftlogs.com/reports/vrFCKRW9VHfpnjMJ#fight=25" target="_blank">Sargeras (US) &mdash; 293s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/kFrgH3CDznmYZ6t2#fight=32" target="_blank">Luo Ning (CN) &mdash; 325s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/V8MybCjvtkrnG79W#fight=12" target="_blank">Frostmane (EU) &mdash; 330s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/7FVMGmZayYAvLxct#fight=17" target="_blank">Swift Breeze (CN) &mdash; 334s</a><br>
+    <a href="https://www.warcraftlogs.com/reports/PGVhzHYmcLCj2DAN#fight=39" target="_blank">Antonidas (EU) &mdash; 339s</a>
+    <br><br>
+    <strong>Guides:</strong>
+    <a href="https://www.wowhead.com/guide/midnight/raids/the-voidspire-vorasius-boss-strategy-abilities" target="_blank">Wowhead</a> &middot;
+    <a href="https://www.mythictrap.com/en/vs-dr-mqd/vorasius" target="_blank">Mythic Trap</a> &middot;
+    <a href="https://www.icy-veins.com/wow/vorasius-raid-guide" target="_blank">Icy Veins</a> &middot;
+    <a href="https://www.youtube.com/watch?v=h5_ye-It3Ro" target="_blank">Liquid (YouTube)</a>
+    <br><br>
+    <strong>Key findings:</strong><br>
+    &bull; Blisterburst 1 is THE healing check &mdash; all major CDs stack here (Asc 5/5, SLT 4/5, Rewind 4/5, AM 3/5, Revival 3/5)<br>
+    &bull; Boss Phase 2 covered by 2min throughput CDs (AW, DF, Yu'lon, CC)<br>
+    &bull; Blisterburst 2 is lighter &mdash; 3min CDs still on CD. CC + DF fill the gap<br>
+    &bull; Kill push: all 3min CDs come back<br>
+    &bull; AM is 3min &mdash; goes Blisterburst 1 with 2nd use at kill push<br>
+    &bull; No RSham runs HTT (0/5). Ascendance universal.<br>
+    &bull; 3/5 MW run Yu'lon, 2/5 run Restoral. 2/5 PEvo run Zephyr.
+    <br><br>
+    <strong>Healer CDs (from data):</strong><br>
+    HPal: AW (2min, 5/5), AM (3min, 4/5), BoSac (reactive), LoH (reactive)<br>
+    RSham: Ascendance (3min, 5/5), SLT (3min, 5/5) &mdash; 0/5 HTT<br>
+    MW: Revival (3min, 3/5), Yu'lon (2min, 3/5), CC (90s, 5/5), Life Cocoon (reactive)<br>
+    PEvo: Rewind (3min, 5/5), DF (2min, 5/5), TtS (~90s, 5/5) &mdash; 2/5 Zephyr
+    <br><br>
+    <strong>Top damage sources:</strong> Primordial Power 68M (constant DoT), Dark Energy 28M (beam ticking), Shadowclaw Slam 23M (raid splash), Blisterburst 22M (burst &mdash; #1 CD target), Parasite Expulsion 20M, Primordial Roar 11M.
+  </div>
+</details>
+
+<div class="footer">Data-driven CD plan &mdash; WCL API &mdash; Four Dads One Pizza</div>
+
+<script>
+function copyMRT() {
+  const block = document.getElementById('mrt-block');
+  const text = block.innerText
+    .replace('Copy', '')
+    .trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+function copyDiscord() {
+  const block = document.getElementById('discord-block');
+  const text = block.innerText
+    .replace('Click to copy', '')
+    .replace('Copy', '')
+    .trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('#discord-block .copy-btn') || document.querySelector('#discord-block .copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+
+</body>
+</html>

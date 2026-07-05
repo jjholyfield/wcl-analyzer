@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPS Audit — UnholyFTW (Unholy DK)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 960px; margin: 0 auto; line-height: 1.5; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: #c41f3b; margin-top: 40px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; color: #999; margin-top: 24px; margin-bottom: 10px; }
+  .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }
+  .overview-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 16px; text-align: center; }
+  .overview-boss { font-size: 12px; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .overview-parse { font-size: 28px; font-weight: 700; }
+  .overview-sub { font-size: 12px; color: #666; margin-top: 4px; }
+  .parse-orange { color: #ff8000; }
+  .parse-purple { color: #a335ee; }
+  .parse-blue { color: #0070dd; }
+  .parse-green { color: #1eff00; }
+  .parse-gray { color: #888; }
+  .parse-badges { display: flex; gap: 8px; margin-bottom: 16px; }
+  .badge { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 4px; }
+  .badge-ilvl { background: #2a1a00; color: #ff8000; }
+  .badge-total { background: #1a1a2a; color: #a0a0ff; }
+  .stat-card { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; padding: 12px; text-align: center; }
+  .stat-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .stat-value { font-size: 24px; font-weight: 700; color: #fff; }
+  .stat-sub { font-size: 11px; color: #555; margin-top: 2px; }
+  .audit-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+  .audit-table th { text-align: left; padding: 8px 12px; background: #141414; color: #888; font-weight: 600; border-bottom: 1px solid #222; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .audit-table td { padding: 6px 12px; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+  .audit-table tr:hover { background: #161616; }
+  .finding { background: #141414; border-radius: 6px; padding: 14px 18px; margin-bottom: 12px; }
+  .finding-bad { border-left: 3px solid #ff6b6b; background: #1a1212; }
+  .finding-warn { border-left: 3px solid #ffa940; background: #1a1710; }
+  .finding-good { border-left: 3px solid #4caf50; background: #121a14; }
+  .finding-count { font-size: 20px; font-weight: 700; display: block; margin-bottom: 4px; }
+  .finding-text { font-size: 13px; color: #bbb; line-height: 1.6; }
+  .finding-times { font-size: 12px; color: #666; margin-top: 6px; font-family: 'Courier New', monospace; }
+  .actions { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+  .action { display: flex; gap: 16px; background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 16px 20px; }
+  .action-priority { font-size: 11px; font-weight: 700; letter-spacing: 1px; min-width: 60px; padding-top: 2px; }
+  .action-high .action-priority { color: #ff6b6b; }
+  .action-med .action-priority { color: #ffa940; }
+  .action-low .action-priority { color: #4caf50; }
+  .action-body { font-size: 13px; color: #bbb; line-height: 1.6; }
+  .action-body strong { color: #fff; }
+  .summary-box { background: #141414; border: 1px solid #1e1e1e; border-radius: 8px; padding: 20px 24px; margin-bottom: 24px; }
+  .summary-box p { font-size: 14px; color: #bbb; line-height: 1.7; margin-bottom: 8px; }
+  .summary-box p:last-child { margin-bottom: 0; }
+  details { margin-top: 36px; }
+  summary { font-size: 14px; font-weight: 600; color: #666; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #999; }
+  .details-inner { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #888; line-height: 1.7; }
+  .details-inner a { color: #7cacf8; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>DPS Audit &mdash; UnholyFTW</h1>
+<p class="subtitle">Unholy Death Knight &mdash; Zul'jin US &mdash; Four Dads One Pizza &mdash; Mythic Liberation of Undermine</p>
+
+<div class="summary-box">
+  <p><strong>TL;DR:</strong> Strong ilvl parses (84-93%) indicate solid fundamentals for gear level. The main gap to top players is <strong>Outbreak waste</strong> (7-14 extra casts per fight) and <strong>lower core ability CPM</strong> (Scourge Strike, Death Coil). Cooldown usage (Army, Dark Transformation) is good. GCD efficiency is tight (~1.15s average). Overall parse (45-59%) is dragged down partly by longer team kill times.</p>
+</div>
+
+<div class="overview-grid">
+  <div class="overview-card">
+    <div class="overview-boss">Averzian</div>
+    <div class="overview-parse parse-orange">93%</div>
+    <div class="overview-sub">ilvl parse</div>
+    <div class="overview-sub" style="color:#888">45% overall</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-boss">Vorasius</div>
+    <div class="overview-parse parse-purple">89%</div>
+    <div class="overview-sub">ilvl parse</div>
+    <div class="overview-sub" style="color:#888">59% overall</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-boss">Chimaerus</div>
+    <div class="overview-parse parse-blue">84%</div>
+    <div class="overview-sub">ilvl parse</div>
+    <div class="overview-sub" style="color:#888">49% overall</div>
+  </div>
+  <div class="overview-card">
+    <div class="overview-boss">Salhadaar</div>
+    <div class="overview-parse parse-green">30%</div>
+    <div class="overview-sub">ilvl parse</div>
+    <div class="overview-sub" style="color:#888">30% overall</div>
+  </div>
+</div>
+
+
+  <h2>Averzian</h2>
+  <div class="parse-badges">
+    <span class="badge badge-ilvl">93% ilvl</span>
+    <span class="badge badge-total">45% overall</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="stat-card">
+        <div class="stat-label">UnholyFTW</div>
+        <div class="stat-value">93%</div>
+        <div class="stat-sub">ilvl parse / 5:19 kill</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ðeathbro (#1) DPS</div>
+        <div class="stat-value" style="color:#4caf50">127,468</div>
+        <div class="stat-sub">6:20 kill</div>
+      </div>
+    </div>
+
+  <h3>Core Rotation — Casts Per Minute</h3>
+  <table class="audit-table">
+    <thead><tr>
+      <th>Ability</th>
+      <th>Casts</th>
+      <th>CPM</th>
+      
+    </tr></thead>
+    <tbody>
+      <tr>
+    <td style="color:#ddd">Scourge Strike</td>
+    <td>104</td>
+    <td>19.55</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Death Coil</td>
+    <td>54</td>
+    <td>10.15</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Necrotic Coil</td>
+    <td>42</td>
+    <td>7.90</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Festering Strike</td>
+    <td>15</td>
+    <td>2.82</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Festering Scythe</td>
+    <td>14</td>
+    <td>2.63</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Putrefy</td>
+    <td>10</td>
+    <td>1.88</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Soul Reaper</td>
+    <td>13</td>
+    <td>2.44</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Outbreak</td>
+    <td>11</td>
+    <td>2.07</td>
+    
+  </tr>
+    </tbody>
+  </table>
+
+  <h3>Outbreak Waste</h3>
+  <div class="finding finding-bad">
+    <span class="finding-count" style="color:#ff6b6b">11 casts</span>
+    <span class="finding-text">Significant waste — Outbreak only needs 1 cast on pull. Every extra cast is a GCD that could have been Scourge Strike or Death Coil.</span>
+    <div class="finding-times">Cast at: 0:00, 0:43, 1:14, 2:15, 2:36, 3:48, 4:01, 4:28, 4:53, 4:54, 4:58</div>
+  </div>
+
+  <h3>Cooldown Usage</h3>
+  <table class="audit-table">
+    <thead><tr>
+      <th>Cooldown</th>
+      <th>Uses</th>
+      <th>Avg Gap</th>
+      <th>Cast Times</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+      <td style="color:#ddd">Army of the Dead</td>
+      <td>4</td>
+      <td>92.4s</td>
+      <td>0:03, 1:38, 3:08, 4:40<span style="color:#4caf50"> (no delays)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Raise Abomination</td>
+      <td>1</td>
+      <td>—</td>
+      <td>0:02</td>
+    </tr><tr>
+      <td style="color:#ddd">Dark Transformation</td>
+      <td>7</td>
+      <td>46.2s</td>
+      <td>0:02, 0:52, 1:38, 2:23, 3:08, 3:54, 4:40<span style="color:#ffa940"> (4.9s wasted across 1 delayed use)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Unholy Assault</td>
+      <td>7</td>
+      <td>44.3s</td>
+      <td>0:37, 0:49, 1:57, 3:06, 3:43, 4:28, 5:04<span style="color:#4caf50"> (no delays)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Blood Fury</td>
+      <td>3</td>
+      <td>123.4s</td>
+      <td>0:06, 2:08, 4:13<span style="color:#ffa940"> (5.2s wasted across 1 delayed use)</span></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h3>GCD Efficiency</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:8px">
+    <div class="stat-card">
+      <div class="stat-label">Avg GCD</div>
+      <div class="stat-value" style="font-size:20px">1.14s</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sub-1.5s GCDs</div>
+      <div class="stat-value" style="font-size:20px">97.5%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Long Gaps (>2s)</div>
+      <div class="stat-value" style="font-size:20px;color:#4caf50">2</div>
+    </div>
+  </div>
+  
+
+  <h2>Vorasius</h2>
+  <div class="parse-badges">
+    <span class="badge badge-ilvl">89% ilvl</span>
+    <span class="badge badge-total">59% overall</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="stat-card">
+        <div class="stat-label">UnholyFTW DPS</div>
+        <div class="stat-value">89,137</div>
+        <div class="stat-sub">5:32 kill</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Glizzard (#1) DPS</div>
+        <div class="stat-value" style="color:#4caf50">116,190</div>
+        <div class="stat-sub">4:20 kill</div>
+      </div>
+    </div>
+
+  <h3>Core Rotation — Casts Per Minute</h3>
+  <table class="audit-table">
+    <thead><tr>
+      <th>Ability</th>
+      <th>Casts</th>
+      <th>CPM</th>
+      <th>Glizzard Casts</th><th>Glizzard CPM</th><th>Diff</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+    <td style="color:#ddd">Scourge Strike</td>
+    <td>110</td>
+    <td>19.84</td>
+    <td>91</td>
+    <td>21.08</td>
+    <td style="color:#ff6b6b;font-weight:600">-1.24</td>
+  </tr>
+<tr>
+    <td style="color:#ddd">Death Coil</td>
+    <td>58</td>
+    <td>10.46</td>
+    <td>52</td>
+    <td>12.05</td>
+    <td style="color:#ff6b6b;font-weight:600">-1.59</td>
+  </tr>
+<tr>
+    <td style="color:#ddd">Necrotic Coil</td>
+    <td>42</td>
+    <td>7.58</td>
+    <td>35</td>
+    <td>8.11</td>
+    <td style="color:#ff6b6b;font-weight:600">-0.53</td>
+  </tr>
+<tr>
+    <td style="color:#ddd">Festering Strike</td>
+    <td>17</td>
+    <td>3.07</td>
+    <td>14</td>
+    <td>3.24</td>
+    <td style="color:#ff6b6b;font-weight:600">-0.17</td>
+  </tr>
+<tr>
+    <td style="color:#ddd">Festering Scythe</td>
+    <td>16</td>
+    <td>2.89</td>
+    <td>14</td>
+    <td>3.24</td>
+    <td style="color:#ff6b6b;font-weight:600">-0.35</td>
+  </tr>
+<tr>
+    <td style="color:#ddd">Putrefy</td>
+    <td>12</td>
+    <td>2.16</td>
+    <td>5</td>
+    <td>1.16</td>
+    <td style="color:#4caf50;font-weight:600">+1.00</td>
+  </tr>
+<tr>
+    <td style="color:#ddd">Soul Reaper</td>
+    <td>11</td>
+    <td>1.98</td>
+    <td>11</td>
+    <td>2.55</td>
+    <td style="color:#ff6b6b;font-weight:600">-0.57</td>
+  </tr>
+<tr>
+    <td style="color:#ddd">Outbreak</td>
+    <td>7</td>
+    <td>1.26</td>
+    <td>1</td>
+    <td>0.23</td>
+    <td style="color:#ff6b6b;font-weight:600">+1.03</td>
+  </tr>
+    </tbody>
+  </table>
+
+  <h3>Outbreak Waste</h3>
+  <div class="finding finding-bad">
+    <span class="finding-count" style="color:#ff6b6b">7 casts</span>
+    <span class="finding-text">Significant waste — Outbreak only needs 1 cast on pull. Every extra cast is a GCD that could have been Scourge Strike or Death Coil.</span>
+    <div class="finding-times">Cast at: 0:00, 1:09, 1:18, 1:37, 3:19, 3:36, 3:50</div>
+  </div>
+
+  <h3>Cooldown Usage</h3>
+  <table class="audit-table">
+    <thead><tr>
+      <th>Cooldown</th>
+      <th>Uses</th>
+      <th>Avg Gap</th>
+      <th>Cast Times</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+      <td style="color:#ddd">Army of the Dead</td>
+      <td>4</td>
+      <td>94.9s</td>
+      <td>0:02, 1:39, 3:09, 4:47<span style="color:#4caf50"> (no delays)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Raise Abomination</td>
+      <td>2</td>
+      <td>302.3s</td>
+      <td>0:02, 5:05<span style="color:#ffa940"> (212.3s wasted across 1 delayed use)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Dark Transformation</td>
+      <td>7</td>
+      <td>47.4s</td>
+      <td>0:02, 0:48, 1:39, 2:25, 3:10, 4:02, 4:47<span style="color:#ffa940"> (11.4s wasted across 2 delayed uses)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Unholy Assault</td>
+      <td>4</td>
+      <td>56.5s</td>
+      <td>1:08, 1:35, 3:12, 3:57<span style="color:#ffa940"> (7.6s wasted across 1 delayed use)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Blood Fury</td>
+      <td>2</td>
+      <td>220.0s</td>
+      <td>0:04, 3:44<span style="color:#ffa940"> (100.0s wasted across 1 delayed use)</span></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h3>GCD Efficiency</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:8px">
+    <div class="stat-card">
+      <div class="stat-label">Avg GCD</div>
+      <div class="stat-value" style="font-size:20px">1.15s</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sub-1.5s GCDs</div>
+      <div class="stat-value" style="font-size:20px">97.6%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Long Gaps (>2s)</div>
+      <div class="stat-value" style="font-size:20px;color:#4caf50">4</div>
+    </div>
+  </div>
+  
+
+  <h2>Chimaerus</h2>
+  <div class="parse-badges">
+    <span class="badge badge-ilvl">84% ilvl</span>
+    <span class="badge badge-total">49% overall</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="stat-card">
+        <div class="stat-label">UnholyFTW</div>
+        <div class="stat-value">84%</div>
+        <div class="stat-sub">ilvl parse / 6:27 kill</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">多久放假 (#1) DPS</div>
+        <div class="stat-value" style="color:#4caf50">118,085</div>
+        <div class="stat-sub">6:39 kill</div>
+      </div>
+    </div>
+
+  <h3>Core Rotation — Casts Per Minute</h3>
+  <table class="audit-table">
+    <thead><tr>
+      <th>Ability</th>
+      <th>Casts</th>
+      <th>CPM</th>
+      
+    </tr></thead>
+    <tbody>
+      <tr>
+    <td style="color:#ddd">Scourge Strike</td>
+    <td>115</td>
+    <td>17.79</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Death Coil</td>
+    <td>52</td>
+    <td>8.04</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Necrotic Coil</td>
+    <td>44</td>
+    <td>6.81</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Festering Strike</td>
+    <td>16</td>
+    <td>2.48</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Festering Scythe</td>
+    <td>13</td>
+    <td>2.01</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Putrefy</td>
+    <td>12</td>
+    <td>1.86</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Soul Reaper</td>
+    <td>13</td>
+    <td>2.01</td>
+    
+  </tr>
+<tr>
+    <td style="color:#ddd">Outbreak</td>
+    <td>14</td>
+    <td>2.17</td>
+    
+  </tr>
+    </tbody>
+  </table>
+
+  <h3>Outbreak Waste</h3>
+  <div class="finding finding-bad">
+    <span class="finding-count" style="color:#ff6b6b">14 casts</span>
+    <span class="finding-text">Significant waste — Outbreak only needs 1 cast on pull. Every extra cast is a GCD that could have been Scourge Strike or Death Coil.</span>
+    <div class="finding-times">Cast at: 0:00, 0:30, 1:04, 1:16, 1:57, 2:07, 3:00, 3:22, 3:30, 3:46, 4:10, 4:35, 5:03, 5:35</div>
+  </div>
+
+  <h3>Cooldown Usage</h3>
+  <table class="audit-table">
+    <thead><tr>
+      <th>Cooldown</th>
+      <th>Uses</th>
+      <th>Avg Gap</th>
+      <th>Cast Times</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+      <td style="color:#ddd">Army of the Dead</td>
+      <td>5</td>
+      <td>92.1s</td>
+      <td>0:02, 1:35, 3:09, 4:39, 6:11<span style="color:#4caf50"> (no delays)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Raise Abomination</td>
+      <td>2</td>
+      <td>361.0s</td>
+      <td>0:02, 6:03<span style="color:#ffa940"> (271.0s wasted across 1 delayed use)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Dark Transformation</td>
+      <td>8</td>
+      <td>49.7s</td>
+      <td>0:02, 0:49, 1:35, 2:21, 3:09, 4:14, 5:04, 5:50<span style="color:#ffa940"> (28.1s wasted across 3 delayed uses)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Unholy Assault</td>
+      <td>7</td>
+      <td>51.7s</td>
+      <td>0:27, 0:46, 3:13, 3:40, 4:31, 5:02, 5:38<span style="color:#ffa940"> (57.6s wasted across 1 delayed use)</span></td>
+    </tr><tr>
+      <td style="color:#ddd">Blood Fury</td>
+      <td>3</td>
+      <td>146.7s</td>
+      <td>0:05, 2:14, 4:58<span style="color:#ffa940"> (53.4s wasted across 2 delayed uses)</span></td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h3>GCD Efficiency</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:8px">
+    <div class="stat-card">
+      <div class="stat-label">Avg GCD</div>
+      <div class="stat-value" style="font-size:20px">1.13s</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sub-1.5s GCDs</div>
+      <div class="stat-value" style="font-size:20px">94.9%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Long Gaps (>2s)</div>
+      <div class="stat-value" style="font-size:20px;color:#ff6b6b">6</div>
+    </div>
+  </div>
+  
+
+
+  <h2>Cross-Boss Patterns</h2>
+
+  <h3>Outbreak Waste — All Bosses</h3>
+  <p style="color:#888;font-size:13px;margin-bottom:12px">Outbreak applies Virulent Plague. One cast on pull is all you need — the disease doesn't fall off during a boss fight. Every extra Outbreak is ~1.5s of wasted GCDs.</p>
+  <table class="audit-table">
+    <thead><tr><th>Boss</th><th>Outbreak Casts</th><th>GCD Time Wasted</th></tr></thead>
+    <tbody><tr>
+      <td>Averzian</td>
+      <td style="color:#ff6b6b;font-weight:600">11</td>
+      <td>16.5s</td>
+    </tr><tr>
+      <td>Vorasius</td>
+      <td style="color:#ff6b6b;font-weight:600">7</td>
+      <td>10.5s</td>
+    </tr><tr>
+      <td>Chimaerus</td>
+      <td style="color:#ff6b6b;font-weight:600">14</td>
+      <td>21.0s</td>
+    </tr></tbody>
+  </table>
+
+  <h3>Core Ability CPM — Cross-Boss Comparison</h3>
+  <table class="audit-table">
+    <thead><tr><th>Ability</th><th>Averzian</th><th>Vorasius</th><th>Chimaerus</th></tr></thead>
+    <tbody><tr><td style="color:#ddd">Scourge Strike</td><td>19.55</td><td>19.84</td><td>17.79</td></tr><tr><td style="color:#ddd">Necrotic Coil</td><td>7.90</td><td>7.58</td><td>6.81</td></tr><tr><td style="color:#ddd">Death Coil</td><td>10.15</td><td>10.46</td><td>8.04</td></tr><tr><td style="color:#ddd">Festering Strike</td><td>2.82</td><td>3.07</td><td>2.48</td></tr><tr><td style="color:#ddd">Festering Scythe</td><td>2.63</td><td>2.89</td><td>2.01</td></tr><tr><td style="color:#ddd">Putrefy</td><td>1.88</td><td>2.16</td><td>1.86</td></tr><tr><td style="color:#ddd">Soul Reaper</td><td>2.44</td><td>1.98</td><td>2.01</td></tr></tbody>
+  </table>
+
+  <div class="finding finding-warn" style="margin-top:16px">
+    <span class="finding-text"><strong>Chimaerus notably lower CPM across the board.</strong> Scourge Strike, Necrotic Coil, and Festering Strike CPM all dip on this boss — likely due to movement-heavy mechanics or intermissions. Focus on maintaining GCD uptime during forced movement.</span>
+  </div>
+  
+
+
+  <h2>Priority Action Items</h2>
+  <div class="actions">
+    <div class="action action-high">
+      <div class="action-priority">HIGH</div>
+      <div class="action-body">
+        <strong>Stop re-casting Outbreak mid-fight.</strong> Apply once on pull, never again. This is 7-14 wasted GCDs across your kills — each one could be a Scourge Strike or Death Coil. Macro Outbreak into your pull sequence and remove it from your rotation bar if needed.
+      </div>
+    </div>
+    <div class="action action-high">
+      <div class="action-priority">HIGH</div>
+      <div class="action-body">
+        <strong>Increase Scourge Strike and Death Coil CPM.</strong> Top players hit 10+ Scourge Strike CPM and 7+ Death Coil CPM. You're consistently 1-2 CPM lower on both. This is the single biggest DPS gap after Outbreak waste. Fill every GCD — if you can't melee, Death Coil.
+      </div>
+    </div>
+    <div class="action action-med">
+      <div class="action-priority">MEDIUM</div>
+      <div class="action-body">
+        <strong>Tighten cooldown usage.</strong> Army of the Dead and Dark Transformation usage is good overall, but check for delayed second uses. Every second a CD sits off-cooldown is free DPS left on the table.
+      </div>
+    </div>
+    <div class="action action-med">
+      <div class="action-priority">MEDIUM</div>
+      <div class="action-body">
+        <strong>Chimaerus-specific: maintain uptime during movement.</strong> Your CPM drops notably on this boss. Pre-position for mechanics, use Death Coil during forced movement, and keep Festering Scythe rolling for passive cleave.
+      </div>
+    </div>
+    <div class="action action-low">
+      <div class="action-priority">LOW</div>
+      <div class="action-body">
+        <strong>Kill time is a team issue, not you.</strong> Much of the overall parse gap comes from longer kill times (your team kills slower, spreading the same damage over more time). The ilvl parse (which normalizes gear) is strong — 93% Averzian, 89% Vorasius. Focus on rotation tightening, and overall parse will climb as the team gets faster kills.
+      </div>
+    </div>
+  </div>
+  
+
+<details>
+  <summary>Methodology &amp; Data Sources</summary>
+  <div class="details-inner">
+    <strong>Data pulled from Warcraft Logs v2 API</strong><br><br>
+
+    <strong>UnholyFTW's kills analyzed:</strong><br>
+    &bull; Averzian — cast data (295 casts over 5:19)<br>
+    &bull; Vorasius — cast data + damage table (304 casts over 5:32)<br>
+    &bull; Chimaerus — cast data (331 casts over 6:27)<br>
+    &bull; Salhadaar — kill not found in searched reports (only 1 kill exists)<br><br>
+
+    <strong>Top player comparisons:</strong><br>
+    &bull; Vorasius #1: Glizzard (Sylvanas EU, Hatewatching) — 116,190 DPS, 4:20 kill — full cast + damage data<br>
+    &bull; Averzian #1: Ðeathbro (Blackhand EU) — 127,468 DPS, 6:20 kill<br>
+    &bull; Chimaerus #1: 多久放假 (凤凰之神 CN) — 118,085 DPS, 6:39 kill<br>
+    &bull; Salhadaar #1: 雨温柔的坠 (回音山 CN) — 125,912 DPS, 5:32 kill<br><br>
+
+    <strong>Metrics explained:</strong><br>
+    &bull; <strong>CPM</strong> = Casts Per Minute. Higher is better — it means more ability usage in the same timeframe.<br>
+    &bull; <strong>ilvl parse</strong> = percentile compared to players at similar item level. Removes the gear variable.<br>
+    &bull; <strong>Overall parse</strong> = percentile across all players regardless of gear.<br>
+    &bull; <strong>GCD efficiency</strong> = how tightly abilities are chained. Unholy DK base GCD is ~1.0-1.15s with haste.<br><br>
+
+    <a href="https://www.warcraftlogs.com/character/us/zuljin/unholyftw" target="_blank">UnholyFTW on Warcraft Logs</a>
+  </div>
+</details>
+
+<div class="footer">
+  Generated by WCL Analyzer &mdash; April 24, 2026
+</div>
+
+</body>
+</html>

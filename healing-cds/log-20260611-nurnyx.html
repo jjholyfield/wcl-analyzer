@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nurnyx — Shadow Priest — Mythic Crown of the Cosmos Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .mechanic-card.bloom { border-left: 3px solid var(--red); }
+  .mechanic-card.vines { border-left: 3px solid var(--green); }
+  .mechanic-card.death { border-left: 3px solid var(--red); }
+  .mechanic-card.ramp { border-left: 3px solid var(--purple); }
+  .mechanic-card.cd { border-left: 3px solid var(--cyan); }
+  .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .prog-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--dim); white-space: nowrap; }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-timeline { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8; }
+  .cd-timeline .cast { padding: 2px 6px; border-radius: 3px; }
+  .cd-timeline .good { background: rgba(63,185,80,0.12); }
+  .cd-timeline .bad { background: rgba(248,81,73,0.12); }
+  .cd-timeline .neutral { background: rgba(139,148,158,0.12); }
+  .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .dmg-fill { height: 100%; }
+  .boss-pct-label { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 9px; white-space: nowrap; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260611" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 11, 2026 Log Analysis</a>
+<h1>Nurnyx <span class="dim">&mdash; Shadow Priest</span></h1>
+<div class="subtitle">Mythic Crown of the Cosmos &middot; PROG (No Kill &mdash; 26 Wipes) &middot; Best Pull: Fight 23 (4:52) &middot; June 11, 2026 &middot; Report wcj1rdQfpqNTHY89</div>
+
+<!-- SUMMARY -->
+<div class="grid-4">
+  <div class="card stat">
+    <div class="stat-value yellow">163.7K</div>
+    <div class="stat-label">DPS (Fight 23)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">289.4</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">0.01%</div>
+    <div class="stat-label">Best Pull (Boss %)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value yellow">34.0</div>
+    <div class="stat-label">Rotational CPM</div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line &mdash; Progression Context</div>
+  <p style="font-size: 15px;">This is <strong>progression data from 26 wipes</strong> on Mythic Crown of the Cosmos &mdash; no kill yet. On the longest pull (Fight 23, 4:52), Nurnyx dealt <strong class="yellow">163.7K DPS</strong> but <strong class="red">died at 4:14</strong> to Void Remnants. While alive (254 seconds), effective DPS was <strong class="green">~208K</strong>. Compared to the #4 ranked reference Fabx (<strong class="purple">104.7K DPS</strong> over a 9:03 kill with <strong class="green">0 talent differences</strong>), Nurnyx's alive-time DPS is actually strong &mdash; but the comparison is heavily skewed because prog pulls involve shorter windows of burst-biased damage vs a full-length kill. The core issues are <strong class="red">rotational CPM (34.0 vs 38.8)</strong>, a <strong class="red">-17% Mind Blast CPM gap</strong>, <strong class="red">-15% Shadow Word: Madness CPM gap</strong>, and <strong class="red">-25% Mind Flay CPM gap</strong>. The biggest actionable improvement is reducing dead GCD time &mdash; every uncapped GCD on a Shadow Priest is a lost Shadowy Apparition, which compounds into significant damage. On a full-length kill, these CPM gaps would widen into a meaningful DPS deficit.</p>
+</div>
+
+<!-- REFERENCE COMPARISON -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top 5 ranked Shadow Priests on Mythic Crown of the Cosmos (all kills). Primary reference: <strong>Fabx</strong> (identical talents at 0 diffs, 104.7K DPS, 9:03 kill). Note: Nurnyx's DPS is from a 4:52 wipe pull &mdash; shorter pulls inflate DPS due to burst-phase bias.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Duration</th><th>ilvl</th><th>Talent Delta</th><th>Context</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(88,166,255,0.06);">
+      <td><strong>Nurnyx</strong></td>
+      <td class="yellow">163,709</td>
+      <td>4:52 (wipe)</td>
+      <td>289.4</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-warn">Prog &mdash; Died 4:14</span></td>
+    </tr>
+    <tr style="background: rgba(188,140,255,0.04);">
+      <td>Fabx <span class="ref-badge">#4 PRIMARY</span></td>
+      <td class="green">104,704</td>
+      <td>9:03 (kill)</td>
+      <td>289.4</td>
+      <td><span class="tag tag-same">0 diff</span></td>
+      <td><span class="tag tag-same">Kill &mdash; Identical build</span></td>
+    </tr>
+    <tr>
+      <td>Loafsp <span class="ref-badge">#1</span></td>
+      <td class="green">111,540</td>
+      <td>7:22 (kill)</td>
+      <td>290.9</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td><span class="tag tag-info">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Arino <span class="ref-badge">#2</span></td>
+      <td class="green">109,944</td>
+      <td>8:49 (kill)</td>
+      <td>291.4</td>
+      <td><span class="tag tag-warn">4 diff</span></td>
+      <td><span class="tag tag-info">Kill</span></td>
+    </tr>
+    <tr>
+      <td>Cosmospi <span class="ref-badge">#3</span></td>
+      <td class="green">109,924</td>
+      <td>8:43 (kill)</td>
+      <td>273.6</td>
+      <td><span class="tag tag-warn">6 diff</span></td>
+      <td><span class="tag tag-info">Kill</span></td>
+    </tr>
+    <tr>
+      <td>&#x7591;&#x7672;&#x7684;&#x5C0F;&#x6BDB;&#x9A74; <span class="ref-badge">#5</span></td>
+      <td class="green">103,281</td>
+      <td>8:14 (kill)</td>
+      <td>289.2</td>
+      <td><span class="tag tag-diff">11 diff</span></td>
+      <td><span class="tag tag-info">Kill</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Fabx is the ideal reference &mdash; <strong class="green">0 talent differences</strong>, identical item level (289.4 vs 289.4), same spec ID. Because talents are identical, any performance gaps are purely execution-based. However, Fabx's data is from a full 9:03 kill while Nurnyx's is from a 4:14 alive window on a wipe. CPM comparisons are the most meaningful metric here because they normalize for fight length.</p>
+
+<!-- DEATH ANALYSIS -->
+<h2>Fight 23 Death Timeline</h2>
+<p class="section-intro">Fight 23 lasted 4:52 (293s). The raid wiped with boss at 77.3%. Nurnyx died at 4:14 to Void Remnants &mdash; a Phase 2 mechanic from the Rift Simulacrum encounter.</p>
+
+<div class="timeline" style="height: 80px;">
+  <!-- Phase markers -->
+  <div style="position:absolute;top:0;left:0;width:50%;height:100%;background:rgba(88,166,255,0.04);border-right:1px dashed var(--border);">
+    <span class="timeline-label" style="top:4px;left:8px;color:var(--accent);font-size:11px;">Phase 1: Sentinels</span>
+  </div>
+  <div style="position:absolute;top:0;left:50%;width:50%;height:100%;background:rgba(188,140,255,0.04);">
+    <span class="timeline-label" style="top:4px;left:8px;color:var(--purple);font-size:11px;">Phase 2: Rift Simulacrum</span>
+  </div>
+  <!-- Death markers -->
+  <div class="timeline-marker" style="left:51.2%;border-color:var(--red);width:2px;">
+    <span class="timeline-label" style="top:20px;left:6px;color:var(--red);font-size:9px;">&#x2620; 3 deaths (2:30)</span>
+  </div>
+  <div class="timeline-marker" style="left:76.5%;border-color:var(--red);width:2px;">
+    <span class="timeline-label" style="top:36px;left:6px;color:var(--red);font-size:9px;">&#x2620; mass wipe (3:45&ndash;4:52)</span>
+  </div>
+  <div class="timeline-marker" style="left:85.7%;border-color:var(--yellow);width:3px;">
+    <span class="timeline-label" style="bottom:4px;left:6px;color:var(--yellow);font-size:10px;font-weight:600;">Nurnyx dies (4:14)</span>
+  </div>
+  <!-- Time axis -->
+  <span class="timeline-label" style="bottom:2px;left:4px;color:var(--dim);">0:00</span>
+  <span class="timeline-label" style="bottom:2px;left:50%;transform:translateX(-50%);color:var(--dim);">2:27</span>
+  <span class="timeline-label" style="bottom:2px;right:4px;color:var(--dim);">4:52</span>
+</div>
+
+<div class="card" style="font-size: 13px;">
+  <div class="card-header dim">Raid State</div>
+  <p>0:00&ndash;2:30 = 20/20 alive &middot; 2:30 = 17/20 (Alitheria, Smokinthisza, Invincibale die to Silverstrike Barrage) &middot; 3:45 = 16/20 (Son&igrave;c dies to Voidstalker Sting) &middot; 3:55&ndash;4:14 = rapid cascade &mdash; Invincibale, Orichamaru, Starfighter, Moistbear, Zinnks, Smokinthisza, Unholyftw, <strong class="yellow">Nurnyx</strong> all die &middot; 4:22&ndash;4:52 = remaining players wipe</p>
+  <p style="margin-top: 4px; color: var(--yellow);">Nurnyx died during a mass wipe cascade in Phase 2. The pull collapsed after multiple players died to Void Remnants and Simulacrum Backlash starting at 3:55. Nurnyx's death at 4:14 was part of this raid-wide collapse, not an isolated mistake.</p>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <div class="card-header red">Nurnyx Death: Void Remnants at 4:14</div>
+  <p style="font-size: 14px;">Void Remnants is persistent void zone damage from Crown of the Cosmos Phase 2. By this point the raid was in a death spiral &mdash; 8 players had already died in the preceding 30 seconds. Nurnyx took <strong>1,497K total from Void Remnants</strong> across 8 hits during the pull, with the final hits being lethal. Defensive usage: <strong>Dispersion</strong> was used once, <strong>Desperate Prayer</strong> 3 times, <strong>Healthstone</strong> 1 time, <strong>Power Word: Shield</strong> 1 time &mdash; indicating active attempts to survive the wipe cascade.</p>
+</div>
+
+<!-- CAST PROFILE COMPARISON -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Casts per minute for Nurnyx (4:14 alive on Fight 23) vs Fabx (9:03 kill). Rotational abilities only &mdash; sorted by importance. Shadowy Apparition is passive (generated by other spells) and excluded from rotational CPM totals. Shadow Priest rotation centers on maintaining DoTs (VT, SW:P), spending Insanity on Shadow Word: Madness, casting Mind Blast on cooldown to generate Insanity and trigger Shadowy Apparitions, and filling with Mind Flay / Mind Flay: Insanity.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Player Casts</th>
+      <th>Player CPM</th>
+      <th>Ref Casts</th>
+      <th>Ref CPM</th>
+      <th>Delta</th>
+      <th>Assessment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Mind Blast</strong></td>
+      <td>34</td>
+      <td class="yellow">8.0</td>
+      <td>88</td>
+      <td>9.7</td>
+      <td class="red">&minus;17%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Shadow Word: Madness</strong></td>
+      <td>29</td>
+      <td class="yellow">6.9</td>
+      <td>73</td>
+      <td>8.1</td>
+      <td class="red">&minus;15%</td>
+      <td><span class="tag tag-warn">Low</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.08);">
+      <td><strong>Mind Flay</strong></td>
+      <td>21</td>
+      <td class="red">5.0</td>
+      <td>60</td>
+      <td>6.6</td>
+      <td class="red">&minus;25%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Tentacle Slam</td>
+      <td>16</td>
+      <td>3.8</td>
+      <td>36</td>
+      <td>4.0</td>
+      <td class="dim">&minus;5%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Mind Flay: Insanity</td>
+      <td>13</td>
+      <td>3.1</td>
+      <td>28</td>
+      <td>3.1</td>
+      <td class="green">&minus;1%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Shadow Word: Pain</strong></td>
+      <td>8</td>
+      <td class="red">1.9</td>
+      <td>28</td>
+      <td>3.1</td>
+      <td class="red">&minus;39%</td>
+      <td><span class="tag tag-diff">Very Low</span></td>
+    </tr>
+    <tr>
+      <td>Void Volley</td>
+      <td>8</td>
+      <td>1.9</td>
+      <td>15</td>
+      <td>1.7</td>
+      <td class="green">+14%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Death</td>
+      <td>9</td>
+      <td class="green">2.1</td>
+      <td>12</td>
+      <td>1.3</td>
+      <td class="green">+60%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Halo</td>
+      <td>5</td>
+      <td>1.2</td>
+      <td>7</td>
+      <td>0.8</td>
+      <td class="green">+53%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Vampiric Touch</td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>4</td>
+      <td>0.4</td>
+      <td class="dim">&minus;47%</td>
+      <td><span class="tag tag-info">Low volume</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.03);">
+      <td><em>Power Word: Shield</em></td>
+      <td>1</td>
+      <td>0.2</td>
+      <td>25</td>
+      <td>2.8</td>
+      <td class="red">&minus;91%</td>
+      <td><span class="tag tag-diff">Not using</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div style="margin-top: 12px;">
+  <div class="card" style="font-size: 13px; border-left: 3px solid var(--accent);">
+    <div class="card-header accent">Rotational CPM Summary</div>
+    <p>Nurnyx: <strong>34.0 CPM</strong> (144 rotational casts in 254s) vs Fabx: <strong>38.8 CPM</strong> (351 rotational casts in 543s). Total gap: <strong class="red">&minus;12.4%</strong>. This means Nurnyx is leaving roughly <strong>1 GCD unused every 12 seconds</strong> compared to the reference. Over a full kill-length fight (9 minutes), this would compound to approximately <strong>43 lost casts</strong>.</p>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header red">Mind Blast Gap (&minus;17% CPM)</div>
+    <p style="font-size: 14px;">Mind Blast is the highest-priority rotational ability for Shadow Priest &mdash; it generates significant Insanity, triggers Shadowy Apparitions via the Archon hero talent tree, and deals heavy direct damage. At <strong>8.0 CPM vs 9.7 CPM</strong>, Nurnyx is missing roughly <strong>7 Mind Blast casts per 4 minutes</strong> of active time. Each missed Mind Blast cascades: less Insanity generated means fewer Shadow Word: Madness casts, fewer Shadowy Apparitions spawned, and less overall proc value. The reference treats Mind Blast as an absolute priority &mdash; it should be pressed on cooldown, never held unless Voidform is about to come up.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--yellow);">
+    <div class="card-header yellow">Mind Flay Filler Gap (&minus;25% CPM)</div>
+    <p style="font-size: 14px;">Mind Flay at <strong>5.0 CPM vs 6.6 CPM</strong> is the biggest percentage gap. In Shadow Priest's rotation, Mind Flay is the default filler when nothing else is available &mdash; it generates Insanity and deals damage. A low Mind Flay CPM typically indicates <strong>dead GCD time</strong>: moments where nothing is being cast. This is the primary driver of the overall 12.4% rotational CPM gap. During movement-heavy Crown mechanics (Grasp of Emptiness, Void Expulsion), instant-cast options like Shadow Word: Death and Shadow Word: Pain should be used instead of losing casts entirely.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--cyan);">
+  <div class="card-header cyan">Power Word: Shield Usage</div>
+  <p style="font-size: 14px;">Fabx casts Power Word: Shield <strong>25 times</strong> (2.8 CPM) compared to Nurnyx's <strong>1 cast</strong>. In current Shadow Priest gameplay, PW:S is off the GCD and provides a significant absorb shield on a very short cooldown. It costs no DPS to press and provides survivability. On a fight like Crown with constant ticking damage (Echoing Darkness, Void Expulsion), habitual PW:S usage directly contributes to survival &mdash; especially during Phase 2/3 mechanics that apply heavy sustained damage.</p>
+</div>
+
+<!-- DAMAGE BREAKDOWN -->
+<h2>Damage Breakdown</h2>
+<p class="section-intro">Damage dealt by ability. Nurnyx: 52.9M total (163.7K DPS over full fight, ~208K while alive). Fabx: 117.6M total (104.7K DPS over 9:03 kill). Direct DPS comparison is not meaningful here &mdash; the reference had nearly twice the fight duration. Percentage breakdown shows rotation composition.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Player Damage</th><th>Player %</th><th>Ref Damage</th><th>Ref %</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Shadow Word: Madness</strong></td>
+      <td>8,653K</td>
+      <td>16.4%</td>
+      <td>15,057K</td>
+      <td class="green">12.8%</td>
+      <td>Higher % from prog burst bias</td>
+    </tr>
+    <tr>
+      <td><strong>Mind Blast</strong></td>
+      <td>7,439K</td>
+      <td>14.1%</td>
+      <td>13,722K</td>
+      <td>11.7%</td>
+      <td>Higher % in shorter fights</td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Psychic Link</strong></td>
+      <td>2,115K</td>
+      <td class="red">4.0%</td>
+      <td>18,210K</td>
+      <td class="green">15.5%</td>
+      <td><span class="tag tag-diff">Massive gap &mdash; see below</span></td>
+    </tr>
+    <tr>
+      <td>Shadowy Apparition</td>
+      <td>5,244K</td>
+      <td>9.9%</td>
+      <td>12,020K</td>
+      <td>10.2%</td>
+      <td>Proportional to fight length</td>
+    </tr>
+    <tr>
+      <td>Mind Flay: Insanity</td>
+      <td>4,868K</td>
+      <td>9.2%</td>
+      <td>7,378K</td>
+      <td>6.3%</td>
+      <td>Higher % from early-fight value</td>
+    </tr>
+    <tr>
+      <td>Void Apparition</td>
+      <td>3,932K</td>
+      <td>7.4%</td>
+      <td>7,375K</td>
+      <td>6.3%</td>
+      <td>Scales with Apparition count</td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Pain</td>
+      <td>3,537K</td>
+      <td>6.7%</td>
+      <td>7,432K</td>
+      <td>6.3%</td>
+      <td>Similar profile %</td>
+    </tr>
+    <tr>
+      <td>Mind Flay</td>
+      <td>2,931K</td>
+      <td>5.5%</td>
+      <td>5,253K</td>
+      <td>4.5%</td>
+      <td>Filler damage</td>
+    </tr>
+    <tr>
+      <td>Void Volley</td>
+      <td>2,326K</td>
+      <td>4.4%</td>
+      <td>4,165K</td>
+      <td>3.5%</td>
+      <td>Voidform burst windows</td>
+    </tr>
+    <tr>
+      <td>Void Spike</td>
+      <td>2,057K</td>
+      <td>3.9%</td>
+      <td>4,633K</td>
+      <td>3.9%</td>
+      <td><span class="tag tag-same">Identical %</span></td>
+    </tr>
+    <tr>
+      <td>Vampiric Touch</td>
+      <td>2,021K</td>
+      <td>3.8%</td>
+      <td>4,288K</td>
+      <td>3.6%</td>
+      <td>DoT &mdash; similar profile</td>
+    </tr>
+    <tr>
+      <td>Halo</td>
+      <td>2,017K</td>
+      <td>3.8%</td>
+      <td>7,118K</td>
+      <td>6.1%</td>
+      <td>Ref gets more value from full fight</td>
+    </tr>
+    <tr>
+      <td>Void Bolt</td>
+      <td>1,565K</td>
+      <td>3.0%</td>
+      <td>3,073K</td>
+      <td>2.6%</td>
+      <td>Voidform-only casts</td>
+    </tr>
+    <tr>
+      <td>Vision of N'Zoth</td>
+      <td>947K</td>
+      <td>1.8%</td>
+      <td>2,052K</td>
+      <td>1.7%</td>
+      <td>Passive proc</td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Death</td>
+      <td>830K</td>
+      <td>1.6%</td>
+      <td>2,028K</td>
+      <td>1.7%</td>
+      <td><span class="tag tag-same">Similar %</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px; border-left: 3px solid var(--red);">
+  <div class="card-header red">Psychic Link Gap: 4.0% vs 15.5%</div>
+  <p style="font-size: 14px;">The single biggest damage profile difference is <strong>Psychic Link</strong> &mdash; a passive talent that mirrors a percentage of single-target damage to nearby targets. Fabx gets <strong>15.5% of total damage from Psychic Link</strong> vs Nurnyx's <strong>4.0%</strong>. This is entirely a fight-length effect: Crown of the Cosmos is a multi-target fight with Sentinels, Simulacrums, and adds throughout. On a full kill, Psychic Link accumulates massive value from cleave windows. In Nurnyx's 4:14 alive time (mostly Phase 1 Sentinels + early Phase 2), fewer multi-target windows exist. On a kill pull, Nurnyx should expect Psychic Link to climb toward 12-15% of total damage as more targets become available in Phase 2 and Phase 3.</p>
+</div>
+
+<!-- COOLDOWN ALIGNMENT -->
+<h2>Cooldown Alignment</h2>
+<p class="section-intro">Major cooldown usage during Fight 23. Shadow Priest's burst windows revolve around <strong>Voidform + Power Infusion</strong> &mdash; these should be stacked together for maximum value. Halo (Archon hero talent) is on a 60s cooldown and should be used on cooldown, ideally during Voidform windows.</p>
+
+<div class="side-by-side">
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="yellow">Nurnyx</span> (4:14 alive)</div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:01</span> <span class="cast good">Halo</span></div>
+      <div><span class="dim">0:06</span> <span class="cast good">Power Infusion</span></div>
+      <div><span class="dim">0:09</span> <span class="cast good">Voidform (with PI &mdash; good stack)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">0:32</span> <span class="cast neutral">Vampiric Embrace</span></div>
+      <div><span class="dim">1:03</span> <span class="cast good">Halo (on CD)</span></div>
+      <div><span class="dim">2:06</span> <span class="cast good">Halo (on CD)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">2:59</span> <span class="cast good">Heroism (raid-wide)</span></div>
+      <div><span class="dim">3:06</span> <span class="cast good">Power Infusion</span></div>
+      <div><span class="dim">3:08</span> <span class="cast good">Voidform + Halo (stacked &mdash; excellent)</span></div>
+      <div><span class="dim">3:52</span> <span class="cast neutral">Vampiric Embrace</span></div>
+      <div><span class="dim">4:09</span> <span class="cast good">Halo (on CD)</span></div>
+      <div><span class="dim">4:14</span> <span class="cast bad">&#x2620; Died to Void Remnants</span></div>
+      <div style="margin-top: 8px;"><strong class="green">2 Voidforms, both stacked with PI &mdash; correct usage</strong></div>
+    </div>
+  </div>
+
+  <div class="mechanic-card cd">
+    <div class="card-header"><span class="purple">Fabx</span> <span class="ref-badge">Reference</span></div>
+    <div class="cd-timeline">
+      <div><span class="dim">0:24</span> <span class="cast good">PI + Voidform + Halo (triple stack)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">1:25</span> <span class="cast good">Halo (on CD)</span></div>
+      <div><span class="dim">2:55</span> <span class="cast good">Halo</span></div>
+      <div><span class="dim">2:56</span> <span class="cast good">PI + Voidform (stacked)</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">3:56</span> <span class="cast good">Halo (on CD)</span></div>
+      <div><span class="dim">6:11</span> <span class="cast good">PI</span></div>
+      <div><span class="dim">6:13</span> <span class="cast good">Voidform (with PI)</span></div>
+      <div><span class="dim">6:14</span> <span class="cast good">Halo</span></div>
+      <div style="margin: 4px 0; border-top: 1px dashed var(--border);"></div>
+      <div><span class="dim">7:15</span> <span class="cast good">Halo</span></div>
+      <div><span class="dim">8:14</span> <span class="cast good">PI</span></div>
+      <div><span class="dim">8:16</span> <span class="cast good">Voidform + Halo</span></div>
+      <div style="margin-top: 8px;"><strong class="green">4 Voidforms, 4 PI &mdash; always stacked, always with Halo</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header green">Cooldown Usage Assessment</div>
+  <p style="font-size: 14px;"><strong class="green">Nurnyx's cooldown stacking is correct.</strong> Both Voidform casts were paired with Power Infusion. Halo was used on cooldown (5 casts in 4:14 = exactly on the 60s cooldown). The second Voidform window at 3:08 was stacked with Heroism (2:59) for maximum value. One note: Fabx delays the opener slightly (0:24 vs Nurnyx's 0:06/0:09) to stack PI + VF + Halo together more tightly, but both approaches are valid during progression. Cooldown alignment is not a concern here.</p>
+</div>
+
+<!-- EXTERNAL BUFFS -->
+<h2>External Buffs</h2>
+<p class="section-intro">External damage amplifiers received. Context matters for any DPS comparison between prog and kill data.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Buff</th><th>Nurnyx</th><th>Fabx (Ref)</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heroism / Time Warp</strong></td>
+      <td>2:59</td>
+      <td>2:54</td>
+      <td><span class="tag tag-same">Similar timing &mdash; Phase 2 start</span></td>
+    </tr>
+    <tr>
+      <td><strong>Power Infusion</strong></td>
+      <td>2 (self-cast)</td>
+      <td>4 (self-cast)</td>
+      <td><span class="tag tag-info">Kill fight = more windows</span></td>
+    </tr>
+    <tr>
+      <td><strong>Ebon Might</strong></td>
+      <td>6 applications</td>
+      <td>12 applications</td>
+      <td><span class="tag tag-warn">Half the uptime</span></td>
+    </tr>
+    <tr>
+      <td><strong>Prescience</strong></td>
+      <td>2 applications</td>
+      <td>4 applications</td>
+      <td><span class="tag tag-warn">Half the applications</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Fabx received roughly <strong>2x the external buff uptime</strong> (Ebon Might, Prescience, PI) because their kill fight was twice as long. Heroism timing was similar in both fights (around Phase 2 start). The DPS comparison already accounts for this &mdash; we use CPM rather than raw DPS for meaningful comparison.</p>
+
+<!-- DAMAGE TAKEN -->
+<h2>Damage Taken</h2>
+<p class="section-intro">Damage taken by Nurnyx during Fight 23. Crown of the Cosmos has constant ticking damage (Echoing Darkness) plus phase-specific burst damage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Total Damage</th><th>Hits</th><th>Absorbed</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Echoing Darkness</strong></td>
+      <td>2,422K</td>
+      <td>118</td>
+      <td>1,151K</td>
+      <td><span class="tag tag-same">No &mdash; persistent raid damage</span></td>
+    </tr>
+    <tr>
+      <td><strong>Simulacrum Backlash</strong></td>
+      <td>1,804K</td>
+      <td>62</td>
+      <td>203K</td>
+      <td><span class="tag tag-same">No &mdash; Phase 2 mechanic</span></td>
+    </tr>
+    <tr style="background: rgba(248,81,73,0.05);">
+      <td><strong>Void Remnants</strong></td>
+      <td>1,497K</td>
+      <td>8</td>
+      <td>124K</td>
+      <td><span class="tag tag-warn">Partially &mdash; positioning</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>1,159K</td>
+      <td>27</td>
+      <td>137K</td>
+      <td><span class="tag tag-same">No &mdash; puddle soak mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Corrupting Essence</td>
+      <td>525K</td>
+      <td>3</td>
+      <td>25K</td>
+      <td><span class="tag tag-same">No &mdash; boss debuff</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>429K</td>
+      <td>21</td>
+      <td>141K</td>
+      <td><span class="tag tag-same">No &mdash; shield mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>395K</td>
+      <td>14</td>
+      <td>21K</td>
+      <td><span class="tag tag-same">No &mdash; raid damage</span></td>
+    </tr>
+    <tr style="background: rgba(210,153,34,0.05);">
+      <td>Falling</td>
+      <td>389K</td>
+      <td>2</td>
+      <td>0K</td>
+      <td><span class="tag tag-warn">Avoidable &mdash; platform edge</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>284K</td>
+      <td>4</td>
+      <td>52K</td>
+      <td><span class="tag tag-same">No &mdash; phase mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Interrupting Tremor</td>
+      <td>245K</td>
+      <td>2</td>
+      <td>0K</td>
+      <td><span class="tag tag-same">No &mdash; raid-wide</span></td>
+    </tr>
+    <tr>
+      <td>Silverstrike Barrage</td>
+      <td>204K</td>
+      <td>2</td>
+      <td>0K</td>
+      <td><span class="tag tag-same">No &mdash; boss mechanic</span></td>
+    </tr>
+    <tr>
+      <td>Shadow Word: Death</td>
+      <td>84K</td>
+      <td>9</td>
+      <td>21K</td>
+      <td><span class="tag tag-info">Self-damage from SW:D</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top: 8px;">
+  <p style="font-size: 14px;"><strong class="yellow">Two items of note:</strong> (1) <strong>Falling damage</strong> (389K, 2 hits) indicates clipping platform edges during Crown's platform-breaking mechanics. This is minor but avoidable with tighter positioning. (2) <strong>Void Remnants</strong> (1,497K, 8 hits) was the killing blow &mdash; this is partially avoidable through better positioning away from void zones, though during a raid wipe cascade positioning options are severely limited.</p>
+</div>
+
+<!-- WIPE PROGRESSION -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">Nurnyx's DPS across all 26 Crown of the Cosmos pulls. Bars colored by boss % reached: <span class="green">green</span> (&lt;10%), <span class="yellow">yellow</span> (10&ndash;50%), <span class="orange">orange</span> (50&ndash;90%), <span class="red">red</span> (&gt;90%). Lower boss % = further into the fight. Best pulls: F8 (0.01%), F17 (0.01%), F21 (0.22%).</p>
+
+<div class="card">
+  <div class="progression-chart" style="margin-bottom: 24px;">
+    <!-- F2: 234K, 63s, 52.0% -->
+    <div class="prog-bar" style="height: 75%; background: var(--orange);" data-tooltip="F2: 234K DPS | 1:03 | Boss 52.0%">
+      <span class="prog-label">2</span>
+    </div>
+    <!-- F3: 178K, 117s, 54.8% -->
+    <div class="prog-bar" style="height: 57%; background: var(--orange);" data-tooltip="F3: 178K DPS | 1:57 | Boss 54.8%">
+      <span class="prog-label">3</span>
+    </div>
+    <!-- F4: 119K, 76s, 54.6% -->
+    <div class="prog-bar" style="height: 38%; background: var(--orange);" data-tooltip="F4: 119K DPS | 1:16 | Boss 54.6%">
+      <span class="prog-label">4</span>
+    </div>
+    <!-- F5: 121K, 60s, 74.0% -->
+    <div class="prog-bar" style="height: 39%; background: var(--orange);" data-tooltip="F5: 121K DPS | 1:00 | Boss 74.0%">
+      <span class="prog-label">5</span>
+    </div>
+    <!-- F6: 241K, 143s, 19.5% -->
+    <div class="prog-bar" style="height: 77%; background: var(--yellow);" data-tooltip="F6: 241K DPS | 2:23 | Boss 19.5%">
+      <span class="prog-label">6</span>
+    </div>
+    <!-- F7: 210K, 89s, 41.7% -->
+    <div class="prog-bar" style="height: 67%; background: var(--yellow);" data-tooltip="F7: 210K DPS | 1:29 | Boss 41.7%">
+      <span class="prog-label">7</span>
+    </div>
+    <!-- F8: 312K, 142s, 0.01% -->
+    <div class="prog-bar" style="height: 100%; background: var(--green);" data-tooltip="F8: 312K DPS | 2:22 | Boss 0.01% ★">
+      <span class="boss-pct-label green">0.01%</span>
+      <span class="prog-label">8</span>
+    </div>
+    <!-- F9: 226K, 152s, 7.3% -->
+    <div class="prog-bar" style="height: 72%; background: var(--green);" data-tooltip="F9: 226K DPS | 2:32 | Boss 7.3%">
+      <span class="prog-label">9</span>
+    </div>
+    <!-- F10: 178K, 220s, 98.4% -->
+    <div class="prog-bar" style="height: 57%; background: var(--red);" data-tooltip="F10: 178K DPS | 3:40 | Boss 98.4%">
+      <span class="prog-label">10</span>
+    </div>
+    <!-- F11: 269K, 122s, 30.3% -->
+    <div class="prog-bar" style="height: 86%; background: var(--yellow);" data-tooltip="F11: 269K DPS | 2:02 | Boss 30.3%">
+      <span class="prog-label">11</span>
+    </div>
+    <!-- F12: 193K, 234s, 92.1% -->
+    <div class="prog-bar" style="height: 62%; background: var(--red);" data-tooltip="F12: 193K DPS | 3:54 | Boss 92.1%">
+      <span class="prog-label">12</span>
+    </div>
+    <!-- F13: 247K, 75s, 60.8% -->
+    <div class="prog-bar" style="height: 79%; background: var(--orange);" data-tooltip="F13: 247K DPS | 1:15 | Boss 60.8%">
+      <span class="prog-label">13</span>
+    </div>
+    <!-- F14: 171K, 231s, 95.3% -->
+    <div class="prog-bar" style="height: 55%; background: var(--red);" data-tooltip="F14: 171K DPS | 3:51 | Boss 95.3%">
+      <span class="prog-label">14</span>
+    </div>
+    <!-- F15: 234K, 149s, 9.1% -->
+    <div class="prog-bar" style="height: 75%; background: var(--green);" data-tooltip="F15: 234K DPS | 2:29 | Boss 9.1%">
+      <span class="prog-label">15</span>
+    </div>
+    <!-- F16: 233K, 130s, 21.2% -->
+    <div class="prog-bar" style="height: 75%; background: var(--yellow);" data-tooltip="F16: 233K DPS | 2:10 | Boss 21.2%">
+      <span class="prog-label">16</span>
+    </div>
+    <!-- F17: 309K, 144s, 0.01% -->
+    <div class="prog-bar" style="height: 99%; background: var(--green);" data-tooltip="F17: 309K DPS | 2:24 | Boss 0.01% ★">
+      <span class="boss-pct-label green">0.01%</span>
+      <span class="prog-label">17</span>
+    </div>
+    <!-- F18: 124K, 236s, 95.7% -->
+    <div class="prog-bar" style="height: 40%; background: var(--red);" data-tooltip="F18: 124K DPS | 3:56 | Boss 95.7%">
+      <span class="prog-label">18</span>
+    </div>
+    <!-- F19: 241K, 114s, 34.5% -->
+    <div class="prog-bar" style="height: 77%; background: var(--yellow);" data-tooltip="F19: 241K DPS | 1:54 | Boss 34.5%">
+      <span class="prog-label">19</span>
+    </div>
+    <!-- F20: 269K, 120s, 35.4% -->
+    <div class="prog-bar" style="height: 86%; background: var(--yellow);" data-tooltip="F20: 269K DPS | 2:00 | Boss 35.4%">
+      <span class="prog-label">20</span>
+    </div>
+    <!-- F21: 258K, 147s, 0.22% -->
+    <div class="prog-bar" style="height: 83%; background: var(--green);" data-tooltip="F21: 258K DPS | 2:27 | Boss 0.22%">
+      <span class="boss-pct-label green">0.22%</span>
+      <span class="prog-label">21</span>
+    </div>
+    <!-- F23: 164K, 293s, 77.3% -->
+    <div class="prog-bar" style="height: 53%; background: var(--orange);" data-tooltip="F23: 164K DPS | 4:53 | Boss 77.3% (longest pull)">
+      <span class="prog-label" style="font-weight:600;">23</span>
+    </div>
+    <!-- F24: 184K, 229s, 92.9% -->
+    <div class="prog-bar" style="height: 59%; background: var(--red);" data-tooltip="F24: 184K DPS | 3:49 | Boss 92.9%">
+      <span class="prog-label">24</span>
+    </div>
+    <!-- F25: 161K, 188s, 99.9% -->
+    <div class="prog-bar" style="height: 52%; background: var(--red);" data-tooltip="F25: 161K DPS | 3:08 | Boss 99.9%">
+      <span class="prog-label">25</span>
+    </div>
+    <!-- F26: 196K, 220s, 96.9% -->
+    <div class="prog-bar" style="height: 63%; background: var(--red);" data-tooltip="F26: 196K DPS | 3:40 | Boss 96.9%">
+      <span class="prog-label">26</span>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 16px; font-size: 11px; color: var(--dim); padding: 0 4px;">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;"></span> Boss &lt;10%</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--yellow);border-radius:2px;"></span> 10&ndash;50%</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--orange);border-radius:2px;"></span> 50&ndash;90%</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;"></span> &gt;90%</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Progression Trend</div>
+  <p style="font-size: 14px;">Nurnyx's best raw DPS pulls were F8 (<strong class="green">312K</strong>, 2:22) and F17 (<strong class="green">309K</strong>, 2:24) &mdash; both sub-3-minute pulls where burst CDs and Voidform drive inflated numbers. These are also the pulls where the raid reached 0.01% boss HP, suggesting strong execution all around. For sustained DPS comparison, the longest pulls tell a different story: F10 (178K, 3:40), F12 (193K, 3:54), F14 (171K, 3:51), F18 (124K, 3:56), F23 (164K, 4:53). The DPS decline on longer pulls is expected &mdash; as the fight progresses past Phase 1 into Phase 2/3, more mechanics force movement and target switching. The low outlier F18 (124K) may indicate early death or heavy movement on that pull. <strong>No clear fatigue trend</strong> across the night &mdash; DPS stays consistent relative to pull length.</p>
+</div>
+
+<!-- STATS COMPARISON -->
+<h2>Stats Comparison</h2>
+<p class="section-intro">Secondary stat profile vs the primary reference. Nearly identical item level and primary stat.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Stat</th><th>Nurnyx</th><th>Fabx</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Item Level</strong></td>
+      <td>289.4</td>
+      <td>289.4</td>
+      <td><span class="tag tag-same">Identical</span></td>
+    </tr>
+    <tr>
+      <td>Intellect</td>
+      <td>2,682</td>
+      <td>2,666</td>
+      <td><span class="tag tag-same">+0.6%</span></td>
+    </tr>
+    <tr>
+      <td>Crit</td>
+      <td>697</td>
+      <td>697</td>
+      <td><span class="tag tag-same">Identical</span></td>
+    </tr>
+    <tr>
+      <td>Haste</td>
+      <td class="green">990</td>
+      <td>952</td>
+      <td>+4.0% Haste</td>
+    </tr>
+    <tr>
+      <td>Mastery</td>
+      <td class="yellow">970</td>
+      <td>1,023</td>
+      <td>&minus;5.2% Mastery</td>
+    </tr>
+    <tr>
+      <td>Versatility</td>
+      <td class="red">27</td>
+      <td>160</td>
+      <td>&minus;83% Vers</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="section-intro" style="margin-top: 8px;">Stats are very close &mdash; same ilvl, same Intellect, same Crit. Nurnyx has slightly more Haste (+4%) and slightly less Mastery (&minus;5%). The Versatility difference (27 vs 160) is notable for survivability &mdash; Vers provides both damage reduction and damage increase. With only 27 Versatility, Nurnyx has essentially no Vers DR, which contributes to feeling squishier during damage-heavy phases. For Shadow Priest, Haste and Mastery are roughly equal in value, so the stat profiles are functionally equivalent for DPS purposes. <strong>The rotational CPM gap is not stat-driven.</strong></p>
+
+<!-- ACTIONABLE ITEMS -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Fill every GCD &mdash; close the 12.4% rotational CPM gap.</strong> Nurnyx's rotational CPM is <strong>34.0 vs 38.8</strong> for the reference &mdash; roughly 1 empty GCD every 12 seconds. Over a full kill (~9 minutes), that compounds to approximately <strong>43 lost casts</strong>. The gap appears across multiple abilities (Mind Flay &minus;25%, Mind Blast &minus;17%, SW:Madness &minus;15%) rather than being concentrated in one spell, which points to dead GCD time during movement. During Crown's movement mechanics (Grasp of Emptiness repositioning, Void Expulsion puddle placement, platform transitions), use instant-cast abilities: Shadow Word: Death, Shadow Word: Pain refreshes, Halo, and Angelic Feather. Mind Flay should be the default action whenever nothing else is available &mdash; if nothing is being cast, Mind Flay fills the gap. Estimated gain on a kill pull: <strong>+8-12K DPS</strong>.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Press Mind Blast on cooldown &mdash; it is the #1 priority.</strong> Mind Blast at <strong>8.0 CPM vs 9.7 CPM</strong> means ~7 missed casts in 4 minutes of active time. Mind Blast is Shadow Priest's highest-priority rotational ability: it generates large Insanity (for more Shadow Word: Madness), triggers Shadowy Apparition spawns via the Archon talent tree, and hits hard (14.1% of total damage). Each missed Mind Blast cascades &mdash; less Insanity means fewer SW:Madness casts (already &minus;15% vs reference), fewer Apparitions (33.5 CPM vs 37.3), and less Void Apparition value. The reference has a 2-charge Mind Blast from Thought Harvester talent (identical talent build), meaning charges should rarely cap. Estimated gain: <strong>+5-8K DPS</strong>.
+</div>
+
+<div class="action-item">
+  <strong>3. Use Power Word: Shield habitually for free survivability.</strong> Fabx casts PW:S <strong>25 times</strong> (2.8 CPM) vs Nurnyx's <strong>1 cast</strong>. PW:S is off the GCD in Shadow's current build &mdash; it costs zero DPS to press. On Crown of the Cosmos with persistent Echoing Darkness ticks (118 hits, 2.4M damage) plus phase-specific burst, a regular PW:S absorb shield directly prevents damage that healers would otherwise need to cover. Nurnyx died at 4:14 to Void Remnants &mdash; an extra 100-150K absorb from a recent PW:S may have bought the extra second needed to survive. Build a habit of pressing PW:S every 15-20 seconds during non-channel moments.
+</div>
+
+<div class="action-item">
+  <strong>4. Maintain Shadow Word: Pain uptime more aggressively on multi-target.</strong> SW:P at <strong>1.9 CPM vs 3.1 CPM</strong> (&minus;39%) is the largest percentage gap among rotational abilities. Crown of the Cosmos is a multi-target fight with Sentinels (Phase 1), Rift Simulacrum + adds (Phase 2), and Sentinels + Simulacrums (Phase 3). Shadow Word: Pain should be active on every target that will live long enough for the DoT to tick &mdash; each SW:P tick feeds Psychic Link damage (which was 4.0% for Nurnyx vs 15.5% for the reference). Tentacle Slam applies VT to 6 targets, but SW:P must be manually applied. On transition to new targets, lead with SW:P before starting your Mind Blast rotation.
+</div>
+
+<div class="action-item">
+  <strong>5. On kill attempts: target Versatility in gear for Crown survival.</strong> Nurnyx has <strong>27 Versatility</strong> vs Fabx's <strong>160</strong>. While the DPS difference is marginal, the damage reduction from Versatility matters on a fight with heavy sustained damage. Crown's Phase 2 and Phase 3 involve overlapping damage sources (Void Remnants, Simulacrum Backlash, Echoing Darkness) where an extra 2-3% DR from Versatility can be the difference between living and dying. If any gear options provide a Vers upgrade without sacrificing Haste/Mastery, they are worth taking for prog survivability.
+</div>
+
+<!-- CONTEXT FOOTER -->
+<div class="card" style="margin-top: 24px; border-left: 3px solid var(--green);">
+  <div class="card-header green">What's Already Good</div>
+  <p style="font-size: 14px;">
+    <strong>Cooldown stacking:</strong> Every Voidform was paired with Power Infusion. Halo was used exactly on cooldown (5 casts in 4:14). The 3:08 Voidform was perfectly timed to stack with Heroism. This is textbook Shadow Priest CD management.<br><br>
+    <strong>Proc handling:</strong> Mind Flay: Insanity CPM matches the reference exactly (3.1 vs 3.1). This means when SW:Madness procs Mind Flay: Insanity, Nurnyx is casting it &mdash; no wasted procs.<br><br>
+    <strong>Tentacle Slam usage:</strong> 3.8 CPM vs 4.0 &mdash; near-identical. Tentacle Slam is being used on cooldown for DoT spread and Maddening Tentacles value.<br><br>
+    <strong>SW:Death execute usage:</strong> 2.1 CPM vs 1.3 &mdash; actually ahead of the reference. Good use of instant-cast execute during movement or on low-HP targets.<br><br>
+    <strong>Defensives:</strong> Desperate Prayer (3 uses), Healthstone, Dispersion, PW:S, and potion were all used actively during the wipe cascade. The effort to survive is visible in the data.<br><br>
+    <strong>Consistent progression:</strong> No DPS regression across the night. Best pulls (F8, F17, F21) all reached sub-1% boss HP, showing strong execution when the raid survives.
+  </p>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Summary &mdash; Progression Context</div>
+  <p style="font-size: 14px;">This is <strong>prog data, not kill data</strong>. Nurnyx's alive-time DPS (~208K) on a 4:14 window compares favorably to reference kill DPS (~105K) but that comparison is misleading &mdash; shorter fights with burst CDs inflate DPS significantly. The meaningful finding is the <strong>12.4% rotational CPM gap</strong> (34.0 vs 38.8), concentrated in Mind Blast (&minus;17%), Mind Flay filler (&minus;25%), and SW:Madness (&minus;15%). These gaps will cost substantially more DPS over a 9-minute kill than a 4-minute wipe. The good news: cooldown alignment is already correct, proc handling is clean, and there are zero talent differences to fix. The improvements are purely mechanical &mdash; fill every GCD, prioritize Mind Blast, maintain multi-target DoTs, and build PW:S into the rotation for survival. Fixing the CPM gap alone would add an estimated <strong>8-12K sustained DPS</strong> on a kill-length fight.</p>
+</div>
+
+<!-- FOOTER -->
+<div style="margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px;">
+  <p>Analysis generated from Warcraft Logs report <code>wcj1rdQfpqNTHY89</code>, Fight 23 (Wipe, 4:52, 77.3% boss). Reference: Fabx (#4 ranked Shadow Priest, report <code>K6Xx8k2NyHhbwCM4</code>, Fight 48, 9:03 kill). All times relative to fight start. CPM normalized to active time: Nurnyx 254s (died 4:14), Fabx 543s (full kill).</p>
+  <p style="margin-top: 4px;">Talent delta: 0 differences between Nurnyx and Fabx. Item level: identical (289.4 vs 289.4). Hero talent tree: Archon (both). External buffs: Heroism at similar timing; Fabx received 2x more PI/Ebon Might/Prescience due to longer fight. The performance gaps are execution-based within a progression context.</p>
+  <p style="margin-top: 4px; color: var(--dim);">Generated by WCL Analyzer &middot; Data sourced from Warcraft Logs v2 API &middot; Shadow Priest rotation reference from Icy Veins 12.0.7 guide</p>
+</div>
+
+</body>
+</html>

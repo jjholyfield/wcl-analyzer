@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brewtote (Resto Shaman) &mdash; Mythic Rotmire Kill Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --shaman: #0070dd;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.header h1 .player-name { color: var(--shaman); }
+.header .subtitle { color: var(--dim); font-size: 14px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-kill { background: rgba(63, 185, 80, 0.2); color: var(--green); border: 1px solid rgba(63, 185, 80, 0.3); }
+.tag-red { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
+
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .value { font-size: 24px; font-weight: 700; }
+.card .note { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover { background: rgba(88, 166, 255, 0.05); }
+
+.callout { background: var(--surface); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 16px; }
+.callout.warning { border-left-color: var(--orange); }
+.callout.info { border-left-color: var(--accent); }
+.callout.green { border-left-color: var(--green); }
+.callout .callout-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.callout .callout-body { font-size: 13px; color: var(--dim); line-height: 1.7; }
+
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 200px; padding-top: 20px; position: relative; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.bar { width: 100%; min-width: 20px; border-radius: 4px 4px 0 0; position: relative; transition: opacity 0.2s; cursor: default; }
+.bar:hover { opacity: 0.8; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; text-align: center; }
+.bar-value { font-size: 9px; color: var(--text); text-align: center; margin-bottom: 2px; font-weight: 600; }
+.bar-survived { background: linear-gradient(180deg, var(--green), #1a6b2a); }
+.bar-died { background: linear-gradient(180deg, var(--red), #8b2020); }
+.bar-kill { background: linear-gradient(180deg, var(--accent), #1a4a8a); }
+.bar-short { background: linear-gradient(180deg, var(--dim), #555); }
+
+.timeline-bar { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; height: 60px; margin: 16px 0; overflow: visible; }
+.timeline-inner { position: relative; height: 100%; margin: 0 20px; }
+.timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.7; z-index: 2; }
+.timeline-marker .marker-label { position: absolute; top: -18px; left: -20px; font-size: 9px; white-space: nowrap; font-weight: 600; }
+.timeline-death { position: absolute; top: 0; height: 100%; border-left: 3px dashed var(--red); z-index: 3; }
+.timeline-death .marker-label { position: absolute; top: -18px; left: -10px; font-size: 10px; color: var(--red); font-weight: 700; }
+.timeline-alive { position: absolute; top: 0; height: 100%; background: rgba(63, 185, 80, 0.08); border-radius: 8px 0 0 8px; z-index: 0; }
+.timeline-dead { position: absolute; top: 0; height: 100%; background: rgba(248, 81, 73, 0.08); border-radius: 0 8px 8px 0; z-index: 0; }
+.timeline-time { position: absolute; bottom: -18px; font-size: 9px; color: var(--dim); transform: translateX(-50%); }
+
+.cd-grid { display: grid; grid-template-columns: 140px repeat(3, 1fr); gap: 1px; background: var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; font-size: 12px; }
+.cd-grid .cd-header { background: var(--surface); padding: 8px 12px; font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; }
+.cd-grid .cd-cell { background: var(--bg); padding: 8px 10px; min-height: 42px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.cd-grid .cd-cell.highlight-row { background: rgba(0, 112, 222, 0.08); }
+.cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.cd-pill-shaman { background: rgba(0,112,222,0.15); color: #0070de; }
+.cd-pill-monk { background: rgba(0,255,150,0.15); color: #00ff96; }
+.cd-pill-dead { background: rgba(248,81,73,0.15); color: var(--red); }
+.cd-pill-none { background: rgba(139,148,158,0.1); color: var(--dim); font-style: italic; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat-box { background: rgba(22, 27, 34, 0.8); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
+.stat-box .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-box .stat-value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+
+.death-timeline { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.8; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; }
+.death-timeline .dmg { color: var(--red); }
+.death-timeline .heal { color: var(--green); }
+.death-timeline .absorb { color: var(--cyan); }
+.death-timeline .dead-line { color: var(--red); font-weight: 700; font-size: 14px; }
+
+.inline-bar { display: inline-block; height: 8px; border-radius: 4px; vertical-align: middle; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+.badge-green { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+.badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
+.badge-red { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+.badge-orange { background: rgba(219, 109, 40, 0.2); color: var(--orange); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  .cd-grid { grid-template-columns: 100px repeat(3, 1fr); font-size: 10px; }
+  body { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23 Rotmire Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Brewtote</span> &mdash; Restoration Shaman</h1>
+  <div class="subtitle">
+    <span class="tag tag-kill">KILL</span>
+    Mythic Rotmire &mdash; 7:31 kill &mdash; June 23, 2026 &mdash; Report <code>dkr7abmRJFAzNg1W</code>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="label">HPS (Full Fight)</div>
+    <div class="value">182.6K</div>
+    <div class="note">255.1K while alive</div>
+  </div>
+  <div class="card">
+    <div class="label">Item Level</div>
+    <div class="value">292.8</div>
+    <div class="note">16 equipped items</div>
+  </div>
+  <div class="card">
+    <div class="label">Status</div>
+    <div class="value" style="color: var(--red);">Died 5:23</div>
+    <div class="note">Festering Vines</div>
+  </div>
+  <div class="card">
+    <div class="label">Overheal</div>
+    <div class="value" style="color: var(--green);">15.9%</div>
+    <div class="note">Ref: 11.0%</div>
+  </div>
+</div>
+
+<!-- Bottom Line Verdict -->
+<div class="section">
+  <div class="callout warning">
+    <div class="callout-title">Died at 5:23 to Festering Vines &mdash; missed 28.4% of the fight including Bloom #3</div>
+    <div class="callout-body">
+      Brewtote was caught in overlapping Festering Vines + Rotting Pustules damage at 5:16, taking 75K/tick from Vines on top of 38K/tick Pustules ticks. Astral Shift was not available (last used earlier). Healing output while alive was strong at 255K HPS, but Chain Heal CPM (14.5) is 31% below reference Puddle (21.1), and Riptide CPM (7.2) is 31% below as well. Spirit Link deployed 13 seconds after Bloom #1 &mdash; should fire as damage hits, not after. The death cost the team a healer CD for Bloom #3 at 6:32.
+    </div>
+  </div>
+</div>
+
+<!-- Reference Comparison Table -->
+<div class="section">
+  <h2>Reference Comparison</h2>
+  <table>
+    <thead>
+      <tr><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>OH%</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background: rgba(188,140,255,0.06);">
+        <td style="color: var(--purple);">Puddle (Argent Dawn)</td>
+        <td><strong>220,810</strong></td>
+        <td>7:47</td>
+        <td>291.2</td>
+        <td>17</td>
+        <td>11.0%</td>
+        <td><span class="badge badge-green">Survived</span></td>
+      </tr>
+      <tr>
+        <td>Aragrin (Tarren Mill)</td>
+        <td>220,460</td>
+        <td>7:57</td>
+        <td>290.9</td>
+        <td>14</td>
+        <td>&mdash;</td>
+        <td><span class="badge badge-green">Survived</span></td>
+      </tr>
+      <tr>
+        <td>Jellybellyx (Proudmoore)</td>
+        <td>191,791</td>
+        <td>8:03</td>
+        <td>288.3</td>
+        <td>11</td>
+        <td>&mdash;</td>
+        <td><span class="badge badge-green">Survived</span></td>
+      </tr>
+      <tr>
+        <td>Makiko (Proudmoore)</td>
+        <td>184,004</td>
+        <td>7:52</td>
+        <td>291.3</td>
+        <td>12</td>
+        <td>&mdash;</td>
+        <td><span class="badge badge-green">Survived</span></td>
+      </tr>
+      <tr style="background: rgba(0,112,222,0.08);">
+        <td style="color: var(--shaman);"><strong>Brewtote</strong></td>
+        <td><strong>182,644</strong></td>
+        <td>7:31</td>
+        <td>292.8</td>
+        <td>&mdash;</td>
+        <td>15.9%</td>
+        <td><span class="badge badge-red">Died 5:23</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note" style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Primary reference: <strong>Puddle</strong> (highest HPS, 17 talent diffs, closest ilvl at 291.2). Puddle survived the full fight.
+    Jellybellyx has fewest talent diffs (11) but lower ilvl. All references use Farseer hero talents.
+  </div>
+</div>
+
+<!-- Boss Mechanic Timeline -->
+<div class="section">
+  <h2>Boss Mechanic Timeline</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Rotmire is a single-phase fight with repeating ~136s mechanic cycles. Fungal Bloom (100 energy) is the primary healing check &mdash; it revives add corpses as Bursting Shrooms that must be killed within 16s. Festering Vines roots players in expanding damage circles. Bursting Pustules is the soft enrage, adding Rotting Pustules stacks each cycle.
+  </p>
+
+  <div class="timeline-bar" style="height: 80px; margin-bottom: 30px;">
+    <div class="timeline-inner">
+      <!-- Alive zone -->
+      <div class="timeline-alive" style="left: 0; width: 71.6%;"></div>
+      <!-- Dead zone -->
+      <div class="timeline-dead" style="left: 71.6%; width: 28.4%;"></div>
+
+      <!-- Bloom markers -->
+      <div class="timeline-marker" style="left: 26.6%; border-color: var(--red);">
+        <div class="marker-label" style="color: var(--red);">Bloom #1 (2:00)</div>
+      </div>
+      <div class="timeline-marker" style="left: 56.7%; border-color: var(--red);">
+        <div class="marker-label" style="color: var(--red);">Bloom #2 (4:16)</div>
+      </div>
+      <div class="timeline-marker" style="left: 86.9%; border-color: var(--red);">
+        <div class="marker-label" style="color: var(--red);">Bloom #3 (6:32)</div>
+      </div>
+
+      <!-- Festering Vines markers -->
+      <div class="timeline-marker" style="left: 9.5%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;">
+        <div class="marker-label" style="color: var(--orange); top: auto; bottom: -18px;">Vines</div>
+      </div>
+      <div class="timeline-marker" style="left: 20.4%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+      <div class="timeline-marker" style="left: 39.7%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+      <div class="timeline-marker" style="left: 50.5%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+      <div class="timeline-marker" style="left: 69.8%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+      <div class="timeline-marker" style="left: 80.7%; border-color: var(--orange); opacity: 0.4; border-left-style: dotted;"></div>
+
+      <!-- Death marker -->
+      <div class="timeline-death" style="left: 71.6%;">
+        <div class="marker-label">&#x1F480; DEAD</div>
+      </div>
+
+      <!-- Time labels -->
+      <div class="timeline-time" style="left: 0;">0:00</div>
+      <div class="timeline-time" style="left: 50%;">3:45</div>
+      <div class="timeline-time" style="left: 100%;">7:31</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Mechanic</th><th>Casts</th><th>Timing Pattern</th><th>Healing Impact</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color: var(--red); font-weight: 600;">Fungal Bloom</td>
+        <td>3</td>
+        <td>2:00, 4:16, 6:32 (every ~136s)</td>
+        <td>Major raid-wide &mdash; revives Shrooms, requires raid CDs</td>
+      </tr>
+      <tr>
+        <td style="color: var(--orange);">Festering Vines</td>
+        <td>7</td>
+        <td>0:43, 1:32, 2:59, 3:48, 5:15, 6:04, 7:31</td>
+        <td>DoT circles, slows, creates permanent arena denial</td>
+      </tr>
+      <tr>
+        <td>Bursting Pustules</td>
+        <td>11</td>
+        <td>Every ~21-49s, accelerating</td>
+        <td>Soft enrage &mdash; adds Rotting Pustules DoT stacks</td>
+      </tr>
+      <tr>
+        <td>Awaken Fungi</td>
+        <td>7</td>
+        <td>0:15, 1:04, 2:31, 3:20, 4:47, 5:36, 7:03</td>
+        <td>Spawns adds &mdash; knockback if standing in circles</td>
+      </tr>
+      <tr>
+        <td>Putrid Fist</td>
+        <td>26</td>
+        <td>Every ~12s</td>
+        <td>Tank swap mechanic, heavy tank damage</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Ramp / CD Timing Analysis -->
+<div class="section">
+  <h2>CD Timing vs Boss Events</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+    Resto Shaman raid prep: Healing Rain down before damage, Riptides spread for Tidal Waves, Spirit Link Totem or Ascendance deployed at or just before raid-wide hits.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <h3>Bloom #1 (2:00)</h3>
+      <div class="chart-container" style="padding: 12px;">
+        <div style="font-size: 12px; line-height: 2;">
+          <div><span style="color: var(--dim);">1:50</span> &mdash; <span style="color: var(--green);">Riptide</span></div>
+          <div><span style="color: var(--dim);">1:55</span> &mdash; <span style="color: var(--green);">Healing Rain</span></div>
+          <div style="border-top: 1px solid var(--red); margin: 4px 0; padding-top: 4px; font-weight: 600; color: var(--red);">2:00 &mdash; FUNGAL BLOOM</div>
+          <div><span style="color: var(--dim);">2:07</span> &mdash; <span style="color: var(--green);">Chain Heal x3</span></div>
+          <div><span style="color: var(--dim);">2:13</span> &mdash; <span style="color: var(--shaman);">Spirit Link Totem</span> <span class="badge badge-orange">+13s late</span></div>
+          <div><span style="color: var(--dim);">2:25</span> &mdash; <span style="color: var(--shaman);">Ascendance</span> <span class="badge badge-orange">+25s late</span></div>
+        </div>
+      </div>
+      <div class="callout warning" style="font-size: 12px;">
+        <div class="callout-title">SLT 13 seconds late</div>
+        <div class="callout-body">Spirit Link should deploy at 2:00 as Bloom hits, not 13s after. Ascendance at 2:25 is 25s post-Bloom &mdash; the burst damage window was already over. Puddle deploys Ascendance at the Bloom moment.</div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Bloom #2 (4:16)</h3>
+      <div class="chart-container" style="padding: 12px;">
+        <div style="font-size: 12px; line-height: 2;">
+          <div><span style="color: var(--dim);">4:10</span> &mdash; <span style="color: var(--green);">Chain Heal spam</span></div>
+          <div style="border-top: 1px solid var(--red); margin: 4px 0; padding-top: 4px; font-weight: 600; color: var(--red);">4:16 &mdash; FUNGAL BLOOM</div>
+          <div><span style="color: var(--dim);">4:16+</span> &mdash; <span style="color: var(--green);">Chain Heal spam</span></div>
+          <div style="color: var(--dim); font-style: italic;">No major CD deployed</div>
+        </div>
+      </div>
+      <div class="callout info" style="font-size: 12px;">
+        <div class="callout-title">No major CD for Bloom #2</div>
+        <div class="callout-body">Both Spirit Link (3min CD, used at 2:13) and Ascendance (3min CD, used at 2:25) were still on cooldown. Had they been used at 2:00 with Bloom #1, SLT would be back at 5:00 and Ascendance at 5:00 &mdash; still not available for Bloom #2 at 4:16. The team covered this window with Nightchuger's Revival at 2:51 and Celestial Conduit at 3:46.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 16px;">
+    <h3>Bloom #3 (6:32)</h3>
+    <div class="callout" style="font-size: 12px;">
+      <div class="callout-title" style="color: var(--red);">DEAD &mdash; No contribution</div>
+      <div class="callout-body">Brewtote died at 5:23. Bloom #3 at 6:32 had zero Resto Shaman CDs. The team had Thullithnor's Ascendance (5:13) and SLT (4:26) already used before this window. Primomonk's Celestial Conduit at 5:53 was the only healer CD near this window.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Team CD Coordination -->
+<div class="section">
+  <h2>Team CD Coordination</h2>
+  <div class="cd-grid">
+    <div class="cd-header">Healer</div>
+    <div class="cd-header">Bloom #1 (2:00)</div>
+    <div class="cd-header">Bloom #2 (4:16)</div>
+    <div class="cd-header">Bloom #3 (6:32)</div>
+
+    <div class="cd-cell highlight-row" style="font-weight: 600; color: var(--shaman);">Brewtote (RSham)</div>
+    <div class="cd-cell highlight-row">
+      <span class="cd-pill cd-pill-shaman">SLT 2:13</span>
+      <span class="cd-pill cd-pill-shaman">Asc 2:25</span>
+    </div>
+    <div class="cd-cell highlight-row">
+      <span class="cd-pill cd-pill-none">No major CD</span>
+    </div>
+    <div class="cd-cell highlight-row">
+      <span class="cd-pill cd-pill-dead">DEAD</span>
+    </div>
+
+    <div class="cd-cell">Thullithnor (RSham)</div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-shaman">Asc 2:00</span>
+    </div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-shaman">SLT 4:26</span>
+    </div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-shaman">Asc 5:13</span>
+    </div>
+
+    <div class="cd-cell">Primomonk (MW Monk)</div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-monk">CC 1:43</span>
+      <span class="cd-pill cd-pill-monk">Yu'lon 1:06</span>
+    </div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-monk">CC 4:15</span>
+      <span class="cd-pill cd-pill-monk">Yu'lon 3:22</span>
+    </div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-monk">CC 5:53</span>
+      <span class="cd-pill cd-pill-monk">Yu'lon 5:37</span>
+    </div>
+
+    <div class="cd-cell">Nightchuger (MW Monk)</div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-monk">CC 2:07</span>
+      <span class="cd-pill cd-pill-monk">Yu'lon 1:27</span>
+    </div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-monk">CC 3:46</span>
+      <span class="cd-pill cd-pill-monk">Revival 2:51</span>
+      <span class="cd-pill cd-pill-monk">Yu'lon 4:11</span>
+    </div>
+    <div class="cd-cell">
+      <span class="cd-pill cd-pill-dead">Died 4:32</span>
+    </div>
+  </div>
+
+  <div class="callout info" style="font-size: 12px;">
+    <div class="callout-title">Team Context</div>
+    <div class="callout-body">
+      4-healer comp (2x RSham, 2x MW Monk). Nightchuger died at 4:32 (Bursting Shroom on Bloom #2). From that point, 3 healers had to cover the rest. Brewtote dying at 5:23 left only Thullithnor + Primomonk for Bloom #3 &mdash; the hardest healing window due to accumulated Rotting Pustules stacks. Both Shamans stacking CDs on Bloom #1 (SLT + 2x Ascendance at 2:00-2:25) left no Shaman CDs for Bloom #2.
+    </div>
+  </div>
+</div>
+
+<!-- Cast Profile Comparison -->
+<div class="section">
+  <h2>Cast Profile Comparison</h2>
+  <p style="font-size: 12px; color: var(--dim); margin-bottom: 12px;">
+    Brewtote alive 5:23 (5.38 min) vs Puddle full fight 7:47 (7.78 min). CPM uses alive time for Brewtote.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Brewtote CPM</th><th>Casts</th><th>Puddle CPM</th><th>Casts</th><th>Delta</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight: 600;">Chain Heal</td>
+        <td>14.49</td><td>78</td>
+        <td>21.09</td><td>164</td>
+        <td style="color: var(--red);">-31%</td>
+        <td><span class="badge badge-red">Under-cast</span></td>
+      </tr>
+      <tr>
+        <td style="font-weight: 600;">Riptide</td>
+        <td>7.24</td><td>39</td>
+        <td>10.55</td><td>82</td>
+        <td style="color: var(--red);">-31%</td>
+        <td><span class="badge badge-red">Under-cast</span></td>
+      </tr>
+      <tr>
+        <td>Flame Shock</td>
+        <td>4.46</td><td>24</td>
+        <td>4.37</td><td>34</td>
+        <td style="color: var(--green);">+2%</td>
+        <td><span class="badge badge-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Healing Stream Totem</td>
+        <td>3.71</td><td>20</td>
+        <td>3.60</td><td>28</td>
+        <td style="color: var(--green);">+3%</td>
+        <td><span class="badge badge-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Lava Burst</td>
+        <td>3.53</td><td>19</td>
+        <td>1.29</td><td>10</td>
+        <td style="color: var(--yellow);">+174%</td>
+        <td><span class="badge badge-yellow">Over-cast</span></td>
+      </tr>
+      <tr>
+        <td>Unleash Life</td>
+        <td>1.49</td><td>8</td>
+        <td>3.09</td><td>24</td>
+        <td style="color: var(--red);">-52%</td>
+        <td><span class="badge badge-red">Under-cast</span></td>
+      </tr>
+      <tr>
+        <td>Healing Rain</td>
+        <td>2.04</td><td>11</td>
+        <td>2.32</td><td>18</td>
+        <td style="color: var(--yellow);">-12%</td>
+        <td><span class="badge badge-yellow">Slight deficit</span></td>
+      </tr>
+      <tr>
+        <td>Surging Totem</td>
+        <td>2.04</td><td>11</td>
+        <td>2.32</td><td>18</td>
+        <td style="color: var(--yellow);">-12%</td>
+        <td><span class="badge badge-yellow">Slight deficit</span></td>
+      </tr>
+      <tr>
+        <td>Downpour</td>
+        <td>4.09</td><td>22</td>
+        <td>0.00</td><td>0</td>
+        <td>&mdash;</td>
+        <td><span class="badge badge-yellow">Talent diff</span></td>
+      </tr>
+      <tr>
+        <td>Stormstream Totem</td>
+        <td>1.11</td><td>6</td>
+        <td>1.54</td><td>12</td>
+        <td style="color: var(--yellow);">-28%</td>
+        <td><span class="badge badge-yellow">Under-cast</span></td>
+      </tr>
+      <tr>
+        <td>Nature's Swiftness</td>
+        <td>0.93</td><td>5</td>
+        <td>0.77</td><td>6</td>
+        <td style="color: var(--green);">+21%</td>
+        <td><span class="badge badge-green">Match</span></td>
+      </tr>
+      <tr>
+        <td>Spirit Link Totem</td>
+        <td>0.19</td><td>1</td>
+        <td>0.26</td><td>2</td>
+        <td style="color: var(--yellow);">-27%</td>
+        <td><span class="badge badge-yellow">Missed uses</span></td>
+      </tr>
+      <tr>
+        <td>Ascendance</td>
+        <td>0.19</td><td>1</td>
+        <td>0.26</td><td>2</td>
+        <td style="color: var(--yellow);">-27%</td>
+        <td><span class="badge badge-yellow">Missed uses</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Cast Profile Analysis Cards -->
+<div class="section">
+  <h2>Key Rotation Findings</h2>
+  <div class="two-col">
+    <div class="callout warning">
+      <div class="callout-title">Chain Heal + Riptide Deficit</div>
+      <div class="callout-body">
+        Both core rotational abilities are 31% below reference. Chain Heal is the #1 throughput tool for Resto Shaman &mdash; 14.5 CPM vs Puddle's 21.1 means roughly 86 fewer Chain Heal casts over a full fight. Riptide at 7.2 CPM vs 10.6 means fewer Tidal Waves procs (which buff Chain Heal and Healing Wave). These two gaps compound: fewer Riptides = fewer empowered Chain Heals.
+      </div>
+    </div>
+    <div class="callout info">
+      <div class="callout-title">Lava Burst Over-Use</div>
+      <div class="callout-body">
+        19 Lava Bursts vs Puddle's 10 &mdash; nearly 3x the DPS filler on a per-minute basis. While DPS contribution during low-damage windows is good, the extra Lava Bursts appear to be displacing healing casts. DPS filler should give way to Chain Heal and Riptide during damage windows. The 9 extra Lava Bursts could have been 9 Chain Heals (each hitting 4+ targets).
+      </div>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top: 12px;">
+    <div class="callout warning">
+      <div class="callout-title">Unleash Life Under-Used</div>
+      <div class="callout-body">
+        8 casts vs Puddle's 24 &mdash; 52% below reference on a per-minute basis. Unleash Life amplifies the next heal and spawns Ancestors (Farseer hero talent), making it a core part of the healing rotation. Missing these casts means fewer Ancestor mirrors and less amplified healing throughput.
+      </div>
+    </div>
+    <div class="callout green">
+      <div class="callout-title">Maintenance Abilities On Track</div>
+      <div class="callout-body">
+        Flame Shock (+2%), Healing Stream Totem (+3%), and Nature's Swiftness (+21%) all match or exceed the reference. Downpour (22 casts, 4.09 CPM) is a talent Puddle doesn't run &mdash; it contributed 4.51M effective healing (5.5% of total), so the talent difference accounts for some of the Chain Heal gap.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Healing Breakdown -->
+<div class="section">
+  <h2>Healing Breakdown</h2>
+  <table>
+    <thead>
+      <tr><th>Source</th><th>Brewtote Eff.</th><th>OH%</th><th>OH Bar</th><th>Puddle Eff.</th><th>Puddle OH%</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight: 600;">Chain Heal</td>
+        <td>23.74M</td>
+        <td>17.2%</td>
+        <td><span class="inline-bar" style="width: 34px; background: var(--green);"></span><span class="inline-bar" style="width: 7px; background: var(--red);"></span></td>
+        <td>44.27M</td>
+        <td>10.9%</td>
+      </tr>
+      <tr>
+        <td>Spirit Link</td>
+        <td>11.40M</td>
+        <td>0.0%</td>
+        <td><span class="inline-bar" style="width: 40px; background: var(--green);"></span></td>
+        <td>6.77M</td>
+        <td>0.0%</td>
+      </tr>
+      <tr>
+        <td>Earthliving Weapon</td>
+        <td>8.26M</td>
+        <td>19.1%</td>
+        <td><span class="inline-bar" style="width: 32px; background: var(--green);"></span><span class="inline-bar" style="width: 8px; background: var(--red);"></span></td>
+        <td>12.01M</td>
+        <td>13.5%</td>
+      </tr>
+      <tr>
+        <td>Healing Rain</td>
+        <td>7.37M</td>
+        <td>13.6%</td>
+        <td><span class="inline-bar" style="width: 35px; background: var(--green);"></span><span class="inline-bar" style="width: 5px; background: var(--red);"></span></td>
+        <td>12.60M</td>
+        <td>11.8%</td>
+      </tr>
+      <tr>
+        <td>Healing Stream Totem</td>
+        <td>7.23M</td>
+        <td>12.7%</td>
+        <td><span class="inline-bar" style="width: 35px; background: var(--green);"></span><span class="inline-bar" style="width: 5px; background: var(--red);"></span></td>
+        <td>7.25M</td>
+        <td>8.5%</td>
+      </tr>
+      <tr>
+        <td>Stormstream Totem</td>
+        <td>5.55M</td>
+        <td>16.4%</td>
+        <td><span class="inline-bar" style="width: 33px; background: var(--green);"></span><span class="inline-bar" style="width: 7px; background: var(--red);"></span></td>
+        <td>5.95M</td>
+        <td>9.1%</td>
+      </tr>
+      <tr>
+        <td>Downpour</td>
+        <td>4.51M</td>
+        <td>33.0%</td>
+        <td><span class="inline-bar" style="width: 27px; background: var(--green);"></span><span class="inline-bar" style="width: 13px; background: var(--red);"></span></td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Riptide</td>
+        <td>2.80M</td>
+        <td>26.4%</td>
+        <td><span class="inline-bar" style="width: 29px; background: var(--green);"></span><span class="inline-bar" style="width: 11px; background: var(--red);"></span></td>
+        <td>7.98M</td>
+        <td>19.3%</td>
+      </tr>
+      <tr>
+        <td>Leech</td>
+        <td>2.14M</td>
+        <td>11.0%</td>
+        <td><span class="inline-bar" style="width: 36px; background: var(--green);"></span><span class="inline-bar" style="width: 4px; background: var(--red);"></span></td>
+        <td>3.01M</td>
+        <td>4.3%</td>
+      </tr>
+      <tr>
+        <td>Earth Shield</td>
+        <td>1.54M</td>
+        <td>10.0%</td>
+        <td><span class="inline-bar" style="width: 36px; background: var(--green);"></span><span class="inline-bar" style="width: 4px; background: var(--red);"></span></td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note" style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Brewtote total: 82.4M effective, 15.9% overheal (97.97M raw). Puddle total: 110.4M effective, 11.0% overheal (124.0M raw). Puddle's Chain Heal alone (44.3M) nearly matches Brewtote's total effective healing while alive.
+  </div>
+</div>
+
+<!-- DPS Contribution -->
+<div class="section">
+  <h2>DPS Contribution</h2>
+  <div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-label">DPS (Alive)</div>
+      <div class="stat-value">7,465</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Total Damage</div>
+      <div class="stat-value">2.41M</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Primary Filler</div>
+      <div class="stat-value" style="font-size: 16px;">Lava Burst (1.57M)</div>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--dim);">
+    DPS filler breakdown: Lava Burst 1.57M (65%), Flame Shock 0.66M (27%), misc 0.18M (8%). Brewtote used Lava Burst as the primary DPS filler, which is correct for Resto Shaman. However, the high Lava Burst CPM (3.53 vs Puddle's 1.29) suggests some of these casts displaced healing globals during damage windows.
+  </div>
+</div>
+
+<!-- Death Forensics -->
+<div class="section">
+  <h2>Death Forensics</h2>
+  <div class="callout">
+    <div class="callout-title">Died at 5:23 to Festering Vines &mdash; missed 2:08 (28.4% of fight)</div>
+    <div class="callout-body">
+      Festering Vines at 5:15 created expanding damage circles. Brewtote took overlapping Vines ticks (75K/tick) on top of Rotting Pustules (36-38K/tick) plus melee hits from adds (~22K each). Combined incoming damage exceeded 150K/s from 5:16 onward with no defensive available. Astral Shift was on cooldown. The death cost the raid a healer for Bloom #3.
+    </div>
+  </div>
+
+  <h3>Last 10 Seconds</h3>
+  <div class="death-timeline">
+<span class="dmg">5:14  Rotting Pustules    36,033</span>
+<span class="dmg">5:14  Melee               21,246 x2</span>
+<span class="dmg">5:15  Rotting Pustules    36,033</span>
+<span class="dmg">5:15  Melee               43,249 x2</span>
+<span class="dmg">5:16  Rotting Pustules    38,333</span>
+<span class="dmg">5:16  Festering Vines     75,039 &larr; Vines start</span>
+<span class="dmg">5:17  Rotting Pustules    38,333</span>
+<span class="dmg">5:17  Festering Vines     75,040</span>
+<span class="dmg">5:17  Melee               21,797 x2</span>
+<span class="dmg">5:18  Rotting Pustules    38,333</span>
+<span class="dmg">5:18  Festering Vines     75,039</span>
+<span class="dmg">5:19  Rotting Pustules    38,333</span>
+<span class="dmg">5:19  Festering Vines     75,039</span>
+<span class="dmg">5:20  Rotting Pustules    38,333</span>
+<span class="dmg">5:20  Festering Vines     75,039</span>
+<span class="dmg">5:21  Rotting Pustules    36,032</span>
+<span class="dmg">5:21  Festering Vines     70,537</span>
+<span class="dmg">5:22  Rotting Pustules    36,033</span>
+<span class="dmg">5:22  Festering Vines     70,537</span>
+<span class="dmg">5:23  Rotting Pustules    33,871</span>
+<span class="dmg">5:23  Festering Vines     66,305</span>
+<span class="dead-line">5:23  === DEAD === Festering Vines (8,323 overkill)</span>
+  </div>
+  <div class="callout warning" style="margin-top: 12px; font-size: 12px;">
+    <div class="callout-title">Analysis: Positioning Failure</div>
+    <div class="callout-body">
+      Festering Vines creates damage circles that expand over time. Getting caught in one while already taking Rotting Pustules ticks and melee from adds created an unsurvivable damage intake (~113K/s combined). The fix is positioning: move out of Vines circles immediately. Astral Shift (40% DR) would have bought time but was on cooldown. Consider holding Astral Shift for Festering Vines windows later in the fight when Pustule stacks are high.
+    </div>
+  </div>
+</div>
+
+<!-- Wipe Progression -->
+<div class="section">
+  <h2>Wipe Progression</h2>
+  <p style="font-size: 12px; color: var(--dim); margin-bottom: 12px;">
+    This report has 2 Rotmire kills (fights 4 and 16) with 6 wipes. Brewtote only participated in fights 3 and 4 (the first two pulls). Fight 4 was the kill.
+  </p>
+
+  <div class="chart-container">
+    <div class="bar-chart">
+      <div class="bar-wrapper">
+        <div class="bar-value">53K</div>
+        <div class="bar bar-died" style="height: 21%;" title="Fight 3: 53K HPS, 0:58, 81.4% wipe"></div>
+        <div class="bar-label">F3 Wipe<br>81.4%</div>
+      </div>
+      <div class="bar-wrapper">
+        <div class="bar-value" style="color: var(--accent);">155K</div>
+        <div class="bar bar-kill" style="height: 62%;" title="Fight 4: 155K HPS, 7:31, KILL"></div>
+        <div class="bar-label">F4 KILL</div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--dim);">
+    Fight 3 was a quick 58-second wipe at 81.4%. Fight 4 was the kill at 7:31. Brewtote's HPS jumped from 53K (short wipe, limited healing needed) to 155K on the kill. The remaining 6 fights (11-16) did not include Brewtote in the roster.
+  </div>
+</div>
+
+<!-- Healer Team Ranking -->
+<div class="section">
+  <h2>Healer Team Ranking (Kill Fight)</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Healer</th><th>Spec</th><th>Total Healing</th><th>HPS</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Thullithnor</td>
+        <td style="color: var(--shaman);">Resto Shaman</td>
+        <td>&mdash;</td>
+        <td>191,854</td>
+        <td><span class="badge badge-green">Survived</span></td>
+      </tr>
+      <tr style="background: rgba(0,112,222,0.06);">
+        <td>2</td>
+        <td style="color: var(--shaman); font-weight: 600;">Brewtote</td>
+        <td style="color: var(--shaman);">Resto Shaman</td>
+        <td>82.42M</td>
+        <td>182,644</td>
+        <td><span class="badge badge-red">Died 5:23</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Primomonk</td>
+        <td style="color: #00ff98;">MW Monk</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td><span class="badge badge-red">Died 6:48</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Nightchuger</td>
+        <td style="color: #00ff98;">MW Monk</td>
+        <td>&mdash;</td>
+        <td>&mdash;</td>
+        <td><span class="badge badge-red">Died 4:32</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Rough kill &mdash; 3 of 4 healers died. Nightchuger died at 4:32 to Bursting Shroom (Bloom #2), Brewtote at 5:23 to Festering Vines, Primomonk at 6:48 to Bursting Shroom (Bloom #3). Thullithnor solo-healed the final 43 seconds. With accumulated Rotting Pustules stacks making damage increasingly lethal, healer survival is the critical success factor.
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Items</h2>
+
+  <div class="callout" style="margin-bottom: 12px;">
+    <div class="callout-title">#1 Survive Festering Vines</div>
+    <div class="callout-body">
+      Death at 5:23 cost 28.4% of the fight and left the team with 2 healers for the hardest phase. Festering Vines ticks hit 70-75K each, and combined with Rotting Pustules (36-38K) the damage is unsurvivable without a defensive. <strong>Hold Astral Shift specifically for Vines windows after the 2nd cycle</strong> when Pustule stacks make the overlap lethal. Pre-position to move out of Vines circles before they expand.
+    </div>
+  </div>
+
+  <div class="callout info" style="margin-bottom: 12px;">
+    <div class="callout-title">#2 Increase Chain Heal + Riptide CPM</div>
+    <div class="callout-body">
+      Chain Heal at 14.5 CPM is 31% below Puddle's 21.1, and Riptide at 7.2 is 31% below 10.6. These are the two most important buttons for Resto Shaman throughput. Each missing Riptide also means a missing Tidal Waves proc that would empower the next Chain Heal. <strong>Aim for 18+ Chain Heal CPM and 9+ Riptide CPM</strong>. Reduce Lava Burst casts during damage windows to free up these globals.
+    </div>
+  </div>
+
+  <div class="callout info" style="margin-bottom: 12px;">
+    <div class="callout-title">#3 Deploy CDs With Blooms, Not After</div>
+    <div class="callout-body">
+      Spirit Link Totem fired 13 seconds after Bloom #1 (2:13 vs 2:00). Ascendance fired 25 seconds after (2:25). Both should deploy at the moment Bloom hits (or 1-2 seconds before) to catch the burst damage and Shroom explosions. <strong>Spirit Link Totem at 1:58-2:00, Ascendance at 1:55-2:00</strong>. Reference player Puddle deploys Ascendance at 2:00 exactly.
+    </div>
+  </div>
+
+  <div class="callout info" style="margin-bottom: 12px;">
+    <div class="callout-title">#4 Cast Unleash Life on Cooldown</div>
+    <div class="callout-body">
+      8 casts in 5:23 alive = 1.49 CPM vs Puddle's 3.09. Unleash Life has a ~9s cooldown and amplifies the next heal while spawning Ancestor copies (Farseer hero talent). <strong>This is effectively a free healing amplifier every 9 seconds</strong>. Missing it halves the Ancestor generation and reduces Chain Heal throughput by the amplification amount.
+    </div>
+  </div>
+
+  <div class="callout green">
+    <div class="callout-title">#5 DPS Filler During Downtime (Positive)</div>
+    <div class="callout-body">
+      7,465 DPS with Lava Burst as primary filler is solid. Flame Shock uptime and Lava Burst usage during true downtime windows are correct. The issue is only when DPS filler displaces healing casts during active damage &mdash; reduce Lava Burst during Bloom windows and Festering Vines, maximize it during the quiet gaps between mechanics.
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p><strong>Data source:</strong> Report <code>dkr7abmRJFAzNg1W</code>, Fight 4 (Mythic Rotmire kill, 7:31)</p>
+  <p><strong>Reference:</strong> Puddle (Argent Dawn EU), report <code>ty13FaWX2nVb8CT7</code> fight 16 &mdash; 220,810 HPS, 7:47 kill, 17 talent diffs, ilvl 291.2</p>
+  <p><strong>Other references checked:</strong> Aragrin (14 talent diffs, 290.9 ilvl), Jellybellyx (11 diffs, 288.3 ilvl), Makiko (12 diffs, 291.3 ilvl)</p>
+  <p><strong>Talent notes:</strong> Brewtote runs Downpour (22 casts, 4.51M healing) which Puddle does not talent. This accounts for some cast profile differences. All references use Farseer hero talents.</p>
+  <p style="margin-top: 8px;">Generated by WCL Healer Analyzer &mdash; June 25, 2026</p>
+</div>
+
+</body>
+</html>

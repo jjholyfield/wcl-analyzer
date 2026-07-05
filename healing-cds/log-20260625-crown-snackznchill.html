@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snackznchill - Frost Mage - Crown of the Cosmos Prog Analysis</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --mage: #3fc7eb;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header h1 .player-name { color: var(--mage); }
+.header h1 .spec-badge { font-size: 13px; font-weight: 500; background: rgba(63,199,235,0.15); color: var(--mage); padding: 3px 10px; border-radius: 12px; }
+.prog-tag { display: inline-block; font-size: 11px; font-weight: 700; background: var(--orange); color: #fff; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.header-meta { color: var(--dim); font-size: 14px; margin-top: 6px; }
+.header-meta span { margin-right: 16px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card-label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+section { margin-bottom: 32px; }
+section h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+section h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); color: var(--dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: rgba(88,166,255,0.03); }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; padding: 0; margin: 16px 0; }
+.bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+.bar { width: 100%; border-radius: 3px 3px 0 0; transition: height 0.3s; position: relative; min-height: 2px; }
+.bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-rl; text-orientation: mixed; max-height: 60px; overflow: hidden; }
+.bar-value { font-size: 9px; color: var(--text); margin-bottom: 2px; white-space: nowrap; }
+.bar.survived { background: var(--green); }
+.bar.died { background: var(--red); opacity: 0.8; }
+.bar.died-early { background: var(--orange); }
+.bar.short { background: var(--border); }
+
+.avg-line { position: relative; margin: -180px 0 180px 0; height: 0; border-top: 2px dashed var(--accent); opacity: 0.5; pointer-events: none; }
+
+.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+.badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+.badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
+.badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
+.badge-orange { background: rgba(219,109,40,0.15); color: var(--orange); }
+
+.callout { background: var(--surface); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 12px 0; font-size: 14px; }
+.callout.warning { border-left-color: var(--orange); background: rgba(219,109,40,0.05); }
+.callout.danger { border-left-color: var(--red); background: rgba(248,81,73,0.05); }
+.callout.success { border-left-color: var(--green); background: rgba(63,185,80,0.05); }
+.callout-title { font-weight: 600; margin-bottom: 4px; }
+
+.phase-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+.phase-segment { display: flex; align-items: center; justify-content: center; font-size: 0; }
+
+.ref-table { font-size: 13px; }
+.ref-table td:first-child { font-weight: 500; }
+.highlight-row { background: rgba(188,140,255,0.05); }
+
+.death-timeline { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+.death-entry { display: flex; align-items: center; gap: 12px; font-size: 13px; padding: 6px 12px; background: var(--surface); border-radius: 6px; border-left: 3px solid var(--border); }
+.death-entry.actionable { border-left-color: var(--red); }
+.death-entry.cascade { border-left-color: var(--border); opacity: 0.7; }
+.death-time { font-weight: 600; min-width: 40px; font-family: monospace; }
+.death-fight { color: var(--dim); min-width: 50px; }
+.death-phase { min-width: 90px; }
+.death-ability { flex: 1; }
+.death-order { color: var(--dim); font-size: 11px; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 12px 0; }
+.stat-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; }
+.stat-item .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
+.stat-item .stat-value { font-size: 18px; font-weight: 700; margin-top: 2px; }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--dim); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260625-crown" class="back-link">&larr; June 25, 2026 Log Analysis</a>
+
+<div class="header">
+  <h1>
+    <span class="player-name">Snackznchill</span>
+    <span class="spec-badge">Frost Mage</span>
+    <span class="prog-tag">Progression Night 4</span>
+  </h1>
+  <div class="header-meta">
+    <span>Crown of the Cosmos (Mythic)</span>
+    <span>19 pulls analyzed</span>
+    <span>Deepest: 7:12 (fight 14)</span>
+    <span>June 25, 2026</span>
+    <span>Report: <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">XYtJ3R1qjdFpM4cT</a></span>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Avg DPS</div>
+    <div class="card-value" style="color:var(--mage)">52.4K</div>
+    <div class="card-sub">Across 10 table-valid pulls</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">290</div>
+    <div class="card-sub">Spellslinger hero tree</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value" style="color:var(--red)">0 / 19</div>
+    <div class="card-sub">Died every pull (3 actionable)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value" style="color:var(--green)">63.5K</div>
+    <div class="card-sub">Fight 24, 5:37 duration</div>
+  </div>
+</div>
+
+<!-- Performance Across All Pulls -->
+<section>
+  <h2>Performance Across All Pulls</h2>
+  <p style="font-size:14px;color:var(--dim);margin-bottom:16px;">
+    DPS shown from 10 pulls where WCL table data was available. Snackznchill was present in all 19 usable pulls.
+    Bars colored by outcome: <span style="color:var(--red)">died before wipe</span>.
+    All pulls ended in Snackznchill's death.
+  </p>
+
+  <div style="position:relative;">
+    <div class="bar-chart" id="dps-chart">
+      <!-- Fight 1: 50508 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">50.5K</div>
+        <div class="bar died" style="height:143px;" title="Fight 1: 50,508 DPS (5:00)"></div>
+        <div class="bar-label">F1</div>
+      </div>
+      <!-- Fight 6: 55513 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">55.5K</div>
+        <div class="bar died" style="height:157px;" title="Fight 6: 55,513 DPS (7:03)"></div>
+        <div class="bar-label">F6</div>
+      </div>
+      <!-- Fight 14: 46046 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">46.0K</div>
+        <div class="bar died" style="height:130px;" title="Fight 14: 46,046 DPS (7:12) - deepest pull"></div>
+        <div class="bar-label">F14</div>
+      </div>
+      <!-- Fight 17: 49914 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">49.9K</div>
+        <div class="bar died" style="height:141px;" title="Fight 17: 49,914 DPS (6:58)"></div>
+        <div class="bar-label">F17</div>
+      </div>
+      <!-- Fight 18: 35538 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">35.5K</div>
+        <div class="bar died-early" style="height:100px;" title="Fight 18: 35,538 DPS (5:06) - died 2:33 (actionable)"></div>
+        <div class="bar-label">F18</div>
+      </div>
+      <!-- Fight 23: 55927 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">55.9K</div>
+        <div class="bar died-early" style="height:158px;" title="Fight 23: 55,927 DPS (5:14) - died 2:30 (actionable, 1st to die)"></div>
+        <div class="bar-label">F23</div>
+      </div>
+      <!-- Fight 24: 63474 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">63.5K</div>
+        <div class="bar died" style="height:180px;" title="Fight 24: 63,474 DPS (5:37) - best DPS pull"></div>
+        <div class="bar-label">F24</div>
+      </div>
+      <!-- Fight 26: 54594 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">54.6K</div>
+        <div class="bar died" style="height:155px;" title="Fight 26: 54,594 DPS (6:58)"></div>
+        <div class="bar-label">F26</div>
+      </div>
+      <!-- Fight 27: 52785 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">52.8K</div>
+        <div class="bar died" style="height:150px;" title="Fight 27: 52,785 DPS (5:36)"></div>
+        <div class="bar-label">F27</div>
+      </div>
+      <!-- Fight 28: 59790 -->
+      <div class="bar-wrapper">
+        <div class="bar-value">59.8K</div>
+        <div class="bar died" style="height:169px;" title="Fight 28: 59,790 DPS (6:59)"></div>
+        <div class="bar-label">F28</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-item">
+      <div class="stat-label">Average DPS</div>
+      <div class="stat-value" style="color:var(--mage)">52.4K</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Median DPS</div>
+      <div class="stat-value">54.6K</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Best Pull</div>
+      <div class="stat-value" style="color:var(--green)">63.5K</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Worst Pull</div>
+      <div class="stat-value" style="color:var(--red)">35.5K</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">First Half Avg</div>
+      <div class="stat-value">47.5K</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Second Half Avg</div>
+      <div class="stat-value" style="color:var(--green)">57.3K</div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-title">Positive Session Trend</div>
+    DPS improved 21% from the first half of the session (47.5K) to the second half (57.3K). Snackznchill was clearly learning the fight and improving execution through the night. Best pull (63.5K on fight 24) came in the second half.
+  </div>
+</section>
+
+<!-- Death Pattern Analysis -->
+<section>
+  <h2>Death Pattern Analysis</h2>
+
+  <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">
+    <div class="card">
+      <div class="card-label">Total Deaths</div>
+      <div class="card-value" style="color:var(--red)">19 / 19</div>
+      <div class="card-sub">Died every single pull</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Actionable Deaths</div>
+      <div class="card-value" style="color:var(--orange)">3</div>
+      <div class="card-sub">First 2 to die in pull</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Cascade Deaths</div>
+      <div class="card-value" style="color:var(--dim)">16</div>
+      <div class="card-sub">After 2 already dead</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Death Time</div>
+      <div class="card-value">3:10</div>
+      <div class="card-sub">Relative to pull start</div>
+    </div>
+  </div>
+
+  <h3>Deaths by Phase</h3>
+  <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="stat-item">
+      <div class="stat-label">P1 Deaths</div>
+      <div class="stat-value" style="color:var(--yellow)">9</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Intermission</div>
+      <div class="stat-value" style="color:var(--orange)">2</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">P2 Deaths</div>
+      <div class="stat-value" style="color:var(--red)">4</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">P3 Deaths</div>
+      <div class="stat-value" style="color:var(--red)">4</div>
+    </div>
+  </div>
+
+  <h3>Death Cause Breakdown</h3>
+  <table>
+    <thead>
+      <tr><th>Killing Ability</th><th>Deaths</th><th>Phases</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Unknown (environment/DoT)</td>
+        <td><span class="badge badge-red">7</span></td>
+        <td>P1, P3</td>
+        <td>Likely environment ticks, DoTs, or fall damage finishing off after sustained damage</td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td><span class="badge badge-orange">2</span></td>
+        <td>P2</td>
+        <td>Damage from failing to handle Rift Simulacrum correctly</td>
+      </tr>
+      <tr>
+        <td>Bursting Emptiness</td>
+        <td><span class="badge badge-orange">2</span></td>
+        <td>P1</td>
+        <td>Void Droplet explosion damage</td>
+      </tr>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td><span class="badge badge-yellow">1</span></td>
+        <td>P2</td>
+        <td>DoT from Sentinel adds</td>
+      </tr>
+      <tr>
+        <td>Corrupting Essence</td>
+        <td><span class="badge badge-red">1</span></td>
+        <td>P1</td>
+        <td style="color:var(--red);">ACTIONABLE (2nd death, fight 2, 1:10)</td>
+      </tr>
+      <tr>
+        <td>Void Expulsion</td>
+        <td><span class="badge badge-yellow">1</span></td>
+        <td>P1</td>
+        <td>Sentinel cone attack</td>
+      </tr>
+      <tr>
+        <td>Void Remnants</td>
+        <td><span class="badge badge-yellow">1</span></td>
+        <td>P1</td>
+        <td>Residual void zone damage</td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td><span class="badge badge-yellow">1</span></td>
+        <td>P2</td>
+        <td>Rift phase targeted damage</td>
+      </tr>
+      <tr>
+        <td>Orbiting Matter</td>
+        <td><span class="badge badge-red">1</span></td>
+        <td>Inter</td>
+        <td style="color:var(--red);">ACTIONABLE (2nd death, fight 18, 2:33)</td>
+      </tr>
+      <tr>
+        <td>Silverstrike Arrow</td>
+        <td><span class="badge badge-yellow">1</span></td>
+        <td>P1</td>
+        <td>Alleria targeted shot</td>
+      </tr>
+      <tr>
+        <td>Silverstrike Barrage</td>
+        <td><span class="badge badge-red">1</span></td>
+        <td>Inter</td>
+        <td style="color:var(--red);">ACTIONABLE (1st death, fight 23, 2:30)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Full Death Timeline</h3>
+  <p style="font-size:13px;color:var(--dim);margin-bottom:8px;">
+    Red border = actionable (one of the first 2 deaths in pull). Gray = cascade (pull already compromised).
+  </p>
+  <div class="death-timeline">
+    <div class="death-entry cascade">
+      <span class="death-fight">F1</span>
+      <span class="death-time">4:53</span>
+      <span class="death-phase"><span class="badge badge-purple">P2</span></span>
+      <span class="death-ability">Voidstalker Sting</span>
+      <span class="death-order">#15 to die</span>
+    </div>
+    <div class="death-entry actionable">
+      <span class="death-fight">F2</span>
+      <span class="death-time">1:10</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Corrupting Essence</span>
+      <span class="death-order">#2 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F3</span>
+      <span class="death-time">1:41</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Unknown</span>
+      <span class="death-order">#11 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F5</span>
+      <span class="death-time">1:41</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Void Remnants</span>
+      <span class="death-order">#16 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F6</span>
+      <span class="death-time">5:59</span>
+      <span class="death-phase"><span class="badge badge-red">P3</span></span>
+      <span class="death-ability">Unknown</span>
+      <span class="death-order">#4 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F8</span>
+      <span class="death-time">1:11</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Unknown</span>
+      <span class="death-order">#20 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F12</span>
+      <span class="death-time">1:54</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Bursting Emptiness</span>
+      <span class="death-order">#3 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F13</span>
+      <span class="death-time">1:01</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Void Expulsion</span>
+      <span class="death-order">#6 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F14</span>
+      <span class="death-time">5:44</span>
+      <span class="death-phase"><span class="badge badge-red">P3</span></span>
+      <span class="death-ability">Unknown</span>
+      <span class="death-order">#5 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F17</span>
+      <span class="death-time">4:57</span>
+      <span class="death-phase"><span class="badge badge-purple">P2</span></span>
+      <span class="death-ability">Void Barrage</span>
+      <span class="death-order">#3 to die</span>
+    </div>
+    <div class="death-entry actionable">
+      <span class="death-fight">F18</span>
+      <span class="death-time">2:33</span>
+      <span class="death-phase"><span class="badge badge-orange">Inter</span></span>
+      <span class="death-ability">Orbiting Matter</span>
+      <span class="death-order">#2 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F19</span>
+      <span class="death-time">1:07</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Unknown</span>
+      <span class="death-order">#12 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F21</span>
+      <span class="death-time">1:21</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Silverstrike Arrow</span>
+      <span class="death-order">#14 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F22</span>
+      <span class="death-time">1:06</span>
+      <span class="death-phase"><span class="badge badge-yellow">P1</span></span>
+      <span class="death-ability">Bursting Emptiness</span>
+      <span class="death-order">#6 to die</span>
+    </div>
+    <div class="death-entry actionable">
+      <span class="death-fight">F23</span>
+      <span class="death-time">2:30</span>
+      <span class="death-phase"><span class="badge badge-orange">Inter</span></span>
+      <span class="death-ability">Silverstrike Barrage</span>
+      <span class="death-order">#1 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F24</span>
+      <span class="death-time">5:15</span>
+      <span class="death-phase"><span class="badge badge-purple">P2</span></span>
+      <span class="death-ability">Simulacrum Backlash</span>
+      <span class="death-order">#5 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F26</span>
+      <span class="death-time">5:13</span>
+      <span class="death-phase"><span class="badge badge-red">P3</span></span>
+      <span class="death-ability">Unknown</span>
+      <span class="death-order">#6 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F27</span>
+      <span class="death-time">4:54</span>
+      <span class="death-phase"><span class="badge badge-purple">P2</span></span>
+      <span class="death-ability">Simulacrum Backlash</span>
+      <span class="death-order">#5 to die</span>
+    </div>
+    <div class="death-entry cascade">
+      <span class="death-fight">F28</span>
+      <span class="death-time">5:47</span>
+      <span class="death-phase"><span class="badge badge-red">P3</span></span>
+      <span class="death-ability">Unknown</span>
+      <span class="death-order">#5 to die</span>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Death Pattern Analysis</div>
+    While Snackznchill died in every pull, only <strong>3 of 19 deaths were actionable</strong> (first or second to die). The vast majority (16/19) were cascade deaths after the pull was already compromised. The 9 P1 deaths were all cascade (death order #3 or later), meaning the raid was already falling apart before Snackznchill went down. The actionable deaths were: Corrupting Essence in P1 (fight 2), Orbiting Matter in Intermission (fight 18), and Silverstrike Barrage in Intermission (fight 23, first death of the pull).
+  </div>
+</section>
+
+<!-- Per-Phase Performance Breakdown -->
+<section>
+  <h2>Per-Phase Performance Breakdown</h2>
+  <p style="font-size:14px;color:var(--dim);margin-bottom:16px;">
+    Phase DPS computed from WCL table data with time-range filters. P2 data is the most reliable as it consistently returned entries across all relevant pulls.
+  </p>
+
+  <h3>Phase Reach Rate</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Pulls Reached</th><th>Rate</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>P1: Sentinels (0:00 - 2:14)</td>
+        <td>19 / 19</td>
+        <td>100%</td>
+        <td><span class="badge badge-green">All Pulls</span></td>
+      </tr>
+      <tr>
+        <td>Intermission (2:14 - 2:53)</td>
+        <td>11 / 19</td>
+        <td>58%</td>
+        <td><span class="badge badge-yellow">Moderate</span></td>
+      </tr>
+      <tr>
+        <td>P2: Rift (2:53 - ~5:04)</td>
+        <td>11 / 19</td>
+        <td>58%</td>
+        <td><span class="badge badge-yellow">Moderate</span></td>
+      </tr>
+      <tr>
+        <td>P3: Devouring Cosmos (5:04+)</td>
+        <td>8 / 19</td>
+        <td>42%</td>
+        <td><span class="badge badge-red">Low</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Per-Phase DPS (from pulls where Snackznchill was alive in that phase)</h3>
+  <table>
+    <thead>
+      <tr><th>Phase</th><th>Pulls With Data</th><th>Avg DPS</th><th>Best DPS</th><th>Worst DPS</th><th>Deaths in Phase</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>P2: Rift</td>
+        <td>8</td>
+        <td style="color:var(--mage);font-weight:600;">142.3K</td>
+        <td style="color:var(--green);">169.8K</td>
+        <td style="color:var(--dim);">119.8K</td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td>P3: Cosmos</td>
+        <td>4</td>
+        <td style="color:var(--mage);">11.7K</td>
+        <td style="color:var(--green);">20.1K</td>
+        <td style="color:var(--dim);">0.4K</td>
+        <td>4</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning">
+    <div class="callout-title">P2 is the Strong Phase</div>
+    Snackznchill's P2 DPS is solid at 142.3K average, with a peak of 169.8K on fight 28. This is the "add cleave" phase with Rift Simulacrum and Undying Voidspawn, and Frost Mage's Frozen Orb + Blizzard + Splinterstorm toolkit excels here. P3 DPS drops dramatically (11.7K average) because Snackznchill typically dies early in P3 -- 3 of 4 P3 deaths occurred within the first 45 seconds of P3 starting.
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">P1 DPS Note</div>
+    P1 DPS could not be reliably extracted from the WCL table API for this player (table endpoint returned no entries for Snackznchill during the P1 time window across all pulls). This appears to be an API-specific issue. P1 lasts 2:14 and involves cleaving Sentinels + Void Droplets alongside Alleria. Based on the overall fight DPS and strong P2 numbers, P1 performance is likely in the 40-50K range but cannot be precisely quantified from available data.
+  </div>
+</section>
+
+<!-- Cast Profile (Fight 14 - Deepest Pull) -->
+<section>
+  <h2>Cast Profile &mdash; Fight 14 (7:12, Deepest Pull)</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Casts</th><th>CPM</th><th>Role</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--mage)">Ice Lance</td>
+        <td>111</td>
+        <td>15.4</td>
+        <td>Primary damage (Freezing stack consumer)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--mage)">Frostbolt</td>
+        <td>34</td>
+        <td>4.7</td>
+        <td>Filler / Freezing stack builder</td>
+      </tr>
+      <tr>
+        <td style="color:var(--mage)">Flurry</td>
+        <td>29</td>
+        <td>4.0</td>
+        <td>Brain Freeze consumer</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan)">Glacial Spike</td>
+        <td>10</td>
+        <td>1.4</td>
+        <td>Icicle consumer (high damage)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan)">Frozen Orb</td>
+        <td>9</td>
+        <td>1.2</td>
+        <td>Cooldown (Fingers of Frost generator)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan)">Ray of Frost</td>
+        <td>8</td>
+        <td>1.1</td>
+        <td>Cooldown (Freezing stack builder, 60s CD)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim)">Shimmer</td>
+        <td>11</td>
+        <td>1.5</td>
+        <td>Movement (blink)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim)">Ice Barrier</td>
+        <td>6</td>
+        <td>0.8</td>
+        <td>Defensive absorb shield</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim)">Nullsight</td>
+        <td>4</td>
+        <td>0.6</td>
+        <td>Trinket activation</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim)">Alter Time</td>
+        <td>2</td>
+        <td>0.3</td>
+        <td>Defensive (position reset)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim)">Greater Invisibility</td>
+        <td>2</td>
+        <td>0.3</td>
+        <td>Defensive (damage reduction)</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim)">Potion of Recklessness</td>
+        <td>1</td>
+        <td>0.1</td>
+        <td>Combat potion</td>
+      </tr>
+      <tr>
+        <td style="color:var(--dim)">Silvermoon Health Potion</td>
+        <td>1</td>
+        <td>0.1</td>
+        <td>Health potion</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Proc Management (Fight 14)</h3>
+  <div class="stat-grid">
+    <div class="stat-item">
+      <div class="stat-label">Brain Freeze Procs</div>
+      <div class="stat-value">20</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Fingers of Frost</div>
+      <div class="stat-value">34</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Glacial Spike!</div>
+      <div class="stat-value">10</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Splinterstorm</div>
+      <div class="stat-value">8</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Thermal Void</div>
+      <div class="stat-value">20</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Cast Profile Notes</div>
+    Ice Lance at 15.4 CPM is the dominant cast -- this is expected for Spellslinger Frost which consumes Freezing stacks at 6+ (lower threshold than Frostfire). Brain Freeze (20 procs) to Flurry (29 casts) ratio looks correct -- the extra Flurry casts are filler charges. Frozen Orb usage (9 casts in 7:12) is solid, roughly one per 48 seconds. Ray of Frost at 8 casts (one per 54s) is close to the 60s cooldown, indicating minimal delay. Glacial Spike at 10 uses across 7:12 is within expected range.
+  </div>
+</section>
+
+<!-- Damage Taken Analysis -->
+<section>
+  <h2>Damage Taken &mdash; Fight 14 (7:12)</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Avg per Hit</th><th>Category</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Echoing Darkness</td>
+        <td>1,970K</td>
+        <td>117</td>
+        <td>16.8K</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+      <tr>
+        <td>Simulacrum Backlash</td>
+        <td>1,026K</td>
+        <td>47</td>
+        <td>21.8K</td>
+        <td><span class="badge badge-yellow">Partially Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Void Expulsion</td>
+        <td>799K</td>
+        <td>34</td>
+        <td>23.5K</td>
+        <td><span class="badge badge-yellow">Partially Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Voidstalker Sting</td>
+        <td>778K</td>
+        <td>50</td>
+        <td>15.6K</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+      <tr>
+        <td>Grasp of Emptiness</td>
+        <td>489K</td>
+        <td>10</td>
+        <td>48.9K</td>
+        <td><span class="badge badge-orange">Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Cosmic Barrier</td>
+        <td>465K</td>
+        <td>20</td>
+        <td>23.3K</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+      <tr>
+        <td>Silverstrike Arrow</td>
+        <td>376K</td>
+        <td>2</td>
+        <td>188K</td>
+        <td><span class="badge badge-yellow">Soak/Target</span></td>
+      </tr>
+      <tr>
+        <td>Gravity Collapse</td>
+        <td>360K</td>
+        <td>3</td>
+        <td>120K</td>
+        <td><span class="badge badge-yellow">Partially Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Falling</td>
+        <td>343K</td>
+        <td>2</td>
+        <td>172K</td>
+        <td><span class="badge badge-red">Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Void Barrage</td>
+        <td>294K</td>
+        <td>5</td>
+        <td>58.9K</td>
+        <td><span class="badge badge-yellow">Partially Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Singularity Eruption</td>
+        <td>270K</td>
+        <td>1</td>
+        <td>270K</td>
+        <td><span class="badge badge-orange">Avoidable</span></td>
+      </tr>
+      <tr>
+        <td>Stellar Emission</td>
+        <td>194K</td>
+        <td>15</td>
+        <td>12.9K</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+      <tr>
+        <td>Cosmic Radiation</td>
+        <td>166K</td>
+        <td>15</td>
+        <td>11.1K</td>
+        <td><span class="badge badge-green">Unavoidable</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning">
+    <div class="callout-title">Falling Damage: 343K (2 hits)</div>
+    Taking 343K fall damage across 2 instances on the deepest pull is notable. This is likely from Gravity Collapse knockups or poor Shimmer timing during movement mechanics. Mages have Slow Fall and Shimmer to avoid fall damage entirely. Eliminating this adds survivability during critical moments.
+  </div>
+
+  <div class="callout">
+    <div class="callout-title">Grasp of Emptiness: 489K (10 hits at 48.9K avg)</div>
+    This is avoidable void zone damage. 10 hits suggests standing in void pools too long or getting caught during movement phases. Shimmer (used 11 times this fight) should be used proactively to dodge these.
+  </div>
+</section>
+
+<!-- Consumable & Gear Summary -->
+<section>
+  <h2>Gear &amp; Consumables</h2>
+  <div class="stat-grid">
+    <div class="stat-item">
+      <div class="stat-label">Item Level</div>
+      <div class="stat-value">290</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Intellect</div>
+      <div class="stat-value">2,616</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Crit</div>
+      <div class="stat-value">1,197</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Haste</div>
+      <div class="stat-value">501</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Mastery</div>
+      <div class="stat-value">1,000</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Versatility</div>
+      <div class="stat-value" style="color:var(--red)">0</div>
+    </div>
+  </div>
+
+  <h3>Consumables Active</h3>
+  <table>
+    <thead>
+      <tr><th>Consumable</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Flask of the Magisters</td><td><span class="badge badge-green">Active</span></td></tr>
+      <tr><td>Hearty Well Fed</td><td><span class="badge badge-green">Active</span></td></tr>
+      <tr><td>Vantus Rune: Crown of the Cosmos</td><td><span class="badge badge-green">Active</span></td></tr>
+      <tr><td>Potion of Recklessness</td><td><span class="badge badge-green">Used</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Defensive Usage (Fight 14)</h3>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Uses</th><th>Avg Interval</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Ice Barrier</td>
+        <td>6</td>
+        <td>~72s</td>
+        <td>Absorb shield, good upkeep</td>
+      </tr>
+      <tr>
+        <td>Shimmer</td>
+        <td>11</td>
+        <td>~39s</td>
+        <td>Movement/dodge, healthy usage</td>
+      </tr>
+      <tr>
+        <td>Alter Time</td>
+        <td>2</td>
+        <td>-</td>
+        <td>Could use more aggressively for dangerous mechanics</td>
+      </tr>
+      <tr>
+        <td>Greater Invisibility</td>
+        <td>2</td>
+        <td>-</td>
+        <td>60% damage reduction, used twice (2min CD)</td>
+      </tr>
+      <tr>
+        <td>Health Potion</td>
+        <td>1</td>
+        <td>-</td>
+        <td>Emergency heal used</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-title">Versatility = 0</div>
+    Zero versatility means zero passive damage reduction. This makes Snackznchill more fragile than average -- every avoidable hit hurts proportionally more. Not necessarily a gearing problem (Frost Mage typically prioritizes Crit > Haste > Mastery) but worth noting for survivability context. The high crit (1,197) and mastery (1,000) are correct for Spellslinger Frost.
+  </div>
+</section>
+
+<!-- Reference Comparison -->
+<section>
+  <h2>Reference Comparison (De-emphasized)</h2>
+  <p style="font-size:14px;color:var(--dim);margin-bottom:16px;">
+    Top-ranked Frost Mages on Mythic Crown of the Cosmos, filtered to 4-healer comps (matching raid composition). US/EU regions only. These are KILL references -- ceiling to aim for, not a direct comparison to prog pulls.
+  </p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>Player</th><th>Server</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Healers</th></tr>
+    </thead>
+    <tbody>
+      <tr class="highlight-row">
+        <td style="color:var(--mage)">Snackznchill</td>
+        <td>Sargeras</td>
+        <td>52.4K avg</td>
+        <td>N/A (prog)</td>
+        <td>290</td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple)">Asimage</td>
+        <td>Proudmoore</td>
+        <td>108.2K</td>
+        <td>9:05</td>
+        <td>290</td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple)">Feriblastv</td>
+        <td>Tarren Mill</td>
+        <td>106.9K</td>
+        <td>8:30</td>
+        <td>289</td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple)">Zoltanimus</td>
+        <td>Emerald Dream</td>
+        <td>106.7K</td>
+        <td>7:57</td>
+        <td>289</td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple)">Yrsngrtrd</td>
+        <td>Drak'thul</td>
+        <td>105.6K</td>
+        <td>7:35</td>
+        <td>291</td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple)">Envimage</td>
+        <td>Stormreaver</td>
+        <td>104.3K</td>
+        <td>8:50</td>
+        <td>291</td>
+        <td>4</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-title">Context: Prog vs Kill DPS</div>
+    Reference players averaged <strong>106.3K DPS</strong> on kill fights lasting 7:35 to 9:05 at similar item levels (289-291). Snackznchill's best pull of <strong>63.5K</strong> (fight 24, 5:37) represents ~60% of the kill reference ceiling. However, this comparison is heavily skewed: kill pulls have full raid uptime with no deaths, execute phase damage, and fully planned cooldown usage. During prog with the raid losing players constantly, individual DPS is naturally suppressed. The gap will close significantly once the team reaches clean kill pulls. With only 3 talent differences from the top-ranked Asimage, the build is not the issue.
+  </div>
+</section>
+
+<!-- Consistency Analysis -->
+<section>
+  <h2>Consistency Analysis</h2>
+
+  <h3>Session Trend</h3>
+  <table>
+    <thead>
+      <tr><th>Segment</th><th>Fights</th><th>Avg DPS</th><th>Trend</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>First Half (fights 1-18)</td>
+        <td>F1, F6, F14, F17, F18</td>
+        <td>47.5K</td>
+        <td><span class="badge badge-yellow">Baseline</span></td>
+      </tr>
+      <tr>
+        <td>Second Half (fights 23-28)</td>
+        <td>F23, F24, F26, F27, F28</td>
+        <td>57.3K</td>
+        <td><span class="badge badge-green">+21%</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>DPS by Pull Duration</h3>
+  <table>
+    <thead>
+      <tr><th>Fight</th><th>Duration</th><th>DPS</th><th>Phases Reached</th><th>Death Time</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Fight 14 (deepest)</td>
+        <td>7:12</td>
+        <td>46.0K</td>
+        <td>P1, Inter, P2, P3</td>
+        <td>5:44 (P3)</td>
+      </tr>
+      <tr>
+        <td>Fight 6</td>
+        <td>7:03</td>
+        <td>55.5K</td>
+        <td>P1, Inter, P2, P3</td>
+        <td>5:59 (P3)</td>
+      </tr>
+      <tr>
+        <td>Fight 28</td>
+        <td>6:59</td>
+        <td>59.8K</td>
+        <td>P1, Inter, P2, P3</td>
+        <td>5:47 (P3)</td>
+      </tr>
+      <tr>
+        <td>Fight 17</td>
+        <td>6:58</td>
+        <td>49.9K</td>
+        <td>P1, Inter, P2, P3</td>
+        <td>4:57 (P2)</td>
+      </tr>
+      <tr>
+        <td>Fight 26</td>
+        <td>6:58</td>
+        <td>54.6K</td>
+        <td>P1, Inter, P2, P3</td>
+        <td>5:13 (P3)</td>
+      </tr>
+      <tr>
+        <td>Fight 24</td>
+        <td>5:37</td>
+        <td style="color:var(--green);font-weight:600;">63.5K</td>
+        <td>P1, Inter, P2, P3</td>
+        <td>5:15 (P2)</td>
+      </tr>
+      <tr>
+        <td>Fight 27</td>
+        <td>5:36</td>
+        <td>52.8K</td>
+        <td>P1, Inter, P2, P3</td>
+        <td>4:54 (P2)</td>
+      </tr>
+      <tr>
+        <td>Fight 23</td>
+        <td>5:14</td>
+        <td>55.9K</td>
+        <td>P1, Inter, P2</td>
+        <td>2:30 (Inter)</td>
+      </tr>
+      <tr>
+        <td>Fight 18</td>
+        <td>5:06</td>
+        <td style="color:var(--red);">35.5K</td>
+        <td>P1, Inter, P2</td>
+        <td>2:33 (Inter)</td>
+      </tr>
+      <tr>
+        <td>Fight 1</td>
+        <td>5:00</td>
+        <td>50.5K</td>
+        <td>P1, Inter, P2</td>
+        <td>4:53 (P2)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-title">Fight 18 Outlier</div>
+    Fight 18's 35.5K DPS is the clear low point -- Snackznchill died at 2:33 (Intermission) as the 2nd raid death, cutting the pull short for their personal damage output. This was one of only 3 actionable deaths. Without this outlier, the average jumps to 54.3K.
+  </div>
+</section>
+
+<!-- Actionable Improvements -->
+<section>
+  <h2>Actionable Items</h2>
+
+  <div class="callout warning" style="margin-bottom:16px;">
+    <div class="callout-title">1. Intermission Survival (Highest Priority)</div>
+    <strong>Issue:</strong> 2 of 3 actionable deaths occurred during the Intermission phase (Orbiting Matter on fight 18, Silverstrike Barrage on fight 23). The Intermission is a pure survival check with Stellar Emission channel + Silverstrike Barrage -- no DPS required.<br><br>
+    <strong>Fix:</strong> Pre-cast Ice Barrier before Silversunder Catastrophe ends. Save Greater Invisibility for Silverstrike Barrage if it targets nearby. Use Alter Time to snapshot safe position before the Intermission begins. Shimmer away from Orbiting Matter immediately. The Intermission only lasts 39 seconds -- burning all defensives here is fine because they'll be back up for P2.<br><br>
+    <strong>Impact:</strong> Eliminates 2 of 3 actionable deaths. This is the single biggest survivability improvement available.
+  </div>
+
+  <div class="callout warning" style="margin-bottom:16px;">
+    <div class="callout-title">2. Eliminate Fall Damage</div>
+    <strong>Issue:</strong> 343K fall damage across 2 hits on the deepest pull (fight 14). Mages have Slow Fall and Shimmer to prevent all fall damage.<br><br>
+    <strong>Fix:</strong> Macro Slow Fall to a keybind and use it during Gravity Collapse knockups. Alternatively, Shimmer mid-air to reset momentum. This is free damage prevention.<br><br>
+    <strong>Impact:</strong> 343K damage removed from the deepest pull. At 23.6K max HP, that's over 14x HP worth of avoidable damage over the fight.
+  </div>
+
+  <div class="callout" style="margin-bottom:16px;">
+    <div class="callout-title">3. Reduce Grasp of Emptiness Hits</div>
+    <strong>Issue:</strong> 10 hits of Grasp of Emptiness at 48.9K average on fight 14. This is avoidable void zone damage.<br><br>
+    <strong>Fix:</strong> Pre-position for void zones. Use Shimmer reactively when caught. With 11 Shimmers already used in fight 14, the charges are being spent -- the issue is timing, not usage rate. Prioritize Shimmer for Grasp over general repositioning.<br><br>
+    <strong>Impact:</strong> Reducing from 10 hits to 3-4 saves ~300K damage intake.
+  </div>
+
+  <div class="callout success" style="margin-bottom:16px;">
+    <div class="callout-title">4. Session Improvement Trend is Strong</div>
+    <strong>Positive:</strong> DPS improved 21% from first half to second half of the session. Best pull (63.5K) came on fight 24 in the second half. This demonstrates clear learning and adaptation through the night. The fight is getting more comfortable with each pull.<br><br>
+    <strong>Continue:</strong> The improvement trajectory is healthy. Focus on the survival items above -- once the raid consistently reaches P3 with all 20 alive, DPS will naturally rise from less healer stress and better CD planning.
+  </div>
+
+  <div class="callout" style="margin-bottom:16px;">
+    <div class="callout-title">5. P3 Execution (Future Focus)</div>
+    <strong>Issue:</strong> P3 DPS averages only 11.7K with Snackznchill dying early in P3 on 3 of 4 pulls that reached it. The team hasn't had enough clean P3 practice to build muscle memory.<br><br>
+    <strong>Fix:</strong> P3 (Devouring Cosmos) is an everything-overlaps phase. Save Alter Time + Greater Invisibility for P3 specifically. Consider holding a Frozen Orb + Icy Veins for P3 entry to push damage while the phase is fresh and raid is still alive.<br><br>
+    <strong>Impact:</strong> This becomes relevant once the team is consistently reaching P3 with 18+ alive. For now, clean P1/Intermission transitions are the priority.
+  </div>
+</section>
+
+<!-- Context Footer -->
+<section>
+  <h2>Summary</h2>
+
+  <div class="callout success">
+    <div class="callout-title">What's Working</div>
+    <ul style="margin-top:8px;padding-left:20px;">
+      <li>Strong P2 performance (142K avg DPS) -- Frost Mage excels at the Rift Simulacrum cleave phase</li>
+      <li>Healthy session improvement trend (+21% first half to second half)</li>
+      <li>Only 3 talent differences from the #1 ranked Frost Mage -- build is solid</li>
+      <li>Consumables fully prepared (flask, food, vantus rune, potion)</li>
+      <li>Frozen Orb and Ray of Frost usage is close to cooldown-efficient (minimal waste)</li>
+      <li>Low actionable death rate (3/19) -- Snackznchill is not causing wipes</li>
+    </ul>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-title">Priority List for Night 5</div>
+    <ol style="margin-top:8px;padding-left:20px;">
+      <li><strong>Survive Intermission</strong> -- pre-barrier, save GI for Barrage, Alter Time safe position</li>
+      <li><strong>Zero fall damage</strong> -- Slow Fall macro, Shimmer mid-air</li>
+      <li><strong>Reduce Grasp of Emptiness</strong> -- prioritize Shimmer for void zones</li>
+      <li><strong>Plan P3 defensives</strong> -- save major defensives for P3 entry</li>
+    </ol>
+  </div>
+
+  <p style="color:var(--dim);font-size:14px;margin-top:16px;">
+    The DPS gap to reference kills (~106K) is primarily a function of progression: deaths, movement learning, and raid state. With identical item level and near-identical talents to the top-ranked players, the gap is <strong>execution and prog familiarity</strong>, not build or gear. Once the team cleans up P1 and Intermission deaths and reaches P3 consistently with the raid alive, individual DPS will converge toward reference numbers.
+  </p>
+</section>
+
+<div class="footer">
+  <p>Generated by WCL Analyzer | Data from <a href="https://www.warcraftlogs.com/reports/XYtJ3R1qjdFpM4cT" target="_blank">Warcraft Logs report XYtJ3R1qjdFpM4cT</a></p>
+  <p>Reference players: Asimage-Proudmoore, Feriblastv-Tarren Mill, Zoltanimus-Emerald Dream, Yrsngrtrd-Drak'thul, Envimage-Stormreaver (4-heal comp matched, US/EU only)</p>
+  <p>Analysis mode: PROG (no kill) | 3 talent differences from primary reference | Phase boundaries from encounter markers</p>
+</div>
+
+</body>
+</html>

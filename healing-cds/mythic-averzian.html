@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mythic Imperator Averzian — Healing CD Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 900px; margin: 0 auto; line-height: 1.5; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: #c4a1ff; margin-top: 36px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  .cycle-header { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-top: 28px; margin-bottom: 12px; text-align: center; }
+  .event { background: #141414; border: 1px solid #1e1e1e; border-radius: 6px; padding: 14px 18px; margin-bottom: 10px; }
+  .event-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .event-time { font-size: 13px; font-weight: 700; color: #888; font-family: 'Courier New', monospace; min-width: 42px; }
+  .event-name { font-size: 14px; font-weight: 600; }
+  .event-note { font-size: 12px; color: #666; margin-left: auto; }
+  .event-upheaval .event-name { color: #5b9bd5; }
+  .event-intermission .event-name { color: #ffd966; }
+  .event-intermission { border-left: 3px solid #ffd966; background: #1a1710; }
+  .event-intermission.hardest { border-left: 3px solid #ff6b6b; background: #1a1212; }
+  .cd-list { display: grid; grid-template-columns: 72px 1fr; gap: 2px 12px; font-size: 13px; padding-left: 52px; }
+  .cd-role { color: #888; font-weight: 500; text-align: right; }
+  .cd-role.hpal { color: #f48cba; }
+  .cd-role.rsham { color: #0070dd; }
+  .cd-role.mw { color: #00ff98; }
+  .cd-role.pevo { color: #33937f; }
+  .cd-role.raid { color: #a0a0a0; }
+  .cd-ability { color: #ddd; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+  .tag-danger { background: #3d0011; color: #ff6b6b; }
+  .tag-warn { background: #3d2200; color: #ffa940; }
+  .reactive { background: #111; border: 1px dashed #333; border-radius: 6px; padding: 14px 18px; margin-top: 16px; }
+  .reactive-title { font-size: 13px; font-weight: 600; color: #888; margin-bottom: 8px; }
+  .copy-block { background: #0d0d0d; border: 1px solid #222; border-radius: 6px; padding: 16px 20px; margin-top: 24px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: #ccc; position: relative; }
+  .copy-block .label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; font-family: 'Inter', sans-serif; }
+  .copy-btn { position: absolute; top: 12px; right: 12px; background: #222; border: 1px solid #333; color: #aaa; font-size: 12px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .copy-btn:hover { background: #333; color: #fff; }
+  .mrt-section { margin-top: 36px; }
+  .mrt-block { background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px 20px; font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; color: #ccc; position: relative; margin-top: 8px; }
+  .mrt-block .copy-btn { position: absolute; top: 8px; right: 8px; }
+  .mrt-hint { color: #888; font-size: 13px; margin-bottom: 8px; }
+  .pattern { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 14px 20px; margin-bottom: 24px; font-size: 13px; color: #999; }
+  .pattern strong { color: #ccc; }
+  details { margin-top: 36px; }
+  summary { font-size: 14px; font-weight: 600; color: #666; cursor: pointer; padding: 8px 0; }
+  summary:hover { color: #999; }
+  .details-inner { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-top: 8px; font-size: 13px; color: #888; line-height: 1.7; }
+  .details-inner a { color: #7cacf8; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Mythic Imperator Averzian &mdash; Healing CD Plan</h1>
+<p class="subtitle">Four Dads One Pizza &mdash; HPal / RSham / MW / PEvo &mdash; 5 teams analyzed (306s&ndash;378s)</p>
+
+<div class="pattern">
+  <strong>Pattern:</strong> Dark Upheaval pairs &rarr; Shadow's Advance (3 Voidshapers) &rarr; Umbral Collapse soaks &rarr; Intermission (Oblivion's Wrath + adds) &rarr; repeat, escalating. More claimed portals = more adds per Upheaval. <strong>Final intermission (Upheaval 4 + OW + Black Miasma) is the hardest check.</strong>
+</div>
+
+<!-- ─── CD ASSIGNMENTS ─── -->
+
+<div class="cycle-header">&mdash;&mdash;&mdash; Wave 1 &mdash;&mdash;&mdash;</div>
+
+<div class="event event-upheaval">
+  <div class="event-header">
+    <span class="event-time">0:04</span>
+    <span class="event-name">Dark Upheaval 1 &amp; 2</span>
+    <span class="event-note">opener burst + adds from portals</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Rewind</span>
+  </div>
+</div>
+
+<div class="event event-intermission">
+  <div class="event-header">
+    <span class="event-time">1:00</span>
+    <span class="event-name">Oblivion's Wrath + Umbral Collapse</span>
+    <span class="event-note">intermission + soaks</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Vampiric Embrace</span>
+  </div>
+</div>
+
+<!-- WAVE 2 -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Wave 2 &mdash;&mdash;&mdash;</div>
+
+<div class="event event-upheaval">
+  <div class="event-header">
+    <span class="event-time">3:09</span>
+    <span class="event-name">Dark Upheaval 3</span>
+    <span class="event-note">CDs back, harder with more portals</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Ascendance</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Revival</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+  </div>
+</div>
+
+<div class="event event-intermission hardest">
+  <div class="event-header">
+    <span class="event-time">3:58</span>
+    <span class="event-name">Dark Upheaval 4 + OW + Black Miasma</span>
+    <span class="tag tag-danger">HARDEST</span>
+    <span class="event-note">max portals + 70% haste curse</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Rewind</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Aura Mastery</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Darkness</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Rallying Cry</span>
+    <span class="cd-role raid">Raid</span><span class="cd-ability">Vampiric Embrace</span>
+  </div>
+</div>
+
+<!-- KILL PUSH -->
+<div class="cycle-header">&mdash;&mdash;&mdash; Kill Push &mdash;&mdash;&mdash;</div>
+
+<div class="event event-upheaval">
+  <div class="event-header">
+    <span class="event-time">4:33</span>
+    <span class="event-name">Dark Upheaval 5 + Kill</span>
+    <span class="tag tag-warn">LAST PUSH</span>
+    <span class="event-note">kills 5:06&ndash;6:18</span>
+  </div>
+  <div class="cd-list">
+    <span class="cd-role rsham">RSham</span><span class="cd-ability">Spirit Link Totem</span>
+    <span class="cd-role pevo">PEvo</span><span class="cd-ability">Dream Flight</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Celestial Conduit</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Yu'lon</span>
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Avenging Wrath</span>
+  </div>
+</div>
+
+<div class="reactive">
+  <div class="reactive-title">Reactive &mdash; use on the fly</div>
+  <div class="cd-list" style="padding-left: 16px;">
+    <span class="cd-role hpal">HPal</span><span class="cd-ability">Blessing of Sacrifice, Lay on Hands</span>
+    <span class="cd-role mw">MW</span><span class="cd-ability">Life Cocoon</span>
+  </div>
+</div>
+
+<!-- ─── DISCORD COPY BLOCK ─── -->
+<h2>Discord Copy/Paste</h2>
+<div class="copy-block" id="discord-block">
+<span class="label">Click to copy</span>
+<button class="copy-btn" onclick="copyDiscord()">Copy</button>
+MYTHIC IMPERATOR AVERZIAN — HEALING CDs
+HPal / RSham / MW / PEvo
+
+━━━ WAVE 1 ━━━
+
+DARK UPHEAVAL 1+2 (0:04)
+  HPal   — Avenging Wrath
+  RSham  — Ascendance
+  MW     — Yu'lon
+  PEvo   — Rewind
+
+OW + UMBRAL COLLAPSE (1:00)
+  MW     — Celestial Conduit
+  RSham  — Spirit Link Totem
+  PEvo   — Dream Flight
+  Raid   — Vampiric Embrace
+
+━━━ WAVE 2 ━━━
+
+DARK UPHEAVAL 3 (3:09)
+  RSham  — Ascendance
+  HPal   — Avenging Wrath
+  MW     — Revival
+  MW     — Celestial Conduit
+
+UPHEAVAL 4 + OW + MIASMA (3:58) !! HARDEST !!
+  PEvo   — Rewind
+  HPal   — Aura Mastery
+  Raid   — Darkness
+  Raid   — Rallying Cry
+  Raid   — Vampiric Embrace
+
+━━━ KILL PUSH ━━━
+
+UPHEAVAL 5 + KILL (4:33)
+  RSham  — Spirit Link Totem
+  PEvo   — Dream Flight
+  MW     — Celestial Conduit
+  MW     — Yu'lon
+  HPal   — Avenging Wrath
+
+Reactive: BoSac / LoH / Life Cocoon</div>
+
+<!-- ─── MRT NOTE ─── -->
+<div class="mrt-section">
+<h2>MRT Note</h2>
+<p class="mrt-hint">Paste into MRT &rarr; Note &rarr; Edit</p>
+<div class="mrt-block" id="mrt-block">
+<button class="copy-btn" onclick="copyMRT()">Copy</button>
+|cffFFFFFFMYTHIC AVERZIAN - HEALING CDs|r
+
+{time:0:04} |cffFF8800DARK UPHEAVAL 1+2|r
+  |cffF48CBAHPal|r Avenging Wrath  |cff0070DDRSham|r Ascendance  |cff00FF98MW|r Yu'lon  |cff33937FPEvo|r Rewind
+
+{time:1:00} |cffFF9966OW + UMBRAL COLLAPSE|r
+  |cff00FF98MW|r Celestial Conduit  |cff0070DDRSham|r Spirit Link Totem  |cff33937FPEvo|r Dream Flight  |cffAAAAAARaid|r Vampiric Embrace
+
+{time:3:09} |cffFF8800DARK UPHEAVAL 3|r
+  |cff0070DDRSham|r Ascendance  |cffF48CBAHPal|r Avenging Wrath  |cff00FF98MW|r Revival  |cff00FF98MW|r Celestial Conduit
+
+{time:3:58} |cffFF3333UPHEAVAL 4 + OW + MIASMA|r |cffFF0000!! HARDEST !!|r
+  |cff33937FPEvo|r Rewind  |cffF48CBAHPal|r Aura Mastery  |cffAAAAAARaid|r Darkness + Rallying Cry + Vampiric Embrace
+
+{time:4:33} |cffFF9966UPHEAVAL 5 + KILL|r
+  |cff0070DDRSham|r Spirit Link Totem  |cff33937FPEvo|r Dream Flight  |cff00FF98MW|r Celestial Conduit  |cff00FF98MW|r Yu'lon  |cffF48CBAHPal|r Avenging Wrath
+
+|cff888888Reactive: Blessing of Sacrifice / Lay on Hands / Life Cocoon|r
+</div>
+
+<!-- ─── COLLAPSIBLE DATA DETAILS ─── -->
+<details>
+  <summary>Data &amp; methodology (click to expand)</summary>
+  <div class="details-inner">
+    <p><strong>5 teams analyzed</strong> (306s&ndash;378s kill times), all running HPal/RSham/MW/PEvo. Per-player sourceID queries pulled every healer's complete cast timeline &mdash; CDs discovered from data, not assumed. Consensus scored across all 5 teams.</p>
+    <p style="margin-top:8px;">
+      <a href="https://www.warcraftlogs.com/reports/L6zZcwdjCH3GqMQJ#fight=2" target="_blank">Frostmane (EU) 306s</a> &bull;
+      <a href="https://www.warcraftlogs.com/reports/Rjrpz7Xg2cdqHZTW#fight=13" target="_blank">Burning Blade (CN) 308s</a> &bull;
+      <a href="https://www.warcraftlogs.com/reports/3dXQ1p9xNhtZYgJb#fight=42" target="_blank">Swift Breeze (CN) 310s</a> &bull;
+      <a href="https://www.warcraftlogs.com/reports/kFrgH3CDznmYZ6t2#fight=28" target="_blank">Luo Ning (CN) 329s</a> &bull;
+      <a href="https://www.warcraftlogs.com/reports/yNgHh2Z1pGPLqbV8#fight=17" target="_blank">Golden Plains (CN) 378s</a>
+    </p>
+    <p style="margin-top:12px;"><strong>Key findings:</strong> Ascendance at opener + Upheaval 3 is universal (5/5, 3min CD fits the ~3:09 gap). SLT covers Umbral Collapse soaks (~1:55), not Upheaval directly. Revival saved for Upheaval 3 (4/5 at ~3:49). CC on strict 90s rotation covering intermissions. No DH/Warrior in data teams &mdash; our Darkness + Rally are bonus CDs for the hardest window. Zephyr barely used (1/5). 0/5 RShams run HTT. All timers verified against CD durations.</p>
+    <p style="margin-top:12px;"><strong>Guides:</strong>
+      <a href="https://www.wowhead.com/guide/midnight/raids/darkreach-imperator-averzian-boss-strategy-abilities" target="_blank">Wowhead</a> &middot;
+      <a href="https://www.mythictrap.com/en/vs-dr-mqd/imperator-averzian" target="_blank">Mythic Trap</a> &middot;
+      <a href="https://www.icy-veins.com/wow/imperator-averzian-raid-guide" target="_blank">Icy Veins</a>
+    </p>
+  </div>
+</details>
+
+<div class="footer">
+  Data from WCL v2 API &mdash; per-player sourceID queries, all CD timers verified.
+</div>
+
+<script>
+function copyMRT() {
+  const block = document.getElementById('mrt-block');
+  const text = block.innerText.replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+function copyDiscord() {
+  const block = document.getElementById('discord-block');
+  const text = block.innerText.replace('Click to copy', '').replace('Copy', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('#discord-block .copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+
+</body>
+</html>

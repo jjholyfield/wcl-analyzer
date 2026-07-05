@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crown of the Cosmos &mdash; P2 Simulacrum Damage Analysis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; padding: 32px; max-width: 1100px; margin: 0 auto; line-height: 1.5; }
+  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 32px; }
+  .subtitle a { color: var(--accent); text-decoration: none; }
+  .subtitle a:hover { text-decoration: underline; }
+  h2 { font-size: 18px; font-weight: 600; color: var(--accent); margin-top: 36px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  h3 { font-size: 15px; font-weight: 600; color: var(--purple); margin-top: 24px; margin-bottom: 8px; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .summary-card { background: var(--surface); border-radius: 8px; padding: 14px; text-align: center; border: 1px solid var(--border); }
+  .summary-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .summary-value { font-size: 24px; font-weight: 700; color: #fff; }
+  .summary-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+  .val-red { color: var(--red); }
+  .val-green { color: var(--green); }
+  .val-yellow { color: var(--yellow); }
+  .val-orange { color: var(--orange); }
+  .val-accent { color: var(--accent); }
+  .val-purple { color: var(--purple); }
+  .val-cyan { color: var(--cyan); }
+
+  .delta-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-bottom: 16px; }
+  .delta-card.highlight { border-color: var(--red); background: rgba(248, 81, 73, 0.05); }
+  .delta-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .delta-ability { font-size: 15px; font-weight: 600; color: #fff; min-width: 200px; }
+  .delta-stat { font-size: 13px; color: var(--dim); }
+  .delta-stat strong { color: var(--text); }
+  .delta-pct { font-size: 20px; font-weight: 700; margin-left: auto; }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); font-weight: 600; }
+  td { padding: 8px 10px; border-bottom: 1px solid rgba(48,54,61,0.5); }
+  tr:hover td { background: rgba(88,166,255,0.03); }
+  tr.ref-row td { background: rgba(63,185,80,0.06); border-top: 2px solid var(--green); font-weight: 500; }
+  tr.ref-row:hover td { background: rgba(63,185,80,0.1); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: 'Inter', monospace; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tag-red { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .tag-green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .tag-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+  .tag-dim { background: rgba(139,148,158,0.15); color: var(--dim); border: 1px solid rgba(139,148,158,0.3); }
+
+  .chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+  .chart-title { font-size: 13px; font-weight: 600; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .chart-legend { display: flex; gap: 20px; margin-top: 12px; font-size: 12px; color: var(--dim); }
+  .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+
+  .insight-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin: 16px 0; }
+  .insight-box.warning { border-color: var(--orange); background: rgba(219,109,40,0.05); }
+  .insight-box.success { border-color: var(--green); background: rgba(63,185,80,0.05); }
+  .insight-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .insight-text { font-size: 13px; color: var(--dim); line-height: 1.6; }
+  .insight-text strong { color: var(--text); }
+
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); text-align: center; }
+  .footer a { color: var(--dim); text-decoration: none; }
+
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .delta-row { flex-direction: column; align-items: flex-start; }
+    .delta-pct { margin-left: 0; }
+    table { font-size: 11px; }
+    th, td { padding: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<p class="subtitle"><a href="/raid/log-20260623-crown">&larr; Back to Crown of the Cosmos overview</a></p>
+<h1>Crown of the Cosmos &mdash; P2 Simulacrum Damage Analysis</h1>
+<p class="subtitle">
+  Report <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a>
+  &mdash; 20 prog pulls, 14 reached P2 &mdash; vs. 5 top-ranked Mythic kills
+</p>
+
+<!-- ── Summary Cards ── -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="summary-label">Our Avg Sim DTPS</div>
+    <div class="summary-value val-red">421K</div>
+    <div class="summary-sub">Backlash + Barrier combined</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Reference Avg Sim DTPS</div>
+    <div class="summary-value val-green">332K</div>
+    <div class="summary-sub">5 top Mythic kills</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Delta</div>
+    <div class="summary-value val-orange">+27%</div>
+    <div class="summary-sub">More Simulacrum damage taken</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-label">Cosmic Barrier Delta</div>
+    <div class="summary-value val-red">+226%</div>
+    <div class="summary-sub">3.3x reference rate</div>
+  </div>
+</div>
+
+<!-- ── Ability Breakdown ── -->
+<h2>Ability Breakdown &mdash; Us vs. Reference</h2>
+
+<div class="delta-card highlight">
+  <div class="delta-row">
+    <span class="delta-ability">Cosmic Barrier</span>
+    <span class="delta-stat">Us: <strong>250K DTPS</strong></span>
+    <span class="delta-stat">Ref: <strong>77K DTPS</strong></span>
+    <span class="delta-pct val-red">+226%</span>
+  </div>
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Cosmic Barrier pulses raid-wide damage while the shield is active on Rift Simulacrums.
+    Our rate is <strong style="color: var(--red);">3.3x higher</strong> than reference kills, indicating the barrier is staying up far too long.
+    Reference raids break the barrier quickly, cutting off this damage source.
+  </p>
+</div>
+
+<div class="delta-card">
+  <div class="delta-row">
+    <span class="delta-ability">Simulacrum Backlash</span>
+    <span class="delta-stat">Us: <strong>171K DTPS</strong></span>
+    <span class="delta-stat">Ref: <strong>255K DTPS</strong></span>
+    <span class="delta-pct val-green">-33%</span>
+  </div>
+  <p style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Simulacrum Backlash is the ongoing AoE that pulses while Rift Simulacrums are alive.
+    Our lower rate is misleading &mdash; many of our pulls died early in P2 before Backlash ramped up.
+    In our <strong>full-duration P2 pulls</strong> (fights 9, 13, 19, 20, 23, 25), our Backlash DTPS averaged
+    <strong style="color: var(--text);">274K</strong>, much closer to reference.
+  </p>
+</div>
+
+<!-- ── Chart: Combined Sim DTPS per pull ── -->
+<h2>Combined Simulacrum DTPS by Pull</h2>
+
+<div class="chart-container">
+  <div class="chart-title">Simulacrum Backlash + Cosmic Barrier DTPS &mdash; Our Pulls vs. Reference Average</div>
+  <svg id="dtps-chart" width="100%" viewBox="0 0 1060 340" style="display: block;">
+    <!-- Reference line at 332K DTPS -->
+    <defs>
+      <linearGradient id="barGrad-red" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f85149" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#f85149" stop-opacity="0.6"/>
+      </linearGradient>
+      <linearGradient id="barGrad-green" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#3fb950" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#3fb950" stop-opacity="0.6"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Y axis labels -->
+    <text x="35" y="30" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">900K</text>
+    <text x="35" y="92" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">675K</text>
+    <text x="35" y="153" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">450K</text>
+    <text x="35" y="214" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">225K</text>
+    <text x="35" y="276" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">0</text>
+
+    <!-- Grid lines -->
+    <line x1="45" y1="27" x2="1050" y2="27" stroke="#30363d" stroke-width="0.5"/>
+    <line x1="45" y1="89" x2="1050" y2="89" stroke="#30363d" stroke-width="0.5"/>
+    <line x1="45" y1="150" x2="1050" y2="150" stroke="#30363d" stroke-width="0.5"/>
+    <line x1="45" y1="211" x2="1050" y2="211" stroke="#30363d" stroke-width="0.5"/>
+    <line x1="45" y1="273" x2="1050" y2="273" stroke="#30363d" stroke-width="1"/>
+
+    <!-- Reference line at 332K DTPS = 332/900 * 246 = 90.8 pixels from bottom => y = 273 - 90.8 = 182.2 -->
+    <line x1="45" y1="182" x2="1050" y2="182" stroke="#3fb950" stroke-width="2" stroke-dasharray="8,4"/>
+    <text x="1050" y="178" fill="#3fb950" font-size="11" text-anchor="end" font-family="Inter, sans-serif" font-weight="600">Ref avg: 332K</text>
+
+    <!-- Bars: 14 pulls, bar width ~55, gap ~16, starting at x=60 -->
+    <!-- Fight 5: 679K DTPS, p2=55s -->
+    <rect x="60" y="87" width="55" height="186" rx="3" fill="url(#barGrad-red)"/>
+    <text x="87" y="82" fill="#f85149" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">679K</text>
+    <text x="87" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#5</text>
+    <text x="87" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">55s</text>
+
+    <!-- Fight 6: 722K DTPS, p2=60s -->
+    <rect x="131" y="75" width="55" height="198" rx="3" fill="url(#barGrad-red)"/>
+    <text x="158" y="70" fill="#f85149" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">722K</text>
+    <text x="158" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#6</text>
+    <text x="158" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">60s</text>
+
+    <!-- Fight 9: 436K DTPS, p2=136s -->
+    <rect x="202" y="154" width="55" height="119" rx="3" fill="url(#barGrad-red)"/>
+    <text x="229" y="149" fill="#f85149" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">436K</text>
+    <text x="229" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#9</text>
+    <text x="229" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">136s</text>
+
+    <!-- Fight 11: 558K DTPS, p2=54s -->
+    <rect x="273" y="120" width="55" height="153" rx="3" fill="url(#barGrad-red)"/>
+    <text x="300" y="115" fill="#f85149" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">558K</text>
+    <text x="300" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#11</text>
+    <text x="300" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">54s</text>
+
+    <!-- Fight 12: 321K DTPS, p2=114s -->
+    <rect x="344" y="185" width="55" height="88" rx="3" fill="url(#barGrad-green)"/>
+    <text x="371" y="180" fill="#3fb950" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">321K</text>
+    <text x="371" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#12</text>
+    <text x="371" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">114s</text>
+
+    <!-- Fight 13: 251K DTPS, p2=136s -->
+    <rect x="415" y="204" width="55" height="69" rx="3" fill="url(#barGrad-green)"/>
+    <text x="442" y="199" fill="#3fb950" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">251K</text>
+    <text x="442" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#13</text>
+    <text x="442" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">136s</text>
+
+    <!-- Fight 15: 104K DTPS, p2=12s (very short) -->
+    <rect x="486" y="244" width="55" height="29" rx="3" fill="url(#barGrad-green)"/>
+    <text x="513" y="239" fill="#3fb950" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">104K</text>
+    <text x="513" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#15</text>
+    <text x="513" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">12s</text>
+
+    <!-- Fight 16: 148K DTPS, p2=12s -->
+    <rect x="557" y="233" width="55" height="40" rx="3" fill="url(#barGrad-green)"/>
+    <text x="584" y="228" fill="#3fb950" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">148K</text>
+    <text x="584" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#16</text>
+    <text x="584" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">12s</text>
+
+    <!-- Fight 17: 866K DTPS, p2=62s — worst pull -->
+    <rect x="628" y="37" width="55" height="236" rx="3" fill="url(#barGrad-red)"/>
+    <text x="655" y="32" fill="#f85149" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">866K</text>
+    <text x="655" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#17</text>
+    <text x="655" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">62s</text>
+
+    <!-- Fight 18: 402K DTPS, p2=90s -->
+    <rect x="699" y="163" width="55" height="110" rx="3" fill="url(#barGrad-red)"/>
+    <text x="726" y="158" fill="#f85149" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">402K</text>
+    <text x="726" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#18</text>
+    <text x="726" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">90s</text>
+
+    <!-- Fight 19: 305K DTPS, p2=136s -->
+    <rect x="770" y="190" width="55" height="83" rx="3" fill="url(#barGrad-green)"/>
+    <text x="797" y="185" fill="#3fb950" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">305K</text>
+    <text x="797" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#19</text>
+    <text x="797" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">136s</text>
+
+    <!-- Fight 20: 398K DTPS, p2=136s -->
+    <rect x="841" y="164" width="55" height="109" rx="3" fill="url(#barGrad-red)"/>
+    <text x="868" y="159" fill="#f85149" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">398K</text>
+    <text x="868" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#20</text>
+    <text x="868" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">136s</text>
+
+    <!-- Fight 23: 408K DTPS, p2=136s -->
+    <rect x="912" y="162" width="55" height="111" rx="3" fill="url(#barGrad-red)"/>
+    <text x="939" y="157" fill="#f85149" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">408K</text>
+    <text x="939" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#23</text>
+    <text x="939" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">136s</text>
+
+    <!-- Fight 25: 293K DTPS, p2=136s — best full-length pull -->
+    <rect x="983" y="193" width="55" height="80" rx="3" fill="url(#barGrad-green)"/>
+    <text x="1010" y="188" fill="#3fb950" font-size="10" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">293K</text>
+    <text x="1010" y="295" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#25</text>
+    <text x="1010" y="308" fill="#8b949e" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">136s</text>
+
+    <!-- X-axis label -->
+    <text x="547" y="330" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">Pull # (P2 duration below)</text>
+  </svg>
+  <div class="chart-legend">
+    <span><span class="legend-dot" style="background: var(--red);"></span> Above reference average</span>
+    <span><span class="legend-dot" style="background: var(--green);"></span> Below reference average</span>
+    <span><span class="legend-dot" style="background: var(--green); opacity: 0.5;"></span> Reference avg: 332K DTPS (dashed line)</span>
+  </div>
+</div>
+
+<!-- ── Insight: Short pulls ── -->
+<div class="insight-box warning">
+  <div class="insight-title">Short P2 Pulls Have Extreme Cosmic Barrier Damage</div>
+  <div class="insight-text">
+    Fights that died early in P2 (pulls 5, 6, 11, 17 &mdash; only 54-62 seconds of P2 time) show
+    <strong>Cosmic Barrier DTPS of 494K-769K</strong>, compared to the reference average of <strong>77K</strong>.
+    That is <strong>6-10x the reference rate</strong>. The barrier is pulsing unchecked for the entire time the raid
+    is alive in P2 because nobody is breaking it. This alone accounts for why these pulls collapse immediately
+    upon entering Phase 2.
+  </div>
+</div>
+
+<div class="insight-box success">
+  <div class="insight-title">Later Pulls Show Improvement</div>
+  <div class="insight-text">
+    Full-duration P2 pulls later in the night (fights 19, 23, 25) brought Cosmic Barrier DTPS down to
+    <strong>44-112K</strong>, much closer to the reference range of <strong>63-112K</strong>.
+    The best pull (fight 25, our deepest at 26.5% boss HP) had Cosmic Barrier at <strong>45K DTPS</strong>
+    &mdash; actually <strong>below</strong> the reference average.
+    This confirms: when we focus the Simulacrums and break the barrier quickly, P2 damage is manageable.
+  </div>
+</div>
+
+<!-- ── Per-Pull Breakdown Table ── -->
+<h2>Per-Pull Breakdown</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Pull</th>
+      <th>P2 Time</th>
+      <th>Boss %</th>
+      <th style="text-align: right;">Backlash Total</th>
+      <th style="text-align: right;">Backlash DTPS</th>
+      <th style="text-align: right;">Barrier Total</th>
+      <th style="text-align: right;">Barrier DTPS</th>
+      <th style="text-align: right;">Combined DTPS</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>#5</td>
+      <td>55s</td>
+      <td>50.4%</td>
+      <td class="num">3.4M</td>
+      <td class="num">61.6K</td>
+      <td class="num" style="color: var(--red);">33.7M</td>
+      <td class="num" style="color: var(--red);">616.9K</td>
+      <td class="num" style="color: var(--red);">678.5K</td>
+      <td><span class="tag tag-red">8.0x barrier</span></td>
+    </tr>
+    <tr>
+      <td>#6</td>
+      <td>60s</td>
+      <td>47.1%</td>
+      <td class="num">4.6M</td>
+      <td class="num">76.5K</td>
+      <td class="num" style="color: var(--red);">38.8M</td>
+      <td class="num" style="color: var(--red);">645.7K</td>
+      <td class="num" style="color: var(--red);">722.2K</td>
+      <td><span class="tag tag-red">8.4x barrier</span></td>
+    </tr>
+    <tr>
+      <td>#9</td>
+      <td>136s</td>
+      <td>32.9%</td>
+      <td class="num">44.8M</td>
+      <td class="num">329.5K</td>
+      <td class="num">14.5M</td>
+      <td class="num">106.9K</td>
+      <td class="num" style="color: var(--red);">436.5K</td>
+      <td><span class="tag tag-yellow">1.4x barrier</span></td>
+    </tr>
+    <tr>
+      <td>#11</td>
+      <td>54s</td>
+      <td>50.0%</td>
+      <td class="num">3.5M</td>
+      <td class="num">64.6K</td>
+      <td class="num" style="color: var(--red);">26.8M</td>
+      <td class="num" style="color: var(--red);">493.5K</td>
+      <td class="num" style="color: var(--red);">558.1K</td>
+      <td><span class="tag tag-red">6.4x barrier</span></td>
+    </tr>
+    <tr>
+      <td>#12</td>
+      <td>114s</td>
+      <td>42.5%</td>
+      <td class="num">25.7M</td>
+      <td class="num">225.5K</td>
+      <td class="num">10.9M</td>
+      <td class="num">95.5K</td>
+      <td class="num" style="color: var(--green);">320.9K</td>
+      <td><span class="tag tag-yellow">1.2x barrier</span></td>
+    </tr>
+    <tr>
+      <td>#13</td>
+      <td>136s</td>
+      <td>32.3%</td>
+      <td class="num">23.0M</td>
+      <td class="num">169.3K</td>
+      <td class="num">11.2M</td>
+      <td class="num">82.2K</td>
+      <td class="num" style="color: var(--green);">251.5K</td>
+      <td><span class="tag tag-green">OK</span></td>
+    </tr>
+    <tr>
+      <td>#15</td>
+      <td>12s</td>
+      <td>61.8%</td>
+      <td class="num">0.0M</td>
+      <td class="num">0</td>
+      <td class="num">1.2M</td>
+      <td class="num">103.9K</td>
+      <td class="num" style="color: var(--green);">103.9K</td>
+      <td><span class="tag tag-dim">Too short</span></td>
+    </tr>
+    <tr>
+      <td>#16</td>
+      <td>12s</td>
+      <td>61.6%</td>
+      <td class="num">0.0M</td>
+      <td class="num">0</td>
+      <td class="num">1.8M</td>
+      <td class="num">147.8K</td>
+      <td class="num" style="color: var(--green);">147.8K</td>
+      <td><span class="tag tag-dim">Too short</span></td>
+    </tr>
+    <tr>
+      <td>#17</td>
+      <td>62s</td>
+      <td>47.9%</td>
+      <td class="num">6.0M</td>
+      <td class="num">96.6K</td>
+      <td class="num" style="color: var(--red);">47.6M</td>
+      <td class="num" style="color: var(--red);">769.0K</td>
+      <td class="num" style="color: var(--red);">865.6K</td>
+      <td><span class="tag tag-red">10.0x barrier</span></td>
+    </tr>
+    <tr>
+      <td>#18</td>
+      <td>90s</td>
+      <td>43.4%</td>
+      <td class="num">19.8M</td>
+      <td class="num">220.3K</td>
+      <td class="num" style="color: var(--yellow);">16.3M</td>
+      <td class="num" style="color: var(--yellow);">181.9K</td>
+      <td class="num" style="color: var(--red);">402.2K</td>
+      <td><span class="tag tag-yellow">2.4x barrier</span></td>
+    </tr>
+    <tr>
+      <td>#19</td>
+      <td>136s</td>
+      <td>36.4%</td>
+      <td class="num">26.2M</td>
+      <td class="num">193.0K</td>
+      <td class="num">15.3M</td>
+      <td class="num">112.2K</td>
+      <td class="num" style="color: var(--green);">305.2K</td>
+      <td><span class="tag tag-yellow">1.5x barrier</span></td>
+    </tr>
+    <tr>
+      <td>#20</td>
+      <td>136s</td>
+      <td>34.8%</td>
+      <td class="num">46.3M</td>
+      <td class="num" style="color: var(--yellow);">340.2K</td>
+      <td class="num">7.9M</td>
+      <td class="num" style="color: var(--green);">58.0K</td>
+      <td class="num" style="color: var(--red);">398.2K</td>
+      <td><span class="tag tag-green">Barrier OK</span></td>
+    </tr>
+    <tr>
+      <td>#23</td>
+      <td>136s</td>
+      <td>31.1%</td>
+      <td class="num">49.5M</td>
+      <td class="num" style="color: var(--yellow);">364.0K</td>
+      <td class="num">6.0M</td>
+      <td class="num" style="color: var(--green);">44.5K</td>
+      <td class="num" style="color: var(--red);">408.4K</td>
+      <td><span class="tag tag-green">Barrier OK</span></td>
+    </tr>
+    <tr>
+      <td>#25</td>
+      <td>136s</td>
+      <td>26.5%</td>
+      <td class="num">33.7M</td>
+      <td class="num">247.8K</td>
+      <td class="num">6.2M</td>
+      <td class="num" style="color: var(--green);">45.4K</td>
+      <td class="num" style="color: var(--green);">293.2K</td>
+      <td><span class="tag tag-green">Best pull</span></td>
+    </tr>
+
+    <!-- Reference rows -->
+    <tr class="ref-row">
+      <td colspan="9" style="padding: 4px 10px; font-size: 11px; color: var(--green); text-transform: uppercase; letter-spacing: 1px;">Reference Kills (Mythic)</td>
+    </tr>
+    <tr class="ref-row">
+      <td>Tempo</td>
+      <td>136s</td>
+      <td>Kill</td>
+      <td class="num">44.0M</td>
+      <td class="num">323.8K</td>
+      <td class="num">15.2M</td>
+      <td class="num">111.8K</td>
+      <td class="num">435.6K</td>
+      <td><span class="tag tag-dim">Stormrage</span></td>
+    </tr>
+    <tr class="ref-row">
+      <td>Disconnect</td>
+      <td>136s</td>
+      <td>Kill</td>
+      <td class="num">48.8M</td>
+      <td class="num">358.8K</td>
+      <td class="num">10.4M</td>
+      <td class="num">76.2K</td>
+      <td class="num">434.9K</td>
+      <td><span class="tag tag-dim">Area 52</span></td>
+    </tr>
+    <tr class="ref-row">
+      <td>Fierce</td>
+      <td>136s</td>
+      <td>Kill</td>
+      <td class="num">26.6M</td>
+      <td class="num">195.9K</td>
+      <td class="num">9.1M</td>
+      <td class="num">67.3K</td>
+      <td class="num">263.1K</td>
+      <td><span class="tag tag-dim">Thrall</span></td>
+    </tr>
+    <tr class="ref-row">
+      <td>Raging Time</td>
+      <td>136s</td>
+      <td>Kill</td>
+      <td class="num">27.8M</td>
+      <td class="num">204.5K</td>
+      <td class="num">8.6M</td>
+      <td class="num">63.4K</td>
+      <td class="num">267.9K</td>
+      <td><span class="tag tag-dim">Bleeding Hollow</span></td>
+    </tr>
+    <tr class="ref-row">
+      <td>D. Uncouth</td>
+      <td>136s</td>
+      <td>Kill</td>
+      <td class="num">26.2M</td>
+      <td class="num">192.9K</td>
+      <td class="num">8.9M</td>
+      <td class="num">65.3K</td>
+      <td class="num">258.2K</td>
+      <td><span class="tag tag-dim">Area 52</span></td>
+    </tr>
+    <tr class="ref-row" style="font-weight: 700;">
+      <td>Ref Average</td>
+      <td>136s</td>
+      <td>Kill</td>
+      <td class="num">34.7M</td>
+      <td class="num">255.2K</td>
+      <td class="num">10.4M</td>
+      <td class="num">76.8K</td>
+      <td class="num">332.0K</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ── Cosmic Barrier Deep Dive ── -->
+<h2>Cosmic Barrier DTPS &mdash; The Key Differentiator</h2>
+
+<div class="chart-container">
+  <div class="chart-title">Cosmic Barrier DTPS per Pull &mdash; Our Pulls vs. Reference Range</div>
+  <svg width="100%" viewBox="0 0 1060 300" style="display: block;">
+    <!-- Y axis labels — max 800K -->
+    <text x="35" y="30" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">800K</text>
+    <text x="35" y="88" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">600K</text>
+    <text x="35" y="145" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">400K</text>
+    <text x="35" y="203" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">200K</text>
+    <text x="35" y="260" fill="#8b949e" font-size="11" text-anchor="end" font-family="Inter, sans-serif">0</text>
+
+    <!-- Grid lines -->
+    <line x1="45" y1="27" x2="1050" y2="27" stroke="#30363d" stroke-width="0.5"/>
+    <line x1="45" y1="85" x2="1050" y2="85" stroke="#30363d" stroke-width="0.5"/>
+    <line x1="45" y1="142" x2="1050" y2="142" stroke="#30363d" stroke-width="0.5"/>
+    <line x1="45" y1="200" x2="1050" y2="200" stroke="#30363d" stroke-width="0.5"/>
+    <line x1="45" y1="257" x2="1050" y2="257" stroke="#30363d" stroke-width="1"/>
+
+    <!-- Reference band: 63K-112K DTPS = y range 225-224 to 225-32 ... let me recalc -->
+    <!-- 800K = y27, 0 = y257. range = 230px for 800K. per K = 230/800 = 0.2875px -->
+    <!-- 112K DTPS: y = 257 - (112 * 0.2875) = 257 - 32.2 = 224.8 -->
+    <!-- 63K DTPS: y = 257 - (63 * 0.2875) = 257 - 18.1 = 238.9 -->
+    <rect x="45" y="225" width="1005" height="14" fill="#3fb950" opacity="0.1"/>
+    <line x1="45" y1="225" x2="1050" y2="225" stroke="#3fb950" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>
+    <line x1="45" y1="239" x2="1050" y2="239" stroke="#3fb950" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>
+    <text x="1050" y="233" fill="#3fb950" font-size="10" text-anchor="end" font-family="Inter, sans-serif" opacity="0.8">Ref range: 63-112K</text>
+
+    <!-- Ref avg line at 77K: y = 257 - (77 * 0.2875) = 257 - 22.1 = 234.9 -->
+    <line x1="45" y1="235" x2="1050" y2="235" stroke="#3fb950" stroke-width="2" stroke-dasharray="8,4"/>
+    <text x="50" y="248" fill="#3fb950" font-size="10" font-family="Inter, sans-serif" font-weight="600">Ref avg: 77K</text>
+
+    <!-- Bars: scale = 0.2875px per K -->
+    <!-- Fight 5: 617K -> h = 617*0.2875 = 177, y = 257-177 = 80 -->
+    <rect x="60" y="80" width="55" height="177" rx="3" fill="url(#barGrad-red)"/>
+    <text x="87" y="75" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">617K</text>
+    <text x="87" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#5</text>
+
+    <!-- Fight 6: 646K -> h = 186, y = 71 -->
+    <rect x="131" y="71" width="55" height="186" rx="3" fill="url(#barGrad-red)"/>
+    <text x="158" y="66" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">646K</text>
+    <text x="158" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#6</text>
+
+    <!-- Fight 9: 107K -> h = 31, y = 226 -->
+    <rect x="202" y="226" width="55" height="31" rx="3" fill="url(#barGrad-red)"/>
+    <text x="229" y="221" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">107K</text>
+    <text x="229" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#9</text>
+
+    <!-- Fight 11: 494K -> h = 142, y = 115 -->
+    <rect x="273" y="115" width="55" height="142" rx="3" fill="url(#barGrad-red)"/>
+    <text x="300" y="110" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">494K</text>
+    <text x="300" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#11</text>
+
+    <!-- Fight 12: 95K -> h = 27, y = 230 -->
+    <rect x="344" y="230" width="55" height="27" rx="3" fill="#bc8cff" opacity="0.7"/>
+    <text x="371" y="225" fill="#bc8cff" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">95K</text>
+    <text x="371" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#12</text>
+
+    <!-- Fight 13: 82K -> h = 24, y = 233 -->
+    <rect x="415" y="233" width="55" height="24" rx="3" fill="#bc8cff" opacity="0.7"/>
+    <text x="442" y="228" fill="#bc8cff" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">82K</text>
+    <text x="442" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#13</text>
+
+    <!-- Fight 15: 104K -> h = 30, y = 227 -->
+    <rect x="486" y="227" width="55" height="30" rx="3" fill="url(#barGrad-red)"/>
+    <text x="513" y="222" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">104K</text>
+    <text x="513" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#15</text>
+
+    <!-- Fight 16: 148K -> h = 43, y = 214 -->
+    <rect x="557" y="214" width="55" height="43" rx="3" fill="url(#barGrad-red)"/>
+    <text x="584" y="209" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">148K</text>
+    <text x="584" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#16</text>
+
+    <!-- Fight 17: 769K -> h = 221, y = 36 — THE WORST -->
+    <rect x="628" y="36" width="55" height="221" rx="3" fill="url(#barGrad-red)"/>
+    <text x="655" y="31" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">769K</text>
+    <text x="655" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#17</text>
+
+    <!-- Fight 18: 182K -> h = 52, y = 205 -->
+    <rect x="699" y="205" width="55" height="52" rx="3" fill="url(#barGrad-red)"/>
+    <text x="726" y="200" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">182K</text>
+    <text x="726" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#18</text>
+
+    <!-- Fight 19: 112K -> h = 32, y = 225 -->
+    <rect x="770" y="225" width="55" height="32" rx="3" fill="url(#barGrad-red)"/>
+    <text x="797" y="220" fill="#f85149" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">112K</text>
+    <text x="797" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#19</text>
+
+    <!-- Fight 20: 58K -> h = 17, y = 240 — in ref range -->
+    <rect x="841" y="240" width="55" height="17" rx="3" fill="#3fb950" opacity="0.7"/>
+    <text x="868" y="253" fill="#3fb950" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">58K</text>
+    <text x="868" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#20</text>
+
+    <!-- Fight 23: 44K -> h = 13, y = 244 — below ref range -->
+    <rect x="912" y="244" width="55" height="13" rx="3" fill="#3fb950" opacity="0.7"/>
+    <text x="939" y="253" fill="#3fb950" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">44K</text>
+    <text x="939" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#23</text>
+
+    <!-- Fight 25: 45K -> h = 13, y = 244 — below ref range -->
+    <rect x="983" y="244" width="55" height="13" rx="3" fill="#3fb950" opacity="0.7"/>
+    <text x="1010" y="253" fill="#3fb950" font-size="9" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600">45K</text>
+    <text x="1010" y="275" fill="#8b949e" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">#25</text>
+  </svg>
+  <div class="chart-legend">
+    <span><span class="legend-dot" style="background: var(--red);"></span> Above reference range</span>
+    <span><span class="legend-dot" style="background: var(--purple);"></span> Within reference range</span>
+    <span><span class="legend-dot" style="background: var(--green);"></span> Below reference range</span>
+    <span><span class="legend-dot" style="background: var(--green); opacity: 0.3;"></span> Reference range (shaded band)</span>
+  </div>
+</div>
+
+<!-- ── Full P2 Ability Context ── -->
+<h2>Full P2 Damage Profile &mdash; Fight 25 (Our Best)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Ability</th>
+      <th>Source</th>
+      <th style="text-align: right;">Total Damage</th>
+      <th style="text-align: right;">Hits</th>
+      <th style="text-align: right;">DTPS</th>
+      <th>% of P2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="color: var(--red); font-weight: 600;">Simulacrum Backlash</td>
+      <td>Rift Simulacrum</td>
+      <td class="num">33.7M</td>
+      <td class="num">1,129</td>
+      <td class="num" style="color: var(--red);">247.8K</td>
+      <td>28.1%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--yellow); font-weight: 600;">Voidstalker Sting</td>
+      <td>Crown boss</td>
+      <td class="num">36.6M</td>
+      <td class="num">1,482</td>
+      <td class="num">269.1K</td>
+      <td>30.5%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--orange); font-weight: 600;">Void Expulsion</td>
+      <td>Rift Simulacrum</td>
+      <td class="num">15.6M</td>
+      <td class="num">377</td>
+      <td class="num">114.9K</td>
+      <td>13.0%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--purple); font-weight: 600;">Void Barrage</td>
+      <td>Crown boss</td>
+      <td class="num">6.5M</td>
+      <td class="num">84</td>
+      <td class="num">48.2K</td>
+      <td>5.5%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--red); font-weight: 600;">Cosmic Barrier</td>
+      <td>Rift Simulacrum</td>
+      <td class="num">6.2M</td>
+      <td class="num">252</td>
+      <td class="num">45.4K</td>
+      <td>5.1%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--cyan);">Grasp of Emptiness</td>
+      <td>Crown boss</td>
+      <td class="num">4.6M</td>
+      <td class="num">98</td>
+      <td class="num">33.8K</td>
+      <td>3.8%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--dim);">Melee</td>
+      <td>Various</td>
+      <td class="num">4.4M</td>
+      <td class="num">53</td>
+      <td class="num">32.6K</td>
+      <td>3.7%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--dim);">Silverstrike Ricochet</td>
+      <td>Silver Simulacrum</td>
+      <td class="num">3.8M</td>
+      <td class="num">36</td>
+      <td class="num">27.9K</td>
+      <td>3.2%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--dim);">Falling</td>
+      <td>Environment</td>
+      <td class="num">3.0M</td>
+      <td class="num">15</td>
+      <td class="num">22.1K</td>
+      <td>2.5%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--dim);">Void Remnants</td>
+      <td>Crown boss</td>
+      <td class="num">2.0M</td>
+      <td class="num">13</td>
+      <td class="num">14.6K</td>
+      <td>1.6%</td>
+    </tr>
+    <tr>
+      <td style="color: var(--dim);">Other</td>
+      <td>Various</td>
+      <td class="num">3.5M</td>
+      <td class="num">&mdash;</td>
+      <td class="num">25.6K</td>
+      <td>2.9%</td>
+    </tr>
+    <tr style="font-weight: 700; border-top: 2px solid var(--border);">
+      <td>Total P2 Damage</td>
+      <td></td>
+      <td class="num">120.0M</td>
+      <td class="num">&mdash;</td>
+      <td class="num">882.0K</td>
+      <td>100%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="font-size: 12px; color: var(--dim); margin-top: 8px; margin-bottom: 16px;">
+  Simulacrum Backlash + Cosmic Barrier + Void Expulsion together account for <strong style="color: var(--text);">46.2%</strong>
+  of all P2 damage. These are all Rift Simulacrum abilities &mdash; the faster the Simulacrums die, the less total damage
+  the raid takes from nearly half the P2 damage profile.
+</p>
+
+<!-- ── Progression Trend ── -->
+<h2>Progression Trend &mdash; Full-Duration P2 Pulls Only</h2>
+
+<p style="font-size: 13px; color: var(--dim); margin-bottom: 16px;">
+  Filtering to pulls that survived the entire P2 window (136 seconds) to normalize the comparison and remove noise
+  from early deaths.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Pull</th>
+      <th>Boss %</th>
+      <th style="text-align: right;">Backlash DTPS</th>
+      <th style="text-align: right;">Barrier DTPS</th>
+      <th style="text-align: right;">Combined DTPS</th>
+      <th>vs. Ref Avg</th>
+      <th>Trend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>#9</td>
+      <td>32.9%</td>
+      <td class="num">329.5K</td>
+      <td class="num" style="color: var(--yellow);">106.9K</td>
+      <td class="num" style="color: var(--red);">436.5K</td>
+      <td style="color: var(--red);">+32%</td>
+      <td>&mdash;</td>
+    </tr>
+    <tr>
+      <td>#13</td>
+      <td>32.3%</td>
+      <td class="num" style="color: var(--green);">169.3K</td>
+      <td class="num">82.2K</td>
+      <td class="num" style="color: var(--green);">251.5K</td>
+      <td style="color: var(--green);">-24%</td>
+      <td style="color: var(--green);">Improved</td>
+    </tr>
+    <tr>
+      <td>#19</td>
+      <td>36.4%</td>
+      <td class="num" style="color: var(--green);">193.0K</td>
+      <td class="num" style="color: var(--yellow);">112.2K</td>
+      <td class="num" style="color: var(--green);">305.2K</td>
+      <td style="color: var(--green);">-8%</td>
+      <td style="color: var(--yellow);">Regressed</td>
+    </tr>
+    <tr>
+      <td>#20</td>
+      <td>34.8%</td>
+      <td class="num" style="color: var(--yellow);">340.2K</td>
+      <td class="num" style="color: var(--green);">58.0K</td>
+      <td class="num" style="color: var(--red);">398.2K</td>
+      <td style="color: var(--red);">+20%</td>
+      <td style="color: var(--yellow);">Regressed</td>
+    </tr>
+    <tr>
+      <td>#23</td>
+      <td>31.1%</td>
+      <td class="num" style="color: var(--yellow);">364.0K</td>
+      <td class="num" style="color: var(--green);">44.5K</td>
+      <td class="num" style="color: var(--red);">408.4K</td>
+      <td style="color: var(--red);">+23%</td>
+      <td style="color: var(--yellow);">Regressed</td>
+    </tr>
+    <tr>
+      <td>#25</td>
+      <td>26.5%</td>
+      <td class="num">247.8K</td>
+      <td class="num" style="color: var(--green);">45.4K</td>
+      <td class="num" style="color: var(--green);">293.2K</td>
+      <td style="color: var(--green);">-12%</td>
+      <td style="color: var(--green);">Best pull</td>
+    </tr>
+    <tr class="ref-row" style="font-weight: 700;">
+      <td>Ref Avg</td>
+      <td>Kill</td>
+      <td class="num">255.2K</td>
+      <td class="num">76.8K</td>
+      <td class="num">332.0K</td>
+      <td>&mdash;</td>
+      <td>&mdash;</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ── What This Means ── -->
+<h2>What This Means</h2>
+
+<div class="insight-box warning">
+  <div class="insight-title">Two Distinct Failure Modes</div>
+  <div class="insight-text">
+    The data reveals two different problems happening in P2, and they are inversely correlated:
+    <br><br>
+    <strong>1. Cosmic Barrier not being broken (early pulls):</strong> In pulls 5, 6, 11, and 17, the Cosmic Barrier
+    was dealing <strong>494K-769K DTPS</strong> &mdash; 6-10x the reference rate. This is the barrier pulsing AoE damage
+    while it is still active on the Rift Simulacrums. Reference kills break the barrier in seconds; our early pulls
+    were ignoring it entirely. The raid was dying to uncontrolled barrier ticks before Simulacrum Backlash even had
+    time to ramp up. That is why Backlash DTPS looks artificially low in these pulls &mdash; people were already dead.
+    <br><br>
+    <strong>2. Simulacrums living too long (later pulls):</strong> In our later full-duration pulls (20, 23), we fixed
+    the barrier problem (44-58K DTPS, reference range), but Simulacrum Backlash climbed to <strong>340-364K DTPS</strong>,
+    above the reference average of 255K. The Simulacrums are now getting their barriers broken, but they are still
+    staying alive too long afterward, allowing Backlash to pulse for extended periods.
+    <br><br>
+    <strong>Fight 25 was the sweet spot:</strong> Barrier at 45K (below reference), Backlash at 248K (close to reference),
+    combined 293K (12% below reference). This was also our deepest pull at 26.5% boss HP. The correlation is clear:
+    clean Simulacrum handling = survivable P2 = boss HP progression.
+  </div>
+</div>
+
+<div class="insight-box">
+  <div class="insight-title">The Math on Simulacrum Kill Speed</div>
+  <div class="insight-text">
+    Across all 5 reference kills, the combined Simulacrum DTPS ranged from <strong>258K to 436K</strong>,
+    with an average of <strong>332K</strong>. Our best pull (fight 25) hit 293K &mdash; actually competitive
+    with the cleaner reference kills (Fierce at 263K, Raging Time at 268K, D. Uncouth at 258K).
+    <br><br>
+    The two high-reference outliers (Tempo 436K, Disconnect 435K) suggest that even top guilds take
+    significant Simulacrum damage &mdash; the difference is they have the DPS throughput and healing
+    cooldown coordination to survive it. For our raid, bringing Simulacrum damage <strong>below 350K combined DTPS</strong>
+    consistently is the target. Fight 25 proved this is achievable.
+    <br><br>
+    <strong>Action items:</strong>
+    <br>1. Assign DPS to break Cosmic Barrier immediately when Simulacrums spawn &mdash; this alone eliminates the worst
+    damage spikes
+    <br>2. After barrier is broken, burn Simulacrums down as the #1 P2 priority before switching back to boss
+    <br>3. Coordinate healing CDs around Simulacrum Backlash ticks, not just boss abilities
+    <br>4. Track Cosmic Barrier DTPS per pull as the primary execution metric for P2
+  </div>
+</div>
+
+<!-- ── Reference Kill Details ── -->
+<h2>Reference Kill Details</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Guild</th>
+      <th>Server</th>
+      <th>Kill Time</th>
+      <th style="text-align: right;">Backlash DTPS</th>
+      <th style="text-align: right;">Barrier DTPS</th>
+      <th style="text-align: right;">Combined DTPS</th>
+      <th style="text-align: right;">Total P2 DTPS</th>
+      <th>Report</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Tempo</td>
+      <td>Stormrage</td>
+      <td>7:55</td>
+      <td class="num">323.8K</td>
+      <td class="num">111.8K</td>
+      <td class="num">435.6K</td>
+      <td class="num">1,104K</td>
+      <td><a href="https://www.warcraftlogs.com/reports/DQkTp4mARy2z7Jft#fight=34" target="_blank" style="color: var(--accent);">WCL</a></td>
+    </tr>
+    <tr>
+      <td>Disconnect</td>
+      <td>Area 52</td>
+      <td>8:38</td>
+      <td class="num">358.8K</td>
+      <td class="num">76.2K</td>
+      <td class="num">434.9K</td>
+      <td class="num">1,087K</td>
+      <td><a href="https://www.warcraftlogs.com/reports/fqgrapbW7F3NnPdL#fight=24" target="_blank" style="color: var(--accent);">WCL</a></td>
+    </tr>
+    <tr>
+      <td>Fierce</td>
+      <td>Thrall</td>
+      <td>7:56</td>
+      <td class="num">195.9K</td>
+      <td class="num">67.3K</td>
+      <td class="num">263.1K</td>
+      <td class="num">914K</td>
+      <td><a href="https://www.warcraftlogs.com/reports/BRNCdk3Dm7WJh9z6#fight=20" target="_blank" style="color: var(--accent);">WCL</a></td>
+    </tr>
+    <tr>
+      <td>Raging Time</td>
+      <td>Bleeding Hollow</td>
+      <td>8:02</td>
+      <td class="num">204.5K</td>
+      <td class="num">63.4K</td>
+      <td class="num">267.9K</td>
+      <td class="num">818K</td>
+      <td><a href="https://www.warcraftlogs.com/reports/wzFWCkTNHyLcbdGK#fight=8" target="_blank" style="color: var(--accent);">WCL</a></td>
+    </tr>
+    <tr>
+      <td>D. Uncouth</td>
+      <td>Area 52</td>
+      <td>8:49</td>
+      <td class="num">192.9K</td>
+      <td class="num">65.3K</td>
+      <td class="num">258.2K</td>
+      <td class="num">793K</td>
+      <td><a href="https://www.warcraftlogs.com/reports/KCjfp8HtJVN2ZvhY#fight=14" target="_blank" style="color: var(--accent);">WCL</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  Crown of the Cosmos P2 Analysis &mdash; Generated from WCL API v2 &mdash; Data from report
+  <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Hz1Lm672dZnBw9YC</a>
+  vs. 5 top Mythic reference kills
+</div>
+
+</body>
+</html>

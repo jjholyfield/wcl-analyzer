@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nucke — Vengeance Demon Hunter — Mythic Rotmire</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --dh: #a330c9;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); text-decoration: none; }
+.back-link:hover { color: var(--text); }
+
+.header { margin-bottom: 32px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.player-name { color: var(--dh); }
+.header .meta { font-size: 14px; color: var(--dim); }
+.header .meta span { margin-right: 16px; }
+
+.summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 32px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.summary-card .label { font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.summary-card .value { font-size: 24px; font-weight: 700; }
+.summary-card .sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
+
+.section { margin-bottom: 32px; }
+.section h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--dim); }
+
+.verdict { background: var(--surface); border-radius: 8px; padding: 16px 20px; margin-bottom: 32px; font-size: 14px; line-height: 1.7; }
+.verdict.yellow { border-left: 4px solid var(--yellow); }
+.verdict.green { border-left: 4px solid var(--green); }
+.verdict.red { border-left: 4px solid var(--red); }
+
+strong.green { color: var(--green); }
+strong.red { color: var(--red); }
+strong.yellow { color: var(--yellow); }
+strong.orange { color: var(--orange); }
+strong.purple { color: var(--purple); }
+strong.accent { color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; background: var(--surface); position: sticky; top: 0; }
+tr:hover { background: rgba(88, 166, 255, 0.04); }
+.player-row { background: rgba(163, 48, 201, 0.08) !important; }
+.player-row td { font-weight: 600; }
+.ref-row td:first-child .rank-badge { display: inline-block; background: var(--purple); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-right: 6px; }
+
+.tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+.tag-crit { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.tag-diff { background: rgba(219, 109, 40, 0.15); color: var(--orange); }
+.tag-warn { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.tag-same { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.tag-info { background: rgba(88, 166, 255, 0.15); color: var(--accent); }
+.tag-build { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+.bar-container { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.bar-green { background: var(--green); }
+.bar-red { background: var(--red); }
+.bar-yellow { background: var(--yellow); }
+.bar-orange { background: var(--orange); }
+.bar-accent { background: var(--accent); }
+.bar-purple { background: var(--purple); }
+
+.timeline-row { display: grid; grid-template-columns: 60px 120px 100px 100px 1fr 1fr; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px; align-items: center; }
+.timeline-row.header { color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; background: var(--surface); position: sticky; top: 0; }
+.timeline-row.def-green { background: rgba(63, 185, 80, 0.06); }
+.timeline-row.def-yellow { background: rgba(210, 153, 34, 0.06); }
+.timeline-row.def-red { background: rgba(248, 81, 73, 0.06); }
+
+.swap-timeline { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.swap-tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+.swap-nucke { background: rgba(163, 48, 201, 0.2); color: var(--dh); }
+.swap-glazed { background: rgba(196, 30, 58, 0.2); color: #c41e3a; }
+
+.progression-chart { display: flex; align-items: flex-end; gap: 8px; height: 180px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; }
+.prog-bar { flex: 1; border-radius: 4px 4px 0 0; position: relative; cursor: pointer; min-width: 60px; transition: opacity 0.2s; }
+.prog-bar:hover { opacity: 0.8; }
+.prog-bar .prog-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--dim); white-space: nowrap; }
+.prog-bar .prog-top { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 600; white-space: nowrap; }
+.prog-bar[data-tooltip]:hover::after { content: attr(data-tooltip); position: absolute; top: -40px; left: 50%; transform: translateX(-50%); background: #1c2128; border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin-bottom: 8px; font-size: 13px; }
+.action-item.critical { border-left: 3px solid var(--red); }
+.action-item.warning { border-left: 3px solid var(--yellow); }
+.action-item.info { border-left: 3px solid var(--accent); }
+.action-item .action-title { font-weight: 700; margin-bottom: 4px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+
+.uptime-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.uptime-label { font-size: 12px; min-width: 120px; }
+.uptime-track { flex: 1; height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; }
+.uptime-fill { height: 100%; border-radius: 6px; }
+.uptime-pct { font-size: 12px; font-weight: 600; min-width: 45px; text-align: right; }
+
+.mechanic-cycle { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.mech-tag { font-size: 11px; padding: 4px 10px; border-radius: 4px; font-weight: 500; border: 1px solid; }
+.mech-putrid { background: rgba(248, 81, 73, 0.1); border-color: rgba(248, 81, 73, 0.3); color: var(--red); }
+.mech-fungi { background: rgba(63, 185, 80, 0.1); border-color: rgba(63, 185, 80, 0.3); color: var(--green); }
+.mech-vines { background: rgba(210, 153, 34, 0.1); border-color: rgba(210, 153, 34, 0.3); color: var(--yellow); }
+.mech-bloom { background: rgba(188, 140, 255, 0.1); border-color: rgba(188, 140, 255, 0.3); color: var(--purple); }
+.mech-pustules { background: rgba(219, 109, 40, 0.1); border-color: rgba(219, 109, 40, 0.3); color: var(--orange); }
+.mech-shroom { background: rgba(57, 210, 192, 0.1); border-color: rgba(57, 210, 192, 0.3); color: var(--cyan); }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260623-rotmire" class="back-link">&larr; June 23 Rotmire Log Analysis</a>
+
+<div class="header">
+  <h1><span class="player-name">Nucke</span> — Vengeance Demon Hunter</h1>
+  <div class="meta">
+    <span>Mythic Rotmire</span>
+    <span>Kill: 8:09</span>
+    <span>June 23, 2026</span>
+    <span><a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC#fight=3" target="_blank">WCL Report &rarr;</a></span>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">DPS</div>
+    <div class="value" style="color: var(--red)">73.2K</div>
+    <div class="sub">vs ref 129.1K (Kaali)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">DTPS</div>
+    <div class="value" style="color: var(--green)">34.1K</div>
+    <div class="sub">vs ref 35.4K (lower = better)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Self-Heal HPS</div>
+    <div class="value" style="color: var(--yellow)">36.9K</div>
+    <div class="sub">vs ref 42.4K (Kaali)</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Item Level</div>
+    <div class="value">291</div>
+    <div class="sub">refs: 290-293</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Kill Status</div>
+    <div class="value" style="color: var(--green)">SURVIVED</div>
+    <div class="sub">0 deaths across all 3 pulls</div>
+  </div>
+</div>
+
+<!-- Verdict -->
+<div class="verdict yellow">
+  Nucke survived all three pulls including the kill, and maintained an excellent <strong class="green">95.4% Demon Spikes uptime</strong> — one of the best active mitigation numbers you can ask for. DTPS of <strong class="green">34.1K</strong> was lower than the #1 ranked reference (35.4K), meaning Nucke was mitigating well. However, DPS was <strong class="red">73.2K vs 129.1K</strong> for the top-ranked Kaali — a <strong class="red">43% deficit</strong>. The closest-build reference (Neliele, only 6 talent diffs) did 119.6K DPS, putting Nucke at <strong class="red">39% behind</strong>. The DPS gap stems from multiple factors: Nucke cast <strong class="yellow">141.4 CPM vs Kaali's 169.7 CPM</strong> (17% fewer total button presses), had <strong class="red">0 Fel Devastation casts</strong> (a talent Kaali used 4 times for both damage and healing), and had a notably lower <strong class="yellow">Felblade usage</strong> (2.2 CPM vs 7.7 CPM). On the positive side, Fiery Brand usage was strong at 11 casts matching references, and Nucke had 14 Putrid Fist hits with a defensive active on every single one. The survival execution was solid; the DPS gap is the primary area for improvement.
+</div>
+
+<!-- Reference Comparison Table -->
+<div class="section">
+  <h2>Reference Comparison</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent &Delta;</th><th>Hero</th><th>CPM</th></tr>
+    </thead>
+    <tbody>
+      <tr class="player-row">
+        <td>—</td>
+        <td><span style="color:var(--dh)">Nucke</span></td>
+        <td>73,157</td>
+        <td>8:09</td>
+        <td>291</td>
+        <td>—</td>
+        <td>Fel-Scarred</td>
+        <td>141.4</td>
+      </tr>
+      <tr class="ref-row">
+        <td><span class="rank-badge">1</span></td>
+        <td><span style="color:var(--purple)">Kaali</span></td>
+        <td>129,086</td>
+        <td>8:21</td>
+        <td>291</td>
+        <td><span class="tag tag-diff">18</span></td>
+        <td>Fel-Scarred</td>
+        <td>169.7</td>
+      </tr>
+      <tr class="ref-row">
+        <td><span class="rank-badge">2</span></td>
+        <td><span style="color:var(--purple)">Anonymous</span></td>
+        <td>120,542</td>
+        <td>7:01</td>
+        <td>291</td>
+        <td><span class="tag tag-warn">—</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+      <tr class="ref-row" style="background: rgba(188,140,255,0.06);">
+        <td><span class="rank-badge">3</span></td>
+        <td><span style="color:var(--purple)">Neliele</span> &#9733;</td>
+        <td>119,613</td>
+        <td>8:45</td>
+        <td>293</td>
+        <td><span class="tag tag-same">6</span></td>
+        <td>Fel-Scarred</td>
+        <td>153.7</td>
+      </tr>
+      <tr class="ref-row">
+        <td><span class="rank-badge">4</span></td>
+        <td><span style="color:var(--purple)">Zoomy</span></td>
+        <td>119,331</td>
+        <td>8:13</td>
+        <td>287</td>
+        <td><span class="tag tag-warn">—</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+      <tr class="ref-row">
+        <td><span class="rank-badge">5</span></td>
+        <td><span style="color:var(--purple)">Wafflelol</span></td>
+        <td>116,768</td>
+        <td>6:53</td>
+        <td>290</td>
+        <td><span class="tag tag-diff">13</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim); margin-top: -8px;">
+    &#9733; Primary reference — fewest talent diffs (6). Both Kaali (18 diffs) and Neliele (6 diffs) data pulled for cross-reference.
+  </div>
+</div>
+
+<!-- Boss Mechanic Timeline -->
+<div class="section">
+  <h2>Boss Mechanics — Rotmire (Single Phase)</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Rotmire is a single-phase boss with a repeating ~136s mechanic cycle. Key tank mechanic is <strong style="color:var(--red)">Putrid Fist</strong> (tank buster every ~12s on current tank).
+  </p>
+  <div class="mechanic-cycle">
+    <span class="mech-tag mech-putrid">Putrid Fist &times;29 (every ~12s)</span>
+    <span class="mech-tag mech-fungi">Awaken Fungi &times;8 (every ~65s)</span>
+    <span class="mech-tag mech-vines">Festering Vines &times;7 (every ~49s)</span>
+    <span class="mech-tag mech-bloom">Fungal Bloom &times;3 (every ~136s)</span>
+    <span class="mech-tag mech-pustules">Bursting Pustules &times;12 (every ~21s)</span>
+    <span class="mech-tag mech-shroom">Bursting Shroom &times;3 (after each Bloom)</span>
+  </div>
+  <div style="font-size: 12px; color: var(--dim);">
+    Mechanic cycle: Bursting Pustules (0:10) &rarr; Awaken Fungi (0:15) &rarr; Putrid Fists begin (0:26) &rarr; Bursting Pustules (0:31) &rarr; Festering Vines (0:43) &rarr; ... &rarr; Fungal Bloom (2:00) &rarr; Bursting Shroom (2:16) &rarr; Cycle repeats at ~2:16
+  </div>
+</div>
+
+<!-- Cast Profile Comparison -->
+<div class="section">
+  <h2>Cast Profile Comparison</h2>
+  <p style="font-size: 12px; color: var(--dim); margin-bottom: 8px;">
+    Primary reference: Kaali (rank 1, 8:21 kill). Secondary check: Neliele (rank 3, 8:45 kill, 6 talent diffs). Both run Fel-Scarred.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Nucke</th><th>CPM</th><th>Kaali</th><th>CPM</th><th>&Delta;</th><th>Assessment</th></tr>
+    </thead>
+    <tbody>
+      <!-- Core Rotation -->
+      <tr>
+        <td>Fracture</td>
+        <td>420</td><td>51.6</td>
+        <td>456</td><td>54.6</td>
+        <td style="color:var(--yellow)">-5.5%</td>
+        <td><span class="tag tag-warn">-5%</span></td>
+      </tr>
+      <tr>
+        <td>Soul Cleave</td>
+        <td>117</td><td>14.4</td>
+        <td>158</td><td>18.9</td>
+        <td style="color:var(--orange)">-23.8%</td>
+        <td><span class="tag tag-diff">-24%</span></td>
+      </tr>
+      <tr>
+        <td>Spirit Bomb</td>
+        <td>30</td><td>3.7</td>
+        <td>34</td><td>4.1</td>
+        <td style="color:var(--yellow)">-9.8%</td>
+        <td><span class="tag tag-warn">-10%</span></td>
+      </tr>
+      <tr>
+        <td>Immolation Aura</td>
+        <td>31</td><td>3.8</td>
+        <td>37</td><td>4.4</td>
+        <td style="color:var(--yellow)">-13.6%</td>
+        <td><span class="tag tag-warn">-14%</span></td>
+      </tr>
+      <tr>
+        <td>Felblade</td>
+        <td>18</td><td>2.2</td>
+        <td>64</td><td>7.7</td>
+        <td style="color:var(--red)">-71.4%</td>
+        <td><span class="tag tag-crit">-71%</span></td>
+      </tr>
+      <tr>
+        <td>Sigil of Flame</td>
+        <td>13</td><td>1.6</td>
+        <td>9</td><td>1.1</td>
+        <td style="color:var(--green)">+45.5%</td>
+        <td><span class="tag tag-info">+45%</span></td>
+      </tr>
+      <tr>
+        <td>Sigil of Spite</td>
+        <td>7</td><td>0.9</td>
+        <td>8</td><td>1.0</td>
+        <td style="color:var(--dim)">-10%</td>
+        <td><span class="tag tag-same">=</span></td>
+      </tr>
+      <!-- Defensives -->
+      <tr style="border-top: 2px solid var(--border);">
+        <td>Demon Spikes</td>
+        <td>45</td><td>5.5</td>
+        <td>37</td><td>4.4</td>
+        <td style="color:var(--green)">+25%</td>
+        <td><span class="tag tag-info">+25%</span></td>
+      </tr>
+      <tr>
+        <td>Metamorphosis</td>
+        <td>13</td><td>1.6</td>
+        <td>21</td><td>2.5</td>
+        <td style="color:var(--orange)">-36%</td>
+        <td><span class="tag tag-diff">-36%</span></td>
+      </tr>
+      <tr>
+        <td>Fiery Brand</td>
+        <td>11</td><td>1.4</td>
+        <td>11</td><td>1.3</td>
+        <td style="color:var(--green)">+7.7%</td>
+        <td><span class="tag tag-same">=</span></td>
+      </tr>
+      <tr>
+        <td>Torment</td>
+        <td>18</td><td>2.2</td>
+        <td>16</td><td>1.9</td>
+        <td style="color:var(--green)">+15.8%</td>
+        <td><span class="tag tag-same">=</span></td>
+      </tr>
+      <!-- Missing abilities -->
+      <tr>
+        <td>Soul Carver</td>
+        <td>0</td><td>0.0</td>
+        <td>7</td><td>0.8</td>
+        <td style="color:var(--red)">MISSING</td>
+        <td><span class="tag tag-build">Talent</span></td>
+      </tr>
+      <tr>
+        <td>Fel Devastation</td>
+        <td>0</td><td>0.0</td>
+        <td>4</td><td>0.5</td>
+        <td style="color:var(--red)">MISSING</td>
+        <td><span class="tag tag-build">Talent</span></td>
+      </tr>
+      <tr>
+        <td>Darkness</td>
+        <td>1</td><td>0.1</td>
+        <td>1</td><td>0.1</td>
+        <td style="color:var(--dim)">—</td>
+        <td><span class="tag tag-same">=</span></td>
+      </tr>
+      <tr style="border-top: 2px solid var(--border); font-weight: 700;">
+        <td>TOTAL CPM</td>
+        <td colspan="2">141.4</td>
+        <td colspan="2">169.7</td>
+        <td style="color:var(--orange)">-16.7%</td>
+        <td><span class="tag tag-diff">-17%</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim);">
+    <strong>Key gaps:</strong> Felblade at 2.2 CPM vs 7.7 CPM is the single largest rotational deficit — Kaali used Felblade 3.5x more often. Felblade generates Fury and does damage, meaning fewer Felblades compounds into fewer Soul Cleaves.
+    Soul Cleave at 14.4 vs 18.9 CPM (-24%) directly reduces both damage and self-healing.
+    Metamorphosis at 13 vs 21 casts (-38%) means fewer Demonsurge windows — Meta is the core of the Fel-Scarred DPS engine.
+    <strong>Soul Carver</strong> and <strong>Fel Devastation</strong> are talent choices Nucke did not take. Kaali's build includes both, contributing 674K + 633K damage (2% of total) plus Fel Devastation's self-healing (326K effective).
+  </div>
+</div>
+
+<!-- Active Mitigation Uptime -->
+<div class="section">
+  <h2>Active Mitigation &amp; Defensive Uptime</h2>
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px;">
+    <div class="uptime-bar">
+      <div class="uptime-label" style="color: var(--accent)">Demon Spikes</div>
+      <div class="uptime-track"><div class="uptime-fill bar-green" style="width: 95.4%"></div></div>
+      <div class="uptime-pct" style="color: var(--green)">95.4%</div>
+    </div>
+    <div class="uptime-bar">
+      <div class="uptime-label" style="color: var(--orange)">Fiery Brand</div>
+      <div class="uptime-track"><div class="uptime-fill bar-orange" style="width: 37.2%"></div></div>
+      <div class="uptime-pct" style="color: var(--orange)">37.2%</div>
+    </div>
+    <div class="uptime-bar">
+      <div class="uptime-label" style="color: var(--purple)">Metamorphosis</div>
+      <div class="uptime-track"><div class="uptime-fill bar-purple" style="width: 35.2%"></div></div>
+      <div class="uptime-pct" style="color: var(--purple)">35.2%</div>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    <strong class="green">95.4% Demon Spikes uptime is excellent</strong> — only 22.5s of the 8:09 fight without active mitigation. This means Nucke was almost always physically mitigated, which is the #1 job of a tank. Fiery Brand at 37.2% and Meta at 35.2% are reasonable for their cooldown windows — Fiery Brand was used 11 times (matching reference), and Metamorphosis 13 times.
+  </div>
+</div>
+
+<!-- Damage Done Breakdown -->
+<div class="section">
+  <h2>Damage Done Breakdown</h2>
+  <div class="two-col">
+    <div>
+      <h3 style="color: var(--dh)">Nucke — 73.2K DPS</h3>
+      <table>
+        <thead><tr><th>Ability</th><th>Damage</th><th>%</th><th>Hits</th></tr></thead>
+        <tbody>
+          <tr><td>Voidfall Meteor</td><td>6.81M</td><td>19.0%</td><td>122</td></tr>
+          <tr><td>Soul Cleave</td><td>4.75M</td><td>13.2%</td><td>197</td></tr>
+          <tr><td>Spirit Bomb</td><td>3.85M</td><td>10.7%</td><td>77</td></tr>
+          <tr><td>World Killer</td><td>3.58M</td><td>10.0%</td><td>50</td></tr>
+          <tr><td>Melee</td><td>2.88M</td><td>8.0%</td><td>554</td></tr>
+          <tr><td>Fracture</td><td>2.74M</td><td>7.6%</td><td>280</td></tr>
+          <tr><td>Meteor Shower</td><td>2.42M</td><td>6.7%</td><td>222</td></tr>
+          <tr><td>Catastrophe</td><td>2.40M</td><td>6.7%</td><td>187</td></tr>
+          <tr><td>Fiery Brand</td><td>1.57M</td><td>4.4%</td><td>439</td></tr>
+          <tr><td>Immolation Aura</td><td>1.23M</td><td>3.4%</td><td>613</td></tr>
+          <tr><td>Explosion of the Soul</td><td>1.12M</td><td>3.1%</td><td>99</td></tr>
+          <tr><td>Sigil of Flame</td><td>851K</td><td>2.4%</td><td>188</td></tr>
+          <tr><td>Sigil of Spite</td><td>668K</td><td>1.9%</td><td>10</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3 style="color: var(--purple)">Kaali — 129.1K DPS</h3>
+      <table>
+        <thead><tr><th>Ability</th><th>Damage</th><th>%</th><th>Hits</th></tr></thead>
+        <tbody>
+          <tr><td>Voidfall Meteor</td><td>15.89M</td><td>24.6%</td><td>281</td></tr>
+          <tr><td>World Killer</td><td>8.07M</td><td>12.5%</td><td>115</td></tr>
+          <tr><td>Soul Cleave</td><td>7.35M</td><td>11.4%</td><td>254</td></tr>
+          <tr><td>Catastrophe</td><td>5.87M</td><td>9.1%</td><td>414</td></tr>
+          <tr><td>Meteor Shower</td><td>5.53M</td><td>8.6%</td><td>527</td></tr>
+          <tr><td>Spirit Bomb</td><td>5.41M</td><td>8.4%</td><td>104</td></tr>
+          <tr><td>Melee</td><td>3.37M</td><td>5.2%</td><td>615</td></tr>
+          <tr><td>Fracture</td><td>3.29M</td><td>5.1%</td><td>304</td></tr>
+          <tr><td>Fiery Brand</td><td>1.79M</td><td>2.8%</td><td>495</td></tr>
+          <tr><td>Immolation Aura</td><td>1.75M</td><td>2.7%</td><td>876</td></tr>
+          <tr><td>Sigil of Spite</td><td>1.54M</td><td>2.4%</td><td>28</td></tr>
+          <tr><td>Sigil of Flame</td><td>1.46M</td><td>2.3%</td><td>225</td></tr>
+          <tr><td>Soul Carver</td><td>674K</td><td>1.0%</td><td>35</td></tr>
+          <tr><td>Fel Devastation</td><td>633K</td><td>1.0%</td><td>151</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    Both players run the same Fel-Scarred hero tree — the damage profile shape is very similar. The gap is volume: Kaali's Voidfall Meteor did 15.89M vs Nucke's 6.81M (2.3x more) because more Metamorphosis casts = more Demonsurge procs = more Voidfall Meteors. World Killer shows the same 2.25x multiplier. The entire Demonsurge engine scales off how aggressively you cycle Meta, and Kaali cycled it 62% more often.
+  </div>
+</div>
+
+<!-- Damage Taken Breakdown -->
+<div class="section">
+  <h2>Damage Taken Breakdown</h2>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Taken</th><th>Absorbed</th><th>Absorb %</th><th>Hits</th><th>Avg Hit</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="color:var(--red)">Putrid Fist</td>
+        <td>5.31M</td>
+        <td>741K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:80px"><div class="bar-fill bar-red" style="width:12.3%"></div></div>
+            <span>12.3%</span>
+          </div>
+        </td>
+        <td>14</td>
+        <td>379K</td>
+      </tr>
+      <tr>
+        <td>Rotting Pustules</td>
+        <td>5.04M</td>
+        <td>3.94M</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:80px"><div class="bar-fill bar-green" style="width:43.9%"></div></div>
+            <span style="color:var(--green)">43.9%</span>
+          </div>
+        </td>
+        <td>478</td>
+        <td>10.5K</td>
+      </tr>
+      <tr>
+        <td>Melee</td>
+        <td>3.77M</td>
+        <td>1.34M</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:80px"><div class="bar-fill bar-yellow" style="width:26.2%"></div></div>
+            <span>26.2%</span>
+          </div>
+        </td>
+        <td>51</td>
+        <td>73.9K</td>
+      </tr>
+      <tr>
+        <td style="color:var(--orange)">Bursting Pustules</td>
+        <td>1.11M</td>
+        <td>774K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:80px"><div class="bar-fill bar-green" style="width:41.1%"></div></div>
+            <span style="color:var(--green)">41.1%</span>
+          </div>
+        </td>
+        <td>46</td>
+        <td>24.1K</td>
+      </tr>
+      <tr>
+        <td style="color:var(--purple)">Fungal Bloom</td>
+        <td>843K</td>
+        <td>825K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:80px"><div class="bar-fill bar-green" style="width:49.5%"></div></div>
+            <span style="color:var(--green)">49.5%</span>
+          </div>
+        </td>
+        <td>51</td>
+        <td>16.5K</td>
+      </tr>
+      <tr>
+        <td>Blightshot</td>
+        <td>320K</td>
+        <td>96K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:80px"><div class="bar-fill bar-yellow" style="width:23.1%"></div></div>
+            <span>23.1%</span>
+          </div>
+        </td>
+        <td>10</td>
+        <td>32K</td>
+      </tr>
+      <tr>
+        <td>Poison Burst</td>
+        <td>168K</td>
+        <td>95K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:80px"><div class="bar-fill bar-green" style="width:36.1%"></div></div>
+            <span style="color:var(--green)">36.1%</span>
+          </div>
+        </td>
+        <td>3</td>
+        <td>56K</td>
+      </tr>
+      <tr>
+        <td style="color:var(--cyan)">Bursting Shroom</td>
+        <td>111K</td>
+        <td>226K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:80px"><div class="bar-fill bar-green" style="width:66.9%"></div></div>
+            <span style="color:var(--green)">66.9%</span>
+          </div>
+        </td>
+        <td>3</td>
+        <td>37.1K</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim);">
+    <strong>Total:</strong> 16.67M taken, 8.03M absorbed. <strong>Putrid Fist</strong> is the dominant damage source at 5.31M (31.8% of all damage taken) with only 12.3% absorption — this is expected since Putrid Fist is a massive physical hit that overwhelms absorbs. Compared to Kaali (4.80M on 15 hits, 15.2% absorption), Nucke's per-hit average of 379K is similar to Kaali's 320K. The Rotting Pustules absorption rate of 43.9% matches the reference (43.5%), confirming consistent active mitigation uptime.
+  </div>
+</div>
+
+<!-- Self-Healing Breakdown -->
+<div class="section">
+  <h2>Self-Healing Breakdown</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 8px;">
+    Total self-healing: <strong style="color:var(--text)">18.02M</strong> (36.9K HPS) vs Kaali <strong style="color:var(--purple)">21.25M</strong> (42.4K HPS)
+  </p>
+  <table>
+    <thead>
+      <tr><th>Ability</th><th>Effective</th><th>Overheal</th><th>OH %</th><th>Hits</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Soul Barrier</td>
+        <td>5.19M</td>
+        <td>0</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-green" style="width:0%"></div></div>
+            <span style="color:var(--green)">0%</span>
+          </div>
+        </td>
+        <td>225</td>
+      </tr>
+      <tr>
+        <td>Consume Soul</td>
+        <td>3.68M</td>
+        <td>5.07M</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-yellow" style="width:57.9%"></div></div>
+            <span>57.9%</span>
+          </div>
+        </td>
+        <td>424</td>
+      </tr>
+      <tr>
+        <td>Metamorphosis</td>
+        <td>3.27M</td>
+        <td>0</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-green" style="width:0%"></div></div>
+            <span style="color:var(--green)">0%</span>
+          </div>
+        </td>
+        <td>10</td>
+      </tr>
+      <tr>
+        <td>Leech</td>
+        <td>1.79M</td>
+        <td>416K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-green" style="width:18.9%"></div></div>
+            <span style="color:var(--green)">18.9%</span>
+          </div>
+        </td>
+        <td>172</td>
+      </tr>
+      <tr>
+        <td>Frailty</td>
+        <td>1.30M</td>
+        <td>4.22M</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-red" style="width:76.4%"></div></div>
+            <span>76.4%</span>
+          </div>
+        </td>
+        <td>450</td>
+      </tr>
+      <tr>
+        <td>First In, Last Out</td>
+        <td>1.08M</td>
+        <td>0</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-green" style="width:0%"></div></div>
+            <span style="color:var(--green)">0%</span>
+          </div>
+        </td>
+        <td>94</td>
+      </tr>
+      <tr>
+        <td>Soul Cleave</td>
+        <td>653K</td>
+        <td>824K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-yellow" style="width:55.8%"></div></div>
+            <span>55.8%</span>
+          </div>
+        </td>
+        <td>117</td>
+      </tr>
+      <tr>
+        <td>Healing Elixir</td>
+        <td>490K</td>
+        <td>0</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-green" style="width:0%"></div></div>
+            <span style="color:var(--green)">0%</span>
+          </div>
+        </td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td>Darkness</td>
+        <td>311K</td>
+        <td>0</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-green" style="width:0%"></div></div>
+            <span style="color:var(--green)">0%</span>
+          </div>
+        </td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td>Charred Warblades</td>
+        <td>146K</td>
+        <td>848K</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="bar-container" style="width:60px"><div class="bar-fill bar-red" style="width:85.3%"></div></div>
+            <span>85.3%</span>
+          </div>
+        </td>
+        <td>435</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim);">
+    Overheal on Consume Soul (57.9%) and Frailty (76.4%) is typical for Vengeance — Soul Fragment healing fires passively regardless of current HP. Kaali's profile shows similar patterns (Consume Soul 66.1% OH, Frailty 82.0% OH). The 3.22M gap in total self-healing is largely attributable to Kaali getting 5.25M from Metamorphosis (vs Nucke's 3.27M) due to 62% more Meta casts, plus 326K from Fel Devastation which Nucke doesn't talent.
+  </div>
+</div>
+
+<!-- Defensive CD vs Tank Buster Timeline -->
+<div class="section">
+  <h2>Putrid Fist — Defensive Coverage</h2>
+  <p style="font-size: 13px; color: var(--dim); margin-bottom: 12px;">
+    Putrid Fist hit Nucke 14 times. Every hit had at least Demon Spikes active. Fiery Brand and/or Metamorphosis were layered on top for 6 of 14 hits.
+  </p>
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+    <div class="timeline-row header">
+      <div>Time</div>
+      <div>Damage</div>
+      <div>Absorbed</div>
+      <div>Net Hit</div>
+      <div>Defensives Active</div>
+      <div>Assessment</div>
+    </div>
+    <div class="timeline-row def-green">
+      <div>0:38</div>
+      <div>246K</div>
+      <div>31K</div>
+      <div style="color:var(--green)">246K</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-info">FB</span> <span class="tag tag-build">SB</span></div>
+      <div style="color:var(--green)">Full stack</div>
+    </div>
+    <div class="timeline-row def-green">
+      <div>1:02</div>
+      <div>275K</div>
+      <div>45K</div>
+      <div style="color:var(--green)">275K</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-build">Meta</span> <span class="tag tag-build">SB</span></div>
+      <div style="color:var(--green)">Full stack</div>
+    </div>
+    <div class="timeline-row def-green">
+      <div>1:27</div>
+      <div>313K</div>
+      <div>5K</div>
+      <div style="color:var(--yellow)">313K</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-info">FB</span></div>
+      <div style="color:var(--green)">Good</div>
+    </div>
+    <div class="timeline-row def-yellow">
+      <div>1:51</div>
+      <div>339K</div>
+      <div>44K</div>
+      <div style="color:var(--yellow)">339K</div>
+      <div><span class="tag tag-same">DS</span></div>
+      <div style="color:var(--yellow)">DS only</div>
+    </div>
+    <div class="timeline-row def-yellow">
+      <div>2:54</div>
+      <div>570K</div>
+      <div>0</div>
+      <div style="color:var(--red)">570K</div>
+      <div><span class="tag tag-same">DS</span></div>
+      <div style="color:var(--yellow)">DS only — big hit</div>
+    </div>
+    <div class="timeline-row def-yellow">
+      <div>3:06</div>
+      <div>681K</div>
+      <div>278K</div>
+      <div style="color:var(--red)">681K</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-build">SB</span></div>
+      <div style="color:var(--yellow)">DS + Soul Barrier</div>
+    </div>
+    <div class="timeline-row def-green">
+      <div>3:31</div>
+      <div>0</div>
+      <div>193K</div>
+      <div style="color:var(--green)">0</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-build">Meta</span> <span class="tag tag-info">FB</span> <span class="tag tag-build">SB</span></div>
+      <div style="color:var(--green)">Full absorb!</div>
+    </div>
+    <div class="timeline-row def-yellow">
+      <div>3:55</div>
+      <div>516K</div>
+      <div>0</div>
+      <div style="color:var(--red)">516K</div>
+      <div><span class="tag tag-same">DS</span></div>
+      <div style="color:var(--yellow)">DS only</div>
+    </div>
+    <div class="timeline-row def-yellow">
+      <div>4:58</div>
+      <div>527K</div>
+      <div>36K</div>
+      <div style="color:var(--orange)">527K</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-build">SB</span></div>
+      <div style="color:var(--yellow)">DS + Soul Barrier</div>
+    </div>
+    <div class="timeline-row def-green">
+      <div>5:22</div>
+      <div>179K</div>
+      <div>0</div>
+      <div style="color:var(--green)">179K</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-info">FB</span> <span class="tag tag-build">Meta</span></div>
+      <div style="color:var(--green)">Full stack</div>
+    </div>
+    <div class="timeline-row def-yellow">
+      <div>5:47</div>
+      <div>437K</div>
+      <div>0</div>
+      <div style="color:var(--orange)">437K</div>
+      <div><span class="tag tag-same">DS</span></div>
+      <div style="color:var(--yellow)">DS only</div>
+    </div>
+    <div class="timeline-row def-green">
+      <div>6:11</div>
+      <div>364K</div>
+      <div>0</div>
+      <div style="color:var(--yellow)">364K</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-build">Meta</span></div>
+      <div style="color:var(--green)">DS + Meta</div>
+    </div>
+    <div class="timeline-row def-yellow">
+      <div>7:26</div>
+      <div>442K</div>
+      <div>109K</div>
+      <div style="color:var(--orange)">442K</div>
+      <div><span class="tag tag-same">DS</span> <span class="tag tag-build">SB</span></div>
+      <div style="color:var(--yellow)">DS + Soul Barrier</div>
+    </div>
+    <div class="timeline-row def-yellow">
+      <div>7:50</div>
+      <div>420K</div>
+      <div>0</div>
+      <div style="color:var(--orange)">420K</div>
+      <div><span class="tag tag-same">DS</span></div>
+      <div style="color:var(--yellow)">DS only — execute phase</div>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--dim); margin-top: 8px;">
+    <strong class="green">14/14 hits had Demon Spikes active</strong> — perfect active mitigation coverage on the tank buster. The hits at 2:54 (570K) and 3:06 (681K) were the highest damage — both came during a window without Fiery Brand or Meta, leaving only Demon Spikes. The damage ramp in later hits likely reflects boss soft-enrage from Bursting Pustules stacking. The 3:31 hit was fully absorbed (Meta + FB + DS + Soul Barrier layered).
+  </div>
+</div>
+
+<!-- Tank Swap Pattern -->
+<div class="section">
+  <h2>Tank Swap Pattern</h2>
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; margin-bottom: 16px;">
+      <div>
+        <div style="font-size: 12px; color: var(--dim);">Nucke Taunts</div>
+        <div style="font-size: 24px; font-weight: 700; color: var(--dh);">18</div>
+      </div>
+      <div>
+        <div style="font-size: 12px; color: var(--dim);">Glazedwhole Taunts</div>
+        <div style="font-size: 24px; font-weight: 700; color: #c41e3a;">24</div>
+        <div style="font-size: 11px; color: var(--dim);">15 Dark Command + 9 Death Grip</div>
+      </div>
+      <div>
+        <div style="font-size: 12px; color: var(--dim);">Putrid Fists on Nucke</div>
+        <div style="font-size: 24px; font-weight: 700;">14 / 29</div>
+        <div style="font-size: 11px; color: var(--dim);">48.3% — even split</div>
+      </div>
+    </div>
+    <h3 style="margin-bottom: 8px;">Swap Timeline</h3>
+    <div class="swap-timeline">
+      <span class="swap-tag swap-glazed">0:00 Glazed</span>
+      <span class="swap-tag swap-nucke">0:25 Nucke</span>
+      <span class="swap-tag swap-glazed">0:28 Glazed</span>
+      <span class="swap-tag swap-glazed">0:38 Glazed</span>
+      <span class="swap-tag swap-nucke">0:49 Nucke</span>
+      <span class="swap-tag swap-glazed">1:01 Glazed</span>
+      <span class="swap-tag swap-nucke">1:16 Nucke</span>
+      <span class="swap-tag swap-glazed">1:30 Glazed</span>
+      <span class="swap-tag swap-nucke">1:39 Nucke</span>
+      <span class="swap-tag swap-glazed">1:51 Glazed</span>
+      <span class="swap-tag swap-nucke">2:43 Nucke</span>
+      <span class="swap-tag swap-glazed">2:50 Glazed</span>
+      <span class="swap-tag swap-nucke">2:52 Nucke</span>
+      <span class="swap-tag swap-glazed">2:56 Glazed</span>
+      <span class="swap-tag swap-nucke">3:03 Nucke</span>
+      <span class="swap-tag swap-glazed">3:07 Glazed</span>
+      <span class="swap-tag swap-nucke">3:19 Nucke</span>
+      <span class="swap-tag swap-glazed">3:32 Glazed</span>
+      <span class="swap-tag swap-glazed">3:35 Glazed</span>
+      <span class="swap-tag swap-nucke">3:55 Nucke</span>
+      <span class="swap-tag swap-glazed">3:43 Glazed</span>
+      <span class="swap-tag swap-nucke">3:59 Nucke</span>
+      <span class="swap-tag swap-glazed">3:57 Glazed</span>
+      <span class="swap-tag swap-nucke">4:07 Nucke</span>
+      <span class="swap-tag swap-glazed">4:57 Glazed</span>
+      <span class="swap-tag swap-nucke">5:09 Nucke</span>
+      <span class="swap-tag swap-glazed">5:25 Glazed</span>
+      <span class="swap-tag swap-nucke">5:35 Nucke</span>
+      <span class="swap-tag swap-glazed">5:49 Glazed</span>
+      <span class="swap-tag swap-glazed">5:50 Glazed</span>
+      <span class="swap-tag swap-glazed">5:53 Glazed</span>
+      <span class="swap-tag swap-nucke">5:59 Nucke</span>
+      <span class="swap-tag swap-glazed">6:12 Glazed</span>
+      <span class="swap-tag swap-nucke">6:23 Nucke</span>
+      <span class="swap-tag swap-glazed">7:04 Glazed</span>
+      <span class="swap-tag swap-nucke">7:18 Nucke</span>
+      <span class="swap-tag swap-glazed">7:28 Glazed</span>
+      <span class="swap-tag swap-nucke">7:37 Nucke</span>
+      <span class="swap-tag swap-glazed">7:59 Glazed</span>
+      <span class="swap-tag swap-nucke">8:03 Nucke</span>
+      <span class="swap-tag swap-glazed">8:06 Glazed</span>
+      <span class="swap-tag swap-glazed">8:07 Glazed</span>
+    </div>
+  </div>
+  <div style="font-size: 12px; color: var(--dim);">
+    Rotmire's tank swap pattern is driven by Putrid Fist — tanks swap after each hit so the other tank takes the next one. The 14/15 split (Nucke/Glazedwhole) on Putrid Fist targets is nearly even. There are periods of rapid back-and-forth swaps (2:43-3:07, 3:43-4:07) that coincide with Fungal Bloom and Festering Vines overlap windows where positioning matters. Glazedwhole's Death Grips (9 uses) serve as supplemental taunts for add pickups and snap aggro during Awaken Fungi.
+  </div>
+</div>
+
+<!-- Wipe Progression -->
+<div class="section">
+  <h2>Wipe Progression</h2>
+  <div class="progression-chart">
+    <div class="prog-bar" style="height: 84.7%; background: var(--red); flex: 1;" data-tooltip="Pull 1: 6:54, 22.45% wipe, 84.2K DPS, Survived">
+      <div class="prog-top" style="color: var(--red)">84.2K</div>
+      <div class="prog-label">Pull 1</div>
+    </div>
+    <div class="prog-bar" style="height: 100%; background: var(--orange); flex: 1;" data-tooltip="Pull 2: 8:25, 11.61% wipe, 82.2K DPS, Survived">
+      <div class="prog-top" style="color: var(--orange)">82.2K</div>
+      <div class="prog-label">Pull 2</div>
+    </div>
+    <div class="prog-bar" style="height: 97%; background: var(--green); flex: 1;" data-tooltip="Pull 3: 8:09, KILL, 73.2K DPS, Survived">
+      <div class="prog-top" style="color: var(--green)">73.2K &#10003;</div>
+      <div class="prog-label">Pull 3</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr><th>Pull</th><th>Duration</th><th>Result</th><th>DPS</th><th>DTPS</th><th>Died</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>6:54</td>
+        <td><span style="color:var(--red)">22.45% wipe</span></td>
+        <td>84,226</td>
+        <td>53,827</td>
+        <td><span style="color:var(--green)">No</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>8:25</td>
+        <td><span style="color:var(--orange)">11.61% wipe</span></td>
+        <td>82,203</td>
+        <td>55,227</td>
+        <td><span style="color:var(--green)">No</span></td>
+      </tr>
+      <tr class="player-row">
+        <td>3</td>
+        <td>8:09</td>
+        <td><span style="color:var(--green)">KILL</span></td>
+        <td>73,157</td>
+        <td>50,539</td>
+        <td><span style="color:var(--green)">No</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="font-size: 12px; color: var(--dim);">
+    <strong class="green">Nucke survived all 3 pulls</strong> — 100% survival rate. DPS decreased across pulls (84.2K → 82.2K → 73.2K), which is common when optimizing for survival on prog rather than pushing damage. DTPS also decreased from 53.8K on pull 1 to 50.5K on the kill, suggesting better positioning and fewer unnecessary damage sources as the team cleaned up mechanics. The wipe progression was clean — 22.45% to 11.61% to kill in 3 pulls.
+  </div>
+</div>
+
+<!-- Actionable Items -->
+<div class="section">
+  <h2>Actionable Items</h2>
+
+  <div class="action-item critical">
+    <div class="action-title" style="color: var(--red)">1. Felblade Usage — 71% Below Reference</div>
+    Nucke cast Felblade <strong>18 times (2.2 CPM)</strong> vs Kaali's <strong>64 casts (7.7 CPM)</strong>. Felblade is a Fury generator and deals meaningful damage — it should be used on cooldown between Fracture casts. The reduced Felblade usage likely cascades into fewer Soul Cleaves (less Fury generation = less Fury to spend). Neliele (closest build, rank 3) also only used 14 Felblades (1.6 CPM), so this may be a talent choice difference — verify whether Nucke talents into Felblade's enhanced CDR.
+  </div>
+
+  <div class="action-item critical">
+    <div class="action-title" style="color: var(--red)">2. Total CPM Gap — 141.4 vs 169.7 (-17%)</div>
+    Nucke pressed <strong>28.3 fewer abilities per minute</strong> than the rank 1 reference. Over an 8:09 fight, that is ~231 missing button presses. This is the core driver of the DPS gap. The difference compounds: fewer Fractures = fewer Soul Fragments = fewer Soul Cleaves = fewer Demonsurge procs = fewer Voidfall Meteors. Focus on reducing deadtime between casts — ABC (Always Be Casting). Even Neliele at rank 3 was at 153.7 CPM.
+  </div>
+
+  <div class="action-item warning">
+    <div class="action-title" style="color: var(--yellow)">3. Soul Cleave at 14.4 CPM vs 18.9 CPM (-24%)</div>
+    Soul Cleave is both a damage ability and the primary Fury dump. <strong>41 fewer Soul Cleaves</strong> than Kaali means 41 fewer damage events plus reduced self-healing. This is likely downstream from the Felblade deficit (less Fury generation) and the lower total CPM. Priority: fix Felblade usage and overall CPM first, and Soul Cleave volume should naturally follow.
+  </div>
+
+  <div class="action-item warning">
+    <div class="action-title" style="color: var(--yellow)">4. Metamorphosis Cycling — 13 vs 21 Casts (-38%)</div>
+    Metamorphosis is the engine of the Fel-Scarred DPS kit. Each Meta cast triggers Demonsurge, which generates Voidfall Meteors (Nucke's #1 damage source at 19%). Kaali cast Meta <strong>8 more times</strong> over a similar fight duration, resulting in 2.3x more Voidfall Meteor damage. The Annihilator/Fel-Scarred build has significant Meta cooldown reduction through talents — are all CDR-related talents fully invested? More aggressive Meta cycling would be the single highest-impact DPS change.
+  </div>
+
+  <div class="action-item warning">
+    <div class="action-title" style="color: var(--yellow)">5. Talent Choices — Missing Soul Carver and Fel Devastation</div>
+    Kaali talents into both <strong>Soul Carver</strong> (7 casts, 674K damage) and <strong>Fel Devastation</strong> (4 casts, 633K damage + 326K self-healing). Nucke's build skips both. These two abilities contributed 1.31M damage (2% of Kaali's total) plus meaningful self-healing. Review whether the alternative talent picks provide equivalent or greater value. Fel Devastation in particular doubles as a burst self-heal during high-damage windows.
+  </div>
+
+  <div class="action-item info">
+    <div class="action-title" style="color: var(--accent)">6. Defensive Execution is Strong — Maintain This</div>
+    <strong class="green">95.4% Demon Spikes uptime</strong> and <strong class="green">14/14 Putrid Fist hits covered</strong> by at least one defensive. DTPS of 34.1K was lower than the rank 1 reference (35.4K). Zero deaths across all 3 pulls. The survival execution is already at a high level — the focus should be purely on increasing offensive output while maintaining this mitigation discipline.
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>Generated by WCL Tank Analyzer &mdash; Data from <a href="https://www.warcraftlogs.com/reports/Hz1Lm672dZnBw9YC" target="_blank">Warcraft Logs</a></p>
+  <p>Primary reference: Kaali (Rank 1, 129.1K DPS, 18 talent diffs). Secondary reference: Neliele (Rank 3, 119.6K DPS, 6 talent diffs).</p>
+  <p>Spec guides referenced: <a href="https://www.icy-veins.com/wow/vengeance-demon-hunter-pve-tank-rotation-cooldowns-abilities" target="_blank">Icy Veins</a>, <a href="https://www.wowhead.com/guide/classes/demon-hunter/vengeance/rotation-cooldowns-pve-tank" target="_blank">Wowhead</a></p>
+</div>
+
+</body>
+</html>

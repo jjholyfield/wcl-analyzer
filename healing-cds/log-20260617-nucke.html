@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nucke — Vengeance Demon Hunter — Mythic Rotmire Analysis</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+    --purple: #bc8cff; --cyan: #39d2c0; --dh: #a330c9;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
+  .subtitle { color: var(--dim); font-size: 14px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .card-header { font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+  .grid-5 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 12px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--dim); text-transform: uppercase; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .orange { color: var(--orange); }
+  .dim { color: var(--dim); }
+  .accent { color: var(--accent); }
+  .purple { color: var(--purple); }
+  .cyan { color: var(--cyan); }
+  .dh-color { color: var(--dh); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover { background: rgba(88,166,255,0.04); }
+  .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
+  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
+  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .tag-new { background: rgba(188,140,255,0.15); color: var(--purple); }
+  .tag-missing { background: rgba(139,148,158,0.15); color: var(--dim); }
+  .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
+  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .action-item strong { color: var(--accent); }
+  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical strong { color: var(--red); }
+  .oh-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
+  .oh-eff { background: var(--green); }
+  .oh-over { background: var(--red); opacity: 0.6; }
+  .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
+  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
+  .cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin: 2px; }
+  .cd-pill.defensive { background: rgba(57,210,192,0.15); color: var(--cyan); }
+  .cd-pill.taunt { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .cd-pill.fist { background: rgba(248,81,73,0.15); color: var(--red); font-weight: 600; }
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .build-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .build-card h3 { margin-top: 0; }
+  .build-ability { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .build-count { font-family: 'SF Mono', Consolas, monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<h1>Nucke <span class="dim">&mdash; Vengeance Demon Hunter</span></h1>
+<div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:57) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
+
+<!-- ═══ SUMMARY ═══ -->
+<div class="grid-5">
+  <div class="card stat">
+    <div class="stat-value">82.6K</div>
+    <div class="stat-label">DPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">49.6K</div>
+    <div class="stat-label">DTPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">40.3K</div>
+    <div class="stat-label">Self-Heal HPS</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value">290</div>
+    <div class="stat-label">Item Level</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">Died 7:40</div>
+    <div class="stat-label">Kill Status</div>
+  </div>
+</div>
+
+<!-- ═══ VERDICT ═══ -->
+<div class="card" style="border-left: 3px solid var(--yellow); margin-top: 16px;">
+  <div class="card-header yellow">Bottom Line</div>
+  <p style="font-size: 15px;">Nucke contributes <strong class="orange">82.6K DPS</strong> vs the reference Rampire's <strong class="green">106.4K</strong> &mdash; a <strong class="red">22% gap</strong> that is primarily execution-driven given only <strong class="green">6 talent diffs</strong> and near-identical item levels (290 vs 259). The core rotation issue: <strong class="red">Soul Cleave CPM is 11.7 vs 17.2</strong> &mdash; a 32% deficit on the primary soul fragment consumer and self-heal button. <strong class="red">Felblade usage at 0.3/min vs 3.4/min</strong> is the single biggest rotational gap &mdash; this is a resource generator and gap-closer that should be pressed on cooldown. <strong class="orange">Fracture CPM is 50.9 vs 57.7</strong>, suggesting some GCD downtime. On the defensive side, Nucke uses Demon Spikes well (41 casts) but <strong class="red">died at 7:40</strong> &mdash; 17 seconds before the kill &mdash; after a <strong class="red">Last Resort proc</strong> followed by a 754K Putrid Fist with insufficient mitigation. Fel Devastation is over-used as a rotational ability (9 casts vs Rampire's 1) while Metamorphosis is used aggressively (13 casts). The DPS gap comes from lower Voidfall Meteor damage (7.0M vs 11.8M, &minus;41%) which is directly tied to the Soul Cleave and Felblade CPM deficit &mdash; fewer consumers means fewer procs of the trinket/tier interactions that drive Vengeance damage.</p>
+</div>
+
+<!-- ═══ REFERENCE COMPARISON ═══ -->
+<h2>Reference Comparison</h2>
+<p class="section-intro">Compared against the top ranked Vengeance Demon Hunters on Mythic Rotmire. Primary reference: <strong>Rampire</strong> (closest talent match at 6 diffs, 106.1K DPS, 8:13 kill). One reference (Anonymous) was excluded due to private logs.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr style="background: rgba(163,48,201,0.06);">
+      <td><strong>Nucke</strong></td>
+      <td>82,595</td>
+      <td>7:57</td>
+      <td>289.8</td>
+      <td>&mdash;</td>
+      <td><span class="tag tag-diff">Died 7:40</span></td>
+    </tr>
+    <tr>
+      <td>Rampire <span class="ref-badge">Reference</span></td>
+      <td class="green">106,075</td>
+      <td>8:13</td>
+      <td>259.1</td>
+      <td><span class="tag tag-same">6 diff</span></td>
+      <td>Closest build match</td>
+    </tr>
+    <tr>
+      <td>Zoomy</td>
+      <td class="green">119,331</td>
+      <td>8:13</td>
+      <td>270.3</td>
+      <td><span class="tag tag-warn">15 diff</span></td>
+      <td>+12 ilvl advantage</td>
+    </tr>
+    <tr>
+      <td>Alkaide</td>
+      <td class="green">107,565</td>
+      <td>8:20</td>
+      <td>288.9</td>
+      <td><span class="tag tag-diff">18 diff</span></td>
+      <td>+31 ilvl advantage</td>
+    </tr>
+    <tr>
+      <td>&#1057;&#1091;&#1087;&#1089;&#1091;&#1087;</td>
+      <td class="green">107,177</td>
+      <td>7:10</td>
+      <td>259.1</td>
+      <td><span class="tag tag-same">7 diff</span></td>
+      <td>Similar build + gear</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ═══ CAST PROFILE ═══ -->
+<h2>Cast Profile Comparison</h2>
+<p class="section-intro">Core rotational abilities compared against Rampire. Total CPM: Nucke <strong class="orange">139.0</strong> vs Rampire <strong class="green">162.0</strong> &mdash; a 23 CPM gap indicating significant GCD downtime. The biggest individual gaps are Felblade (&minus;91%) and Soul Cleave (&minus;32%).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Nucke Casts</th><th>Nucke CPM</th><th>Rampire Casts</th><th>Rampire CPM</th><th>Delta</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Fracture</strong></td>
+      <td>405</td>
+      <td>50.9</td>
+      <td>474</td>
+      <td>57.7</td>
+      <td class="yellow">-12%</td>
+      <td><span class="tag tag-warn">Slightly low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Soul Cleave</strong></td>
+      <td>93</td>
+      <td>11.7</td>
+      <td>141</td>
+      <td>17.2</td>
+      <td class="red">-32%</td>
+      <td><span class="tag tag-crit">Major gap &mdash; #1 consumer</span></td>
+    </tr>
+    <tr>
+      <td>Demon Spikes</td>
+      <td>41</td>
+      <td>5.2</td>
+      <td>54</td>
+      <td>6.6</td>
+      <td class="yellow">-22%</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Spirit Bomb</td>
+      <td>28</td>
+      <td>3.5</td>
+      <td>27</td>
+      <td>3.3</td>
+      <td class="green">+7%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Immolation Aura</td>
+      <td>27</td>
+      <td>3.4</td>
+      <td>32</td>
+      <td>3.9</td>
+      <td class="yellow">-13%</td>
+      <td><span class="tag tag-warn">Slightly low</span></td>
+    </tr>
+    <tr>
+      <td><strong>Felblade</strong></td>
+      <td>2</td>
+      <td>0.3</td>
+      <td>28</td>
+      <td>3.4</td>
+      <td class="red">-93%</td>
+      <td><span class="tag tag-crit">Virtually unused</span></td>
+    </tr>
+    <tr>
+      <td>Metamorphosis</td>
+      <td>13</td>
+      <td>1.6</td>
+      <td>19</td>
+      <td>2.3</td>
+      <td class="yellow">-29%</td>
+      <td><span class="tag tag-warn">Below ref</span></td>
+    </tr>
+    <tr>
+      <td>Fiery Brand</td>
+      <td>10</td>
+      <td>1.3</td>
+      <td>12</td>
+      <td>1.5</td>
+      <td class="green">-14%</td>
+      <td><span class="tag tag-same">Close</span></td>
+    </tr>
+    <tr>
+      <td>Sigil of Flame</td>
+      <td>12</td>
+      <td>1.5</td>
+      <td>7</td>
+      <td>0.9</td>
+      <td class="green">+77%</td>
+      <td><span class="tag tag-info">Above ref</span></td>
+    </tr>
+    <tr>
+      <td>Sigil of Spite</td>
+      <td>7</td>
+      <td>0.9</td>
+      <td>5</td>
+      <td>0.6</td>
+      <td class="green">+45%</td>
+      <td><span class="tag tag-same">Good</span></td>
+    </tr>
+    <tr>
+      <td>Fel Devastation</td>
+      <td>9</td>
+      <td>1.1</td>
+      <td>1</td>
+      <td>0.1</td>
+      <td class="orange">+830%</td>
+      <td><span class="tag tag-warn">Over-casting</span></td>
+    </tr>
+    <tr>
+      <td>Torment (Taunt)</td>
+      <td>13</td>
+      <td>1.6</td>
+      <td>19</td>
+      <td>2.3</td>
+      <td class="dim">-29%</td>
+      <td><span class="tag tag-info">Fewer taunts</span></td>
+    </tr>
+    <tr>
+      <td>Throw Glaive</td>
+      <td>2</td>
+      <td>0.3</td>
+      <td>4</td>
+      <td>0.5</td>
+      <td class="dim">-48%</td>
+      <td><span class="tag tag-info">Utility</span></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total (excl. Soul Fragment)</strong></td>
+      <td><strong>666</strong></td>
+      <td><strong class="orange">83.7</strong></td>
+      <td><strong>848</strong></td>
+      <td><strong class="green">103.2</strong></td>
+      <td class="red">-19%</td>
+      <td><span class="tag tag-crit">19.5 CPM gap</span></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<!-- ═══ FELBLADE DEEP DIVE ═══ -->
+<h2>Felblade &mdash; The Biggest Gap</h2>
+<p class="section-intro">Felblade is a 15-second cooldown that generates Fury and functions as a gap-closer. Rampire presses it <strong>28 times</strong> in 8:13 (3.4/min). Nucke pressed it <strong>twice</strong> in 7:57. This is not a minor rotation miss &mdash; it is functionally absent from the rotation.</p>
+
+<div class="grid-2">
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-header">Nucke &mdash; 2 Uses</div>
+    <p style="font-size: 14px;">Only 2 Felblade casts in nearly 8 minutes. This means ~30 Felblade casts were missed. Each missed Felblade is a lost GCD, lost Fury generation, and a lost gap-closer opportunity.</p>
+    <p style="margin-top: 8px; font-size: 13px; color: var(--dim);">26 missed Felblades &times; ~40 Fury each = ~1,040 lost Fury. That translates to roughly 15+ additional Soul Cleaves that never happened &mdash; which compounds into less self-healing, less damage, and fewer Soul Fragment procs.</p>
+  </div>
+  <div class="card" style="border-left: 3px solid var(--green);">
+    <div class="card-header">Rampire &mdash; 28 Uses</div>
+    <p style="font-size: 14px;">28 uses in 8:13 = one every ~17.6 seconds. Nearly on cooldown (15s). This feeds the Fury economy that enables frequent Soul Cleave presses. Felblade is both a rotational DPS ability AND a resource generator.</p>
+    <p style="margin-top: 8px; font-size: 13px; color: var(--dim);">Combined with 474 Fractures (vs Nucke's 405) and 141 Soul Cleaves (vs 93), Rampire's entire Fury economy runs significantly hotter &mdash; more generation, more spending, more procs.</p>
+  </div>
+</div>
+
+<!-- ═══ DAMAGE DONE ═══ -->
+<h2>Damage Done Breakdown</h2>
+<p class="section-intro">39.4M total damage (82.6K DPS) vs Rampire's 52.5M (106.4K DPS). The largest single gap is Voidfall Meteor: Nucke 7.0M vs Rampire 11.8M (&minus;41%). This is proc-driven damage &mdash; more Soul Cleaves and Fractures mean more procs, which cascade into the trinket/tier damage.</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Nucke Damage</th><th>Nucke DPS</th><th>%</th><th>Rampire Damage</th><th>Rampire DPS</th><th>%</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Voidfall Meteor</strong></td>
+      <td>6,981K</td>
+      <td>14,621</td>
+      <td>17.7%</td>
+      <td class="green">11,840K</td>
+      <td class="green">24,022</td>
+      <td>22.6%</td>
+    </tr>
+    <tr>
+      <td>World Killer</td>
+      <td>4,403K</td>
+      <td>9,219</td>
+      <td>11.2%</td>
+      <td>7,658K</td>
+      <td>15,536</td>
+      <td>14.6%</td>
+    </tr>
+    <tr>
+      <td>Meteor Shower</td>
+      <td>4,372K</td>
+      <td>9,154</td>
+      <td>11.1%</td>
+      <td>4,796K</td>
+      <td>9,730</td>
+      <td>9.1%</td>
+    </tr>
+    <tr>
+      <td><strong>Soul Cleave</strong></td>
+      <td>4,326K</td>
+      <td>9,058</td>
+      <td>11.0%</td>
+      <td class="green">6,994K</td>
+      <td class="green">14,191</td>
+      <td>13.3%</td>
+    </tr>
+    <tr>
+      <td>Spirit Bomb</td>
+      <td>4,311K</td>
+      <td>9,027</td>
+      <td>10.9%</td>
+      <td>4,157K</td>
+      <td>8,433</td>
+      <td>7.9%</td>
+    </tr>
+    <tr>
+      <td>Catastrophe</td>
+      <td>2,942K</td>
+      <td>6,161</td>
+      <td>7.5%</td>
+      <td>4,442K</td>
+      <td>9,011</td>
+      <td>8.5%</td>
+    </tr>
+    <tr>
+      <td>Fracture</td>
+      <td>2,907K</td>
+      <td>6,087</td>
+      <td>7.4%</td>
+      <td>3,406K</td>
+      <td>6,910</td>
+      <td>6.5%</td>
+    </tr>
+    <tr>
+      <td>Melee</td>
+      <td>2,634K</td>
+      <td>5,515</td>
+      <td>6.7%</td>
+      <td>3,158K</td>
+      <td>6,406</td>
+      <td>6.0%</td>
+    </tr>
+    <tr>
+      <td>Fiery Brand</td>
+      <td>1,525K</td>
+      <td>3,194</td>
+      <td>3.9%</td>
+      <td>1,626K</td>
+      <td>3,299</td>
+      <td>3.1%</td>
+    </tr>
+    <tr>
+      <td>Fel Devastation</td>
+      <td>1,079K</td>
+      <td>2,260</td>
+      <td>2.7%</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+      <td class="dim">&mdash;</td>
+    </tr>
+    <tr>
+      <td>Sigil of Spite</td>
+      <td>1,048K</td>
+      <td>2,195</td>
+      <td>2.7%</td>
+      <td>595K</td>
+      <td>1,208</td>
+      <td>1.1%</td>
+    </tr>
+    <tr>
+      <td>Immolation Aura</td>
+      <td>942K</td>
+      <td>1,973</td>
+      <td>2.4%</td>
+      <td>1,291K</td>
+      <td>2,619</td>
+      <td>2.5%</td>
+    </tr>
+    <tr>
+      <td>Explosion of the Soul</td>
+      <td>872K</td>
+      <td>1,826</td>
+      <td>2.2%</td>
+      <td>1,118K</td>
+      <td>2,268</td>
+      <td>2.1%</td>
+    </tr>
+    <tr>
+      <td>Sigil of Flame</td>
+      <td>583K</td>
+      <td>1,221</td>
+      <td>1.5%</td>
+      <td>463K</td>
+      <td>939</td>
+      <td>0.9%</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total</strong></td>
+      <td><strong>39,443K</strong></td>
+      <td><strong class="orange">82,595</strong></td>
+      <td></td>
+      <td><strong>52,456K</strong></td>
+      <td><strong class="green">106,427</strong></td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<!-- ═══ DAMAGE TAKEN ═══ -->
+<h2>Damage Taken Breakdown</h2>
+<p class="section-intro">Nucke takes 23.7M total (49.6K DTPS) vs Rampire's 24.0M (48.6K DTPS) &mdash; nearly identical DTPS. Both tanks take 14 Putrid Fists. Nucke's absorption rates are comparable to Rampire's, with strong Fungal Bloom mitigation (49% absorbed vs 51%).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Nucke Total</th><th>Nucke DTPS</th><th>Hits</th><th>Absorbed</th><th>Rampire Total</th><th>Rampire DTPS</th><th>Hits</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Rotting Pustules</td>
+      <td>7,434K</td>
+      <td>15,568</td>
+      <td>450</td>
+      <td>41%</td>
+      <td>8,650K</td>
+      <td>17,546</td>
+      <td>482</td>
+    </tr>
+    <tr>
+      <td><strong>Melee</strong></td>
+      <td>6,917K</td>
+      <td>14,485</td>
+      <td>56</td>
+      <td class="cyan">17%</td>
+      <td>5,965K</td>
+      <td>12,099</td>
+      <td>48</td>
+    </tr>
+    <tr>
+      <td><strong>Putrid Fist</strong></td>
+      <td>5,819K</td>
+      <td>12,185</td>
+      <td>14</td>
+      <td>30%</td>
+      <td>4,880K</td>
+      <td>9,899</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <td>Fungal Bloom</td>
+      <td>1,668K</td>
+      <td>3,492</td>
+      <td>51</td>
+      <td class="cyan">49%</td>
+      <td>1,651K</td>
+      <td>3,349</td>
+      <td>51</td>
+    </tr>
+    <tr>
+      <td>Bursting Pustules</td>
+      <td>1,471K</td>
+      <td>3,080</td>
+      <td>44</td>
+      <td class="cyan">42%</td>
+      <td>1,824K</td>
+      <td>3,700</td>
+      <td>48</td>
+    </tr>
+    <tr>
+      <td>Blightshot</td>
+      <td>227K</td>
+      <td>476</td>
+      <td>8</td>
+      <td>40%</td>
+      <td>254K</td>
+      <td>515</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td>Bursting Shroom</td>
+      <td>131K</td>
+      <td>274</td>
+      <td>1</td>
+      <td>0%</td>
+      <td>449K</td>
+      <td>911</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total</strong></td>
+      <td><strong>23,666K</strong></td>
+      <td><strong>49,557</strong></td>
+      <td></td>
+      <td></td>
+      <td><strong>23,967K</strong></td>
+      <td><strong>48,625</strong></td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<div class="grid-2" style="margin-top: 12px;">
+  <div class="card">
+    <div class="card-header">Putrid Fist Per-Hit Average</div>
+    <p style="font-size: 15px;">Nucke averages <strong class="yellow">415K per Putrid Fist</strong> (range: 176K&ndash;782K) vs Rampire's <strong class="green">349K</strong>. The variance is high &mdash; Nucke's best mitigation (176K at 0:38) is excellent, but the worst (782K at 5:59) was fully absorbed by a defensive. The 7:38 hit (754K, 627K net) preceded the death 2 seconds later.</p>
+  </div>
+  <div class="card">
+    <div class="card-header">More Melee Hits Taken</div>
+    <p style="font-size: 15px;">Nucke takes <strong class="yellow">56 melee hits</strong> vs Rampire's 48. More melee hits means more time tanking the boss, which is expected &mdash; but it does increase total damage intake. The lower melee absorption rate (17% vs Rampire's 17%) suggests similar active mitigation patterns.</p>
+  </div>
+</div>
+
+<!-- ═══ SELF-HEALING ═══ -->
+<h2>Self-Healing Breakdown</h2>
+<p class="section-intro">19.3M effective self-healing (40.3K HPS) across the fight. Total raw healing: 33.3M with 42% overheal. Primary sources are Consume Soul (soul fragment consumption), Soul Barrier (absorb shield), and Metamorphosis (13 uses generating 3.9M healing).</p>
+
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Source</th><th>Effective</th><th>Total</th><th>Overheal</th><th>Hits</th><th></th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Consume Soul</strong></td>
+      <td class="green">4,575K</td>
+      <td>9,530K</td>
+      <td class="red">52%</td>
+      <td>440</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:48%"></div><div class="oh-over" style="width:52%"></div></div></td>
+    </tr>
+    <tr>
+      <td><strong>Soul Barrier</strong> (absorb)</td>
+      <td class="green">4,368K</td>
+      <td>4,368K</td>
+      <td>0%</td>
+      <td>195</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:100%"></div></div></td>
+    </tr>
+    <tr>
+      <td><strong>Metamorphosis</strong></td>
+      <td class="green">3,882K</td>
+      <td>3,882K</td>
+      <td>0%</td>
+      <td>12</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:100%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Leech</td>
+      <td>1,712K</td>
+      <td>2,073K</td>
+      <td>17%</td>
+      <td>179</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:83%"></div><div class="oh-over" style="width:17%"></div></div></td>
+    </tr>
+    <tr>
+      <td>First In, Last Out</td>
+      <td>1,498K</td>
+      <td>1,498K</td>
+      <td>0%</td>
+      <td>110</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:100%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Frailty</td>
+      <td>965K</td>
+      <td>5,944K</td>
+      <td class="red">84%</td>
+      <td>444</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:16%"></div><div class="oh-over" style="width:84%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Last Resort</td>
+      <td>782K</td>
+      <td>782K</td>
+      <td>0%</td>
+      <td>1</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:100%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Fel Devastation</td>
+      <td>612K</td>
+      <td>2,381K</td>
+      <td class="red">74%</td>
+      <td>136</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:26%"></div><div class="oh-over" style="width:74%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Soul Cleave</td>
+      <td>435K</td>
+      <td>1,249K</td>
+      <td class="orange">65%</td>
+      <td>93</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:35%"></div><div class="oh-over" style="width:65%"></div></div></td>
+    </tr>
+    <tr>
+      <td>Charred Warblades</td>
+      <td>255K</td>
+      <td>1,172K</td>
+      <td class="red">78%</td>
+      <td>428</td>
+      <td><div class="oh-bar" style="width:200px"><div class="oh-eff" style="width:22%"></div><div class="oh-over" style="width:78%"></div></div></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid var(--border);">
+      <td><strong>Total Self-Healing</strong></td>
+      <td><strong>19,264K</strong></td>
+      <td><strong>33,257K</strong></td>
+      <td><strong>42%</strong></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Last Resort Proc</div>
+  <p style="font-size: 14px;"><strong class="red">Last Resort procced once</strong> during the fight, providing a 782K heal that saved Nucke from death. However, this means Nucke was at 0 HP at some point &mdash; a near-death moment that burned the cheat death. The subsequent death at 7:40 (17 seconds before boss death) came without Last Resort available as a safety net, after a 754K Putrid Fist at 7:38.</p>
+</div>
+
+<!-- ═══ DEFENSIVE CD TIMELINE ═══ -->
+<h2>Defensive CD Usage vs Putrid Fist</h2>
+<p class="section-intro">Putrid Fist (tank buster) hits every ~12 seconds, alternating targets. 14 of the total fists hit Nucke. Demon Spikes is the primary mitigation tool &mdash; Nucke pressed it 41 times (5.2/min) vs Rampire's 54 (6.6/min).</p>
+
+<div class="card">
+  <h3>Putrid Fist Hits on Nucke (14 total)</h3>
+  <table>
+    <thead>
+      <tr><th>Time</th><th>Damage</th><th>Absorbed</th><th>Net Hit</th><th>Defensive Active</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="dim">0:38</td>
+        <td>176K</td>
+        <td class="cyan">78K</td>
+        <td class="green">98K</td>
+        <td><span class="cd-pill defensive">Demon Spikes</span> <span class="tag tag-same">Well mitigated</span></td>
+      </tr>
+      <tr>
+        <td class="dim">1:01</td>
+        <td>472K</td>
+        <td class="dim">0K</td>
+        <td class="red">472K</td>
+        <td><span class="tag tag-diff">Raw hit &mdash; no absorb</span></td>
+      </tr>
+      <tr>
+        <td class="dim">1:38</td>
+        <td>282K</td>
+        <td class="cyan">217K</td>
+        <td class="green">65K</td>
+        <td><span class="cd-pill defensive">Demon Spikes</span> <span class="tag tag-same">Excellent</span></td>
+      </tr>
+      <tr>
+        <td class="dim">2:54</td>
+        <td>259K</td>
+        <td class="dim">0K</td>
+        <td class="orange">259K</td>
+        <td><span class="tag tag-warn">No absorb</span></td>
+      </tr>
+      <tr>
+        <td class="dim">3:18</td>
+        <td>467K</td>
+        <td class="cyan">162K</td>
+        <td class="yellow">305K</td>
+        <td><span class="cd-pill defensive">Demon Spikes</span> <span class="tag tag-warn">Partial</span></td>
+      </tr>
+      <tr>
+        <td class="dim">3:30</td>
+        <td>499K</td>
+        <td class="dim">0K</td>
+        <td class="red">499K</td>
+        <td><span class="cd-pill defensive">Fiery Brand (3:30)</span> <span class="tag tag-warn">No absorb layer</span></td>
+      </tr>
+      <tr>
+        <td class="dim">3:55</td>
+        <td>432K</td>
+        <td class="dim">0K</td>
+        <td class="red">432K</td>
+        <td><span class="tag tag-diff">Raw hit</span></td>
+      </tr>
+      <tr>
+        <td class="dim">4:58</td>
+        <td>210K</td>
+        <td class="dim">0K</td>
+        <td class="orange">210K</td>
+        <td><span class="tag tag-warn">No absorb</span></td>
+      </tr>
+      <tr>
+        <td class="dim">5:22</td>
+        <td>477K</td>
+        <td class="cyan">121K</td>
+        <td class="yellow">356K</td>
+        <td><span class="cd-pill defensive">Demon Spikes</span></td>
+      </tr>
+      <tr>
+        <td class="dim">5:47</td>
+        <td>207K</td>
+        <td class="cyan">151K</td>
+        <td class="green">57K</td>
+        <td><span class="cd-pill defensive">Demon Spikes</span> <span class="tag tag-same">Excellent</span></td>
+      </tr>
+      <tr>
+        <td class="dim">5:59</td>
+        <td>782K</td>
+        <td class="cyan">782K</td>
+        <td class="green">0K</td>
+        <td><span class="cd-pill defensive">Fel Dev (5:59)</span> <span class="tag tag-same">Fully absorbed</span></td>
+      </tr>
+      <tr>
+        <td class="dim">6:23</td>
+        <td>482K</td>
+        <td class="cyan">129K</td>
+        <td class="yellow">354K</td>
+        <td><span class="cd-pill defensive">Demon Spikes</span></td>
+      </tr>
+      <tr>
+        <td class="dim">7:26</td>
+        <td>319K</td>
+        <td class="dim">0K</td>
+        <td class="orange">319K</td>
+        <td><span class="tag tag-warn">No absorb</span></td>
+      </tr>
+      <tr>
+        <td class="dim">7:38</td>
+        <td>754K</td>
+        <td class="cyan">126K</td>
+        <td class="red">628K</td>
+        <td><span class="tag tag-crit">Fatal &mdash; died 2s later</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Defensive CD Summary</div>
+  <div class="grid-3">
+    <div>
+      <strong>Demon Spikes</strong> (41 uses)<br>
+      <span class="green">5.2/min &mdash; High uptime</span>
+    </div>
+    <div>
+      <strong>Fiery Brand</strong> (10 uses)<br>
+      <span class="dim">1.3/min</span>
+    </div>
+    <div>
+      <strong>Metamorphosis</strong> (13 uses)<br>
+      <span class="dim">1.6/min &mdash; Frequent</span>
+    </div>
+    <div>
+      <strong>Fel Devastation</strong> (9 uses)<br>
+      <span class="yellow">1.1/min &mdash; See note below</span>
+    </div>
+    <div>
+      <strong class="red">Last Resort</strong> (1 proc)<br>
+      <span class="red">Cheat death consumed</span>
+    </div>
+    <div>
+      <strong>Darkness</strong> (1 use)<br>
+      <span class="dim">6:46</span>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header yellow">Fel Devastation: 9 Uses vs Rampire's 1</div>
+  <p style="font-size: 14px;">Nucke uses Fel Devastation <strong>9 times</strong> (1.1/min) while Rampire uses it <strong>once</strong>. Fel Devastation has 74% overheal, meaning most of its healing is wasted. While it does deal damage (1,079K total, 2.7% of damage), the GCDs and Fury spent on 9 Fel Devastation casts could be redirected to Soul Cleave presses for more consistent damage and lower-overheal self-healing. Top Vengeance players treat Fel Devastation as an emergency button, not a rotational filler.</p>
+</div>
+
+<!-- ═══ TANK SWAP PATTERN ═══ -->
+<h2>Tank Swap Pattern</h2>
+<p class="section-intro">Nucke (Vengeance DH) taunts 13 times via Torment, Glazedwhole (Blood DK) taunts 15 times via Dark Command. Putrid Fist alternates targets every ~12 seconds. Both tanks take 14 fists each (50/50 share).</p>
+
+<div class="card">
+  <h3>Taunt Timeline</h3>
+  <div style="font-family: 'SF Mono', Consolas, monospace; font-size: 12px; line-height: 2.2;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span style="width:12px;height:12px;background:var(--dh);border-radius:2px;display:inline-block;"></span>
+      <span>Nucke (Torment) &mdash; 13 taunts</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="width:12px;height:12px;background:var(--red);border-radius:2px;display:inline-block;"></span>
+      <span>Glazedwhole (Dark Command) &mdash; 15 taunts</span>
+    </div>
+    <span class="dim">0:00</span> <span class="cd-pill taunt" style="border-left:3px solid var(--red)">Dark Command</span> pull<br>
+    <span class="dim">0:34</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dh)">Torment</span><br>
+    <span class="dim">0:38</span> <span class="cd-pill fist">Putrid Fist &rarr; Nucke</span> <span class="cd-pill taunt" style="border-left:3px solid var(--red)">Dark Command</span><br>
+    <span class="dim">0:50</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dh)">Torment</span><br>
+    <span class="dim">1:00</span> <span class="cd-pill taunt" style="border-left:3px solid var(--red)">Dark Command</span><br>
+    <span class="dim">1:01</span> <span class="cd-pill fist">Putrid Fist &rarr; Nucke</span><br>
+    <span class="dim">1:15</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dh)">Torment</span><br>
+    <span class="dim">1:27</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dh)">Torment</span><br>
+    <span class="dim">1:38</span> <span class="cd-pill fist">Putrid Fist &rarr; Nucke</span> <span class="cd-pill taunt" style="border-left:3px solid var(--red)">Dark Command</span><br>
+    <span class="dim">1:51</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dh)">Torment</span><br>
+    <span class="dim">2:22</span> <span class="cd-pill taunt" style="border-left:3px solid var(--red)">Dark Command</span><br>
+    <span class="dim">2:42</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dh)">Torment</span><br>
+    <span class="dim">2:54</span> <span class="cd-pill fist">Putrid Fist &rarr; Nucke</span><br>
+    <span class="dim">2:57</span> <span class="cd-pill taunt" style="border-left:3px solid var(--red)">Dark Command</span><br>
+    <span class="dim">3:06</span> <span class="cd-pill taunt" style="border-left:3px solid var(--dh)">Torment</span><br>
+    <span class="dim">3:18</span> <span class="cd-pill fist">Putrid Fist &rarr; Nucke</span>
+  </div>
+  <p style="margin-top: 12px; font-size: 13px; color: var(--dim);">Pattern continues throughout the fight. The tank swap cadence is reasonable &mdash; both tanks share Putrid Fist evenly. Nucke taunts are well-timed around Putrid Fist, ensuring alternation. Late-fight the swap pattern continues until Nucke's death at 7:40, after which Glazedwhole taunts to solo-tank the last 17 seconds.</p>
+</div>
+
+<!-- ═══ WIPE PROGRESSION ═══ -->
+<h2>Wipe Progression</h2>
+<p class="section-intro">20 total pulls (19 wipes + kill). Nucke <strong class="red">died in all 20 fights</strong> including the kill (died at 7:40 on a 7:57 kill). DPS ranges from 42.9K (early wipe, pull 14) to 91.7K (short burst pull 16). On longer pulls (3+ min), DPS stabilizes in the 66K&ndash;87K range with the kill at 82.3K.</p>
+
+<div class="card">
+  <div class="progression-chart">
+    <div class="prog-bar" style="height:15%; background: var(--red);" data-tooltip="Pull 2: WIPE 1:12 | 76.1K DPS | Died 1:11"></div>
+    <div class="prog-bar" style="height:15%; background: var(--red);" data-tooltip="Pull 3: WIPE 1:10 | 73.8K DPS | Died 1:08"></div>
+    <div class="prog-bar" style="height:11%; background: var(--red);" data-tooltip="Pull 4: WIPE 0:51 | 60.2K DPS | Died 0:49"></div>
+    <div class="prog-bar" style="height:34%; background: var(--red);" data-tooltip="Pull 5: WIPE 2:42 | 77.9K DPS | Died 2:42"></div>
+    <div class="prog-bar" style="height:29%; background: var(--red);" data-tooltip="Pull 7: WIPE 2:18 | 84.7K DPS | Died 2:16"></div>
+    <div class="prog-bar" style="height:29%; background: var(--red);" data-tooltip="Pull 8: WIPE 2:16 | 71.2K DPS | Died 2:16"></div>
+    <div class="prog-bar" style="height:41%; background: var(--red);" data-tooltip="Pull 9: WIPE 3:14 | 81.0K DPS | Died 3:11"></div>
+    <div class="prog-bar" style="height:71%; background: var(--orange);" data-tooltip="Pull 10: WIPE 5:37 | 66.6K DPS | Died 5:22"></div>
+    <div class="prog-bar" style="height:60%; background: var(--orange);" data-tooltip="Pull 11: WIPE 4:47 | 80.4K DPS | Died 4:45"></div>
+    <div class="prog-bar" style="height:72%; background: var(--orange);" data-tooltip="Pull 12: WIPE 5:42 | 68.6K DPS | Died 5:41"></div>
+    <div class="prog-bar" style="height:36%; background: var(--red);" data-tooltip="Pull 13: WIPE 2:51 | 67.1K DPS | Died 2:35"></div>
+    <div class="prog-bar" style="height:16%; background: var(--red);" data-tooltip="Pull 14: WIPE 1:15 | 43.0K DPS | Died 0:59"></div>
+    <div class="prog-bar" style="height:64%; background: var(--orange);" data-tooltip="Pull 15: WIPE 5:04 | 71.0K DPS | Died 4:54"></div>
+    <div class="prog-bar" style="height:11%; background: var(--red);" data-tooltip="Pull 16: WIPE 0:53 | 91.7K DPS | Died 0:52"></div>
+    <div class="prog-bar" style="height:73%; background: var(--orange);" data-tooltip="Pull 17: WIPE 5:45 | 76.1K DPS | Died 5:31"></div>
+    <div class="prog-bar" style="height:87%; background: var(--yellow);" data-tooltip="Pull 18: WIPE 6:51 | 87.1K DPS | Died 6:48"></div>
+    <div class="prog-bar" style="height:63%; background: var(--orange);" data-tooltip="Pull 19: WIPE 5:01 | 74.2K DPS | Died 4:49"></div>
+    <div class="prog-bar" style="height:11%; background: var(--red);" data-tooltip="Pull 20: WIPE 0:54 | 79.4K DPS | Died 0:49"></div>
+    <div class="prog-bar" style="height:91%; background: var(--yellow);" data-tooltip="Pull 21: WIPE 7:14 | 75.3K DPS | Died 7:13"></div>
+    <div class="prog-bar" style="height:100%; background: var(--green);" data-tooltip="Pull 22: KILL 7:57 | 82.3K DPS | Died 7:40"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);padding:0 4px;">
+    <span>Pull 2</span>
+    <span>Pull 22 (Kill)</span>
+  </div>
+</div>
+
+<div class="grid-3" style="margin-top: 12px;">
+  <div class="card stat">
+    <div class="stat-value">43.0K &rarr; 82.3K</div>
+    <div class="stat-label">DPS Range (3+ min pulls)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value orange">87.1K</div>
+    <div class="stat-label">Best DPS (Pull 18, 6:51)</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-value red">20/20 Deaths</div>
+    <div class="stat-label">Died Every Pull</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 12px;">
+  <div class="card-header">Death Pattern Analysis</div>
+  <p style="font-size: 14px;">Nucke died in <strong class="red">every single pull</strong>, including the kill. On wipes, this is expected &mdash; tanks are usually the last to fall. The death in the kill fight at 7:40 (17 seconds before boss death) is notable: the raid was able to finish without both tanks. <strong>Pull 18</strong> was the best overall performance: 87.1K DPS, survived until 6:48 in a 6:51 wipe &mdash; strong DPS and late death. The kill fight DPS (82.3K) is close to this peak, indicating consistency when the raid survives long enough.</p>
+</div>
+
+<!-- ═══ ACTIONABLE ITEMS ═══ -->
+<h2>Actionable Items</h2>
+
+<div class="action-item critical">
+  <strong>1. Press Felblade on cooldown.</strong> 2 uses in 7:57 vs Rampire's 28 in 8:13. This is a 15-second cooldown that generates Fury and closes gaps. Missing it ~26 times costs approximately 1,040 Fury, which translates to roughly 15 additional Soul Cleaves. This single fix would close a large portion of both the DPS and survivability gap. Bind it prominently and treat it as a rotational priority, not an optional button.
+</div>
+
+<div class="action-item critical">
+  <strong>2. Increase Soul Cleave frequency.</strong> 11.7/min vs 17.2/min is a 32% deficit on the primary soul fragment consumer. Soul Cleave is simultaneously damage, self-healing, and fragment consumption. More Soul Cleaves directly feeds the Voidfall Meteor proc chain (which accounts for the largest single damage gap: 7.0M vs 11.8M). The Felblade fix will naturally increase available Fury for more Soul Cleaves, but also ensure Soul Cleave is always being pressed when Fury is available and fragments are up.
+</div>
+
+<div class="action-item">
+  <strong>3. Reduce Fel Devastation to emergency-only use.</strong> 9 casts (1.1/min) vs Rampire's 1. With 74% overheal, most Fel Devastation healing is wasted. The GCDs spent on 8 extra Fel Devastation casts could instead be Soul Cleave or Fracture presses. Use Fel Devastation as a major defensive CD to survive dangerous moments, not as a rotational filler.
+</div>
+
+<div class="action-item">
+  <strong>4. Increase Demon Spikes coverage on Putrid Fist.</strong> 5 of 14 Putrid Fist hits (36%) had zero absorb, meaning Demon Spikes was down. While 41 total uses is solid, timing them to ensure coverage on Putrid Fist windows would smooth out the damage spikes. The 7:38 hit (754K, 628K net) that preceded the death had only 126K absorbed &mdash; better Demon Spikes alignment here could have prevented the death.
+</div>
+
+<div class="action-item">
+  <strong>5. Close the Fracture CPM gap.</strong> 50.9/min vs 57.7/min is a 12% deficit on the primary GCD filler. While this is the smallest gap per-ability, Fracture generates Soul Fragments which fuel the entire damage and healing engine. More Fractures = more fragments = more Soul Cleave value = more Voidfall Meteor procs. Combined with Felblade and Soul Cleave improvements, this completes the Fury economy fix.
+</div>
+
+<div class="action-item">
+  <strong>6. Survive the kill fight.</strong> Dying at 7:40 in a 7:57 kill means the raid had to finish without a tank for 17 seconds. The 7:38 Putrid Fist (754K) was the killing blow sequence. With Last Resort already consumed earlier in the fight, there was no safety net. Better defensive CD alignment in the final 30 seconds (Demon Spikes + Fiery Brand on the 7:38 fist, or holding Metamorphosis for an emergency heal) could prevent this.
+</div>
+
+<div style="margin-top: 32px; padding: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim);">
+  Generated by WCL Analyzer &middot; Data from Warcraft Logs API v2 &middot; Reference: Rampire (Mythic Rotmire, 106.1K DPS, Vengeance DH, 6 talent diffs, 259 ilvl)
+</div>
+
+</body>
+</html>

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bebeshakur (Unholy DK) - Crown of the Cosmos Prog Analysis - June 18, 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
+  --purple: #bc8cff; --cyan: #39d2c0;
+  --dk-color: #c41e3a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+h2 { font-size: 18px; font-weight: 600; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 15px; font-weight: 600; margin: 20px 0 10px; }
+.back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
+.back-link:hover { color: var(--accent); }
+.header { margin-bottom: 24px; }
+.header .player-name { color: var(--dk-color); font-size: 28px; font-weight: 700; }
+.header .spec-info { color: var(--dim); font-size: 14px; margin-top: 2px; }
+.tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-prog { background: rgba(210, 153, 34, 0.15); color: var(--yellow); border: 1px solid rgba(210, 153, 34, 0.3); }
+.tag-red { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.card-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card-value { font-size: 24px; font-weight: 700; }
+.card-sub { font-size: 12px; color: var(--dim); margin-top: 2px; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--dim); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: rgba(88, 166, 255, 0.04); }
+.bar-container { display: flex; align-items: center; gap: 8px; }
+.bar { height: 20px; border-radius: 3px; min-width: 2px; }
+.bar-green { background: var(--green); }
+.bar-red { background: var(--red); }
+.bar-yellow { background: var(--yellow); }
+.bar-accent { background: var(--accent); }
+.bar-purple { background: var(--purple); }
+.bar-dim { background: var(--dim); opacity: 0.3; }
+.callout { background: var(--surface); border-left: 3px solid var(--red); padding: 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+.callout-yellow { border-left-color: var(--yellow); }
+.callout-green { border-left-color: var(--green); }
+.callout-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.callout p { font-size: 13px; color: var(--dim); line-height: 1.5; }
+.chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+.pull-bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; padding: 0 4px; }
+.pull-bar { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+.pull-bar .bar-fill { width: 100%; border-radius: 3px 3px 0 0; min-height: 2px; transition: height 0.3s; position: relative; }
+.pull-bar .bar-fill:hover { opacity: 0.8; }
+.pull-bar .bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; writing-mode: vertical-rl; text-orientation: mixed; height: 30px; }
+.pull-bar .bar-dps { font-size: 9px; color: var(--text); margin-bottom: 2px; white-space: nowrap; }
+.avg-line { position: relative; width: 100%; }
+.phase-table td.phase-name { font-weight: 600; white-space: nowrap; }
+.death-icon { color: var(--red); font-size: 10px; }
+.green { color: var(--green); }
+.red { color: var(--red); }
+.yellow { color: var(--yellow); }
+.orange { color: var(--orange); }
+.dim { color: var(--dim); }
+.purple { color: var(--purple); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+.badge-red { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+.badge-yellow { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+.badge-green { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.section { margin: 24px 0; }
+.timeline { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; overflow-x: auto; }
+.timeline-row { display: flex; align-items: center; margin: 6px 0; }
+.timeline-label { width: 140px; font-size: 11px; color: var(--dim); flex-shrink: 0; }
+.timeline-track { flex: 1; height: 24px; position: relative; background: rgba(255,255,255,0.02); border-radius: 3px; }
+.timeline-marker { position: absolute; width: 8px; height: 8px; border-radius: 50%; top: 50%; transform: translate(-50%, -50%); }
+.timeline-phase-divider { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--dim); opacity: 0.4; z-index: 1; }
+.timeline-phase-label { position: absolute; top: -18px; font-size: 10px; color: var(--dim); transform: translateX(-50%); white-space: nowrap; }
+.footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
+@media (max-width: 768px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+  body { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<a href="/raid/log-20260618" class="back-link">&larr; June 18 2026 Log Analysis</a>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span class="player-name">Bebeshakur</span>
+    <span class="tag tag-prog">Progression</span>
+    <span class="tag tag-red">0% Survival</span>
+  </div>
+  <div class="spec-info">Unholy Death Knight &middot; Crown of the Cosmos (Mythic) &middot; 14 pulls &middot; June 18, 2026</div>
+  <div class="spec-info" style="margin-top:2px;">Report: <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">jqFfXprk4hcaWx3C</a> &middot; Night 2 &middot; Best boss%: 31.27% (F27)</div>
+</div>
+
+<!-- ═══════════════ SUMMARY CARDS ═══════════════ -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Average DPS</div>
+    <div class="card-value">36,310</div>
+    <div class="card-sub">Across 14 pulls (all >60s)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Item Level</div>
+    <div class="card-value">287</div>
+    <div class="card-sub">Top ref: 273 ilvl (Lanadk)</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Survival Rate</div>
+    <div class="card-value red">0 / 14</div>
+    <div class="card-sub">Died every pull. Avg death: 4:33</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Best Pull</div>
+    <div class="card-value green">45,835</div>
+    <div class="card-sub">F23 &middot; 6:05 &middot; 36.95% boss</div>
+  </div>
+</div>
+
+<!-- ═══════════════ PERFORMANCE ACROSS ALL PULLS ═══════════════ -->
+<h2>Performance Across All Pulls</h2>
+<div class="chart-container">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <span style="font-size:13px;font-weight:600;">DPS Per Pull</span>
+    <span style="font-size:11px;color:var(--dim);">
+      <span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;vertical-align:middle;margin-right:3px;"></span> Died (all pulls)
+      &nbsp;&nbsp;
+      <span style="display:inline-block;width:10px;height:2px;background:var(--yellow);vertical-align:middle;margin-right:3px;"></span> Average (36.3K)
+    </span>
+  </div>
+  <div class="pull-bar-chart">
+    <div class="pull-bar"><div class="bar-dps">30.8K</div><div class="bar-fill" style="height:67%;background:var(--red);"></div><div class="bar-label">F3</div></div>
+    <div class="pull-bar"><div class="bar-dps">30.9K</div><div class="bar-fill" style="height:67%;background:var(--red);"></div><div class="bar-label">F8</div></div>
+    <div class="pull-bar"><div class="bar-dps">32.5K</div><div class="bar-fill" style="height:71%;background:var(--red);"></div><div class="bar-label">F11</div></div>
+    <div class="pull-bar"><div class="bar-dps">37.7K</div><div class="bar-fill" style="height:82%;background:var(--red);"></div><div class="bar-label">F15</div></div>
+    <div class="pull-bar"><div class="bar-dps">38.1K</div><div class="bar-fill" style="height:83%;background:var(--red);"></div><div class="bar-label">F16</div></div>
+    <div class="pull-bar"><div class="bar-dps">24.8K</div><div class="bar-fill" style="height:54%;background:var(--red);opacity:0.6;"></div><div class="bar-label">F18</div></div>
+    <div class="pull-bar"><div class="bar-dps">42.3K</div><div class="bar-fill" style="height:92%;background:var(--red);"></div><div class="bar-label">F19</div></div>
+    <div class="pull-bar"><div class="bar-dps">37.6K</div><div class="bar-fill" style="height:82%;background:var(--red);"></div><div class="bar-label">F20</div></div>
+    <div class="pull-bar"><div class="bar-dps">34.2K</div><div class="bar-fill" style="height:75%;background:var(--red);"></div><div class="bar-label">F21</div></div>
+    <div class="pull-bar"><div class="bar-dps">37.3K</div><div class="bar-fill" style="height:81%;background:var(--red);"></div><div class="bar-label">F22</div></div>
+    <div class="pull-bar"><div class="bar-dps" style="color:var(--green);">45.8K</div><div class="bar-fill" style="height:100%;background:var(--green);"></div><div class="bar-label">F23</div></div>
+    <div class="pull-bar"><div class="bar-dps">41.1K</div><div class="bar-fill" style="height:90%;background:var(--red);"></div><div class="bar-label">F24</div></div>
+    <div class="pull-bar"><div class="bar-dps">37.8K</div><div class="bar-fill" style="height:82%;background:var(--red);"></div><div class="bar-label">F27</div></div>
+    <div class="pull-bar"><div class="bar-dps">37.5K</div><div class="bar-fill" style="height:82%;background:var(--red);"></div><div class="bar-label">F28</div></div>
+  </div>
+  <div style="margin-top:8px;font-size:12px;color:var(--dim);">
+    Bebeshakur was present in 14 of 27 pulls (joined from F3 onward). F23 highlighted in green as best pull.
+    F18 (24.8K) was the worst -- early death at 4:01 in P2.
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-label">Session Trend</div>
+    <div style="margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;">
+        <span>First 7 pulls avg:</span>
+        <span>33,865 DPS</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;">
+        <span>Last 7 pulls avg:</span>
+        <span class="green">38,755 DPS</span>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--dim);">
+        <span class="green">+14.4% improvement</span> from first half to second half of the session. Clear learning curve on the fight.
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-label">Consistency</div>
+    <div style="margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;">
+        <span>Median DPS:</span>
+        <span>37,611</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;">
+        <span>DPS Range:</span>
+        <span>24,795 - 45,835</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;">
+        <span>Std Dev:</span>
+        <span>5,079</span>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--dim);">
+        Moderate consistency. Most pulls cluster around 35-42K. F18 is the outlier (early death).
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ DEATH PATTERN ANALYSIS ═══════════════ -->
+<h2>Death Pattern Analysis</h2>
+
+<div class="callout">
+  <div class="callout-title">Critical: Died in 14/14 Pulls (0% Survival)</div>
+  <p>Bebeshakur died every single pull they were in. Average survival time was 4:33, meaning they consistently die in mid-to-late Phase 2. The fight lasted past 5 minutes in 6 pulls, but Bebeshakur only made it into P3 twice (F23 for 33s, F27 for 5s). This is the single biggest issue to address.</p>
+</div>
+
+<h3>Death Causes Ranked</h3>
+<table>
+  <thead>
+    <tr><th>Killing Ability</th><th>Deaths</th><th>Avg Time</th><th>Phase</th><th>Avoidable?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight:600;color:var(--red);">Simulacrum Backlash</td>
+      <td>4</td>
+      <td>4:34</td>
+      <td>P2</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;">Cosmic Barrier</td>
+      <td>3</td>
+      <td>4:22</td>
+      <td>P2 / P3</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td>
+      <td>2</td>
+      <td>4:17</td>
+      <td>P2</td>
+      <td><span class="badge badge-red">Yes</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>2</td>
+      <td>4:33</td>
+      <td>P2 / P3</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>1</td>
+      <td>4:54</td>
+      <td>P2</td>
+      <td><span class="badge badge-red">Yes</span></td>
+    </tr>
+    <tr>
+      <td>Voidstalker Sting</td>
+      <td>1</td>
+      <td>4:28</td>
+      <td>P2</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Dimensional Slash</td>
+      <td>1</td>
+      <td>5:14</td>
+      <td>P3</td>
+      <td><span class="badge badge-red">Yes</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Death Timing Distribution</h3>
+<div class="chart-container">
+  <div style="position:relative;height:60px;">
+    <!-- Phase labels -->
+    <div style="position:absolute;left:0;top:0;width:100%;height:100%;">
+      <div style="position:absolute;left:0;width:36.8%;height:100%;background:rgba(63,185,80,0.05);border-right:1px dashed var(--dim);opacity:0.4;">
+        <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--dim);">P1 (0:00-2:14)</span>
+      </div>
+      <div style="position:absolute;left:36.8%;width:10.7%;height:100%;background:rgba(210,153,34,0.05);border-right:1px dashed var(--dim);opacity:0.4;">
+        <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--dim);">Inter</span>
+      </div>
+      <div style="position:absolute;left:47.5%;width:37.3%;height:100%;background:rgba(248,81,73,0.05);border-right:1px dashed var(--dim);opacity:0.4;">
+        <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--dim);">P2 (2:53-5:09)</span>
+      </div>
+      <div style="position:absolute;left:84.8%;width:15.2%;height:100%;background:rgba(188,140,255,0.05);">
+        <span style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--dim);">P3</span>
+      </div>
+    </div>
+    <!-- Death markers - normalized to ~365s max fight -->
+    <div style="position:absolute;left:59.5%;top:50%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F3 @ 3:37 - Cosmic Barrier">&#9760;</div>
+    <div style="position:absolute;left:62.3%;top:50%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F11 @ 3:49 - Cosmic Barrier">&#9760;</div>
+    <div style="position:absolute;left:64.4%;top:30%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F8 @ 3:55 - Simulacrum Backlash">&#9760;</div>
+    <div style="position:absolute;left:66.0%;top:50%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F18 @ 4:01 - Void Remnants">&#9760;</div>
+    <div style="position:absolute;left:69.0%;top:70%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F22 @ 4:12 - Void Barrage">&#9760;</div>
+    <div style="position:absolute;left:73.3%;top:30%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F24 @ 4:28 - Voidstalker Sting">&#9760;</div>
+    <div style="position:absolute;left:73.6%;top:50%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F21 @ 4:29 - Simulacrum Backlash">&#9760;</div>
+    <div style="position:absolute;left:74.5%;top:70%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F15 @ 4:32 - Void Remnants">&#9760;</div>
+    <div style="position:absolute;left:79.5%;top:30%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F16 @ 4:50 - Simulacrum Backlash">&#9760;</div>
+    <div style="position:absolute;left:80.5%;top:50%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F20 @ 4:54 - Grasp of Emptiness">&#9760;</div>
+    <div style="position:absolute;left:80.7%;top:70%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F28 @ 4:54 - Void Barrage">&#9760;</div>
+    <div style="position:absolute;left:82.7%;top:30%;transform:translate(-50%,-50%);font-size:14px;color:var(--red);" title="F19 @ 5:02 - Simulacrum Backlash">&#9760;</div>
+    <div style="position:absolute;left:85.9%;top:50%;transform:translate(-50%,-50%);font-size:14px;color:var(--purple);" title="F27 @ 5:14 - Dimensional Slash">&#9760;</div>
+    <div style="position:absolute;left:93.7%;top:50%;transform:translate(-50%,-50%);font-size:14px;color:var(--purple);" title="F23 @ 5:42 - Cosmic Barrier">&#9760;</div>
+  </div>
+  <div style="margin-top:24px;font-size:12px;color:var(--dim);">
+    12 of 14 deaths occurred in P2 (2:53-5:09). 2 deaths in P3 (purple skulls). Zero deaths in P1 or Intermission.
+    Deaths cluster between 3:37 and 5:02 -- the entire P2 phase is a survival wall.
+  </div>
+</div>
+
+<h3>Death Sequence Details (Last 5 Hits Before Death)</h3>
+<div style="max-height:400px;overflow-y:auto;margin:12px 0;">
+<table>
+  <thead>
+    <tr><th>Pull</th><th>Death Time</th><th>Killing Blow</th><th>Damage Sequence (last 5s)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>F3</td><td>3:37</td>
+      <td class="red">Cosmic Barrier</td>
+      <td class="dim" style="font-size:11px;">Cosmic Barrier 117K &rarr; Void Barrage 46K &rarr; Void Barrage 41K &rarr; Void Barrage 41K &rarr; <span class="red">Cosmic Barrier 70K</span></td>
+    </tr>
+    <tr>
+      <td>F8</td><td>3:55</td>
+      <td class="red">Simulacrum Backlash</td>
+      <td class="dim" style="font-size:11px;">Void Expulsion 39K &rarr; Void Barrage 75K &rarr; Void Remnants 117K &rarr; Backlash 22K &rarr; <span class="red">Backlash 10K</span></td>
+    </tr>
+    <tr>
+      <td>F11</td><td>3:49</td>
+      <td class="red">Cosmic Barrier</td>
+      <td class="dim" style="font-size:11px;">Cosmic Barrier 122K &rarr; Void Expulsion 44K &rarr; Cosmic Barrier 134K &rarr; Void Barrage 48K &rarr; <span class="red">Cosmic Barrier 83K</span></td>
+    </tr>
+    <tr>
+      <td>F15</td><td>4:32</td>
+      <td class="red">Void Remnants</td>
+      <td class="dim" style="font-size:11px;">Backlash 32K &rarr; Grasp 52K &rarr; <b style="color:var(--orange);">Bursting Emptiness 231K</b> &rarr; Backlash 22K &rarr; <span class="red">Void Remnants 9K</span></td>
+    </tr>
+    <tr>
+      <td>F16</td><td>4:50</td>
+      <td class="red">Simulacrum Backlash</td>
+      <td class="dim" style="font-size:11px;">Sting 16K &rarr; Backlash 22K &rarr; Backlash 22K &rarr; Sting 47K &rarr; <span class="red">Backlash 8K</span></td>
+    </tr>
+    <tr>
+      <td>F18</td><td>4:01</td>
+      <td class="red">Void Remnants</td>
+      <td class="dim" style="font-size:11px;">Void Remnants 127K &rarr; Grasp 32K &rarr; Sting 15K &rarr; Backlash 0 (absorbed) &rarr; <span class="red">Void Remnants 50K</span></td>
+    </tr>
+    <tr>
+      <td>F19</td><td>5:02</td>
+      <td class="red">Simulacrum Backlash</td>
+      <td class="dim" style="font-size:11px;">Sting 17K &rarr; Backlash 18K &rarr; Backlash 21K &rarr; Sting 17K &rarr; <span class="red">Backlash 17K</span></td>
+    </tr>
+    <tr>
+      <td>F20</td><td>4:54</td>
+      <td class="red">Grasp of Emptiness</td>
+      <td class="dim" style="font-size:11px;">Sting 17K &rarr; Backlash 22K &rarr; Backlash 22K &rarr; Backlash 22K &rarr; <span class="red">Grasp 30K</span></td>
+    </tr>
+    <tr>
+      <td>F21</td><td>4:29</td>
+      <td class="red">Simulacrum Backlash</td>
+      <td class="dim" style="font-size:11px;">Backlash 22K &rarr; Grasp 36K &rarr; Backlash 22K &rarr; Sting 16K &rarr; <span class="red">Backlash 13K</span></td>
+    </tr>
+    <tr>
+      <td>F22</td><td>4:12</td>
+      <td class="red">Void Barrage</td>
+      <td class="dim" style="font-size:11px;">Backlash 21K &rarr; Backlash 21K &rarr; Backlash 21K &rarr; Sting 17K &rarr; <span class="red">Void Barrage 4K</span></td>
+    </tr>
+    <tr>
+      <td>F23</td><td>5:42</td>
+      <td class="purple">Cosmic Barrier</td>
+      <td class="dim" style="font-size:11px;">Sting 21K &rarr; <b style="color:var(--orange);">Gravity Collapse 124K</b> &rarr; <b style="color:var(--orange);">Gravity Collapse 121K</b> &rarr; <b style="color:var(--orange);">Bursting Emptiness 163K</b> &rarr; <span class="red">Cosmic Barrier 14K</span></td>
+    </tr>
+    <tr>
+      <td>F24</td><td>4:28</td>
+      <td class="red">Voidstalker Sting</td>
+      <td class="dim" style="font-size:11px;">Backlash 21K &rarr; Sting 17K &rarr; Backlash 21K &rarr; Grasp 34K &rarr; <span class="red">Sting 12K</span></td>
+    </tr>
+    <tr>
+      <td>F27</td><td>5:14</td>
+      <td class="purple">Dimensional Slash</td>
+      <td class="dim" style="font-size:11px;">Sting 22K &rarr; Cosmic Radiation 21K &rarr; <b style="color:var(--orange);">Silverstrike Ricochet 98K</b> &rarr; Cosmic Radiation 21K &rarr; <span class="red">Dimensional Slash 299K</span></td>
+    </tr>
+    <tr>
+      <td>F28</td><td>4:54</td>
+      <td class="red">Void Barrage</td>
+      <td class="dim" style="font-size:11px;">Backlash 21K &rarr; Sting 15K &rarr; Backlash 21K &rarr; Grasp 30K &rarr; <span class="red">Void Barrage 41K</span></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout-yellow callout">
+  <div class="callout-title">Pattern: Multi-Source Chip Damage in P2</div>
+  <p>Most deaths are not from a single massive hit. They follow a pattern of Simulacrum Backlash ticks (22K each) + Voidstalker Sting ticks (15-47K) + Grasp of Emptiness (30-52K) stacking together until health is too low and a finishing blow lands. This is sustained rot damage, not a single failed mechanic. It requires proactive defensive usage to survive the overlap windows.</p>
+</div>
+
+<!-- ═══════════════ PER-PHASE PERFORMANCE BREAKDOWN ═══════════════ -->
+<h2>Per-Phase Performance Breakdown</h2>
+
+<table class="phase-table">
+  <thead>
+    <tr><th>Phase</th><th>Pulls Seen</th><th>Avg DPS</th><th>Best DPS</th><th>Deaths</th><th>Top Death Cause</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="phase-name"><span class="green">&#9679;</span> P1: Sentinels (0:00 - 2:14)</td>
+      <td><span class="badge badge-green">14/14</span></td>
+      <td style="font-weight:600;">368,215</td>
+      <td>435,234</td>
+      <td class="green">0</td>
+      <td class="dim">--</td>
+    </tr>
+    <tr>
+      <td class="phase-name"><span class="yellow">&#9679;</span> Intermission (2:14 - 2:53)</td>
+      <td><span class="badge badge-green">14/14</span></td>
+      <td style="font-weight:600;" class="dim">0</td>
+      <td class="dim">0</td>
+      <td class="green">0</td>
+      <td class="dim">No targets</td>
+    </tr>
+    <tr style="background:rgba(248,81,73,0.04);">
+      <td class="phase-name"><span class="red">&#9679;</span> P2: Rift (2:53 - 5:09)</td>
+      <td><span class="badge badge-green">14/14</span></td>
+      <td style="font-weight:600;">104,995</td>
+      <td>139,840</td>
+      <td class="red" style="font-weight:700;">12</td>
+      <td class="red">Simulacrum Backlash (4)</td>
+    </tr>
+    <tr>
+      <td class="phase-name"><span class="purple">&#9679;</span> P3: Cosmos (5:09+)</td>
+      <td><span class="badge badge-red">2/14</span></td>
+      <td style="font-weight:600;">21,455</td>
+      <td>21,455</td>
+      <td class="purple">2</td>
+      <td class="dim">Cosmic Barrier, Dim. Slash</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="grid-2">
+  <div class="callout">
+    <div class="callout-title">P1: Strong -- No Issues</div>
+    <p>368K average DPS in P1 is excellent for 287 ilvl. This phase involves heavy AoE/cleave on sentinels (Demiar, Morium, Vorelus) + Void Droplets. Unholy DK thrives here with multi-target abilities. Zero deaths across 14 pulls confirms solid P1 execution.</p>
+  </div>
+  <div class="callout">
+    <div class="callout-title red">P2: The Wall -- 12 of 14 Deaths</div>
+    <p>Phase 2 introduces Rift Simulacrum, Undying Voidspawn, and heavy sustained damage from Simulacrum Backlash + Voidstalker Sting + Grasp of Emptiness. Bebeshakur dies in P2 on 86% of pulls. This is the entire problem -- surviving P2 is the progression gate.</p>
+  </div>
+</div>
+
+<div class="callout-yellow callout">
+  <div class="callout-title">P3 Reach Rate: 14% (2 of 14 Pulls)</div>
+  <p>Only made it into P3 on fight 23 (survived 33 seconds) and fight 27 (survived 5 seconds). The raid itself reached P3 in 6 pulls, but Bebeshakur was already dead in 4 of those. Until P2 survival improves, P3 optimization is irrelevant.</p>
+</div>
+
+<!-- ═══════════════ DEFENSIVE USAGE ANALYSIS ═══════════════ -->
+<h2>Defensive Usage Analysis</h2>
+
+<div class="callout">
+  <div class="callout-title red">Critical: Severely Under-Using Defensives</div>
+  <p>With a 0% survival rate and 14 deaths in P2, defensive usage is the most important metric. The numbers below show extreme under-usage of available tools.</p>
+</div>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Uses (14 pulls)</th><th>Avg Per Pull</th><th>Expected</th><th>Assessment</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight:600;">Anti-Magic Shell</td>
+      <td>41</td>
+      <td>2.9</td>
+      <td>4-5 (45s CD)</td>
+      <td><span class="badge badge-yellow">Low</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;">Icebound Fortitude</td>
+      <td class="red" style="font-weight:700;">1</td>
+      <td>0.07</td>
+      <td>2-3 (3min CD)</td>
+      <td><span class="badge badge-red">Severely Low</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;">Death Strike</td>
+      <td>6</td>
+      <td>0.4</td>
+      <td>2-4 per pull</td>
+      <td><span class="badge badge-red">Severely Low</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;">Healthstone</td>
+      <td>3</td>
+      <td>0.2</td>
+      <td>1 per pull</td>
+      <td><span class="badge badge-red">Severely Low</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top:12px;font-size:13px;color:var(--dim);">
+  <b>1 Icebound Fortitude across 14 pulls</b> is the most striking stat. IBF is a 3-minute cooldown that provides 30% damage reduction and immunity to stuns -- it should be used at least once per pull in P2, especially during the Simulacrum Backlash + Voidstalker Sting overlap windows that are consistently killing Bebeshakur. Death Strike (emergency self-heal from Runic Power) was used only 6 times total. Healthstones were used in only 3 of 14 pulls.
+</div>
+
+<!-- ═══════════════ CAST PROFILE ═══════════════ -->
+<h2>Cast Profile</h2>
+
+<h3>Key Ability Usage (Aggregated Across 14 Pulls)</h3>
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Casts</th><th>CPM</th><th>Role</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight:600;">Scourge Strike</td>
+      <td>974</td>
+      <td>13.9</td>
+      <td>Core rotational -- consumes Lesser Ghouls</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;">Death Coil</td>
+      <td>388</td>
+      <td>5.5</td>
+      <td>Runic Power spender (ST)</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;">Necrotic Coil</td>
+      <td>349</td>
+      <td>5.0</td>
+      <td>Death Coil during Army window</td>
+    </tr>
+    <tr>
+      <td>Festering Strike</td>
+      <td>151</td>
+      <td>2.2</td>
+      <td>Applies Lesser Ghoul stacks</td>
+    </tr>
+    <tr>
+      <td>Festering Scythe</td>
+      <td>146</td>
+      <td>2.1</td>
+      <td>Proc-based (Festering Scythe talent)</td>
+    </tr>
+    <tr>
+      <td>Putrefy</td>
+      <td>101</td>
+      <td>1.4</td>
+      <td>Dark Transformation window ability</td>
+    </tr>
+    <tr>
+      <td>Soul Reaper</td>
+      <td>96</td>
+      <td>1.4</td>
+      <td>Execute / DT window</td>
+    </tr>
+    <tr>
+      <td>Dark Transformation</td>
+      <td>67</td>
+      <td>1.0</td>
+      <td>Major CD (~45s)</td>
+    </tr>
+    <tr>
+      <td>Army of the Dead</td>
+      <td>42</td>
+      <td>0.6</td>
+      <td>Major CD (aligns with DT)</td>
+    </tr>
+    <tr>
+      <td>Outbreak</td>
+      <td>56</td>
+      <td>0.8</td>
+      <td>Disease application</td>
+    </tr>
+    <tr>
+      <td>Epidemic</td>
+      <td>42</td>
+      <td>0.6</td>
+      <td>AoE RP spender (multi-target)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Per-Phase CPM (Best Pull - F23)</h3>
+<table>
+  <thead>
+    <tr><th>Phase</th><th>Casts</th><th>Duration</th><th>CPM</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="green">P1: Sentinels</td>
+      <td>108</td>
+      <td>2:14</td>
+      <td style="font-weight:600;">48.4</td>
+      <td>Excellent activity. Multi-target cleave with adds.</td>
+    </tr>
+    <tr>
+      <td class="yellow">Intermission</td>
+      <td>0</td>
+      <td>0:39</td>
+      <td class="dim">0.0</td>
+      <td>No targets -- survival phase only.</td>
+    </tr>
+    <tr>
+      <td class="red">P2: Rift</td>
+      <td>120</td>
+      <td>2:16</td>
+      <td style="font-weight:600;">52.9</td>
+      <td>Highest CPM phase. Good uptime despite movement.</td>
+    </tr>
+    <tr>
+      <td class="purple">P3: Cosmos</td>
+      <td>21</td>
+      <td>0:56</td>
+      <td style="font-weight:600;">22.3</td>
+      <td>Low -- died 33s into P3. Only had partial activity.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ═══════════════ OFFENSIVE CD ALIGNMENT ═══════════════ -->
+<h2>Offensive CD Alignment (Best Pull - F23)</h2>
+
+<table>
+  <thead>
+    <tr><th>Time</th><th>Phase</th><th>Ability</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>0:08</td><td>P1</td><td style="color:var(--orange);">Blood Fury + Army of the Dead</td><td>Opener -- good, both CDs together</td></tr>
+    <tr><td>0:09</td><td>P1</td><td style="color:var(--orange);">Dark Transformation</td><td>Immediate DT, correct</td></tr>
+    <tr><td>0:13</td><td>P1</td><td>Soul Reaper</td><td>First SR in DT window</td></tr>
+    <tr><td>0:55</td><td>P1</td><td style="color:var(--orange);">Dark Transformation</td><td>~46s gap, good</td></tr>
+    <tr><td>1:40</td><td>P1</td><td style="color:var(--orange);">Army + Dark Transformation</td><td>Aligned correctly</td></tr>
+    <tr><td>3:09</td><td>P2</td><td style="color:var(--orange);">Blood Fury + Army + DT</td><td>First P2 burst. Heroism active.</td></tr>
+    <tr><td>4:06</td><td>P2</td><td style="color:var(--orange);">Dark Transformation</td><td>Solo DT, no Army</td></tr>
+    <tr><td>4:53</td><td>P2</td><td style="color:var(--orange);">Army + Dark Transformation</td><td>Final CD usage before death at 5:42</td></tr>
+  </tbody>
+</table>
+
+<div style="margin-top:8px;font-size:12px;color:var(--dim);">
+  CD alignment is solid. Army of the Dead and Dark Transformation are consistently paired. Blood Fury aligns with major burst windows. Heroism was used at 2:55 (P2 start), aligning with the first P2 burst window.
+</div>
+
+<!-- ═══════════════ DAMAGE TAKEN BREAKDOWN ═══════════════ -->
+<h2>Damage Taken Breakdown (All Pulls)</h2>
+
+<table>
+  <thead>
+    <tr><th>Ability</th><th>Total Damage</th><th>Hits</th><th>Max Hit</th><th>Phase</th><th>Type</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight:600;">Echoing Darkness</td>
+      <td>46.2M</td><td>1,680</td><td>58K</td>
+      <td>P1/P2</td>
+      <td><span class="badge badge-green">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;">Voidstalker Sting</td>
+      <td>26.0M</td><td>1,011</td><td>47K</td>
+      <td>P2</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;">Simulacrum Backlash</td>
+      <td>23.4M</td><td>719</td><td>35K</td>
+      <td>P2</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Void Expulsion</td>
+      <td>17.6M</td><td>404</td><td>69K</td>
+      <td>P1/P2</td>
+      <td><span class="badge badge-green">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Cosmic Barrier</td>
+      <td>11.8M</td><td>354</td><td>162K</td>
+      <td>P2</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Grasp of Emptiness</td>
+      <td>9.6M</td><td>172</td><td>71K</td>
+      <td>P2</td>
+      <td><span class="badge badge-red">Avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Corrupting Essence</td>
+      <td>7.4M</td><td>41</td><td>219K</td>
+      <td>P2</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Void Barrage</td>
+      <td>6.5M</td><td>82</td><td>84K</td>
+      <td>P2</td>
+      <td><span class="badge badge-yellow">Partially</span></td>
+    </tr>
+    <tr>
+      <td>Stellar Emission</td>
+      <td>5.6M</td><td>200</td><td>91K</td>
+      <td>Intermission</td>
+      <td><span class="badge badge-green">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td>Falling</td>
+      <td>5.6M</td><td>28</td><td>217K</td>
+      <td>Intermission</td>
+      <td><span class="badge badge-green">Unavoidable</span></td>
+    </tr>
+    <tr>
+      <td style="color:var(--orange);">Bursting Emptiness</td>
+      <td>4.7M</td><td>15</td><td>338K</td>
+      <td>P2/P3</td>
+      <td><span class="badge badge-red">Avoidable</span></td>
+    </tr>
+    <tr>
+      <td>Void Remnants</td>
+      <td>2.6M</td><td>26</td><td>204K</td>
+      <td>P2</td>
+      <td><span class="badge badge-red">Avoidable</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top:8px;font-size:12px;color:var(--dim);">
+  <b>Grasp of Emptiness</b> (9.6M, 172 hits) and <b>Bursting Emptiness</b> (4.7M, max 338K) are the key avoidable sources. Grasp requires moving out of the targeted area. Bursting Emptiness appears when Void Droplets or Voidspawn die near the player. <b>Void Remnants</b> (2.6M) is ground soak damage that should be minimized.
+</div>
+
+<!-- ═══════════════ REFERENCE CONTEXT ═══════════════ -->
+<h2>Reference Context</h2>
+
+<table>
+  <thead>
+    <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th></tr>
+  </thead>
+  <tbody>
+    <tr class="purple">
+      <td>Lanadk (Hyjal) <span class="badge" style="background:rgba(188,140,255,0.15);color:var(--purple);">Primary Ref</span></td>
+      <td style="font-weight:600;">101,481</td>
+      <td>8:28</td>
+      <td>273</td>
+      <td><span class="badge badge-yellow">4 diffs</span></td>
+    </tr>
+    <tr>
+      <td class="dim">吃紫薯 (伊森利恩)</td>
+      <td>101,390</td>
+      <td>8:42</td>
+      <td>--</td>
+      <td class="dim">--</td>
+    </tr>
+    <tr>
+      <td class="dim">顺打火机 (白银之手)</td>
+      <td>101,313</td>
+      <td>8:36</td>
+      <td>--</td>
+      <td class="dim">--</td>
+    </tr>
+    <tr>
+      <td class="dim">Адьостонтос (Гордунни)</td>
+      <td>100,753</td>
+      <td>8:33</td>
+      <td>--</td>
+      <td class="dim">--</td>
+    </tr>
+    <tr>
+      <td>Banandk (Ragnaros)</td>
+      <td>100,267</td>
+      <td>6:47</td>
+      <td>291</td>
+      <td><span class="badge badge-red">8 diffs</span></td>
+    </tr>
+    <tr style="border-top:2px solid var(--border);">
+      <td style="color:var(--dk-color);font-weight:600;">Bebeshakur (best pull)</td>
+      <td style="font-weight:600;">45,835</td>
+      <td>6:05 (wipe)</td>
+      <td>287</td>
+      <td>--</td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top:8px;font-size:12px;color:var(--dim);">
+  Best pull DPS is <b>45% of top-ranked reference</b>. However, this comparison is misleading for prog -- reference kills see the full fight including P3 and execute phase. Bebeshakur's best pull ended at 6:05 with a wipe, and they died at 5:42. The DPS gap is a combination of: (1) dying every pull and losing all DPS from death onward, (2) prog-night inefficiencies (learning mechanics), (3) ilvl/talent differences. The primary lever is survival -- staying alive through P2 would add 2+ minutes of DPS uptime per pull.
+</div>
+
+<!-- ═══════════════ RAID CONTEXT ═══════════════ -->
+<h2>Raid Context: DPS Rank Per Pull</h2>
+<table>
+  <thead>
+    <tr><th>Pull</th><th>Duration</th><th>DPS</th><th>Rank</th><th>Death Time</th><th>Killed By</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>F3</td><td>3:47</td><td>30,813</td><td>2/8</td><td>3:37</td><td>Cosmic Barrier</td></tr>
+    <tr><td>F8</td><td>3:59</td><td>30,875</td><td>2/10</td><td>3:55</td><td>Simulacrum Backlash</td></tr>
+    <tr><td>F11</td><td>4:05</td><td>32,480</td><td>2/9</td><td>3:49</td><td>Cosmic Barrier</td></tr>
+    <tr><td>F15</td><td>4:52</td><td>37,670</td><td>5/12</td><td>4:32</td><td>Void Remnants</td></tr>
+    <tr><td>F16</td><td>5:03</td><td>38,099</td><td>6/12</td><td>4:50</td><td>Simulacrum Backlash</td></tr>
+    <tr style="background:rgba(248,81,73,0.06);"><td>F18</td><td>5:56</td><td class="red">24,795</td><td class="red">12/13</td><td>4:01</td><td>Void Remnants</td></tr>
+    <tr><td>F19</td><td>5:16</td><td>42,322</td><td>5/10</td><td>5:02</td><td>Simulacrum Backlash</td></tr>
+    <tr><td>F20</td><td>5:23</td><td>37,603</td><td>11/12</td><td>4:54</td><td>Grasp of Emptiness</td></tr>
+    <tr><td>F21</td><td>4:49</td><td>34,212</td><td>8/13</td><td>4:29</td><td>Simulacrum Backlash</td></tr>
+    <tr><td>F22</td><td>4:13</td><td>37,254</td><td>4/12</td><td>4:12</td><td>Void Barrage</td></tr>
+    <tr style="background:rgba(63,185,80,0.06);"><td>F23</td><td>6:05</td><td class="green" style="font-weight:600;">45,835</td><td class="green">4/11</td><td>5:42</td><td>Cosmic Barrier</td></tr>
+    <tr><td>F24</td><td>4:44</td><td>41,059</td><td>5/13</td><td>4:28</td><td>Voidstalker Sting</td></tr>
+    <tr><td>F27</td><td>6:01</td><td>37,808</td><td>10/13</td><td>5:14</td><td>Dimensional Slash</td></tr>
+    <tr><td>F28</td><td>5:43</td><td>37,517</td><td>8/13</td><td>4:54</td><td>Void Barrage</td></tr>
+  </tbody>
+</table>
+
+<div style="margin-top:8px;font-size:12px;color:var(--dim);">
+  Early pulls (F3, F8, F11) Bebeshakur ranked 2nd in the raid with fewer DPS present. As more DPS joined, rank dropped to mid-pack. Best pull (F23) ranked 4th overall. F18 was the worst at 12/13 due to an early death at 4:01.
+</div>
+
+<!-- ═══════════════ EXTERNAL BUFFS ═══════════════ -->
+<h2>External Buffs (Best Pull - F23)</h2>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-label">Heroism / Bloodlust</div>
+    <div style="margin-top:6px;font-size:13px;">
+      Heroism applied at <b>2:55</b> (start of P2).
+      <div class="dim" style="font-size:12px;margin-top:4px;">This aligns CDs with the P2 opener -- good timing for the raid.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-label">Augmentation Evoker</div>
+    <div style="margin-top:6px;font-size:13px;">
+      Ebon Might: 5x applications (0:02, 0:34, 1:34, 2:58, 4:28)<br>
+      Prescience: 4x applications (0:31, 1:27, 3:40, 4:38)
+      <div class="dim" style="font-size:12px;margin-top:4px;">Consistent Aug Evoker support throughout the pull.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ACTIONABLE ITEMS ═══════════════ -->
+<h2>Actionable Improvements</h2>
+
+<div class="callout" style="border-left-color:var(--red);">
+  <div class="callout-title">1. Use Icebound Fortitude in P2 (Critical)</div>
+  <p><b>Issue:</b> 1 IBF cast across 14 pulls while dying to sustained P2 damage every single pull.<br>
+  <b>Impact:</b> IBF provides 30% damage reduction for 8 seconds on a 3-minute cooldown. Used proactively during Simulacrum Backlash + Voidstalker Sting overlaps (the exact combination killing Bebeshakur 8+ times), this would prevent the majority of deaths.<br>
+  <b>Fix:</b> Plan IBF usage for the first major damage overlap window in P2 (~3:30-4:00 mark). With a 3-minute CD, a second use is available in late P2 / early P3 if needed. This alone could double P3 reach rate.</p>
+</div>
+
+<div class="callout" style="border-left-color:var(--orange);">
+  <div class="callout-title">2. Increase Death Strike Usage as Emergency Self-Heal</div>
+  <p><b>Issue:</b> 6 Death Strikes across 14 pulls (0.4 per pull). Death Strike heals for a significant amount based on recent damage taken.<br>
+  <b>Impact:</b> In the death sequences, Bebeshakur is typically taking 60-120K damage over 3-5 seconds before dying. A single Death Strike in that window would heal back enough to survive the finishing blow.<br>
+  <b>Fix:</b> When below 40% HP in P2 and multiple damage sources are ticking, spend Runic Power on Death Strike instead of Death Coil. The DPS loss from 1-2 Death Coils is negligible compared to dying and doing 0 DPS for the rest of the pull.</p>
+</div>
+
+<div class="callout" style="border-left-color:var(--yellow);">
+  <div class="callout-title">3. Use Anti-Magic Shell More Aggressively in P2</div>
+  <p><b>Issue:</b> AMS averaging 2.9 uses per pull. On a 45-second cooldown with pulls lasting 4+ minutes, 4-5 uses are possible and warranted.<br>
+  <b>Impact:</b> AMS absorbs magic damage -- and every ability killing Bebeshakur in P2 (Simulacrum Backlash, Cosmic Barrier, Void Barrage, Voidstalker Sting) is magic damage. AMS also generates Runic Power from absorbed damage, making it both defensive AND offensive.<br>
+  <b>Fix:</b> Use AMS on cooldown in P2, especially before known damage overlap windows. Prioritize it before Grasp of Emptiness casts and during Simulacrum Backlash stacks. The absorbed damage converts to Runic Power for more Death Coils.</p>
+</div>
+
+<div class="callout" style="border-left-color:var(--yellow);">
+  <div class="callout-title">4. Use Healthstone Every Pull</div>
+  <p><b>Issue:</b> 3 Healthstone uses across 14 pulls. It is a free heal on a per-pull cooldown.<br>
+  <b>Impact:</b> Several death sequences show Bebeshakur dying to a 10-40K finishing blow after being chipped down. A Healthstone used at 50% HP would have survived those.<br>
+  <b>Fix:</b> Add Healthstone to a keybind and use it when below 50% HP during P2 damage overlaps. Also ensure a Potion of Recklessness (or defensive potion) is available -- only 1 potion use across 14 pulls.</p>
+</div>
+
+<div class="callout-green callout">
+  <div class="callout-title">5. What Is Working Well</div>
+  <p>
+  <b>P1 execution is excellent</b> -- 368K average DPS with zero deaths across 14 pulls. Cleave/AoE target switching on sentinels is clean.<br><br>
+  <b>Offensive CD alignment is correct</b> -- Dark Transformation and Army of the Dead are consistently paired, Blood Fury aligns with burst windows, and CDs are not held unnecessarily.<br><br>
+  <b>CPM is good</b> -- 48.4 CPM in P1 and 52.9 CPM in P2 on the best pull shows strong GCD usage. The rotation itself is not the problem.<br><br>
+  <b>Clear improvement trend</b> -- 33.9K average in the first half vs 38.8K in the second half (+14.4%). Learning the fight mechanics through the session.
+  </p>
+</div>
+
+<!-- ═══════════════ SUMMARY ═══════════════ -->
+<h2>Summary</h2>
+<div class="card" style="margin:16px 0;">
+  <div style="font-size:14px;line-height:1.7;">
+    <b>Verdict:</b> Bebeshakur's DPS gap is <b>survival-based, not rotation-based</b>. The Unholy DK rotation execution is solid -- good CPM, proper CD alignment, strong P1 cleave. The entire problem is dying in P2 on every pull due to sustained rot damage from Simulacrum Backlash + Voidstalker Sting + Grasp of Emptiness overlaps. The fix is straightforward: use Icebound Fortitude, use Death Strike as an emergency heal, use AMS more aggressively, and use Healthstone. These four changes together would likely convert most P2 deaths into P3 entries, which is the progression gate for the entire raid.
+  </div>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<div class="footer">
+  <p>Generated by WCL Analyzer &middot; Data from <a href="https://www.warcraftlogs.com/reports/jqFfXprk4hcaWx3C" target="_blank">Warcraft Logs</a> &middot; Reference: Lanadk-Hyjal (101,481 DPS, Mythic Crown kill)</p>
+  <p style="margin-top:4px;">Crown of the Cosmos &middot; Mythic &middot; Encounter ID 3181 &middot; June 18, 2026 &middot; Progression Night 2</p>
+</div>
+
+</body>
+</html>
