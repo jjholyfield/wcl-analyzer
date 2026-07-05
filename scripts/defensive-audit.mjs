@@ -24,6 +24,26 @@ const CASCADE_THRESHOLD = 2; // first N deaths per pull are real; the rest are c
 
 // ── Per-boss phase/window configs. Add new bosses here. ──
 const BOSS_CONFIGS = {
+  beloren: {
+    // Derived from JbM2DNfB4Vz83aTm fight 46 (Phoenix, 3:52 Mythic kill) via scripts/boss-timeline.mjs.
+    // WARNING: Death Drop (burnout entry) is HP-driven, NOT a fixed timer — 1:04 on this kill,
+    // 1:57 on the faster Dabing kill. Re-derive phase ends from our own pulls after night 1.
+    phases: [
+      { name: 'P1', end: 64 },
+      { name: 'I1-BURNOUT', end: 106 },
+      { name: 'P2', end: 190 },
+      { name: 'BURN', end: Infinity },
+    ],
+    windows: [
+      { from: 0, to: 10, name: 'Pull Voidlight Convergence (0:01)' },
+      { from: 48, to: 60, name: 'Voidlight Convergence #2 (~0:51)' },
+      { from: 64, to: 110, name: 'I1 Burnout — Light+Void Flames ramp' },
+      { from: 108, to: 120, name: 'P2 Voidlight Convergence (~1:51)' },
+      { from: 158, to: 172, name: 'P2 VLC + Voidlight Rupture (~2:41)' },
+      { from: 188, to: 202, name: 'Second Death Drop (~3:10)' },
+      { from: 202, to: 240, name: 'Final burn — Void+Light Flames' },
+    ],
+  },
   crown: {
     phases: [
       { name: 'P1', end: 134 },

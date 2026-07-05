@@ -33,6 +33,7 @@ A toolkit for pulling Warcraft Logs data via the v2 GraphQL API, analyzing raid 
 | `scripts/nsrt-note.mjs` | Plan JSON → NSRT import string (per-player TTS) + MRT display note + Discord block. See AGENT-BOSS-PREP.md for dialect rules. Plans in `healing-cds/plans/` |
 | `scripts/plan-compliance.mjs` | Plan vs actual: scores every assignment across a night (on time / drift / missed / off-plan), difficulty-filtered, with week-over-week deltas. See AGENT-PLAN-REVIEW.md. `node scripts/plan-compliance.mjs <plan.json> <report>` |
 | `scripts/spell-cooldowns.mjs` | Base CD table + alias groups for plan validation. Extend when adding new CDs to plans. |
+| `scripts/boss-timeline.mjs` | New-boss discovery: damage-taken timeline in 10s buckets, flags damage windows and phase lulls, prints a paste-ready BOSS_CONFIGS entry. `node scripts/boss-timeline.mjs <report> <fightID>` |
 | `wcl.mjs` | Main CLI — `lookup`, `report`, `pull` commands. Has `getToken()` and `gql()` for API access. |
 | `find-comps.mjs` | Searches WCL rankings for teams matching a specific healer comp |
 | `pull-cds.mjs` | Pulls healer CD timings from matched teams and analyzes consensus |
