@@ -1,25 +1,29 @@
 # WCL Analyzer — Warcraft Logs Healing CD Planner
 
 ## Owner
-Josh Holyfield — plays Holy Paladin (McPounding-Proudmoore) and MW Monk.
+Josh Holyfield — mains Holy Priest **Sènnsei (Area-52)** as of Midnight Season 2 (2026-08). Previously Holy Paladin (McPounding-Proudmoore) and MW Monk (Senssay).
 
 ## What This Is
 A toolkit for pulling Warcraft Logs data via the v2 GraphQL API, analyzing raid healing performance, and building healing CD assignment sheets for mythic progression. This is NOT part of the FRIDAY system.
 
-## Current Raid Team Healing Comp (updated 2026-07-04, Crown of the Cosmos prog)
-- MW Monk — Senssay (Josh)
+## Current Raid Team Healing Comp (updated 2026-08-26, Venomous Abyss heroic)
+- Holy Priest — Sènnsei (Josh)
 - Holy Paladin — Dueche
-- Disc Priest — Voidheart (running Barrier as of 2026-07 talent swap; Barrier and Ultimate Penitence are the same talent row — never assign both)
-- Resto Druid — Silencio
-- Raid CDs: Darkness (Nucke, VDH, 3min), Rallying Cry (Starfighter, 3min), Vampiric Embrace (Nurnyx, SPriest, 2min), Anti-Magic Zone x3 (Unholyftw, Glazedwhole, Bebeshakur, 2min each)
-- Comp varies by boss (3-heal vs 5-heal) — confirm roster against the actual log before building assignments
+- Holy Paladin — Zinkks
+- Resto Shaman — Klune
+- Raid CDs seen on this roster: Darkness (Nucke, VDH, 3min), Rallying Cry (Starfighter, 3min), Vampiric Embrace (Nurnyx, SPriest, 2min), Anti-Magic Zone (Unholyftw / Glazedwhole / Loaksdk, 2min each)
+- Comp varies by boss — confirm roster against the actual log before building assignments
+
+## Prior Comp (Voidspire tier, 2026-07)
+- MW Monk Senssay (Josh), HPal Dueche, Disc Voidheart (Barrier build), RDruid Silencio
 
 ## WCL API
 - **Endpoint:** https://www.warcraftlogs.com/api/v2/client (GraphQL)
 - **Auth:** OAuth2 client credentials → https://www.warcraftlogs.com/oauth/token
 - **Credentials:** `~/.openclaw/workspace/.secrets/warcraftlogs-v2-client-id.txt` and `warcraftlogs-v2-client-secret.txt`
-- **Current tier:** Zone 46 (The Voidspire / Darkreach / MQD)
-- **Encounter IDs:** 3176 Averzian, 3177 Vorasius, 3178 V&E, 3179 Salhadaar, 3180 LBV, 3181 Crown of the Cosmos, 3182 Belo'ren, 3183 Midnight Falls, 3306 Chimaerus
+- **Current tier:** Zone 53 (The Venomous Abyss, Midnight Season 2)
+- **Encounter IDs:** 3470 Nek'zali the Soulcoiler, 3445 Entombed Sentinels, 3497 The Lost Explorers, 3455 Vashnik the Malignant, 3420 Sszorak, 3421 The Twin Fangs, 3379 Nymrissa Wavecaller (world boss, appears in raid logs). Coiled Altar + Ula'tek IDs unknown (not yet pulled).
+- **Previous tier:** Zone 46 (Voidspire) — 3176 Averzian, 3177 Vorasius, 3178 V&E, 3179 Salhadaar, 3180 LBV, 3181 Crown, 3182 Belo'ren, 3183 Midnight Falls, 3306 Chimaerus
 - **Difficulty:** 5 = Mythic, 4 = Heroic
 
 ## Scripts
@@ -27,6 +31,8 @@ A toolkit for pulling Warcraft Logs data via the v2 GraphQL API, analyzing raid 
 | Script | Purpose |
 |--------|---------|
 | `scripts/wcl-lib.mjs` | **Shared lib — import this in every new script.** `getToken()`, `gql()`, `gqlPaged()`, `fmt()`, `lcName()`. Never re-implement auth or paging. |
+| `scripts/healer-pull.mjs` | Pull + cache all events for a healer audit (kill fights full, wipes light, per-fight tables, CombatantInfo, team healer casts). `node scripts/healer-pull.mjs <report> <playerName> [difficulty=4]` → `data/<report>/audit/` |
+| `scripts/top-priest-refs.mjs` | Comp-matched top-ranked reference finder + full event pull of the #1 (any healer class/spec despite the name). `node scripts/top-priest-refs.mjs <encounterID> <Class> <Spec> [difficulty=4] [healerCount=4]` → `data/refs/` |
 | `scripts/defensive-audit.mjs` | Death/defensive audit with cascade filtering, DR classification, raid-CD coverage. See AGENT-DEFENSIVE-AUDIT.md. `node scripts/defensive-audit.mjs <report> <encounterID> [bossKey]` |
 | `scripts/pull-top-talents.mjs` | Top-kill talent builds (Blizzard import strings via `talentImportCode`) + node-diff vs our roster. `node scripts/pull-top-talents.mjs <encounterID> [ourReport] [ourFightID]` |
 | `scripts/tank-swap-audit.mjs` | Taunt timeline (pickup/swap/add-pickup) + swap triggers + tank-hit cadences. `node scripts/tank-swap-audit.mjs <report> <fightID>` |
