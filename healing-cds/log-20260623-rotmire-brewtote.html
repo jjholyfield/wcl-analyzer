@@ -3,18 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
 <title>Brewtote (Resto Shaman) &mdash; Mythic Rotmire Kill Analysis</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* raid-console-tokens v1 */
+:root{color-scheme:dark;--color-bg:#0a0a0a;--color-surface:#111;--color-card:#141414;--color-border:#1f1f1f;--color-border-strong:#2a2a2a;--color-text-primary:#f5f5f5;--color-text-body:#d4d4d4;--color-text-secondary:#a3a3a3;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--color-ok:#8fae95;--color-ok-line:#2b3a2f;--color-warn:#c08a5a;--color-warn-line:#3a2a1c;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#ff7c0a;--class-evoker:#33937f;--class-hunter:#aad372;--class-mage:#3fc7eb;--class-monk:#00ff98;--class-paladin:#f48cba;--class-rogue:#fff468;--class-shaman:#0070dd;--class-warlock:#8788ee;--class-warrior:#c69b6d;--raid-ok-accent:color-mix(in srgb, var(--color-ok) 50%, var(--color-accent))}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){color-scheme:light;--color-bg:#f5f5f5;--color-surface:#ffffff;--color-card:#ffffff;--color-border:#e5e5e5;--color-border-strong:#d4d4d4;--color-text-primary:#0a0a0a;--color-text-body:#262626;--color-text-secondary:#525252;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#b25300;--class-evoker:#2b7c6b;--class-hunter:#577b26;--class-mage:#107a96;--class-monk:#007f4c;--class-paladin:#d7156b;--class-rogue:#776f00;--class-shaman:#006dd8;--class-warlock:#5a5ce8;--class-warrior:#906538}}
+:root[data-theme="light"]{color-scheme:light;--color-bg:#f5f5f5;--color-surface:#ffffff;--color-card:#ffffff;--color-border:#e5e5e5;--color-border-strong:#d4d4d4;--color-text-primary:#0a0a0a;--color-text-body:#262626;--color-text-secondary:#525252;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#b25300;--class-evoker:#2b7c6b;--class-hunter:#577b26;--class-mage:#107a96;--class-monk:#007f4c;--class-paladin:#d7156b;--class-rogue:#776f00;--class-shaman:#006dd8;--class-warlock:#5a5ce8;--class-warrior:#906538}
+html{-webkit-text-size-adjust:100%;background:var(--color-bg)}
+a{color:var(--color-accent)}
+::selection{background:var(--color-accent);color:var(--color-accent-ink)}
+:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+/* end raid-console-tokens */
+
 :root {
-  --bg: #0d1117; --surface: #161b22; --border: #30363d;
-  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
-  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
-  --purple: #bc8cff; --cyan: #39d2c0;
-  --shaman: #0070dd;
+  --bg: var(--color-bg); --surface: var(--color-card); --border: var(--color-border-strong);
+  --text: var(--color-text-primary); --dim: var(--color-text-secondary); --accent: var(--color-accent);
+  --green: var(--color-ok); --red: var(--color-warn); --yellow: var(--color-accent); --orange: var(--color-warn);
+  --purple: var(--color-accent); --cyan: var(--raid-ok-accent);
+  --shaman: var(--class-shaman);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-sans); padding: 24px; max-width: 1200px; margin: 0 auto; line-height: 1.6; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 .back-link { display: inline-block; margin-bottom: 16px; font-size: 13px; color: var(--dim); }
@@ -22,13 +34,13 @@ a:hover { text-decoration: underline; }
 .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
 .header h1 .player-name { color: var(--shaman); }
 .header .subtitle { color: var(--dim); font-size: 14px; }
-.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.tag-kill { background: rgba(63, 185, 80, 0.2); color: var(--green); border: 1px solid rgba(63, 185, 80, 0.3); }
-.tag-red { background: rgba(248, 81, 73, 0.15); color: var(--red); border: 1px solid rgba(248, 81, 73, 0.3); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--font-mono); }
+.tag-kill { background: color-mix(in srgb, var(--color-ok) 20%, transparent); color: var(--green); border: 1px solid color-mix(in srgb, var(--color-ok) 30%, transparent); }
+.tag-red { background: color-mix(in srgb, var(--color-warn) 15%, transparent); color: var(--red); border: 1px solid color-mix(in srgb, var(--color-warn) 30%, transparent); }
 
 .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
-.card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card .label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-family: var(--font-mono); }
 .card .value { font-size: 24px; font-weight: 700; }
 .card .note { font-size: 12px; color: var(--dim); margin-top: 4px; }
 
@@ -39,7 +51,7 @@ a:hover { text-decoration: underline; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
 td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
-tr:hover { background: rgba(88, 166, 255, 0.05); }
+tr:hover { background: color-mix(in srgb, var(--color-accent) 5%, transparent); }
 
 .callout { background: var(--surface); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 16px; margin-bottom: 16px; }
 .callout.warning { border-left-color: var(--orange); }
@@ -55,10 +67,10 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
 .bar:hover { opacity: 0.8; }
 .bar-label { font-size: 9px; color: var(--dim); margin-top: 4px; text-align: center; }
 .bar-value { font-size: 9px; color: var(--text); text-align: center; margin-bottom: 2px; font-weight: 600; }
-.bar-survived { background: linear-gradient(180deg, var(--green), #1a6b2a); }
-.bar-died { background: linear-gradient(180deg, var(--red), #8b2020); }
-.bar-kill { background: linear-gradient(180deg, var(--accent), #1a4a8a); }
-.bar-short { background: linear-gradient(180deg, var(--dim), #555); }
+.bar-survived { background: linear-gradient(180deg, var(--green), var(--color-ok)); }
+.bar-died { background: linear-gradient(180deg, var(--red), var(--color-warn)); }
+.bar-kill { background: linear-gradient(180deg, var(--accent), var(--color-accent)); }
+.bar-short { background: linear-gradient(180deg, var(--dim), var(--color-text-muted)); }
 
 .timeline-bar { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; height: 60px; margin: 16px 0; overflow: visible; }
 .timeline-inner { position: relative; height: 100%; margin: 0 20px; }
@@ -66,26 +78,26 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
 .timeline-marker .marker-label { position: absolute; top: -18px; left: -20px; font-size: 9px; white-space: nowrap; font-weight: 600; }
 .timeline-death { position: absolute; top: 0; height: 100%; border-left: 3px dashed var(--red); z-index: 3; }
 .timeline-death .marker-label { position: absolute; top: -18px; left: -10px; font-size: 10px; color: var(--red); font-weight: 700; }
-.timeline-alive { position: absolute; top: 0; height: 100%; background: rgba(63, 185, 80, 0.08); border-radius: 8px 0 0 8px; z-index: 0; }
-.timeline-dead { position: absolute; top: 0; height: 100%; background: rgba(248, 81, 73, 0.08); border-radius: 0 8px 8px 0; z-index: 0; }
+.timeline-alive { position: absolute; top: 0; height: 100%; background: color-mix(in srgb, var(--color-ok) 8%, transparent); border-radius: 8px 0 0 8px; z-index: 0; }
+.timeline-dead { position: absolute; top: 0; height: 100%; background: color-mix(in srgb, var(--color-warn) 8%, transparent); border-radius: 0 8px 8px 0; z-index: 0; }
 .timeline-time { position: absolute; bottom: -18px; font-size: 9px; color: var(--dim); transform: translateX(-50%); }
 
 .cd-grid { display: grid; grid-template-columns: 140px repeat(3, 1fr); gap: 1px; background: var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; font-size: 12px; }
 .cd-grid .cd-header { background: var(--surface); padding: 8px 12px; font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; }
 .cd-grid .cd-cell { background: var(--bg); padding: 8px 10px; min-height: 42px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.cd-grid .cd-cell.highlight-row { background: rgba(0, 112, 222, 0.08); }
+.cd-grid .cd-cell.highlight-row { background: color-mix(in srgb, var(--class-shaman) 8%, transparent); }
 .cd-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
-.cd-pill-shaman { background: rgba(0,112,222,0.15); color: #0070de; }
-.cd-pill-monk { background: rgba(0,255,150,0.15); color: #00ff96; }
-.cd-pill-dead { background: rgba(248,81,73,0.15); color: var(--red); }
-.cd-pill-none { background: rgba(139,148,158,0.1); color: var(--dim); font-style: italic; }
+.cd-pill-shaman { background: color-mix(in srgb, var(--class-shaman) 15%, transparent); color: var(--class-shaman); }
+.cd-pill-monk { background: color-mix(in srgb, var(--class-monk) 15%, transparent); color: var(--class-monk); }
+.cd-pill-dead { background: color-mix(in srgb, var(--color-warn) 15%, transparent); color: var(--red); }
+.cd-pill-none { background: color-mix(in srgb, var(--color-text-primary) 10%, transparent); color: var(--dim); font-style: italic; }
 
 .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
-.stat-box { background: rgba(22, 27, 34, 0.8); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
+.stat-box { background: color-mix(in srgb, var(--color-border-strong) 80%, transparent); border: 1px solid var(--border); border-radius: 6px; padding: 12px; text-align: center; }
 .stat-box .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; }
 .stat-box .stat-value { font-size: 20px; font-weight: 700; margin-top: 2px; }
 
-.death-timeline { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.8; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; }
+.death-timeline { font-family: var(--font-mono); font-size: 12px; line-height: 1.8; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; }
 .death-timeline .dmg { color: var(--red); }
 .death-timeline .heal { color: var(--green); }
 .death-timeline .absorb { color: var(--cyan); }
@@ -95,11 +107,11 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
 
 .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--dim); }
 
-.badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
-.badge-green { background: rgba(63, 185, 80, 0.2); color: var(--green); }
-.badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--yellow); }
-.badge-red { background: rgba(248, 81, 73, 0.2); color: var(--red); }
-.badge-orange { background: rgba(219, 109, 40, 0.2); color: var(--orange); }
+.badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.badge-green { background: color-mix(in srgb, var(--color-ok) 20%, transparent); color: var(--green); }
+.badge-yellow { background: color-mix(in srgb, var(--color-accent) 20%, transparent); color: var(--yellow); }
+.badge-red { background: color-mix(in srgb, var(--color-warn) 20%, transparent); color: var(--red); }
+.badge-orange { background: color-mix(in srgb, var(--color-warn) 20%, transparent); color: var(--orange); }
 
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
@@ -110,6 +122,9 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
   .cd-grid { grid-template-columns: 100px repeat(3, 1fr); font-size: 10px; }
   body { padding: 16px; }
 }
+
+/* raid-console-tail */
+@media (max-width:767px){body{padding-left:16px;padding-right:16px}}
 </style>
 </head>
 <body>
@@ -167,7 +182,7 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
       <tr><th>Player</th><th>HPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>OH%</th><th>Status</th></tr>
     </thead>
     <tbody>
-      <tr style="background: rgba(188,140,255,0.06);">
+      <tr style="background: color-mix(in srgb, var(--color-accent) 6%, transparent);">
         <td style="color: var(--purple);">Puddle (Argent Dawn)</td>
         <td><strong>220,810</strong></td>
         <td>7:47</td>
@@ -203,7 +218,7 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
         <td>&mdash;</td>
         <td><span class="badge badge-green">Survived</span></td>
       </tr>
-      <tr style="background: rgba(0,112,222,0.08);">
+      <tr style="background: color-mix(in srgb, var(--class-shaman) 8%, transparent);">
         <td style="color: var(--shaman);"><strong>Brewtote</strong></td>
         <td><strong>182,644</strong></td>
         <td>7:31</td>
@@ -768,7 +783,7 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
         <td>191,854</td>
         <td><span class="badge badge-green">Survived</span></td>
       </tr>
-      <tr style="background: rgba(0,112,222,0.06);">
+      <tr style="background: color-mix(in srgb, var(--class-shaman) 6%, transparent);">
         <td>2</td>
         <td style="color: var(--shaman); font-weight: 600;">Brewtote</td>
         <td style="color: var(--shaman);">Resto Shaman</td>
@@ -779,7 +794,7 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
       <tr>
         <td>3</td>
         <td>Primomonk</td>
-        <td style="color: #00ff98;">MW Monk</td>
+        <td style="color: var(--class-monk);">MW Monk</td>
         <td>&mdash;</td>
         <td>&mdash;</td>
         <td><span class="badge badge-red">Died 6:48</span></td>
@@ -787,7 +802,7 @@ tr:hover { background: rgba(88, 166, 255, 0.05); }
       <tr>
         <td>4</td>
         <td>Nightchuger</td>
-        <td style="color: #00ff98;">MW Monk</td>
+        <td style="color: var(--class-monk);">MW Monk</td>
         <td>&mdash;</td>
         <td>&mdash;</td>
         <td><span class="badge badge-red">Died 4:32</span></td>

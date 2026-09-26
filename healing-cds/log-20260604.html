@@ -3,50 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
 <title>Log Analysis — June 4, 2026 — Mythic LBV Prog</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* raid-console-tokens v1 */
+:root{color-scheme:dark;--color-bg:#0a0a0a;--color-surface:#111;--color-card:#141414;--color-border:#1f1f1f;--color-border-strong:#2a2a2a;--color-text-primary:#f5f5f5;--color-text-body:#d4d4d4;--color-text-secondary:#a3a3a3;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--color-ok:#8fae95;--color-ok-line:#2b3a2f;--color-warn:#c08a5a;--color-warn-line:#3a2a1c;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#ff7c0a;--class-evoker:#33937f;--class-hunter:#aad372;--class-mage:#3fc7eb;--class-monk:#00ff98;--class-paladin:#f48cba;--class-rogue:#fff468;--class-shaman:#0070dd;--class-warlock:#8788ee;--class-warrior:#c69b6d;--raid-ok-accent:color-mix(in srgb, var(--color-ok) 50%, var(--color-accent))}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){color-scheme:light;--color-bg:#f5f5f5;--color-surface:#ffffff;--color-card:#ffffff;--color-border:#e5e5e5;--color-border-strong:#d4d4d4;--color-text-primary:#0a0a0a;--color-text-body:#262626;--color-text-secondary:#525252;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#b25300;--class-evoker:#2b7c6b;--class-hunter:#577b26;--class-mage:#107a96;--class-monk:#007f4c;--class-paladin:#d7156b;--class-rogue:#776f00;--class-shaman:#006dd8;--class-warlock:#5a5ce8;--class-warrior:#906538}}
+:root[data-theme="light"]{color-scheme:light;--color-bg:#f5f5f5;--color-surface:#ffffff;--color-card:#ffffff;--color-border:#e5e5e5;--color-border-strong:#d4d4d4;--color-text-primary:#0a0a0a;--color-text-body:#262626;--color-text-secondary:#525252;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#b25300;--class-evoker:#2b7c6b;--class-hunter:#577b26;--class-mage:#107a96;--class-monk:#007f4c;--class-paladin:#d7156b;--class-rogue:#776f00;--class-shaman:#006dd8;--class-warlock:#5a5ce8;--class-warrior:#906538}
+html{-webkit-text-size-adjust:100%;background:var(--color-bg)}
+a{color:var(--color-accent)}
+::selection{background:var(--color-accent);color:var(--color-accent-ink)}
+:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+/* end raid-console-tokens */
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Inter', sans-serif; padding: 32px; max-width: 960px; margin: 0 auto; line-height: 1.5; }
-  h1 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-  .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
-  h2 { font-size: 18px; font-weight: 600; color: #c4a1ff; margin-top: 36px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+  body { background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-sans); padding: 32px; max-width: 960px; margin: 0 auto; line-height: 1.5; }
+  h1 { font-size: 24px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 4px; }
+  .subtitle { color: var(--color-text-secondary); font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 18px; font-weight: 600; color: var(--color-accent); margin-top: 36px; margin-bottom: 12px; border-bottom: 1px solid var(--color-border-strong); padding-bottom: 6px; }
 
-  .summary-box { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 20px 24px; margin-bottom: 24px; }
+  .summary-box { background: var(--color-card); border: 1px solid var(--color-border); border-radius: 8px; padding: 20px 24px; margin-bottom: 24px; }
   .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
-  .summary-card { background: #0d0d0d; border-radius: 6px; padding: 14px; text-align: center; }
-  .summary-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-  .summary-value { font-size: 24px; font-weight: 700; color: #fff; }
-  .summary-sub { font-size: 12px; color: #555; margin-top: 2px; }
+  .summary-card { background: var(--color-surface); border-radius: 6px; padding: 14px; text-align: center; }
+  .summary-label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-family: var(--font-mono); }
+  .summary-value { font-size: 24px; font-weight: 700; color: var(--color-text-primary); }
+  .summary-sub { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
 
-  .player-card { display: block; background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 16px 20px; margin-bottom: 8px; text-decoration: none; transition: border-color 0.2s, background 0.2s; }
-  .player-card:hover { border-color: #333; background: #151515; }
+  .player-card { display: block; background: var(--color-card); border: 1px solid var(--color-border); border-radius: 8px; padding: 16px 20px; margin-bottom: 8px; text-decoration: none; transition: border-color 0.2s, background 0.2s; }
+  .player-card:hover { border-color: var(--color-border-strong); background: var(--color-border); }
   .player-card.disabled { opacity: 0.35; pointer-events: none; }
   .player-row { display: flex; align-items: center; gap: 14px; }
-  .player-rank { font-size: 16px; font-weight: 700; color: #333; min-width: 28px; text-align: center; font-family: 'Courier New', monospace; }
-  .player-card:hover .player-rank { color: #c4a1ff; }
+  .player-rank { font-size: 16px; font-weight: 700; color: var(--color-text-muted); min-width: 28px; text-align: center; font-family: var(--font-mono); }
+  .player-card:hover .player-rank { color: var(--color-accent); }
   .player-info { flex: 1; }
-  .player-name { font-size: 15px; font-weight: 600; color: #fff; }
-  .player-spec { font-size: 12px; color: #666; }
-  .player-stats { display: flex; gap: 20px; font-size: 12px; color: #888; }
-  .player-stat-bad { color: #ff6b6b; }
-  .player-stat-warn { color: #ffa940; }
-  .player-stat-ok { color: #4caf50; }
-  .player-arrow { font-size: 16px; color: #333; }
-  .player-card:hover .player-arrow { color: #888; }
+  .player-name { font-size: 15px; font-weight: 600; color: var(--color-text-primary); }
+  .player-spec { font-size: 12px; color: var(--color-text-secondary); }
+  .player-stats { display: flex; gap: 20px; font-size: 12px; color: var(--color-text-secondary); }
+  .player-stat-bad { color: var(--color-warn); }
+  .player-stat-warn { color: var(--color-warn); }
+  .player-stat-ok { color: var(--color-ok); }
+  .player-arrow { font-size: 16px; color: var(--color-text-muted); }
+  .player-card:hover .player-arrow { color: var(--color-text-secondary); }
 
-  .role-header { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin-top: 20px; margin-bottom: 10px; }
+  .role-header { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-text-muted); margin-top: 20px; margin-bottom: 10px; font-family: var(--font-mono); }
 
-  .boss-tag { display: inline-block; background: #1a1212; border: 1px solid #332222; color: #ff6b6b; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 16px; }
+  .boss-tag { display: inline-block; background: color-mix(in srgb, var(--color-warn) 10%, var(--color-card)); border: 1px solid var(--color-warn-line); color: var(--color-warn); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 16px; }
 
-  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1a1a1a; font-size: 12px; color: #444; text-align: center; }
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--color-border); font-size: 12px; color: var(--color-text-muted); text-align: center; }
   a { color: inherit; }
+
+/* raid-console-tail */
+@media (max-width:767px){body{padding-left:16px;padding-right:16px}}
 </style>
 </head>
 <body>
 
 <h1>Log Analysis &mdash; June 4, 2026</h1>
-<p class="subtitle">Mythic Pallys Prog &mdash; 30 pulls on Mythic Lightblinded Vanguard &mdash; <a href="https://www.warcraftlogs.com/reports/x2jCDbqdvWHwKQFM" target="_blank" style="color:#7cacf8;">WCL Report</a></p>
+<p class="subtitle">Mythic Pallys Prog &mdash; 30 pulls on Mythic Lightblinded Vanguard &mdash; <a href="https://www.warcraftlogs.com/reports/x2jCDbqdvWHwKQFM" target="_blank" style="color:var(--color-accent);">WCL Report</a></p>
 
 <div class="summary-grid">
   <div class="summary-card">
@@ -76,48 +91,48 @@
 <h2>Team Trends</h2>
 
 <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;">
-  <div style="background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:16px;">
-    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Pre-Pot on Pull (DPS)</div>
-    <div style="font-size:28px;font-weight:700;color:#4caf50;">96%</div>
-    <div style="font-size:12px;color:#666;margin-top:4px;">Critters, Balecoda, Orichamaru, Moistbear all 30/30. Snackznchill lowest at 25/30.</div>
+  <div style="background:var(--color-card);border:1px solid var(--color-border);border-radius:8px;padding:16px;">
+    <div style="font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Pre-Pot on Pull (DPS)</div>
+    <div style="font-size:28px;font-weight:700;color:var(--color-ok);">96%</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px;">Critters, Balecoda, Orichamaru, Moistbear all 30/30. Snackznchill lowest at 25/30.</div>
   </div>
-  <div style="background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:16px;">
-    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Healthstone Usage</div>
-    <div style="font-size:28px;font-weight:700;color:#ffa940;">47%</div>
-    <div style="font-size:12px;color:#666;margin-top:4px;">DPS team avg across 30 pulls. Critters worst at 7%. Zinnks best at 83%. Multiple players below 30%.</div>
+  <div style="background:var(--color-card);border:1px solid var(--color-border);border-radius:8px;padding:16px;">
+    <div style="font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Healthstone Usage</div>
+    <div style="font-size:28px;font-weight:700;color:var(--color-warn);">47%</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px;">DPS team avg across 30 pulls. Critters worst at 7%. Zinnks best at 83%. Multiple players below 30%.</div>
   </div>
-  <div style="background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:16px;">
-    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Health Potion Usage</div>
-    <div style="font-size:28px;font-weight:700;color:#ffa940;">40%</div>
-    <div style="font-size:12px;color:#666;margin-top:4px;">Separate CD from DPS pots. Moistbear best at 67%. Critters 10%, Orichamaru 10%, Youngn 4%.</div>
+  <div style="background:var(--color-card);border:1px solid var(--color-border);border-radius:8px;padding:16px;">
+    <div style="font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Health Potion Usage</div>
+    <div style="font-size:28px;font-weight:700;color:var(--color-warn);">40%</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px;">Separate CD from DPS pots. Moistbear best at 67%. Critters 10%, Orichamaru 10%, Youngn 4%.</div>
   </div>
-  <div style="background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:16px;">
-    <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Early Death Rate</div>
-    <div style="font-size:28px;font-weight:700;color:#ffa940;">15%</div>
-    <div style="font-size:12px;color:#666;margin-top:4px;">Down from 22% on June 2. Alitheria worst at 31%. Snackznchill 30%. Critters best at 7%.</div>
+  <div style="background:var(--color-card);border:1px solid var(--color-border);border-radius:8px;padding:16px;">
+    <div style="font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Early Death Rate</div>
+    <div style="font-size:28px;font-weight:700;color:var(--color-warn);">15%</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);margin-top:4px;">Down from 22% on June 2. Alitheria worst at 31%. Snackznchill 30%. Critters best at 7%.</div>
   </div>
 </div>
 
-<div style="background:#141414;border-left:3px solid #4caf50;border-radius:6px;padding:14px 18px;margin-bottom:12px;font-size:13px;color:#bbb;line-height:1.7;">
-  <strong style="color:#fff;">Pre-potting improved from June 2.</strong> DPS team average is 96%. Critters, Balecoda, Orichamaru, and Moistbear all potted every pull. Snackznchill lowest at 25/30.
+<div style="background:var(--color-card);border-left:3px solid var(--color-ok);border-radius:6px;padding:14px 18px;margin-bottom:12px;font-size:13px;color:var(--color-text-body);line-height:1.7;">
+  <strong style="color:var(--color-text-primary);">Pre-potting improved from June 2.</strong> DPS team average is 96%. Critters, Balecoda, Orichamaru, and Moistbear all potted every pull. Snackznchill lowest at 25/30.
 </div>
 
-<div style="background:#141414;border-left:3px solid #ffa940;border-radius:6px;padding:14px 18px;margin-bottom:12px;font-size:13px;color:#bbb;line-height:1.7;">
-  <strong style="color:#fff;">Critters has the best rotation on the team (94% of #1) but barely touches consumables.</strong> 7% healthstone and 10% health pot usage. Meanwhile the rotation is near-perfect &mdash; Kill Command at 98%, dead time 5.5%. The gap between Critters&rsquo; mechanical play and consumable discipline is the widest on the roster.
+<div style="background:var(--color-card);border-left:3px solid var(--color-warn);border-radius:6px;padding:14px 18px;margin-bottom:12px;font-size:13px;color:var(--color-text-body);line-height:1.7;">
+  <strong style="color:var(--color-text-primary);">Critters has the best rotation on the team (94% of #1) but barely touches consumables.</strong> 7% healthstone and 10% health pot usage. Meanwhile the rotation is near-perfect &mdash; Kill Command at 98%, dead time 5.5%. The gap between Critters&rsquo; mechanical play and consumable discipline is the widest on the roster.
 </div>
 
-<div style="background:#141414;border-left:3px solid #ffa940;border-radius:6px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#bbb;line-height:1.7;">
-  <strong style="color:#fff;">Early death rate dropped from 22% (June 2) to 15%, but Snackznchill is still dying in 30% of pulls.</strong> Was 42% on June 2. Alitheria leads at 31% despite having Divine Shield, Lay on Hands, and Divine Protection. Every early death drops that player&rsquo;s DPS by 40-50% and removes a body for mechanics.
+<div style="background:var(--color-card);border-left:3px solid var(--color-warn);border-radius:6px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:var(--color-text-body);line-height:1.7;">
+  <strong style="color:var(--color-text-primary);">Early death rate dropped from 22% (June 2) to 15%, but Snackznchill is still dying in 30% of pulls.</strong> Was 42% on June 2. Alitheria leads at 31% despite having Divine Shield, Lay on Hands, and Divine Protection. Every early death drops that player&rsquo;s DPS by 40-50% and removes a body for mechanics.
 </div>
 
 <h2>DPS</h2>
-<p style="font-size:13px;color:#888;margin-bottom:16px;">Each player compared against top ranked players of their spec on this boss. Click for full audit.</p>
+<p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;">Each player compared against top ranked players of their spec on this boss. Click for full audit.</p>
 
 <a href="/raid/log-20260604-balecoda" class="player-card">
   <div class="player-row">
     <span class="player-rank">1</span>
     <div class="player-info">
-      <div class="player-name" style="color:#33937f;">Balecoda</div>
+      <div class="player-name" style="color:var(--class-evoker);">Balecoda</div>
       <div class="player-spec">Augmentation Evoker</div>
     </div>
     <div class="player-stats">
@@ -133,7 +148,7 @@
   <div class="player-row">
     <span class="player-rank">2</span>
     <div class="player-info">
-      <div class="player-name" style="color:#aad372;">Smokinthisza</div>
+      <div class="player-name" style="color:var(--class-hunter);">Smokinthisza</div>
       <div class="player-spec">Marksmanship Hunter</div>
     </div>
     <div class="player-stats">
@@ -149,7 +164,7 @@
   <div class="player-row">
     <span class="player-rank">3</span>
     <div class="player-info">
-      <div class="player-name" style="color:#3fc7eb;">Snackznchill</div>
+      <div class="player-name" style="color:var(--class-mage);">Snackznchill</div>
       <div class="player-spec">Frost Mage</div>
     </div>
     <div class="player-stats">
@@ -165,7 +180,7 @@
   <div class="player-row">
     <span class="player-rank">4</span>
     <div class="player-info">
-      <div class="player-name" style="color:#aad372;">Critters</div>
+      <div class="player-name" style="color:var(--class-hunter);">Critters</div>
       <div class="player-spec">Survival Hunter</div>
     </div>
     <div class="player-stats">
@@ -181,7 +196,7 @@
   <div class="player-row">
     <span class="player-rank">5</span>
     <div class="player-info">
-      <div class="player-name" style="color:#33937f;">Zinnks</div>
+      <div class="player-name" style="color:var(--class-evoker);">Zinnks</div>
       <div class="player-spec">Augmentation Evoker</div>
     </div>
     <div class="player-stats">
@@ -197,7 +212,7 @@
   <div class="player-row">
     <span class="player-rank">6</span>
     <div class="player-info">
-      <div class="player-name" style="color:#f48cba;">Alitheria</div>
+      <div class="player-name" style="color:var(--class-paladin);">Alitheria</div>
       <div class="player-spec">Retribution Paladin &mdash; benched pulls 1&ndash;14</div>
     </div>
     <div class="player-stats">
@@ -213,7 +228,7 @@
   <div class="player-row">
     <span class="player-rank">7</span>
     <div class="player-info">
-      <div class="player-name" style="color:#aad372;">Mbaku</div>
+      <div class="player-name" style="color:var(--class-hunter);">Mbaku</div>
       <div class="player-spec">Survival Hunter</div>
     </div>
     <div class="player-stats">
@@ -229,7 +244,7 @@
   <div class="player-row">
     <span class="player-rank">8</span>
     <div class="player-info">
-      <div class="player-name" style="color:#33937f;">Mheeraidon</div>
+      <div class="player-name" style="color:var(--class-evoker);">Mheeraidon</div>
       <div class="player-spec">Augmentation Evoker &mdash; benched pulls 15&ndash;31</div>
     </div>
     <div class="player-stats">
@@ -245,7 +260,7 @@
   <div class="player-row">
     <span class="player-rank">9</span>
     <div class="player-info">
-      <div class="player-name" style="color:#00ff98;">Youngn</div>
+      <div class="player-name" style="color:var(--class-monk);">Youngn</div>
       <div class="player-spec">Windwalker Monk &mdash; benched pulls 1&ndash;3</div>
     </div>
     <div class="player-stats">
@@ -261,7 +276,7 @@
   <div class="player-row">
     <span class="player-rank">10</span>
     <div class="player-info">
-      <div class="player-name" style="color:#c69b6d;">Starfighter</div>
+      <div class="player-name" style="color:var(--class-warrior);">Starfighter</div>
       <div class="player-spec">Arms Warrior</div>
     </div>
     <div class="player-stats">
@@ -277,7 +292,7 @@
   <div class="player-row">
     <span class="player-rank">11</span>
     <div class="player-info">
-      <div class="player-name" style="color:#8788ee;">Orichamaru</div>
+      <div class="player-name" style="color:var(--class-warlock);">Orichamaru</div>
       <div class="player-spec">Demonology Warlock</div>
     </div>
     <div class="player-stats">
@@ -293,7 +308,7 @@
   <div class="player-row">
     <span class="player-rank">12</span>
     <div class="player-info">
-      <div class="player-name" style="color:#8788ee;">Son&igrave;c</div>
+      <div class="player-name" style="color:var(--class-warlock);">Son&igrave;c</div>
       <div class="player-spec">Demonology Warlock</div>
     </div>
     <div class="player-stats">
@@ -309,7 +324,7 @@
   <div class="player-row">
     <span class="player-rank">13</span>
     <div class="player-info">
-      <div class="player-name" style="color:#aad372;">Mortwo</div>
+      <div class="player-name" style="color:var(--class-hunter);">Mortwo</div>
       <div class="player-spec">Marksmanship Hunter &mdash; benched pulls 15&ndash;31</div>
     </div>
     <div class="player-stats">
@@ -325,7 +340,7 @@
   <div class="player-row">
     <span class="player-rank">14</span>
     <div class="player-info">
-      <div class="player-name" style="color:#e0e0e0;">Nurnyx</div>
+      <div class="player-name" style="color:var(--color-text-primary);">Nurnyx</div>
       <div class="player-spec">Shadow Priest &mdash; DPS pulls 15&ndash;31</div>
     </div>
     <div class="player-stats">
@@ -341,7 +356,7 @@
   <div class="player-row">
     <span class="player-rank">15</span>
     <div class="player-info">
-      <div class="player-name" style="color:#ff7c0a;">Moistbear</div>
+      <div class="player-name" style="color:var(--class-druid);">Moistbear</div>
       <div class="player-spec">Feral Druid</div>
     </div>
     <div class="player-stats">
@@ -357,7 +372,7 @@
   <div class="player-row">
     <span class="player-rank">16</span>
     <div class="player-info">
-      <div class="player-name" style="color:#aad372;">Darthurg</div>
+      <div class="player-name" style="color:var(--class-hunter);">Darthurg</div>
       <div class="player-spec">Marksmanship Hunter &mdash; 3 pulls only</div>
     </div>
     <div class="player-stats">
@@ -373,9 +388,9 @@
 
 <a href="/raid/log-20260604-senssay" class="player-card">
   <div class="player-row">
-    <span class="player-rank" style="color:#00ff98;">&bull;</span>
+    <span class="player-rank" style="color:var(--class-monk);">&bull;</span>
     <div class="player-info">
-      <div class="player-name" style="color:#00ff98;">Senssay</div>
+      <div class="player-name" style="color:var(--class-monk);">Senssay</div>
       <div class="player-spec">Mistweaver Monk</div>
     </div>
     <div class="player-stats">
@@ -389,9 +404,9 @@
 
 <a href="/raid/log-20260604-brewtote" class="player-card">
   <div class="player-row">
-    <span class="player-rank" style="color:#0070dd;">&bull;</span>
+    <span class="player-rank" style="color:var(--class-shaman);">&bull;</span>
     <div class="player-info">
-      <div class="player-name" style="color:#0070dd;">Brewtote</div>
+      <div class="player-name" style="color:var(--class-shaman);">Brewtote</div>
       <div class="player-spec">Restoration Shaman</div>
     </div>
     <div class="player-stats">
@@ -405,9 +420,9 @@
 
 <a href="/raid/log-20260604-dueche" class="player-card">
   <div class="player-row">
-    <span class="player-rank" style="color:#f48cba;">&bull;</span>
+    <span class="player-rank" style="color:var(--class-paladin);">&bull;</span>
     <div class="player-info">
-      <div class="player-name" style="color:#f48cba;">Dueche</div>
+      <div class="player-name" style="color:var(--class-paladin);">Dueche</div>
       <div class="player-spec">Holy Paladin</div>
     </div>
     <div class="player-stats">
@@ -421,9 +436,9 @@
 
 <a href="/raid/log-20260604-silencio" class="player-card">
   <div class="player-row">
-    <span class="player-rank" style="color:#ff7c0a;">&bull;</span>
+    <span class="player-rank" style="color:var(--class-druid);">&bull;</span>
     <div class="player-info">
-      <div class="player-name" style="color:#ff7c0a;">S&igrave;lencio</div>
+      <div class="player-name" style="color:var(--class-druid);">S&igrave;lencio</div>
       <div class="player-spec">Restoration Druid</div>
     </div>
     <div class="player-stats">
@@ -437,9 +452,9 @@
 
 <a href="/raid/log-20260604-nurnyx-disc" class="player-card">
   <div class="player-row">
-    <span class="player-rank" style="color:#e0e0e0;">&bull;</span>
+    <span class="player-rank" style="color:var(--color-text-primary);">&bull;</span>
     <div class="player-info">
-      <div class="player-name" style="color:#e0e0e0;">Nurnyx</div>
+      <div class="player-name" style="color:var(--color-text-primary);">Nurnyx</div>
       <div class="player-spec">Discipline Priest &mdash; healer pulls 1&ndash;14</div>
     </div>
     <div class="player-stats">
@@ -453,9 +468,9 @@
 
 <a href="/raid/log-20260604-iconserve" class="player-card">
   <div class="player-row">
-    <span class="player-rank" style="color:#f48cba;">&bull;</span>
+    <span class="player-rank" style="color:var(--class-paladin);">&bull;</span>
     <div class="player-info">
-      <div class="player-name" style="color:#f48cba;">Iconserve</div>
+      <div class="player-name" style="color:var(--class-paladin);">Iconserve</div>
       <div class="player-spec">Holy Paladin &mdash; benched pulls 1&ndash;14</div>
     </div>
     <div class="player-stats">
@@ -471,9 +486,9 @@
 
 <a href="/raid/log-20260604-unholyftw" class="player-card">
   <div class="player-row">
-    <span class="player-rank" style="color:#c41e3a;">&bull;</span>
+    <span class="player-rank" style="color:var(--class-dk);">&bull;</span>
     <div class="player-info">
-      <div class="player-name" style="color:#c41e3a;">Unholyftw</div>
+      <div class="player-name" style="color:var(--class-dk);">Unholyftw</div>
       <div class="player-spec">Blood Death Knight</div>
     </div>
     <div class="player-stats">
@@ -487,9 +502,9 @@
 
 <a href="/raid/log-20260604-nucke" class="player-card">
   <div class="player-row">
-    <span class="player-rank" style="color:#a330c9;">&bull;</span>
+    <span class="player-rank" style="color:var(--class-dh);">&bull;</span>
     <div class="player-info">
-      <div class="player-name" style="color:#a330c9;">Nucke</div>
+      <div class="player-name" style="color:var(--class-dh);">Nucke</div>
       <div class="player-spec">Vengeance Demon Hunter</div>
     </div>
     <div class="player-stats">

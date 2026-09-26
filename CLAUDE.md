@@ -91,7 +91,8 @@ Assign CDs to damage events following consensus patterns. Group by the fight's n
 Check every assignment against the actual cooldown duration. If a CD is assigned to a window where it's still on cooldown from a previous use, it's wrong. Fix conflicts by swapping assignments or moving CDs to adjacent windows.
 
 ### 8. Format Output
-- HTML file in `healing-cds/` with dark theme, methodology, findings, and assignments
+- HTML file in `healing-cds/` with methodology, findings, and assignments
+- **Style is the FRIDAY console register, not a page-local theme** (owner order 2026-09-25: every page on friday.joshholyfield.com matches the dashboard). After writing or editing any page run `node scripts/restyle-console.mjs <file>`: it injects the token block (near-black ground, one bronze accent, ok/warn status, system fonts, dark default with the light scheme) and rewrites every colour literal, font stack and Google Fonts import. WoW class colours stay, as `var(--class-paladin)` and friends, ONLY on elements that name a player. Never hand-type a hex, a webfont or a red/green/blue status; `tests/smoke/raid-pages-console-register.test.mjs` in C:\DRIVE\CODE fails the night one comes back. `node scripts/restyle-console.mjs --verify <dir of pristine copies>` proves text, hrefs, ids, scripts and SVG geometry did not move.
 - Discord copy/paste block with the clean CD sheet
 - Use the boss's mechanic names (e.g., "beams" not "transitions", "orbs" not "Dark Radiation windows")
 

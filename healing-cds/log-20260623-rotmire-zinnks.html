@@ -3,19 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
 <title>Zinnks — Augmentation Evoker — Mythic Rotmire Kill Analysis</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* raid-console-tokens v1 */
+:root{color-scheme:dark;--color-bg:#0a0a0a;--color-surface:#111;--color-card:#141414;--color-border:#1f1f1f;--color-border-strong:#2a2a2a;--color-text-primary:#f5f5f5;--color-text-body:#d4d4d4;--color-text-secondary:#a3a3a3;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--color-ok:#8fae95;--color-ok-line:#2b3a2f;--color-warn:#c08a5a;--color-warn-line:#3a2a1c;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#ff7c0a;--class-evoker:#33937f;--class-hunter:#aad372;--class-mage:#3fc7eb;--class-monk:#00ff98;--class-paladin:#f48cba;--class-rogue:#fff468;--class-shaman:#0070dd;--class-warlock:#8788ee;--class-warrior:#c69b6d;--raid-ok-accent:color-mix(in srgb, var(--color-ok) 50%, var(--color-accent))}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){color-scheme:light;--color-bg:#f5f5f5;--color-surface:#ffffff;--color-card:#ffffff;--color-border:#e5e5e5;--color-border-strong:#d4d4d4;--color-text-primary:#0a0a0a;--color-text-body:#262626;--color-text-secondary:#525252;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#b25300;--class-evoker:#2b7c6b;--class-hunter:#577b26;--class-mage:#107a96;--class-monk:#007f4c;--class-paladin:#d7156b;--class-rogue:#776f00;--class-shaman:#006dd8;--class-warlock:#5a5ce8;--class-warrior:#906538}}
+:root[data-theme="light"]{color-scheme:light;--color-bg:#f5f5f5;--color-surface:#ffffff;--color-card:#ffffff;--color-border:#e5e5e5;--color-border-strong:#d4d4d4;--color-text-primary:#0a0a0a;--color-text-body:#262626;--color-text-secondary:#525252;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#b25300;--class-evoker:#2b7c6b;--class-hunter:#577b26;--class-mage:#107a96;--class-monk:#007f4c;--class-paladin:#d7156b;--class-rogue:#776f00;--class-shaman:#006dd8;--class-warlock:#5a5ce8;--class-warrior:#906538}
+html{-webkit-text-size-adjust:100%;background:var(--color-bg)}
+a{color:var(--color-accent)}
+::selection{background:var(--color-accent);color:var(--color-accent-ink)}
+:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+/* end raid-console-tokens */
+
 :root {
-  --bg: #0d1117; --surface: #161b22; --border: #30363d;
-  --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
-  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
-  --purple: #bc8cff; --cyan: #39d2c0;
-  --evoker: #33937f;
+  --bg: var(--color-bg); --surface: var(--color-card); --border: var(--color-border-strong);
+  --text: var(--color-text-primary); --dim: var(--color-text-secondary); --accent: var(--color-accent);
+  --green: var(--color-ok); --red: var(--color-warn); --yellow: var(--color-accent); --orange: var(--color-warn);
+  --purple: var(--color-accent); --cyan: var(--raid-ok-accent);
+  --evoker: var(--class-evoker);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
+body { font-family: var(--font-sans); background: var(--bg); color: var(--text); line-height: 1.6; padding: 24px; max-width: 1200px; margin: 0 auto; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
@@ -25,11 +36,11 @@ a:hover { text-decoration: underline; }
 .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
 .header h1 .player-name { color: var(--evoker); }
 .header .subtitle { color: var(--dim); font-size: 14px; }
-.header .kill-badge { display: inline-block; background: var(--green); color: #000; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
+.header .kill-badge { display: inline-block; background: var(--green); color: var(--color-accent-ink); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
 
 .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
-.card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); margin-bottom: 4px; }
+.card .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); margin-bottom: 4px; font-family: var(--font-mono); }
 .card .value { font-size: 28px; font-weight: 700; }
 .card .subtext { font-size: 12px; color: var(--dim); margin-top: 4px; }
 .card .value.green { color: var(--green); }
@@ -43,26 +54,26 @@ section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: var(
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th { text-align: left; padding: 8px 12px; background: var(--surface); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
 td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
-tr:hover td { background: rgba(88,166,255,0.04); }
-.highlight-row td { background: rgba(51,147,127,0.1); }
-.ref-row td { background: rgba(188,140,255,0.06); }
+tr:hover td { background: color-mix(in srgb, var(--color-accent) 4%, transparent); }
+.highlight-row td { background: color-mix(in srgb, var(--class-evoker) 10%, transparent); }
+.ref-row td { background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-.badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
-.badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
-.badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
-.badge-purple { background: rgba(188,140,255,0.15); color: var(--purple); }
-.badge-blue { background: rgba(88,166,255,0.15); color: var(--accent); }
+.badge-green { background: color-mix(in srgb, var(--color-ok) 15%, transparent); color: var(--green); }
+.badge-yellow { background: color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--yellow); }
+.badge-red { background: color-mix(in srgb, var(--color-warn) 15%, transparent); color: var(--red); }
+.badge-purple { background: color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--purple); }
+.badge-blue { background: color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--accent); }
 
 .bar-container { display: flex; align-items: center; gap: 8px; }
-.bar { height: 6px; border-radius: 3px; }
+.bar { height: 6px; border-radius: 4px; }
 .bar-player { background: var(--evoker); }
 .bar-ref { background: var(--purple); }
 
 .timeline { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; overflow-x: auto; }
 .timeline-row { display: flex; align-items: center; margin-bottom: 8px; position: relative; }
 .timeline-label { width: 140px; flex-shrink: 0; font-size: 12px; color: var(--dim); font-weight: 500; }
-.timeline-track { flex: 1; height: 24px; position: relative; background: rgba(48,54,61,0.3); border-radius: 4px; }
+.timeline-track { flex: 1; height: 24px; position: relative; background: color-mix(in srgb, var(--color-text-secondary) 30%, transparent); border-radius: 4px; }
 .timeline-marker { position: absolute; width: 4px; height: 24px; border-radius: 2px; top: 0; }
 .timeline-marker.bloom { background: var(--red); }
 .timeline-marker.vines { background: var(--yellow); }
@@ -78,7 +89,7 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .callout .callout-body { font-size: 13px; color: var(--dim); }
 
 .action-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-.action-item .action-num { display: inline-block; background: var(--accent); color: #000; width: 24px; height: 24px; text-align: center; line-height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; margin-right: 8px; }
+.action-item .action-num { display: inline-block; background: var(--accent); color: var(--color-accent-ink); width: 24px; height: 24px; text-align: center; line-height: 24px; border-radius: 50%; font-size: 12px; font-weight: 700; margin-right: 8px; }
 .action-item .action-title { font-weight: 600; font-size: 14px; display: inline; }
 .action-item .action-body { margin-top: 8px; font-size: 13px; color: var(--dim); }
 .action-item .action-impact { margin-top: 6px; font-size: 12px; color: var(--yellow); font-weight: 500; }
@@ -96,6 +107,9 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   .cards { grid-template-columns: repeat(2, 1fr); }
   body { padding: 16px; }
 }
+
+/* raid-console-tail */
+@media (max-width:767px){body{padding-left:16px;padding-right:16px}}
 </style>
 </head>
 <body>
@@ -265,7 +279,7 @@ tr:hover td { background: rgba(88,166,255,0.04); }
     <!-- Raid state -->
     <div class="timeline-row" style="margin-top:12px;">
       <div class="timeline-label">Raid State</div>
-      <div class="timeline-track" style="background:rgba(63,185,80,0.15);height:16px;border-radius:4px;">
+      <div class="timeline-track" style="background:color-mix(in srgb, var(--color-ok) 15%, transparent);height:16px;border-radius:4px;">
         <span style="position:absolute;left:8px;top:1px;font-size:11px;color:var(--green);font-weight:500;">21/21 alive -- Clean kill, zero deaths</span>
       </div>
     </div>

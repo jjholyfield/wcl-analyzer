@@ -3,16 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f5" media="(prefers-color-scheme: light)">
 <title>Unholyftw &mdash; Unholy Death Knight &mdash; Mythic Rotmire Analysis</title>
 <style>
+/* raid-console-tokens v1 */
+:root{color-scheme:dark;--color-bg:#0a0a0a;--color-surface:#111;--color-card:#141414;--color-border:#1f1f1f;--color-border-strong:#2a2a2a;--color-text-primary:#f5f5f5;--color-text-body:#d4d4d4;--color-text-secondary:#a3a3a3;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--color-ok:#8fae95;--color-ok-line:#2b3a2f;--color-warn:#c08a5a;--color-warn-line:#3a2a1c;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#ff7c0a;--class-evoker:#33937f;--class-hunter:#aad372;--class-mage:#3fc7eb;--class-monk:#00ff98;--class-paladin:#f48cba;--class-rogue:#fff468;--class-shaman:#0070dd;--class-warlock:#8788ee;--class-warrior:#c69b6d;--raid-ok-accent:color-mix(in srgb, var(--color-ok) 50%, var(--color-accent))}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){color-scheme:light;--color-bg:#f5f5f5;--color-surface:#ffffff;--color-card:#ffffff;--color-border:#e5e5e5;--color-border-strong:#d4d4d4;--color-text-primary:#0a0a0a;--color-text-body:#262626;--color-text-secondary:#525252;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#b25300;--class-evoker:#2b7c6b;--class-hunter:#577b26;--class-mage:#107a96;--class-monk:#007f4c;--class-paladin:#d7156b;--class-rogue:#776f00;--class-shaman:#006dd8;--class-warlock:#5a5ce8;--class-warrior:#906538}}
+:root[data-theme="light"]{color-scheme:light;--color-bg:#f5f5f5;--color-surface:#ffffff;--color-card:#ffffff;--color-border:#e5e5e5;--color-border-strong:#d4d4d4;--color-text-primary:#0a0a0a;--color-text-body:#262626;--color-text-secondary:#525252;--color-text-muted:#737373;--color-accent:#c2a06a;--color-accent-hover:#6f5b3a;--color-accent-ink:#0a0a0a;--class-dk:#c41e3a;--class-dh:#a330c9;--class-druid:#b25300;--class-evoker:#2b7c6b;--class-hunter:#577b26;--class-mage:#107a96;--class-monk:#007f4c;--class-paladin:#d7156b;--class-rogue:#776f00;--class-shaman:#006dd8;--class-warlock:#5a5ce8;--class-warrior:#906538}
+html{-webkit-text-size-adjust:100%;background:var(--color-bg)}
+a{color:var(--color-accent)}
+::selection{background:var(--color-accent);color:var(--color-accent-ink)}
+:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+/* end raid-console-tokens */
+
   :root {
-    --bg: #0d1117; --surface: #161b22; --border: #30363d;
-    --text: #e6edf3; --dim: #8b949e; --accent: #58a6ff;
-    --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28;
-    --purple: #bc8cff; --cyan: #39d2c0;
+    --bg: var(--color-bg); --surface: var(--color-card); --border: var(--color-border-strong);
+    --text: var(--color-text-primary); --dim: var(--color-text-secondary); --accent: var(--color-accent);
+    --green: var(--color-ok); --red: var(--color-warn); --yellow: var(--color-accent); --orange: var(--color-warn);
+    --purple: var(--color-accent); --cyan: var(--raid-ok-accent);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); line-height: 1.5; padding: 24px; max-width: 1200px; margin: 0 auto; }
   h1 { font-size: 28px; margin-bottom: 4px; }
   h2 { font-size: 20px; margin: 32px 0 16px; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
   h3 { font-size: 16px; margin: 16px 0 8px; color: var(--text); }
@@ -36,12 +49,12 @@
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
   th { text-align: left; padding: 8px 12px; border-bottom: 2px solid var(--border); color: var(--dim); font-size: 12px; text-transform: uppercase; }
   td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
-  tr:hover { background: rgba(88,166,255,0.04); }
+  tr:hover { background: color-mix(in srgb, var(--color-accent) 4%, transparent); }
   .bar-container { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
   .bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
   .timeline { position: relative; height: 60px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 12px 0; overflow: hidden; }
   .timeline-marker { position: absolute; top: 0; height: 100%; border-left: 2px solid; opacity: 0.8; }
-  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+  .timeline-label { position: absolute; font-size: 10px; white-space: nowrap; padding: 2px 4px; border-radius: 4px; }
   .mechanic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
   .mechanic-card.bloom { border-left: 3px solid var(--red); }
   .mechanic-card.vines { border-left: 3px solid var(--green); }
@@ -49,34 +62,37 @@
   .mechanic-card.ramp { border-left: 3px solid var(--purple); }
   .mechanic-card.cd { border-left: 3px solid var(--cyan); }
   .cps-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
-  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; min-width: 40px; }
-  .action-item { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
+  .cps-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: var(--color-text-primary); min-width: 40px; }
+  .action-item { background: color-mix(in srgb, var(--color-accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent); border-radius: 6px; padding: 12px 16px; margin: 8px 0; }
   .action-item strong { color: var(--accent); }
-  .action-item.critical { background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.25); }
+  .action-item.critical { background: color-mix(in srgb, var(--color-warn) 8%, transparent); border: 1px solid color-mix(in srgb, var(--color-warn) 25%, transparent); }
   .action-item.critical strong { color: var(--red); }
-  .death-marker { display: inline-block; background: rgba(248,81,73,0.15); border: 1px solid rgba(248,81,73,0.3); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
+  .death-marker { display: inline-block; background: color-mix(in srgb, var(--color-warn) 15%, transparent); border: 1px solid color-mix(in srgb, var(--color-warn) 30%, transparent); border-radius: 4px; padding: 2px 8px; margin: 2px; font-size: 12px; }
   .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .tag-same { background: rgba(63,185,80,0.15); color: var(--green); }
-  .tag-diff { background: rgba(248,81,73,0.15); color: var(--red); }
-  .tag-info { background: rgba(88,166,255,0.15); color: var(--accent); }
-  .tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
-  .tag-crit { background: rgba(248,81,73,0.25); color: var(--red); border: 1px solid rgba(248,81,73,0.4); }
+  .tag-same { background: color-mix(in srgb, var(--color-ok) 15%, transparent); color: var(--green); }
+  .tag-diff { background: color-mix(in srgb, var(--color-warn) 15%, transparent); color: var(--red); }
+  .tag-info { background: color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--accent); }
+  .tag-warn { background: color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--yellow); }
+  .tag-crit { background: color-mix(in srgb, var(--color-warn) 25%, transparent); color: var(--red); border: 1px solid color-mix(in srgb, var(--color-warn) 40%, transparent); }
   .progression-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 8px 0; }
-  .prog-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-width: 20px; cursor: default; }
+  .prog-bar { flex: 1; border-radius: 4px 4px 0 0; position: relative; min-width: 20px; cursor: default; }
   .prog-bar:hover::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 10; }
   .section-intro { color: var(--dim); font-size: 14px; margin-bottom: 16px; }
-  .ref-badge { display: inline-block; background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .ref-badge { display: inline-block; background: color-mix(in srgb, var(--color-accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--purple); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 8px; }
   .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .dmg-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; font-size: 0; }
   .dmg-fill { height: 100%; }
   .legend { display: flex; gap: 16px; font-size: 12px; margin-top: 8px; flex-wrap: wrap; }
   .legend-item { display: flex; align-items: center; gap: 4px; }
   .legend-swatch { width: 12px; height: 12px; border-radius: 2px; }
+
+/* raid-console-tail */
+@media (max-width:767px){body{padding-left:16px;padding-right:16px}}
 </style>
 </head>
 <body>
 
-<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:#8b949e;text-decoration:none;">&larr; June 17 Log Analysis</a>
+<a href="/raid/log-20260617" style="display:inline-block;margin-bottom:16px;font-size:13px;color:var(--color-text-secondary);text-decoration:none;">&larr; June 17 Log Analysis</a>
 <h1>Unholyftw <span class="dim">&mdash; Unholy Death Knight</span></h1>
 <div class="subtitle">Mythic Rotmire &middot; Kill Fight (7:58) &middot; June 17, 2026 &middot; Report 1Mch2jqLWmAZ8r9a</div>
 
@@ -116,7 +132,7 @@
     <tr><th>Player</th><th>DPS</th><th>Kill Time</th><th>ilvl</th><th>Talent Delta</th><th>CPM</th></tr>
   </thead>
   <tbody>
-    <tr style="background: rgba(248,81,73,0.06);">
+    <tr style="background: color-mix(in srgb, var(--color-warn) 6%, transparent);">
       <td><strong>Unholyftw</strong> <span class="death-marker">died 7:39</span></td>
       <td class="red">126,862</td>
       <td>7:58</td>
@@ -148,7 +164,7 @@
       <td><span class="tag tag-diff">10 diff</span></td>
       <td>&mdash;</td>
     </tr>
-    <tr style="background: rgba(188,140,255,0.04);">
+    <tr style="background: color-mix(in srgb, var(--color-accent) 4%, transparent);">
       <td>Pickltoez <span class="ref-badge">#4 PRIMARY</span></td>
       <td class="green">186,327</td>
       <td>6:53</td>
@@ -189,8 +205,8 @@
     <span class="timeline-label" style="bottom: 2px; right: 6px; color: var(--red); font-weight: 700;">&#x2620; DEAD (7:39)</span>
   </div>
   <!-- Alive zone -->
-  <div style="position: absolute; left: 0; top: 0; width: 95.9%; height: 100%; background: rgba(63,185,80,0.06); border-right: 2px dashed var(--red);"></div>
-  <div style="position: absolute; left: 95.9%; top: 0; width: 4.1%; height: 100%; background: rgba(248,81,73,0.04);">
+  <div style="position: absolute; left: 0; top: 0; width: 95.9%; height: 100%; background: color-mix(in srgb, var(--color-ok) 6%, transparent); border-right: 2px dashed var(--red);"></div>
+  <div style="position: absolute; left: 95.9%; top: 0; width: 4.1%; height: 100%; background: color-mix(in srgb, var(--color-warn) 4%, transparent);">
   </div>
   <!-- Time markers -->
   <span class="timeline-label" style="bottom: 2px; left: 4px; color: var(--dim);">0:00</span>
@@ -202,7 +218,7 @@
 <div class="card">
   <div class="card-header">Raid State &mdash; Death Timeline</div>
   <p style="font-size: 14px; margin-bottom: 8px;">Kill fight deaths (8 total). The raid ran clean until 3:07, then lost players progressively.</p>
-  <div style="font-family: 'SF Mono', Consolas, monospace; font-size: 13px; line-height: 1.8;">
+  <div style="font-family: var(--font-mono); font-size: 13px; line-height: 1.8;">
     <div><span class="dim" style="display:inline-block;width:60px;">0:00</span> <span class="green">19/19 alive</span></div>
     <div><span class="dim" style="display:inline-block;width:60px;">3:07</span> <span class="death-marker">Tiareynna</span> &rarr; Writhing Vines <span class="dim">&mdash; 18/19</span></div>
     <div><span class="dim" style="display:inline-block;width:60px;">6:07</span> <span class="death-marker">Nurnyx</span> <span class="death-marker">Snackznchill</span> <span class="death-marker">Son&igrave;c</span> &rarr; Festering Vines <span class="dim">&mdash; 15/19</span></div>
@@ -231,7 +247,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr style="background: rgba(248,81,73,0.08);">
+    <tr style="background: color-mix(in srgb, var(--color-warn) 8%, transparent);">
       <td><strong>Scourge Strike</strong></td>
       <td class="red"><strong>16.7</strong></td>
       <td>133</td>
@@ -258,7 +274,7 @@
       <td class="green">+20%</td>
       <td><span class="tag tag-same">Good</span></td>
     </tr>
-    <tr style="background: rgba(248,81,73,0.08);">
+    <tr style="background: color-mix(in srgb, var(--color-warn) 8%, transparent);">
       <td><strong>Graveyard</strong></td>
       <td class="red"><strong>1.0</strong></td>
       <td>8</td>
@@ -267,7 +283,7 @@
       <td class="red">&minus;77%</td>
       <td><span class="tag tag-crit">VERY LOW</span></td>
     </tr>
-    <tr style="background: rgba(248,81,73,0.05);">
+    <tr style="background: color-mix(in srgb, var(--color-warn) 5%, transparent);">
       <td>Festering Scythe</td>
       <td class="yellow">1.8</td>
       <td>14</td>
@@ -285,7 +301,7 @@
       <td class="dim">&minus;17%</td>
       <td><span class="tag tag-same">OK</span></td>
     </tr>
-    <tr style="background: rgba(210,153,34,0.05);">
+    <tr style="background: color-mix(in srgb, var(--color-accent) 5%, transparent);">
       <td><strong>Outbreak</strong></td>
       <td class="yellow"><strong>2.6</strong></td>
       <td>21</td>
@@ -321,7 +337,7 @@
       <td class="dim">&minus;31%</td>
       <td><span class="tag tag-info">Minor</span></td>
     </tr>
-    <tr style="background: rgba(248,81,73,0.05);">
+    <tr style="background: color-mix(in srgb, var(--color-warn) 5%, transparent);">
       <td>Epidemic</td>
       <td class="yellow">0.6</td>
       <td>5</td>
@@ -480,7 +496,7 @@
       <td>4,949K</td>
       <td>6.3%</td>
     </tr>
-    <tr style="background: rgba(248,81,73,0.05);">
+    <tr style="background: color-mix(in srgb, var(--color-warn) 5%, transparent);">
       <td><strong>Graveyard</strong></td>
       <td class="red">2,209K</td>
       <td class="red">3.6%</td>
@@ -564,7 +580,7 @@
       <td>2,954K</td>
       <td>3.8%</td>
     </tr>
-    <tr style="background: rgba(248,81,73,0.05);">
+    <tr style="background: color-mix(in srgb, var(--color-warn) 5%, transparent);">
       <td>Epidemic</td>
       <td class="yellow">2,032K</td>
       <td>3.4%</td>
@@ -623,7 +639,7 @@
       <td><span class="tag tag-warn">Partially</span></td>
       <td>Includes boss melee and add hits &mdash; expected for melee</td>
     </tr>
-    <tr style="background: rgba(248,81,73,0.05);">
+    <tr style="background: color-mix(in srgb, var(--color-warn) 5%, transparent);">
       <td><strong>Festering Vines</strong></td>
       <td class="red">1,503K</td>
       <td>19</td>
@@ -796,7 +812,7 @@
     <tr><td>#19</td><td>5:01</td><td>107,159</td><td>35%</td><td class="dim">DPS dip</td></tr>
     <tr><td>#20</td><td>0:54</td><td>163,012</td><td>82%</td><td class="dim">Short wipe, burst inflated</td></tr>
     <tr><td>#21</td><td>7:14</td><td>118,754</td><td>14%</td><td>Near-kill, very close</td></tr>
-    <tr style="background: rgba(63,185,80,0.06);"><td><strong>#22</strong></td><td><strong>7:58</strong></td><td><strong>126,862</strong></td><td class="green"><strong>KILL</strong></td><td><strong>Kill pull &mdash; best full-length DPS</strong></td></tr>
+    <tr style="background: color-mix(in srgb, var(--color-ok) 6%, transparent);"><td><strong>#22</strong></td><td><strong>7:58</strong></td><td><strong>126,862</strong></td><td class="green"><strong>KILL</strong></td><td><strong>Kill pull &mdash; best full-length DPS</strong></td></tr>
   </tbody>
 </table>
 </div>
