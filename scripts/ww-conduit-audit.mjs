@@ -46,9 +46,14 @@ const COMBO_MARK = { 1249756: 'Tiger Palm', 1249753: 'Rising Sun Kick', 1249754:
 const MASTERY_ABILITIES = new Set([S.TP, S.BOK, S.RSK, S.FOF, S.SCK, S.WDP, S.RWK, S.ZSTOMP, S.TOD, S.CONDUIT]);
 const LUST_IDS = new Set([2825, 32182, 80353, 390386, 264667, 466904]);
 const CONSUMERS = new Set([S.RSK, S.SCK, S.RWK]);
-// casts that never interrupt a channel (off the GCD) and the automatic Chi Explosion companion of SCK
-const NON_BREAKING = new Set([S.SHS, S.KARMA, S.FORT, S.POTION, S.TRINKET, S.DIFFUSE, S.DAMPEN, S.CHI_EXPLOSION, S.UNITY_CAST]);
-const POTION_CD = 300, TRINKET_CD = 90, KARMA_CD = 90, FORT_CD = 360, XUEN_BASE = 90;
+// Casts that never interrupt a Fists of Fury channel: only the automatic Chi Explosion companion of SCK and the
+// Unity Within recast. Off-GCD presses (Spear Hand Strike, Karma, Fortifying Brew, potion, trinket) DO end the
+// channel (verified 2026-10-22: the due tick never lands after them), so they count as channel breakers.
+const NON_BREAKING = new Set([S.CHI_EXPLOSION, S.UNITY_CAST]);
+// Off-GCD presses are still excluded from the GCD idle-gap measure.
+const OFF_GCD = new Set([S.SHS, S.KARMA, S.FORT, S.POTION, S.TRINKET, S.DIFFUSE, S.DAMPEN, S.CHI_EXPLOSION, S.UNITY_CAST]);
+// Fortifying Brew is a 90s cooldown in this build (measured 14:18.8 to 15:48.8 in Temple, 90.1s; Bisset 90.0s).
+const POTION_CD = 300, TRINKET_CD = 90, KARMA_CD = 90, FORT_CD = 90, XUEN_BASE = 90;
 
 const r2 = (x) => x === null || x === undefined ? null : Math.round(x * 100) / 100;
 const r1 = (x) => x === null || x === undefined ? null : Math.round(x * 10) / 10;
@@ -297,18 +302,29 @@ function auditPlayer(code, playerName) {
 
     // ── Tier 4pc consumer ──
     const sckCastDmg = (c) => castDmg(S.SCK_DMG, c.t, 1600);
-    const sckUnbuffed = castsOf(S.SCK).filter(c => !activeAt(iv.tier4, c.t)).map(c => ({ t: c.t, pull: pullAt(c.t), dmg: sckCastDmg(c), targets: new Set(dmg.filter(e => e.abilityGameID === S.SCK_DMG && e.timestamp >= c.t - 20 && e.timestamp <= c.t + 1600).map(e => e.targetID + ':' + (e.targetInstance || 0))).size }));
-    const sckBaseNear = (t, p, aoe) => {
-      const same = sckUnbuffed.filter(x => x.pull && p && x.pull.id === p.id && Math.abs(x.t - t) < 40000 && (aoe ? x.targets >= 2 : x.targets <= 1));
-      if (same.length >= 2) return median(same.map(x => x.dmg));
-      const bucket = sckUnbuffed.filter(x => aoe ? x.targets >= 3 : x.targets <= 1);
-      return median(bucket.map(x => x.dmg)) || median(sckUnbuffed.map(x => x.dmg)) || 0;
+    // A consuming SCK removes the 4pc 0 to 2 ms BEFORE its own cast event, so "buff active at cast" misses it:
+    // treat any SCK within 5 ms of a 4pc removal as buffed. Dance of Chi-Ji SCKs are excluded from the baseline too.
+    const consumedTier = (t) => iv.tier4.some(x => Math.abs(x.end - t) <= 5);
+    const sckUnbuffed = castsOf(S.SCK).filter(c => !activeAt(iv.tier4, c.t) && !consumedTier(c.t) && !activeAt(iv.dcj, c.t))
+      .map(c => ({ t: c.t, pull: pullAt(c.t), dmg: sckCastDmg(c), targets: new Set(dmg.filter(e => e.abilityGameID === S.SCK_DMG && e.timestamp >= c.t - 20 && e.timestamp <= c.t + 1600).map(e => e.targetID + ':' + (e.targetInstance || 0))).size }));
+    // Baseline SCK for a forgone consumer: clean SCKs at the Fists' own target count (plus or minus 1), nearest in time
+    // within the same pull, widening the net only when there are too few.
+    const sckBaseNear = (t, p, tg) => {
+      const near = (lo, hi, win) => sckUnbuffed.filter(x => x.targets >= lo && x.targets <= hi && (!win || (x.pull && p && x.pull.id === p.id && Math.abs(x.t - t) < win)));
+      let pool = near(Math.max(1, tg - 1), tg + 1, 40000);
+      if (pool.length < 2) pool = near(Math.max(1, tg - 1), tg + 1, null);
+      if (pool.length < 2) pool = tg >= 3 ? near(3, 99, null) : (tg === 2 ? near(2, 3, null) : near(1, 1, null));
+      if (pool.length < 1) pool = sckUnbuffed;
+      return median(pool.map(x => x.dmg)) || 0;
     };
     const tierUse = fofCasts.map(fc => {
       const tiv = iv.tier4.find(t => t.start >= fc.t - 50 && t.start <= fc.t + 400) || activeAt(iv.tier4, fc.t + 400);
       if (!tiv) return { at: fc.at, pull: fc.pull, targets: fc.maxTargets, stacks: 0, consumer: null, verdict: 'no 4pc buff seen', lossM: 0 };
-      const consumerCast = casts.find(x => x.t > fc.t && x.t <= tiv.end + 60 && CONSUMERS.has(x.id));
-      const consumedAtEnd = consumerCast && Math.abs(consumerCast.t - tiv.end) <= 60;
+      // The consumer is the RSK/SCK/RWK cast nearest the buff's removal (an SCK removes it 0 to 2 ms before its own
+      // cast event; RSK and RWK 0 to 60 ms after).
+      const nearEnd = casts.filter(x => CONSUMERS.has(x.id) && Math.abs(x.t - tiv.end) <= 100).sort((a, b) => Math.abs(a.t - tiv.end) - Math.abs(b.t - tiv.end))[0];
+      const consumerCast = nearEnd || casts.find(x => x.t > fc.t && x.t <= tiv.end + 60 && CONSUMERS.has(x.id));
+      const consumedAtEnd = !!nearEnd;
       const nextFof = fofCastsRaw.find(x => x.t > fc.t);
       const overwritten = nextFof && nextFof.t <= tiv.end && (!consumerCast || consumerCast.t > nextFof.t);
       const stacks = tiv.maxStacks, tg = fc.maxTargets;
@@ -316,14 +332,14 @@ function auditPlayer(code, playerName) {
       let verdict, lossM = 0;
       if (!consumerCast || !consumedAtEnd) {
         verdict = overwritten ? 'wasted: next FoF before a consumer' : 'wasted: expired unconsumed';
-        lossM = (bucket === 'st' ? 0.1 : 0.2) * stacks * sckBaseNear(fc.t, pullAt(fc.t), bucket !== 'st') / 1e6;
+        lossM = (bucket === 'st' ? 0.1 : 0.2) * stacks * sckBaseNear(fc.t, pullAt(fc.t), tg) / 1e6;
       } else if (bucket !== 'st') {
         if (consumerCast.id === S.SCK) verdict = 'ok';
         else {
           verdict = `${consumerCast.name} ate it at ${tg} targets (SCK was the call)`;
           const actual = castDmg(consumerCast.id === S.RSK ? S.RSK_DMG : S.RWK_DMG, consumerCast.t, 400);
           const consumerGain = actual - actual / (1 + 0.1 * stacks);
-          lossM = Math.max(0, 0.2 * stacks * sckBaseNear(fc.t, pullAt(fc.t), true) - consumerGain) / 1e6;
+          lossM = Math.max(0, 0.2 * stacks * sckBaseNear(fc.t, pullAt(fc.t), tg) - consumerGain) / 1e6;
         }
       } else {
         const wdpSoon = castsOf(S.WDP).some(w => w.t > consumerCast.t && w.t <= consumerCast.t + 3500);
@@ -399,7 +415,7 @@ function auditPlayer(code, playerName) {
 
     // ── Activity ──
     const pullSecs = pulls.reduce((s, p) => s + (p.endTime - p.startTime), 0) / 1000;
-    const gcdCasts = casts.filter(c => !NON_BREAKING.has(c.id) && ![S.ROLL, S.FSK, S.LUST].includes(c.id));
+    const gcdCasts = casts.filter(c => !OFF_GCD.has(c.id) && ![S.ROLL, S.FSK, S.LUST].includes(c.id));
     const idle = [];
     for (let i = 1; i < gcdCasts.length; i++) { const g = (gcdCasts[i].t - gcdCasts[i - 1].t) / 1000; const p = pullAt(gcdCasts[i - 1].t); if (p && g > 3 && pullAt(gcdCasts[i].t) === p) idle.push({ at: at(gcdCasts[i - 1].t), seconds: r1(g), after: gcdCasts[i - 1].name, before: gcdCasts[i].name, pull: p.name, dead: deaths.some(d => d.targetID === P && d.timestamp >= gcdCasts[i - 1].t && d.timestamp <= gcdCasts[i].t) }); }
     const activity = { pullSeconds: r1(pullSecs), castsPerMinuteInPulls: pullSecs ? r1(casts.filter(c => pullAt(c.t) && c.id !== S.CHI_EXPLOSION).length / (pullSecs / 60)) : null, idleGapsOver3s: idle.length, idleSecondsOver3s: r1(idle.reduce((s, g) => s + g.seconds, 0)), idleGapsTop: idle.sort((a, b) => b.seconds - a.seconds).slice(0, 12) };
@@ -431,7 +447,7 @@ function auditPlayer(code, playerName) {
       weapons: gear.filter(g => ['mainhand', 'offhand'].includes(g.slot)).map(g => `${g.slot} ${g.icon.replace('.jpg', '')} ilvl ${g.ilvl} enchant ${g.enchant} oil ${g.oil}`), dualWield: gear.some(g => g.slot === 'offhand'),
       trinkets: gear.filter(g => /trinket/.test(g.slot)).map(g => `${g.icon.replace('.jpg', '')} ilvl ${g.ilvl}${g.setID ? ' set ' + g.setID : ''}`),
       stats: { agility: ci.agility, stamina: ci.stamina, ...secondaries, leech: ci.leech, avoidance: ci.avoidance }, secondaryOrder: secondaryOrder.map(([k, v]) => `${k} ${v}`), potionStatAtThisRating: secondaryOrder[0][0],
-      aurasAtStart: auras.map(a => a.name), hasFood: auras.some(a => /well fed|feast|celebration|food/i.test(a.name)), hasFlask: auras.some(a => /flask/i.test(a.name)), hasAugmentRune: auras.some(a => /rune/i.test(a.name)),
+      aurasAtStart: auras.map(a => a.name), hasFood: auras.some(a => /well fed|feast|celebration|food/i.test(a.name)), hasFlask: auras.some(a => /flask/i.test(a.name)), hasAugmentRune: auras.some(a => /rune|void-touched/i.test(a.name)),
       talentImportCode: comb.talentImportCode, gear,
     };
     const talentsSeen = {
@@ -469,25 +485,38 @@ function auditPlayer(code, playerName) {
     const tierByT = new Map(fofCasts.map((x, i) => [x.t, tierUse[i]]));
     const masteryAt = new Set(comboRefresh.map(m => m.at));
     let lastPull = null;
-    for (const p of pulls) p._mark = false;
+    const presses = [];
+    const burstAt = (t) => { const i = xuenTimes.findIndex(X => { const xb = iv.xuen.find(x => Math.abs(x.start - X) < 1500); return t >= X - 3000 && t <= (xb ? xb.end : X + 20000) + 6000; }); return i >= 0 ? i + 1 : null; };
+    const BAD = /CLIPPED|!!|OVERLAP|BEFORE this window|10-second rule|energy capped|MASTERY BREAK|PRESSED WHILE ACTIVE|STRAIGHT INTO STOMP|ISSUES|idle |ran the full channel|paid Blackout Kick at 2\+ targets/;
+    let prevGcd = null;
     for (const c of casts) {
       if (c.id === S.CHI_EXPLOSION) continue;
       const p = pullAt(c.t);
       const pn = p ? `${p.isBoss ? 'BOSS ' : ''}${p.name}` : 'between pulls';
       if (pn !== lastPull) { lines.push(`\n──── ${pn} ${p ? '(' + fmt(rel(p.startTime)) + ' to ' + fmt(rel(p.endTime)) + ')' : ''} ────`); lastPull = pn; }
       const notes = [];
-      if (c.id === S.FOF) { const x = fofByT.get(c.t); if (x) { notes.push(`${x.clusters}/5 ticks ${x.channelSeconds}s on ${x.maxTargets} tgt`); if (x.clippedBy) notes.push(x.clippedBy.startsWith('targets') ? 'ended early: targets gone' : `CLIPPED by ${x.clippedBy} at +${x.clipGapSeconds}s`); const tu = tierByT.get(c.t); if (tu && tu.stacks) notes.push(`4pc ${tu.stacks} stacks -> ${tu.consumer || 'nobody'}${tu.verdict.startsWith('ok') ? '' : ' !! ' + tu.verdict}`); } }
-      if (c.id === S.CONDUIT) { const x = conduitByT.get(c.t); if (x) notes.push(`channel ${x.channelSeconds}s, ended by ${x.cancelledWith}; ${x.secondsAfterXuen !== null && x.secondsAfterXuen < 60 ? x.secondsAfterXuen + 's after Xuen' : 'no Xuen nearby'}${x.wdpHotjsActiveAtCast ? '; WDP-HotJS still had ' + x.wdpHotjsRemainingSeconds + 's (OVERLAP)' : ''}${!x.wdpAlreadyUsedThisWindow && x.secondsAfterXuen !== null && x.secondsAfterXuen < 30 ? '; BEFORE this window\'s first WDP' : ''}`); }
-      if (c.id === S.WDP) { const u = activeAt(iv.hotUnity, c.t); if (u) notes.push(`OVERLAP: Unity-HotJS still had ${r2((u.end - c.t) / 1000)}s`); const nx = xuenTimes.find(x => x > c.t && x - c.t <= 10000); if (nx) notes.push(`Xuen pressed ${r1((nx - c.t) / 1000)}s later (10-second rule)`); }
-      if (c.id === S.ZENITH) { const z = zenith.list.find(z => z.at === at(c.t)); if (z) notes.push(`${z.pressedWhileActive ? 'PRESSED WHILE ACTIVE' : 'Zenith ' + z.buffSeconds + 's'}, ${z.manualStomps} manual stomps, ${z.unusedStompCharges} charges unused${z.straightIntoStomp ? ', STRAIGHT INTO STOMP' : ''}`); }
-      if (c.id === S.XUEN) { const w = burstWindows.find(w => w.at === at(c.t)); if (w) notes.push(`BURST #${w.n}: ${w.issues.length ? w.issues.join('; ') : 'clean'}`); }
-      if (c.id === S.RSK || c.id === S.SCK || c.id === S.RWK) { const tb = activeAt(iv.tier4, c.t); if (tb && Math.abs(tb.end - c.t) <= 60) notes.push(`eats 4pc x${tb.stacks}`); }
-      if (c.id === S.TP && c.energy !== null && c.energy >= energyMax && ok3s(c)) notes.push('energy capped');
-      if (masteryAt.has(at(c.t)) && MASTERY_ABILITIES.has(c.id)) notes.push('MASTERY BREAK');
+      // idle before this press (inside a pull, not dead)
+      if (prevGcd && p && pullAt(prevGcd.t) === p && !OFF_GCD.has(c.id) && ![S.ROLL, S.FSK, S.LUST].includes(c.id)) {
+        const g = (c.t - prevGcd.t) / 1000;
+        if (g > 2.5 && !deaths.some(d => d.targetID === P && d.timestamp >= prevGcd.t && d.timestamp <= c.t)) notes.push(`idle ${r1(g)}s before this`);
+      }
+      if (c.id === S.FOF) { const x = fofByT.get(c.t); if (x) { notes.push(`${x.clusters}/5 ticks ${x.channelSeconds}s on ${x.maxTargets} tgt`); if (x.clippedBy) notes.push(x.clippedBy.startsWith('targets') ? 'ended early: targets gone' : `CLIPPED by ${x.clippedBy} at +${x.clipGapSeconds}s: wait for the last hit`); const tu = tierByT.get(c.t); if (tu && tu.stacks) notes.push(`4pc ${tu.stacks} stacks -> ${tu.consumer || 'nobody'}${tu.verdict.startsWith('ok') ? '' : ' !! ' + tu.verdict}`); } }
+      if (c.id === S.CONDUIT) { const x = conduitByT.get(c.t); if (x) { const good = x.wdpAlreadyUsedThisWindow && !x.wdpHotjsActiveAtCast && x.secondsSinceWdpHotjsEnded !== null && x.secondsSinceWdpHotjsEnded <= 2.5; notes.push(`channel ${x.channelSeconds}s, ended by ${x.cancelledWith}; ${x.secondsAfterXuen !== null && x.secondsAfterXuen < 60 ? x.secondsAfterXuen + 's after Xuen' : 'no Xuen nearby'}${good ? '; placed right: as the WDP HotJS ended' : ''}${x.wdpHotjsActiveAtCast ? '; WDP-HotJS still had ' + x.wdpHotjsRemainingSeconds + 's (OVERLAP): wait for it to end' : ''}${!x.wdpAlreadyUsedThisWindow && x.secondsAfterXuen !== null && x.secondsAfterXuen < 30 ? '; BEFORE this window\'s first WDP: WDP first, Conduit when its HotJS ends' : ''}${x.channelSeconds !== null && x.channelSeconds > 1.6 ? '; cancel on the next GCD (about 1s)' : ''}`); } }
+      if (c.id === S.WDP) { const u = activeAt(iv.hotUnity, c.t); if (u) notes.push(`OVERLAP: Unity-HotJS still had ${r2((u.end - c.t) / 1000)}s: hold WDP until it ends`); const nx = xuenTimes.find(x => x > c.t && x - c.t <= 10000); if (nx) notes.push(`Xuen pressed ${r1((nx - c.t) / 1000)}s later (10-second rule): hold WDP for the burst`); }
+      if (c.id === S.ZENITH) { const z = zenith.list.find(z => z.at === at(c.t)); if (z) { notes.push(`${z.pressedWhileActive ? 'PRESSED WHILE ACTIVE' : 'Zenith ' + z.buffSeconds + 's'}, ${z.manualStomps} manual stomps${z.unusedStompCharges ? ', ' + z.unusedStompCharges + ' charges unused: Stomp where Tiger Palm would go' : ''}${z.straightIntoStomp ? ', STRAIGHT INTO STOMP (mastery)' : ''}`); const nx = xuenTimes.find(x => x > c.t && x - c.t <= 20000 && x - c.t > 2500); if (nx && !inXuen(c.t)) notes.push(`Xuen pressed ${r1((nx - c.t) / 1000)}s later: hold Zenith for the Xuen window`); } }
+      if (c.id === S.XUEN) { const w = burstWindows.find(w => w.at === at(c.t)); if (w) notes.push(`BURST #${w.n}: ${w.issues.length ? 'ISSUES: ' + w.issues.join('; ') : 'clean'}`); }
+      if (c.id === S.RSK || c.id === S.SCK || c.id === S.RWK) { const tb = iv.tier4.find(x => Math.abs(x.end - c.t) <= 100); if (tb) notes.push(`eats 4pc x${tb.stacks}`); if (c.id === S.RSK && castsOf(S.WDP).some(w => w.t > c.t && w.t <= c.t + 3500)) notes.push('unlocks WDP'); if (c.id === S.SCK && activeAt(iv.dcj, c.t)) notes.push('free (Dance of Chi-Ji)'); }
+      if (c.id === S.ZSTOMP) { const prevM = seq.filter(s => s.t < c.t).pop(); if (prevM && prevM.mid === S.ZSTOMP) notes.push(prevM.id === S.ZENITH ? 'STRAIGHT INTO STOMP (mastery)' : 'Stomp into Stomp (mastery)'); }
+      if (c.id === S.BOK) { if (activeAt(iv.comboBreaker, c.t)) notes.push('free (Combo Breaker)'); else notes.push('paid Blackout Kick'); }
+      if (c.id === S.TP && c.energy !== null && c.energy >= energyMax && ok3s(c)) notes.push('energy capped: Tiger Palm came late');
+      if (masteryAt.has(at(c.t)) && MASTERY_ABILITIES.has(c.id)) notes.push('MASTERY BREAK: same button twice');
       const res = c.energy !== null ? `en ${String(c.energy).padStart(3)}` : (c.chi !== null ? `chi ${c.chi}` : '      ');
       lines.push(`${at(c.t).padStart(7)}  ${c.name.padEnd(28)} ${res.padEnd(7)} hot:${hotSources(c.t).join('').padEnd(3)} ${inZenith(c.t) ? 'Zen' : '   '} ${inXuen(c.t) ? 'Xuen' : '    '} 4pc:${tierStacksAt(c.t)} CB:${stacksAt(iv.comboBreaker, c.t)} DCJ:${stacksAt(iv.dcj, c.t)}${notes.length ? '  | ' + notes.join('; ') : ''}`);
+      presses.push({ t: at(c.t), s: r2(rel(c.t)), name: c.name, id: c.id, energy: c.energy, chi: c.chi, hot: hotSources(c.t).join(''), zen: inZenith(c.t), xuen: inXuen(c.t), tier: tierStacksAt(c.t), cb: stacksAt(iv.comboBreaker, c.t), dcj: stacksAt(iv.dcj, c.t), pull: pn, boss: !!(p && p.isBoss), burst: burstAt(c.t), note: notes.join('; '), bad: notes.some(n => BAD.test(n)) });
+      if (!OFF_GCD.has(c.id) && ![S.ROLL, S.FSK, S.LUST].includes(c.id)) prevGcd = c;
     }
     writeFileSync(join(D, `${tag}-sequence.txt`), lines.join('\n'));
+    writeFileSync(join(D, `${tag}-presses.json`), JSON.stringify(presses));
 
     audit.fights.push({
       id: f.id, name: f.name, key: f.keystoneLevel, affixes: f.keystoneAffixes, timed: f.kill, seconds: r1(dur), dps: Math.round(total / dur), totalDamageM: r2(total / 1e6), buffCoveragePct, damageTop, bossDps,

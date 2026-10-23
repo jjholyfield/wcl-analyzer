@@ -145,7 +145,7 @@ Every file that needs an entry before the pipeline works end-to-end:
 
 ## Publishing (mandatory for team-facing output)
 - Every deliverable for the team = HTML page in `healing-cds/` + card in `healing-cds/index.html` + Discord copy block inside the page.
-- Pages are served at `friday.joshholyfield.com/raid/<slug>` by `friday-server/src/routes/raid.js`. A report that exists only in chat or a scratchpad was not delivered.
+- **The `/raid/` route is gone.** friday-server stopped serving `healing-cds/` on 2026-09-25 (owner order: "Delete the raid stuff"); `friday.joshholyfield.com/raid/<slug>` returns the platform 404. Pages still live in `healing-cds/` as the source of record; to hand one to the owner or the team, publish the file with the Artifact tool (private link) or open it from disk. `scripts/ww-conduit-report.mjs` writes its page in the Artifact fragment format (title + style + content, no html/body wrapper) for that reason.
 - **Filenames: lowercase, accents stripped** (`lcName()` in scripts/wcl-lib.mjs). `voidhéart` in a filename 404s at /raid/.
 - Log page slugs use the raid night's date **from the report metadata** (`log-YYYYMMDD-...`), not today's date or a guess from "last night."
 - Discord posts: no markdown tables (use code blocks), real line breaks.
