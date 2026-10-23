@@ -24,7 +24,10 @@ A toolkit for pulling Warcraft Logs data via the v2 GraphQL API, analyzing raid 
 - **Current tier:** Zone 53 (The Venomous Abyss, Midnight Season 2)
 - **Encounter IDs:** 3470 Nek'zali the Soulcoiler, 3445 Entombed Sentinels, 3497 The Lost Explorers, 3455 Vashnik the Malignant, 3420 Sszorak, 3421 The Twin Fangs, 3379 Nymrissa Wavecaller (world boss, appears in raid logs). Coiled Altar + Ula'tek IDs unknown (not yet pulled).
 - **Previous tier:** Zone 46 (Voidspire) — 3176 Averzian, 3177 Vorasius, 3178 V&E, 3179 Salhadaar, 3180 LBV, 3181 Crown, 3182 Belo'ren, 3183 Midnight Falls, 3306 Chimaerus
-- **Difficulty:** 5 = Mythic, 4 = Heroic
+- **Difficulty:** 5 = Mythic, 4 = Heroic. Mythic+ keystone fights are difficulty 10 (zone 55 = Mythic+ Season 2; one fight per key with `keystoneLevel`, bosses and trash as `dungeonPulls`). M+ encounter ids seen: 12825 Den of Nalorakk, 61877 Temple of Sethraliss, 12923 Voidscar Arena. M+ rankings: `worldData.encounter(id).characterRankings(className, specName, metric: dps, difficulty: 10[, bracket: <keyLevel>])`.
+- **Events paging gotcha (proven 2026-10-22):** `events(fightIDs, startTime)` WITHOUT `endTime` returns an EMPTY second page, so anything over 10,000 events of one type is silently truncated (a 23-minute key lost its last six minutes of buff events). Always pass `endTime: <fight.endTime>` with `startTime` when paging. `gqlPaged` leaves the query to you, so put it in the query you build.
+- **`dataType: DamageTaken` filters by `sourceID` = the actor TAKING the damage** (`targetID` returns almost nothing).
+- **`classResources` on cast events only carries the resource the ability costs** (energy for Tiger Palm, chi for Fists of Fury); energy at a chi spender is not in the log.
 
 ## Scripts
 
@@ -40,6 +43,9 @@ A toolkit for pulling Warcraft Logs data via the v2 GraphQL API, analyzing raid 
 | `scripts/plan-compliance.mjs` | Plan vs actual: scores every assignment across a night (on time / drift / missed / off-plan), difficulty-filtered, with week-over-week deltas. See AGENT-PLAN-REVIEW.md. `node scripts/plan-compliance.mjs <plan.json> <report>` |
 | `scripts/spell-cooldowns.mjs` | Base CD table + alias groups for plan validation. Extend when adding new CDs to plans. |
 | `scripts/boss-timeline.mjs` | New-boss discovery: damage-taken timeline in 10s buckets, flags damage windows and phase lulls, prints a paste-ready BOSS_CONFIGS entry. `node scripts/boss-timeline.mjs <report> <fightID>` |
+| `scripts/ww-conduit-pull.mjs` | Windwalker M+ data pull (casts with resources, buffs on the player, damage done/taken, resource changes, deaths, interrupts, CombatantInfo + talent code) for every keystone fight the player is in. `node scripts/ww-conduit-pull.mjs <report> [player] [--fight <id>]` → `data/<report>/ww/<player>/` |
+| `scripts/ww-conduit-audit.mjs` | Windwalker Conduit rotational audit against `guides/ww-conduit-s2-rules.md`: 4pc consumer per Fists of Fury, FoF tick clipping with damage-loss estimate, HotJS windows and WDP/Unity overlaps, Conduit channel/cancel/timing, burst-window template checks, Zenith Stomp charge use, mastery breaks, energy capping, proc overcap, deaths with defensive availability, gear/stats/consumables, KPIs. Writes `audit.json` and a cast-by-cast `fight<id>-sequence.txt`. `node scripts/ww-conduit-audit.mjs <report> <player>`; `--compare <report>:<player> ...` prints KPIs side by side. |
+| `scripts/ww-top-refs.mjs` | Top-ranked Windwalker M+ reference finder for a dungeon encounter id (optional `--bracket <keyLevel>`), `--pull` runs ww-conduit-pull on each so the audit grades the reference with the same ruler. `node scripts/ww-top-refs.mjs <encounterID> [--bracket 16] [--top 1] [--pull]` |
 | `wcl.mjs` | Main CLI — `lookup`, `report`, `pull` commands. Has `getToken()` and `gql()` for API access. |
 | `find-comps.mjs` | Searches WCL rankings for teams matching a specific healer comp |
 | `pull-cds.mjs` | Pulls healer CD timings from matched teams and analyzes consensus |
