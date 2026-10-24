@@ -39,6 +39,14 @@ const load = (c, p) => {
   return audit;
 };
 const me = load(code, player);
+// --also <report>:<player>,... : further reports of the same player, appended in order (a second night, the same character)
+for (const spec of (opt('--also', '') || '').split(',').filter(Boolean)) {
+  const [c, p] = spec.split(':');
+  const more = load(c, p);
+  for (const f of more.fights) { f.id = `${c}-${f.id}`; f.reportCode = c; me.fights.push(f); }
+  me.alsoReports = [...(me.alsoReports || []), { code: c, startTime: more.report.startTime }];
+}
+for (const f of me.fights) if (!f.reportCode) f.reportCode = code;
 const refs = refSpecs.map(s => { const [c, p] = s.split(':'); return load(c, p); });
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -111,7 +119,8 @@ function fightSection(audit, f, { full }) {
     const pulls = [...new Set(f.presses.map(p => p.pull))];
     rest = `<h4>Every press, pull by pull</h4><p class="muted">Burst-window presses are tinted. Rows marked in red carry a call; "fine" means no rule applied against that press.</p>` + pulls.map(pn => { const rows = f.presses.filter(p => p.pull === pn); const bad = rows.filter(r => r.bad).length; return `<details class="pull"><summary>${esc(pn)} <span class="muted">${rows.length} presses, ${bad} flagged</span></summary>${pressTable(rows)}</details>`; }).join('');
   }
-  return `<section class="fight" id="f${f.id}-${esc(lcName(audit.player.name))}"><h3>${esc(f.name)} +${f.key}</h3>${summary}${stats}<h4>Burst windows, button by button</h4>${bursts}${deaths}${rest}</section>`;
+  const when = f.reportCode && f.reportCode !== code ? ` <span class="muted">(report ${esc(f.reportCode)})</span>` : '';
+  return `<section class="fight" id="f${esc(String(f.id))}-${esc(lcName(audit.player.name))}"><h3>${esc(f.name)} +${f.key}${when}</h3>${summary}${stats}<h4>Burst windows, button by button</h4>${bursts}${deaths}${rest}</section>`;
 }
 
 const myFights = me.fights.map(f => fightSection(me, f, { full: true })).join('');
@@ -176,8 +185,8 @@ section.fight { margin-top: 10px; } section.fight.ref { border-top: 1px dashed v
 </style>
 <div class="wrap">
 <h1>${esc(title)}</h1>
-<p class="subtitle">${esc(me.player.name)}-${esc(me.player.server)}, Conduit of the Celestials Windwalker. ${me.fights.length} keys from report ${esc(me.report.code)} on ${esc(new Date(me.report.startTime).toISOString().slice(0, 10))}, graded button by button against the Season 2 Conduit rules and against ${refs.map(r => `${esc(r.player.name)} (${esc(r.fights[0].name)} +${r.fights[0].key}, ${r.fights[0].dps.toLocaleString()} DPS)`).join(', ')}.</p>
-<nav class="muted">Jump to: <a href="#what-to-fix-in-order">fixes</a> · <a href="#side-by-side">side by side</a> · <a href="#the-window-to-run">the window to run</a> · ${me.fights.map(f => `<a href="#f${f.id}-${esc(lcName(me.player.name))}">${esc(f.name)}</a>`).join(' · ')} · <a href="#references">references</a> · <a href="#discord">Discord</a></nav>
+<p class="subtitle">${esc(me.player.name)}-${esc(me.player.server)}, Conduit of the Celestials Windwalker. ${me.fights.length} keys from report ${esc(me.report.code)} on ${esc(new Date(me.report.startTime).toISOString().slice(0, 10))}${(me.alsoReports || []).map(r => ` and report ${esc(r.code)} on ${esc(new Date(r.startTime).toISOString().slice(0, 10))}`).join('')}, graded button by button against the Season 2 Conduit rules and against ${refs.map(r => `${esc(r.player.name)} (${esc(r.fights[0].name)} +${r.fights[0].key}, ${r.fights[0].dps.toLocaleString()} DPS)`).join(', ')}.</p>
+<nav class="muted">Jump to: <a href="#what-to-fix-in-order">fixes</a> · <a href="#side-by-side">side by side</a> · <a href="#the-window-to-run">the window to run</a> · ${me.fights.map(f => `<a href="#f${esc(String(f.id))}-${esc(lcName(me.player.name))}">${esc(f.name)}</a>`).join(' · ')} · <a href="#references">references</a> · <a href="#discord">Discord</a></nav>
 <div class="prose">${mdToHtml(notesTop)}</div>
 <h2 id="side-by-side">Side by side</h2>
 <p class="muted">Your keys first, then the references. Every value comes from the same audit script run on each player's own log.</p>

@@ -1,3 +1,17 @@
+## Night two, 23 October: what moved
+
+Four keys since the audit: Ruby Life Pools +16 late on the 22nd, then Altar of Fangs +16, Voidscar Arena +16 and Murder Row +16 on the 23rd. Same ruler, plus a +17 reference pulled for each of those dungeons (Boombox, Yoyway, Quxi, Fixus).
+
+- **Fists of Fury: fixed.** Channels run to the last hit 86%, 78% and 90% of the time in the three keys of the 23rd (night one 48 to 55%, references 81 to 97%). Cut by your own press 10, 13 and 7 times (night one 39 to 53), and the cutters are now Karma, Touch of Death, WDP and Conduit rather than Spinning Crane Kick and Tiger Palm at the tail. Damage lost to cut channels fell from about 3% to 0.5 to 1.1%, and the four-piece now averages 5.7 to 5.8 stacks (was 5.3).
+- **Four-piece consumer: much better, not done.** Spinning Crane Kick ate it at 3+ targets 81%, 88% and 67% (night one 54 to 68%, references 83 to 100%). RSK or RWK took it 15, 7 and 20 times (night one 26 to 38). Murder Row is the weak one: Rushing Wind Kick right after Fists six times (0:51.0, 3:07.0, 11:32.2, 11:55.6, 13:02.7, 14:05.1) and RSK fourteen times. Rule unchanged: at 2+ targets SCK is the first spender after Fists, RWK and RSK go before the Fists or after that SCK.
+- **Potion stat: fixed.** Mastery 1146, haste 941, crit 797, so all 14 potions of the 23rd boosted mastery. Food in Altar and Murder Row, none in Voidscar. Chest enchant is missing on the new chest piece.
+- **Zenith Stomps: half fixed, and it created a new leak.** 1.0, 0.84 and 0.95 manual stomps per Zenith (night one 0.2 to 0.95, Ruby 1.47, references 1.3 to 1.9), 20 to 22 charges still expiring per key. The stomps you do press come back to back: Murder Row had 18 mastery breaks, 8 of them Stomp into Stomp or Stomp as the first press after Zenith (8:35.7, 8:36.7, 12:04.9, 13:18.9, 16:44.2, 17:54.3, 20:45.3), Voidscar 14 breaks. One spender between the two stomps, every time.
+- **Conduit placement: right spot, wrong length.** Inside the Xuen window 100%, 100%, 91% (good), but the channel now averages 2.1s, 1.6s and 1.9s, and five Conduits ran the full channel (Altar 14:34.5, 19:37.5, 22:43.2; Murder Row 8:32.9, 20:43.4). The guide: always cancel on the next GCD; the references average 1.0 to 1.6s. And the boss-opener habit is still there: Conduit at +0.8s before any WDP at Altar 14:34.5, Voidscar 16:52.5 and 21:44.2, Murder Row 5:03.7 and 10:05.9.
+- **Deaths: not better.** Ruby 3, Altar 1, Voidscar 4 (Whirling Gust 9:14, Poison Splash on Atroxus 12:16, Condensed Mass 21:21 and Cosmic Crash 23:04 on Charonus), Murder Row 0. References 0 to 2 per key. In all four Voidscar deaths both defensives had been spent 25 to 88s earlier.
+- **Tiger Palm at full energy: unchanged** at 48 to 53% (references 26 to 41%). Press it before the free WDP, Dance SCK, Blackout Kick, RWK chain.
+- **Talents:** you went back to the 150-energy build (Inner Peace, no Drinking Horn Cover) for the 23rd. Xuen count is fine on it (11 to 12 per key, references 12 to 16), so either build works; on this one the rule from fix 6 does not bind.
+- **The gap to the references** is still wide: 241K to 282K against 412K to 490K at +17 with 329 to 334 item level against your 323. Part of that is gear (ilvl, the two-hander, the set bonus trade), part is deaths and pull size, and the rest is the list above: the remaining four-piece misses, stomps, full Conduit channels and energy capping.
+
 ## What to fix, in order
 
 Five keys on 2026-10-22: Voidscar Arena +6, Den of Nalorakk +16, Temple of Sethraliss +16, Kings' Rest +16, The Blinding Vale +16. The two fair references are the top Windwalkers in the same dungeons one key level up, Chumafat (+17 Den, 392K) and Mnkn (+17 Temple, 424K), with Freevalon (+23 Den) and Bisset (+22 Temple) as the ceiling. Every number below was computed from the raw combat events twice, by the audit script and again by an independent recount, and checked against the guide's wording.
@@ -31,7 +45,12 @@ Your filler has the right shape and pace (44 to 48 presses per active minute, th
 Seconds from the Xuen press, taken from Chumafat's and Mnkn's windows. Tiger Palm at -1 so you hold 5 chi. Xuen at 0 with potion and trinket, Zenith at +0.3. Fists at +0.8 inside the Zenith window. Spinning Crane Kick at +2.4 eats the 6 stacks. Rising Sun Kick at +3.5. Whirling Dragon Punch at +4.5, the second window, stacking with Zenith's. Inside it: Fists, SCK, Zenith Stomp, RSK. Conduit at +11 to +13 as the WDP window ends; cancel it on the next GCD with Stomp then Blackout Kick, or the Unity Within recast. Inside Unity: Fists, SCK, RSK, Fists. Second WDP at about +21. Zenith and WDP are locked from 20s before Xuen comes back.
 
 ```discord
-Senssay WW Conduit audit, 22 Oct (5 keys vs top +17 refs)
+Senssay WW Conduit audit, night two (23 Oct, Altar/Voidscar/Murder Row +16 vs +17 refs)
+FIXED: Fists channels 78-90% full (was 48-55%), potion now procs mastery
+BETTER: 4pc to SCK 81/88/67% (was 54-68%); stomps ~1 per Zenith (was 0.2-0.95)
+NEW LEAKS: Conduit left to run full 5x (cancel on the next GCD), Stomp into Stomp (18 mastery breaks in Murder Row), Conduit at +0.8s before WDP on boss pulls still, 4 deaths in Voidscar, TP at cap unchanged ~50%
+
+Night one, 22 Oct (5 keys vs top +17 refs)
 1. After Fists at 2+ targets: SCK first, then RSK/WDP. You sent the 6-stack buff to RSK/RWK 126 of 330 times (refs 0-5). Pack opener: Zenith, Fists, SCK, RSK, WDP. ~4-5% dmg/key
 2. Let Fists finish: you press at 2.35s, last hit lands at 2.9s. 126 of 202 slow Fists cut (refs 2-14%). ~3% dmg/key + lost 4pc stacks
 3. Spend both Zenith Stomps every Zenith (74 charges wasted in 3 keys, refs 1-5). One inside Conduit channel or after WDP, one where TP would go. Never Stomp>Stomp

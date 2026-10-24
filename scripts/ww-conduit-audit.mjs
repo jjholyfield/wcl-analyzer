@@ -416,8 +416,13 @@ function auditPlayer(code, playerName) {
     // ── Activity ──
     const pullSecs = pulls.reduce((s, p) => s + (p.endTime - p.startTime), 0) / 1000;
     const gcdCasts = casts.filter(c => !OFF_GCD.has(c.id) && ![S.ROLL, S.FSK, S.LUST].includes(c.id));
+    // Idle is measured from the END of the previous press's channel (a full Fists of Fury runs about 2.9s, a Conduit
+    // channel up to 3s), so waiting for the last Fists hit never reads as idle.
+    const fofChanByT = new Map(fofCasts.map(x => [x.t, x.channelSeconds]));
+    const conduitChanByT = new Map(castsOf(S.CONDUIT).map((c, i) => [c.t, conduits[i] && conduits[i].channelSeconds ? conduits[i].channelSeconds : 0]));
+    const busyUntil = (c) => c.t + 1000 * (c.id === S.FOF ? (fofChanByT.get(c.t) || 0) : (c.id === S.CONDUIT ? (conduitChanByT.get(c.t) || 0) : 0));
     const idle = [];
-    for (let i = 1; i < gcdCasts.length; i++) { const g = (gcdCasts[i].t - gcdCasts[i - 1].t) / 1000; const p = pullAt(gcdCasts[i - 1].t); if (p && g > 3 && pullAt(gcdCasts[i].t) === p) idle.push({ at: at(gcdCasts[i - 1].t), seconds: r1(g), after: gcdCasts[i - 1].name, before: gcdCasts[i].name, pull: p.name, dead: deaths.some(d => d.targetID === P && d.timestamp >= gcdCasts[i - 1].t && d.timestamp <= gcdCasts[i].t) }); }
+    for (let i = 1; i < gcdCasts.length; i++) { const g = (gcdCasts[i].t - busyUntil(gcdCasts[i - 1])) / 1000; const p = pullAt(gcdCasts[i - 1].t); if (p && g > 3 && pullAt(gcdCasts[i].t) === p) idle.push({ at: at(gcdCasts[i - 1].t), seconds: r1(g), after: gcdCasts[i - 1].name, before: gcdCasts[i].name, pull: p.name, dead: deaths.some(d => d.targetID === P && d.timestamp >= gcdCasts[i - 1].t && d.timestamp <= gcdCasts[i].t) }); }
     const activity = { pullSeconds: r1(pullSecs), castsPerMinuteInPulls: pullSecs ? r1(casts.filter(c => pullAt(c.t) && c.id !== S.CHI_EXPLOSION).length / (pullSecs / 60)) : null, idleGapsOver3s: idle.length, idleSecondsOver3s: r1(idle.reduce((s, g) => s + g.seconds, 0)), idleGapsTop: idle.sort((a, b) => b.seconds - a.seconds).slice(0, 12) };
 
     // ── Deaths ──
@@ -497,7 +502,7 @@ function auditPlayer(code, playerName) {
       const notes = [];
       // idle before this press (inside a pull, not dead)
       if (prevGcd && p && pullAt(prevGcd.t) === p && !OFF_GCD.has(c.id) && ![S.ROLL, S.FSK, S.LUST].includes(c.id)) {
-        const g = (c.t - prevGcd.t) / 1000;
+        const g = (c.t - busyUntil(prevGcd)) / 1000;
         if (g > 2.5 && !deaths.some(d => d.targetID === P && d.timestamp >= prevGcd.t && d.timestamp <= c.t)) notes.push(`idle ${r1(g)}s before this`);
       }
       if (c.id === S.FOF) { const x = fofByT.get(c.t); if (x) { notes.push(`${x.clusters}/5 ticks ${x.channelSeconds}s on ${x.maxTargets} tgt`); if (x.clippedBy) notes.push(x.clippedBy.startsWith('targets') ? 'ended early: targets gone' : `CLIPPED by ${x.clippedBy} at +${x.clipGapSeconds}s: wait for the last hit`); const tu = tierByT.get(c.t); if (tu && tu.stacks) notes.push(`4pc ${tu.stacks} stacks -> ${tu.consumer || 'nobody'}${tu.verdict.startsWith('ok') ? '' : ' !! ' + tu.verdict}`); } }
