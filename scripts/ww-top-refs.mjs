@@ -28,29 +28,33 @@ const bracket = opt('--bracket', null);
 const top = Number(opt('--top', 3));
 const doPull = argv.includes('--pull');
 const anyName = argv.includes('--any-name');
+// --class / --spec / --dir: any class and spec (defaults Monk / Windwalker / ww); --dir is the data subfolder the pull writes to
+const className = opt('--class', 'Monk');
+const specName = opt('--spec', 'Windwalker');
+const dataDir = opt('--dir', 'ww');
 if (!encounterID) {
   console.error('Usage: node scripts/ww-top-refs.mjs <encounterID> [--bracket <keyLevel>] [--top <n>] [--pull] [--any-name]');
   process.exit(1);
 }
 
-const args = `className: "Monk", specName: "Windwalker", metric: dps, difficulty: 10${bracket ? ', bracket: ' + Number(bracket) : ''}`;
+const args = `className: "${className}", specName: "${specName}", metric: dps, difficulty: 10${bracket ? ', bracket: ' + Number(bracket) : ''}`;
 const r = await gql(`{ worldData { encounter(id: ${encounterID}) { name characterRankings(${args}) } } }`);
 const enc = r.worldData.encounter;
 const all = (enc.characterRankings?.rankings || []);
 const latin = (s) => /^[\x20-\x7EÀ-ɏḀ-ỿ]+$/.test(s);
 const picked = all.filter(x => x.report?.code && (anyName || latin(x.name))).slice(0, top);
 
-console.log(`${enc.name} (${encounterID})${bracket ? ' +' + bracket : ' overall'}: ${all.length} ranked Windwalkers, showing ${picked.length}`);
+console.log(`${enc.name} (${encounterID})${bracket ? ' +' + bracket : ' overall'}: ${all.length} ranked ${specName} ${className}s, showing ${picked.length}`);
 for (const [i, x] of picked.entries()) {
   console.log(`  #${i + 1} ${x.name}-${x.server?.name} +${x.bracketData} ${Math.round(x.amount).toLocaleString()} dps ${(x.duration / 60000).toFixed(1)}min report ${x.report.code} fight ${x.report.fightID}`);
 }
 mkdirSync(join(__dirname, '..', 'data', 'refs'), { recursive: true });
-writeFileSync(join(__dirname, '..', 'data', 'refs', `ww-${encounterID}${bracket ? '-b' + bracket : ''}.json`), JSON.stringify({ encounter: enc.name, encounterID, bracket, pulledAt: new Date().toISOString(), rankings: all.slice(0, 50) }, null, 1));
+writeFileSync(join(__dirname, '..', 'data', 'refs', `${dataDir}-${encounterID}${bracket ? '-b' + bracket : ''}.json`), JSON.stringify({ encounter: enc.name, encounterID, bracket, className, specName, pulledAt: new Date().toISOString(), rankings: all.slice(0, 50) }, null, 1));
 
 if (doPull) {
   for (const x of picked) {
     console.log(`\nPulling ${x.name} from ${x.report.code} fight ${x.report.fightID} ...`);
-    const res = spawnSync(process.execPath, [join(__dirname, 'ww-conduit-pull.mjs'), x.report.code, x.name, '--fight', String(x.report.fightID)], { stdio: 'inherit' });
+    const res = spawnSync(process.execPath, [join(__dirname, 'ww-conduit-pull.mjs'), x.report.code, x.name, '--fight', String(x.report.fightID), '--dir', dataDir], { stdio: 'inherit' });
     if (res.status !== 0) console.log(`  pull failed for ${x.name} (${x.report.code})`);
   }
 }

@@ -26,7 +26,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
 const fightArgIdx = argv.indexOf('--fight');
 const onlyFight = fightArgIdx >= 0 ? Number(argv[fightArgIdx + 1]) : null;
-const [code, nameArg] = argv.filter((a, i) => fightArgIdx < 0 || !(i === fightArgIdx || i === fightArgIdx + 1));
+// --dir <name>: the subfolder under data/<report>/ (default "ww"; the Ret audit uses "ret"). The pull itself is class-agnostic.
+const dirArgIdx = argv.indexOf('--dir');
+const subDir = dirArgIdx >= 0 ? argv[dirArgIdx + 1] : 'ww';
+const skip = new Set();
+if (fightArgIdx >= 0) { skip.add(fightArgIdx); skip.add(fightArgIdx + 1); }
+if (dirArgIdx >= 0) { skip.add(dirArgIdx); skip.add(dirArgIdx + 1); }
+const [code, nameArg] = argv.filter((a, i) => !skip.has(i));
 if (!code) {
   console.error('Usage: node scripts/ww-conduit-pull.mjs <reportCode> [playerName] [--fight <fightID>]');
   process.exit(1);
@@ -54,7 +60,7 @@ if (!keys.length) {
   process.exit(1);
 }
 
-const outDir = join(__dirname, '..', 'data', code, 'ww', lcName(player.name));
+const outDir = join(__dirname, '..', 'data', code, subDir, lcName(player.name));
 mkdirSync(outDir, { recursive: true });
 const save = (name, obj) => writeFileSync(join(outDir, name), JSON.stringify(obj));
 
@@ -92,6 +98,13 @@ for (const f of keys) {
   const buffs = await events(f, `dataType: Buffs, targetID: ${player.id}`);
   save(`${tag}-buffs.json`, buffs);
   console.log(`  buffs ${buffs.length}`);
+
+  // debuffs the player put on enemies (Judgment, Expurgation, Dawnlight, Sun Sear ...). WCL: Debuffs with
+  // sourceID filters by the TARGET (like DamageTaken), so fetch every enemy debuff and keep this player's.
+  const debuffsAll = await events(f, `dataType: Debuffs, hostilityType: Enemies`);
+  const debuffs = debuffsAll.filter(e => e.sourceID === player.id);
+  save(`${tag}-debuffs.json`, debuffs);
+  console.log(`  debuffs ${debuffs.length} (of ${debuffsAll.length} enemy debuff events)`);
 
   const dmg = await events(f, `dataType: DamageDone, sourceID: ${player.id}`);
   save(`${tag}-dmgdone.json`, dmg);
