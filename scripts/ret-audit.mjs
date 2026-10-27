@@ -145,7 +145,13 @@ function auditPlayer(code, playerName) {
 
     // ── Holy Power model ──
     // walk casts and resource events in time order; a spender's logged amount is ground truth, resource events add gains
-    const timeline = [...casts.map(c => ({ kind: 'cast', t: c.t, c })), ...resources.map(r => ({ kind: 'res', t: r.timestamp, r }))].sort((a, b) => a.t - b.t || (a.kind === 'cast' ? -1 : 1));
+    // WCL stamps a generator's Holy Power event 0 to 9 ms BEFORE its own cast event, so a resource event that sits
+    // within 15 ms before a generator press is sorted after that press; otherwise the press reads the bar AFTER its
+    // own gain (verified 2026-10-27: that ordering alone turned 10 overflowing Blades into 111). resourceChange is the
+    // nominal gain; waste is the part of it that overflowed.
+    const genCastTimes = casts.filter(c => GENERATORS.has(c.id)).map(c => c.t);
+    const sortT = (r) => { const after = genCastTimes.find(t => t >= r.timestamp && t - r.timestamp <= 15); return after !== undefined ? after + 0.5 : r.timestamp; };
+    const timeline = [...casts.map(c => ({ kind: 'cast', t: c.t, s: c.t, c })), ...resources.map(r => ({ kind: 'res', t: r.timestamp, s: sortT(r), r }))].sort((a, b) => a.s - b.s || (a.kind === 'cast' ? -1 : 1));
     let hp = 0;
     const hpBefore = new Map(); // cast t -> hp before the press
     const hpTrace = []; // {t, hp} after each change, for time-at-5
@@ -160,7 +166,7 @@ function auditPlayer(code, playerName) {
           hpTrace.push({ t: c.t, hp });
         } else hpBefore.set(c.t + ':' + c.id, hp);
       } else {
-        hp = Math.min(5, Math.max(0, hp + (ev.r.resourceChange || 0)));
+        hp = Math.min(5, Math.max(0, hp + (ev.r.resourceChange || 0) - (ev.r.waste || 0)));
         hpTrace.push({ t: ev.t, hp });
       }
     }
@@ -174,7 +180,7 @@ function auditPlayer(code, playerName) {
     const wasteEvents = resources.filter(r => r.waste > 0);
     const wasteBy = {};
     let wasteTotal = 0, generated = 0;
-    for (const r of resources) generated += (r.resourceChange || 0) + (r.waste || 0);
+    for (const r of resources) generated += (r.resourceChange || 0); // nominal gain; waste is included in it
     const wasteList = [];
     for (const r of wasteEvents) {
       wasteTotal += r.waste;
@@ -342,8 +348,9 @@ function auditPlayer(code, playerName) {
       if (prevGcd && p && pullAt(prevGcd.t) === p && !OFF_GCD.has(c.id)) { const g = (c.t - prevGcd.t) / 1000; if (g > 2.5 && !dead(prevGcd.t, c.t)) notes.push(`idle ${r1(g)}s before this`); }
       if (GENERATORS.has(c.id) && h !== undefined) {
         const gain = c.id === S.DT ? null : (GEN_GAIN[c.id] || 1);
-        if (gain !== null && h + gain > 5) notes.push(`${c.name} at ${h} Holy Power: ${h + gain - 5} wasted, spend first`);
-        if (c.id === S.WAKE && h >= 3) notes.push(`Wake of Ashes at ${h} Holy Power: ${h - 2} wasted, Wake wants 2 or less`);
+        // Wake is pressed on cooldown at any Holy Power by the top players (its Divine Purpose and Dawnlight outweigh the overflow), so its overflow is a count, not a fault
+        if (c.id === S.WAKE) { if (h >= 3) notes.push(`Wake of Ashes at ${h} Holy Power (${h - 2} overflow; the references press it regardless)`); }
+        else if (gain !== null && h + gain > 5) notes.push(h >= 5 || c.id === S.BOJ && h >= 4 && !stacksAt(iv.aow, c.t) ? `${c.name} at ${h} Holy Power: ${h + gain - 5} wasted, spend first` : `${c.name} at ${h} Holy Power (${h + gain - 5} overflow)`);
         if (c.id === S.DT) { const d = dtCasts.find(x => x.at === at(c.t)); if (d && d.waste > 0) notes.push(`Divine Toll at ${h} Holy Power on ${d.targets} targets: ${d.waste} wasted`); }
         if (c.id === S.BOJ) { const s = stacksAt(iv.aow, c.t); if (s) notes.push(`Art of War x${s}`); }
       }
