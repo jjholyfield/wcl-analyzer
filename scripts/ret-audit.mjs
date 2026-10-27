@@ -120,6 +120,28 @@ function auditPlayer(code, playerName) {
     const inWings = (t) => !!activeAt(iv.wings, t);
     const dpActive = (t) => !!activeAt(iv.dp, t) || buffs.some(b => b.abilityGameID === S.DIVINE_PURPOSE && b.type === 'removebuff' && Math.abs(b.timestamp - t) <= 60);
     const arbiterActive = (t) => !!activeAt(iv.arbA, t) || !!activeAt(iv.arbB, t) || buffs.some(b => (b.abilityGameID === S.ARBITER_A || b.abilityGameID === S.ARBITER_B) && b.type === 'removebuff' && Math.abs(b.timestamp - t) <= 60);
+    // Which Arbiter is up decides the right spender, not the target count (proven on all ten flows of the three
+    // players, 2026-10-27): 1306161 is granted by a Divine Purpose Final Verdict and fires ONLY from Divine Storm;
+    // 1306162 is granted by a Divine Purpose Divine Storm and fires ONLY from Final Verdict. Method's target-count
+    // reading ("Divine Storm with Arbiter on 1 target, Final Verdict in AoE") graded Böllerbob wrong on 88 of 222
+    // Arbiter spenders, so it is not what the top players do and is not graded here.
+    const arbiterRightSpender = (kind, id) => (kind === 'fromFV' && id === S.DS) || (kind === 'fromDS' && id === S.FV);
+    // State of the Arbiter at a spender press: 'fired' (this press cashed it: its removebuff sits on the press and the
+    // press is the other spender), 'granted' (this free press created it: applybuff on the press), 'held' (one was
+    // up from an earlier press and this is the same spender again, which cannot fire it), or null.
+    const arbiterStateAt = (t, id) => {
+      const ev = (abil, type) => buffs.some(b => b.abilityGameID === abil && b.type === type && Math.abs(b.timestamp - t) <= 60);
+      for (const [abil, kind] of [[S.ARBITER_A, 'fromFV'], [S.ARBITER_B, 'fromDS']]) {
+        if (ev(abil, 'removebuff') && arbiterRightSpender(kind, id)) return { kind, state: 'fired' };
+      }
+      for (const [abil, kind] of [[S.ARBITER_A, 'fromFV'], [S.ARBITER_B, 'fromDS']]) {
+        if (ev(abil, 'applybuff')) return { kind, state: 'granted' };
+      }
+      for (const [key, kind] of [['arbA', 'fromFV'], ['arbB', 'fromDS']]) {
+        const x = activeAt(iv[key], t); if (x && x.start < t - 60) return { kind, state: 'held' };
+      }
+      return null;
+    };
     const stacksAt = (ivs, t) => { const x = activeAt(ivs, t); return x ? x.stacks : 0; };
     const judgOn = debuffIntervalsByTarget(debuffs, S.JUDG_DEBUFF, f.endTime);
     const expOn = debuffIntervalsByTarget(debuffs, S.EXPURGATION, f.endTime);
@@ -192,7 +214,7 @@ function auditPlayer(code, playerName) {
     const genAtCap = press.filter(c => GENERATORS.has(c.id) && hpAt(c) !== undefined && hpAt(c) + (GEN_GAIN[c.id] || 1) > 5).map(c => ({ at: at(c.t), pull: pullName(c.t), name: c.name, hp: hpAt(c), overBy: hpAt(c) + (GEN_GAIN[c.id] || 1) - 5 }));
     const wakeHigh = castsOf(S.WAKE).filter(c => hpAt(c) >= 3).map(c => ({ at: at(c.t), pull: pullName(c.t), hp: hpAt(c) }));
     const dtCasts = castsOf(S.DT).map(c => { const w = resources.filter(r => r.timestamp >= c.t && r.timestamp <= c.t + 1200).reduce((s, r) => s + (r.waste || 0), 0); return { at: at(c.t), pull: pullName(c.t), hp: hpAt(c), targets: targetsNear(c.t), waste: w, inWings: inWings(c.t) }; });
-    const spenderCasts = casts.filter(c => SPENDERS.has(c.id)).map(c => ({ ...c, hp: hpAt(c), free: c.hpLogged === null, ds: c.id === S.DS, targets: c.id === S.DS ? dsHits(c.t) : targetsNear(c.t), arbiter: arbiterActive(c.t), judged: judgActiveOn(c.target + ':' + c.targetInstance, c.t) || (c.id === S.DS && Object.entries(judgOn).some(([k, ivs]) => activeAt(ivs, c.t))) }));
+    const spenderCasts = casts.filter(c => SPENDERS.has(c.id)).map(c => ({ ...c, hp: hpAt(c), free: c.hpLogged === null, ds: c.id === S.DS, targets: c.id === S.DS ? dsHits(c.t) : targetsNear(c.t), arbiter: arbiterActive(c.t), arbiterKind: arbiterStateAt(c.t, c.id)?.kind || null, arbiterState: arbiterStateAt(c.t, c.id)?.state || null, judged: judgActiveOn(c.target + ':' + c.targetInstance, c.t) || (c.id === S.DS && Object.entries(judgOn).some(([k, ivs]) => activeAt(ivs, c.t))) }));
     const spenderHp = spenderCasts.reduce((m, c) => { const k = c.free ? 'free (Divine Purpose)' : String(c.hp); m[k] = (m[k] || 0) + 1; return m; }, {});
     const holyPower = {
       generated, wasted: wasteTotal, wastedPct: pct(wasteTotal, generated), wastedBy: Object.fromEntries(Object.entries(wasteBy).sort((a, b) => b[1] - a[1])),
@@ -225,12 +247,17 @@ function auditPlayer(code, playerName) {
     const sp2 = spenderCasts.filter(c => c.id === S.DS || c.id === S.FV);
     const fvMulti = sp2.filter(c => c.id === S.FV && c.targets >= 2 && !c.arbiter);
     const dsSingle = sp2.filter(c => c.id === S.DS && c.targets <= 1 && !c.arbiter);
-    const arbRight = sp2.filter(c => c.arbiter && ((c.targets >= 2 && c.id === S.FV) || (c.targets <= 1 && c.id === S.DS))).length;
-    const arbWrong = sp2.filter(c => c.arbiter && ((c.targets >= 2 && c.id === S.DS) || (c.targets <= 1 && c.id === S.FV)));
+    // "right" = the spender that fires the Arbiter that is up; "wrong" = the same spender again while it sits (it
+    // cannot fire, and a Divine Purpose consumed meanwhile grants no new Arbiter).
+    const arbRight = sp2.filter(c => c.arbiterState === 'fired').length;
+    const arbWrong = sp2.filter(c => c.arbiterState === 'held');
+    const arbGranted = sp2.filter(c => c.arbiterState === 'granted').length;
+    // a Divine Purpose spent while an Arbiter was already up (held, or fired on this same press) grants no new Arbiter (rule 35: a count, not a fault)
+    const dpWithArbiterUp = spenderCasts.filter(c => c.free && (c.arbiterState === 'held' || c.arbiterState === 'fired')).length;
     const efCasts = castsOf(S.EF).map(c => ({ at: at(c.t), pull: pullName(c.t), hp: hpAt(c), free: c.hpLogged === null }));
     const spenderChoice = {
       divineStorm: times(S.DS).length, finalVerdict: times(S.FV).length, eternalFlame: efCasts.length, eternalFlamePaid: efCasts.filter(e => !e.free).length,
-      finalVerdictAt2PlusWithoutArbiter: fvMulti.length, divineStormAt1WithoutArbiter: dsSingle.length, arbiterSpenderRight: arbRight, arbiterSpenderWrong: arbWrong.length,
+      finalVerdictAt2PlusWithoutArbiter: fvMulti.length, divineStormAt1WithoutArbiter: dsSingle.length, arbiterSpenderRight: arbRight, arbiterSpenderWrong: arbWrong.length, arbitersGranted: arbGranted, divinePurposeSpentWithArbiterUp: dpWithArbiterUp,
       judgedSpendersPct: pct(sp2.filter(c => c.judged).length, sp2.length), judgedSpenders: sp2.filter(c => c.judged).length,
       dsTargetDistribution: castsOf(S.DS).reduce((m, c) => { const k = Math.min(dsHits(c.t), 8); m[k] = (m[k] || 0) + 1; return m; }, {}),
       lists: { finalVerdictAt2Plus: fvMulti.slice(0, 40).map(c => ({ at: at(c.t), pull: pullName(c.t), targets: c.targets, hp: c.hp })), divineStormAt1: dsSingle.slice(0, 40).map(c => ({ at: at(c.t), pull: pullName(c.t), hp: c.hp })), arbiterWrong: arbWrong.slice(0, 20).map(c => ({ at: at(c.t), pull: pullName(c.t), pressed: c.name, targets: c.targets })), eternalFlame: efCasts },
@@ -307,10 +334,12 @@ function auditPlayer(code, playerName) {
     // ── gear ──
     const ci = comb.combatantInfo[0] || {};
     const SLOTS = ['head', 'neck', 'shoulder', 'shirt', 'chest', 'waist', 'legs', 'feet', 'wrist', 'hands', 'ring1', 'ring2', 'trinket1', 'trinket2', 'back', 'mainhand', 'offhand', 'tabard'];
-    const ENCHANTABLE = new Set(['head', 'shoulder', 'chest', 'legs', 'feet', 'ring1', 'ring2', 'mainhand', 'back', 'wrist']);
+    // Midnight has no cloak or bracer enchants (checked 2026-10-27 against both references and Murlok's top-50 set: none carries one), so back and wrist are not flagged.
+    const ENCHANTABLE = new Set(['head', 'shoulder', 'chest', 'legs', 'feet', 'ring1', 'ring2', 'mainhand']);
     const gear = (ci.gear || []).map((g, i) => ({ slot: SLOTS[i], id: g.id, ilvl: g.itemLevel, quality: g.quality, setID: g.setID || null, enchant: g.permanentEnchant || null, oil: g.temporaryEnchant || null, gems: (g.gems || []).map(x => x.id), icon: (g.icon || '').replace('.jpg', '') })).filter(g => g.id && g.ilvl > 1);
     const tierSetId = (() => { const c = {}; for (const g of gear) if (g.setID) c[g.setID] = (c[g.setID] || 0) + 1; return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0]; })();
-    const auras = (ci.auras || []).map(a => ({ id: a.ability, name: a.name || NAME(a.ability) }));
+    // Only the player's own auras: CombatantInfo lists every aura ON him, so the tank's Devotion Aura shows up with source = the tank.
+    const auras = (ci.auras || []).filter(a => a.source === undefined || a.source === ci.sourceID).map(a => ({ id: a.ability, name: a.name || NAME(a.ability) }));
     const secondaries = { crit: ci.critMelee, haste: ci.hasteMelee, mastery: ci.mastery, versatility: ci.versatilityDamageDone };
     const secondaryOrder = Object.entries(secondaries).sort((a, b) => b[1] - a[1]);
     const gearSummary = {
@@ -360,7 +389,9 @@ function auditPlayer(code, playerName) {
           if (sc.free) notes.push('free (Divine Purpose)');
           if (c.id === S.FV && sc.targets >= 2 && !sc.arbiter) notes.push(`Final Verdict on ${sc.targets} targets: Divine Storm was the call`);
           if (c.id === S.DS && sc.targets <= 1 && !sc.arbiter) notes.push('Divine Storm on 1 target: Final Verdict was the call');
-          if (sc.arbiter) notes.push(((sc.targets >= 2 && c.id === S.FV) || (sc.targets <= 1 && c.id === S.DS)) ? 'Divine Arbiter, right spender' : `Divine Arbiter up: ${sc.targets >= 2 ? 'Final Verdict' : 'Divine Storm'} was the call`);
+          if (sc.arbiterState === 'fired') notes.push('Divine Arbiter fired (the other spender)');
+          if (sc.arbiterState === 'granted') notes.push(`grants Divine Arbiter: next spender ${c.id === S.FV ? 'Divine Storm' : 'Final Verdict'}`);
+          if (sc.arbiterState === 'held') notes.push(`Divine Arbiter still up: ${sc.arbiterKind === 'fromFV' ? 'Divine Storm' : 'Final Verdict'} was the call, it fires only from the other spender`);
           if (c.id === S.EF) notes.push(sc.free ? 'Eternal Flame (free)' : 'Eternal Flame: 3 Holy Power to healing');
           if ((c.id === S.FV || c.id === S.DS) && Object.keys(judgOn).length && !sc.judged) notes.push('no Judgment debuff on the target');
         }

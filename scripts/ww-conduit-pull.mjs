@@ -9,7 +9,7 @@
  * Pulls every keystone fight the player was in. Output:
  *   data/<reportCode>/ww/<player>/meta.json        report, fights, actors, ability names, player
  *   data/<reportCode>/ww/<player>/fight<id>-casts.json      cast + begincast events, with classResources (energy/chi)
- *   data/<reportCode>/ww/<player>/fight<id>-buffs.json      buff events ON the player (apply/remove/refresh/stack)
+ *   data/<reportCode>/ww/<player>/fight<id>-buffs.json      buff events ON the player from any source (apply/remove/refresh/stack), lust and Power Infusion included
  *   data/<reportCode>/ww/<player>/fight<id>-dmgdone.json    damage events BY the player (ticks, targets, crits)
  *   data/<reportCode>/ww/<player>/fight<id>-dmgtaken.json   damage events ON the player
  *   data/<reportCode>/ww/<player>/fight<id>-resources.json  resourcechange events for the player
@@ -95,9 +95,13 @@ for (const f of keys) {
   save(`${tag}-casts.json`, casts);
   console.log(`  casts ${casts.length}`);
 
-  const buffs = await events(f, `dataType: Buffs, targetID: ${player.id}`);
+  // Buffs ON the player from ANY source. WCL gotcha (proven 2026-10-27 on VCT4BDbd7XknFKPG): `Buffs, targetID: <player>`
+  // returns only the buffs the player cast on himself; a hunter pet's Primal Rage, Power Infusion, Bloodlust from a
+  // shaman never appear. Pull every friendly buff event and keep the ones whose target is the player.
+  const buffsAll = await events(f, `dataType: Buffs, hostilityType: Friendlies`);
+  const buffs = buffsAll.filter(e => e.targetID === player.id);
   save(`${tag}-buffs.json`, buffs);
-  console.log(`  buffs ${buffs.length}`);
+  console.log(`  buffs ${buffs.length} on the player (of ${buffsAll.length} friendly buff events; ${buffs.filter(e => e.sourceID !== player.id).length} from other sources)`);
 
   // debuffs the player put on enemies (Judgment, Expurgation, Dawnlight, Sun Sear ...). WCL: Debuffs with
   // sourceID filters by the TARGET (like DamageTaken), so fetch every enemy debuff and keep this player's.
